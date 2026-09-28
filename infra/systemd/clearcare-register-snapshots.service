@@ -4,6 +4,10 @@ Documentation=https://github.com/niwash/ClearCare/tree/main/infra/systemd
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
+# Copy to object storage after every run, including failed ones, so files
+# stored before a failure still leave the VM.
+OnSuccess=clearcare-raw-upload.service
+OnFailure=clearcare-raw-upload.service
 
 [Service]
 Type=oneshot
@@ -11,5 +15,5 @@ Type=oneshot
 ExecStart=/usr/bin/docker run --rm --name clearcare-register-snapshots \
     --user 1001:1001 \
     --volume /opt/clearcare/data:/data \
-    clearcare-pipeline:latest --data-dir /data
+    clearcare-pipeline:latest clearcare_pipeline.snapshots --data-dir /data
 TimeoutStartSec=30min

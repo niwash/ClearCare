@@ -7,13 +7,18 @@ HIQA overwrites its register of centres and its Section 64 register in place and
 
 A run fails (and `systemctl` shows it as failed) if any source still fails after three attempts.
 
+After every snapshot run, successful or not, `clearcare-raw-upload.service` copies whatever the `clearcare-raw` bucket does not have yet: raw files under `raw/`, and each manifest line as its own object under `manifests/register-snapshots/`. The bucket's policy lets the upload credentials create and read objects but never overwrite or delete them, so the copy is write-once. A failed upload is retried by the next day's run.
+
+The credentials are in `/opt/clearcare/secrets/object-storage.env` (mode 600, never in the repository), with `CLEARCARE_S3_ENDPOINT`, `CLEARCARE_S3_REGION`, `CLEARCARE_S3_BUCKET`, `CLEARCARE_S3_ACCESS_KEY_ID` and `CLEARCARE_S3_SECRET_ACCESS_KEY`.
+
 ## Install or update
 
 ```sh
 cd /opt/clearcare/src && git pull
 docker build -t clearcare-pipeline:latest pipeline
 sudo install -m 644 infra/systemd/clearcare-register-snapshots.service \
-    infra/systemd/clearcare-register-snapshots.timer /etc/systemd/system/
+    infra/systemd/clearcare-register-snapshots.timer \
+    infra/systemd/clearcare-raw-upload.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now clearcare-register-snapshots.timer
 ```
@@ -22,8 +27,8 @@ sudo systemctl enable --now clearcare-register-snapshots.timer
 
 ```sh
 systemctl list-timers clearcare-register-snapshots.timer
-journalctl -u clearcare-register-snapshots.service --since today
+journalctl -u clearcare-register-snapshots.service -u clearcare-raw-upload.service --since today
 tail -n 2 /opt/clearcare/data/manifests/register-snapshots.jsonl
 ```
 
-To take a snapshot now: `sudo systemctl start clearcare-register-snapshots.service`.
+To take a snapshot now: `sudo systemctl start clearcare-register-snapshots.service`. To upload without a new snapshot: `sudo systemctl start clearcare-raw-upload.service`.
