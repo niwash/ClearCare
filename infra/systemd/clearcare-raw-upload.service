@@ -1,0 +1,17 @@
+[Unit]
+Description=ClearCare: copy raw files and snapshot records to object storage
+Documentation=https://github.com/niwash/ClearCare/tree/main/infra/systemd
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# The env file holds the bucket's write-once credentials; it lives outside
+# the repository and only its owner can read it. Data is mounted read-only.
+ExecStart=/usr/bin/docker run --rm --name clearcare-raw-upload \
+    --user 1001:1001 \
+    --env-file /opt/clearcare/secrets/object-storage.env \
+    --volume /opt/clearcare/data:/data:ro \
+    clearcare-pipeline:latest clearcare_pipeline.upload --data-dir /data
+TimeoutStartSec=30min
