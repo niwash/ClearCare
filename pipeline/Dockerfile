@@ -13,4 +13,4 @@ COPY src ./src
 RUN uv sync --frozen --no-dev --no-editable
 
 USER 65534:65534
-ENTRYPOINT ["/app/.venv/bin/python", "-m", "clearcare_pipeline.snapshots"]
+ENTRYPOINT ["/app/.venv/bin/python", "-m"]
