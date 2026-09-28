@@ -7,6 +7,8 @@ from pathlib import Path
 
 from clearcare_pipeline.snapshots.snapshot import SnapshotRecord
 
+MANIFEST_NAME = "register-snapshots.jsonl"
+
 
 def append_records(path: Path, records: Iterable[SnapshotRecord]) -> None:
     """Appends each record to the manifest as one JSON line."""
