@@ -1,0 +1,15 @@
+[Unit]
+Description=ClearCare: snapshot the HIQA registers
+Documentation=https://github.com/niwash/ClearCare/tree/main/infra/systemd
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Runs as uid 1001 (the VM's ubuntu user), which owns /opt/clearcare/data.
+ExecStart=/usr/bin/docker run --rm --name clearcare-register-snapshots \
+    --user 1001:1001 \
+    --volume /opt/clearcare/data:/data \
+    clearcare-pipeline:latest --data-dir /data
+TimeoutStartSec=30min
