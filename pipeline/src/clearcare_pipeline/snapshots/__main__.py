@@ -10,11 +10,11 @@ from pathlib import Path
 
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.snapshots.fetch import Fetcher, UrllibFetcher
+from clearcare_pipeline.snapshots.manifest import MANIFEST_NAME
 from clearcare_pipeline.snapshots.run import run
 from clearcare_pipeline.snapshots.sources import REGISTER_SOURCES
 
 RETRY_WAITS_SECONDS = (60.0, 300.0)
-MANIFEST_NAME = "register-snapshots.jsonl"
 
 
 def _now() -> datetime:
