@@ -29,3 +29,4 @@ Name branches `CCARE-<n>-short-name`, e.g. `CCARE-20-start-frontend`.
 Run before opening a pull request:
 
 - `pipeline/`: `uv sync && uv run pytest && uv run ruff check . && uv run pyright`
+- `web/clearcare/`: `npm ci && npm run lint && npm run build`
