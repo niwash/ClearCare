@@ -1,26 +1,56 @@
 @import "tailwindcss";
 
+/* Colours from the September wireframes. Use the system theme unless
+   data-theme on <html> overrides it. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light dark;
+  --page: light-dark(#f4f5f2, #0f151c);
+  --surface: light-dark(#ffffff, #16202b);
+  --ink: light-dark(#16202b, #e8ecef);
+  --ink-muted: light-dark(#4a5563, #a9b2bc);
+  --ink-faint: light-dark(#66707b, #8a94a0);
+  --line: light-dark(#d5d9de, #2b3642);
+  --line-soft: light-dark(#e3e6ea, #233040);
+  --link: light-dark(#1f4e79, #8db8e0);
+  --link-hover: light-dark(#123b5e, #b5d2ee);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-soft: var(--line-soft);
+  --color-link: var(--link);
+  --font-serif: var(--font-source-serif);
+  --font-sans: var(--font-public-sans);
+  --font-mono: var(--font-plex-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* In the base layer so that utility classes can override them. */
+@layer base {
+  body {
+    background: var(--page);
+    color: var(--ink);
   }
-}
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  a {
+    color: var(--link);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  a:hover {
+    color: var(--link-hover);
+  }
 }
