@@ -121,4 +121,39 @@
 
 ### **2. Agenda of the Meeting**
 
+- Going through problems noticed during presentation
+- Finding possible solutiona to issues observed
+- Planning next week's tasks
+- Assigning tasks for each members
+
 ### **3. Discussion and Key Points**
+
+- Need to get responses from parties involved in the process to find problems they face
+- Interviews with advocacy groups, nursing home representatives and families who looked for nursing home will help
+- Need to set up and organise Jira and github
+- Need to see what else we can extract from the HIQA reports other than compliancy checks
+- Plan and setup standups
+
+Activities for next week (To be added throughout the week): 
+
+- Director of Nursing interview 
+
+- Sage Advocacy interview
+
+- GitHub cleanup 
+
+- Jira linking 
+
+- Development of front end 
+
+- PDF reading 
+
+- Standardizing codebase and structure 
+
+- Structure of the codebase 
+
+- Decide back-end development and structure 
+
+- Search what each organization does (by friday night) 
+
+- Send inquiries by monday morning 
