@@ -52,7 +52,7 @@
     - Preparation for the powerpoint on Friday
 
 
-### **6. Next Meeting**
+### **4. Next Meeting**
 
 - **Date:** 24 September 2026
 - **Time:** 12:00 
@@ -93,7 +93,7 @@
     - Inform other members of the updated presentation
 
 
-### **6. Next Meeting**
+### **4. Next Meeting**
 
 - **Date:** 25 September 2026
 - **Time:** 14:00
@@ -104,7 +104,7 @@
 ## Meeting 3
 **Meeting type:** Major meeting
 
-**Date:** 24 September 2026
+**Date:** 25 September 2026
 
 **Time:** 14:00 - 17:00
 
