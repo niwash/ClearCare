@@ -31,7 +31,7 @@ def main(
 ) -> int:
     """Uploads what the bucket lacks from the data directory."""
     parser = argparse.ArgumentParser(
-        description="Copy raw files and snapshot records to object storage."
+        description="Copy raw files and manifest records to object storage."
     )
     parser.add_argument(
         "--data-dir",

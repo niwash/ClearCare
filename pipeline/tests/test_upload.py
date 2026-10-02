@@ -2,6 +2,10 @@ import json
 from pathlib import Path
 
 from clearcare_pipeline.raw_store import FileSystemRawStore
+from clearcare_pipeline.reports.manifest import (
+    MANIFEST_NAME as REPORTS_MANIFEST_NAME,
+)
+from clearcare_pipeline.reports.manifest import CentreRecord, append_record
 from clearcare_pipeline.snapshots.manifest import MANIFEST_NAME, append_records
 from clearcare_pipeline.snapshots.snapshot import SnapshotRecord
 from clearcare_pipeline.upload import upload_data_dir
@@ -10,6 +14,7 @@ from tests.object_store_fakes import FakeObjectStore
 MANIFEST_KEY = (
     "manifests/register-snapshots/20260928T060000Z_older_persons_register.json"
 )
+CENTRE_KEY = "manifests/inspection-reports/20261002T155656Z_34.json"
 
 
 def _record() -> SnapshotRecord:
@@ -24,6 +29,17 @@ def _record() -> SnapshotRecord:
         sha256="ab" * 32,
         last_modified=None,
         etag=None,
+        error=None,
+    )
+
+
+def _centre_record() -> CentreRecord:
+    return CentreRecord(
+        centre_id="34",
+        url="https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall",
+        fetched_at="2026-10-02T15:56:56+00:00",
+        page_sha256="cd" * 32,
+        reports=(),
         error=None,
     )
 
@@ -117,3 +133,44 @@ def test_an_empty_data_dir_uploads_nothing(tmp_path: Path) -> None:
 
     assert report.ok
     assert report.uploaded == ()
+
+
+def test_inspection_report_records_are_uploaded(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifests" / REPORTS_MANIFEST_NAME
+    append_record(manifest, _centre_record())
+    store = FakeObjectStore()
+
+    report = upload_data_dir(tmp_path, store)
+
+    assert report.ok
+    assert report.uploaded == (CENTRE_KEY,)
+    assert store.objects[CENTRE_KEY] == manifest.read_bytes().rstrip(b"\n")
+
+
+def test_inspection_report_records_in_the_bucket_are_skipped(
+    tmp_path: Path,
+) -> None:
+    append_record(
+        tmp_path / "manifests" / REPORTS_MANIFEST_NAME, _centre_record()
+    )
+    store = FakeObjectStore(objects={CENTRE_KEY: b"{}"})
+
+    report = upload_data_dir(tmp_path, store)
+
+    assert report.ok
+    assert store.puts == []
+    assert report.already_present == 1
+
+
+def test_an_unreadable_report_manifest_line_is_reported(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "manifests" / REPORTS_MANIFEST_NAME
+    manifest.parent.mkdir()
+    manifest.write_text('{"centre_id": "../34"}\n')
+
+    report = upload_data_dir(tmp_path, FakeObjectStore())
+
+    assert report.failed == (
+        f"{REPORTS_MANIFEST_NAME} line 1: not a centre record",
+    )
