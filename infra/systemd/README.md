@@ -32,3 +32,18 @@ tail -n 2 /opt/clearcare/data/manifests/register-snapshots.jsonl
 ```
 
 To take a snapshot now: `sudo systemctl start clearcare-register-snapshots.service`. To upload without a new snapshot: `sudo systemctl start clearcare-raw-upload.service`.
+
+## Inspection reports
+
+`python -m clearcare_pipeline.reports --county Dublin` downloads the inspection reports of one county's centres (CCARE-25). It takes the centres from the latest register snapshot and reads each centre's HIQA page for its list of reports. It is run by hand, not by a timer:
+
+```sh
+docker run --rm --user 1001:1001 --volume /opt/clearcare/data:/data \
+    clearcare-pipeline:latest clearcare_pipeline.reports \
+    --data-dir /data --county Dublin
+```
+
+- PDFs and centre pages go into the raw store above, so the upload service copies them to the bucket.
+- Manifest: `/opt/clearcare/data/manifests/inspection-reports.jsonl`, one JSON line per centre per run. It lists each report on the centre page and the hash of its PDF.
+- A PDF already in the manifest is not downloaded again. Requests are at least 3 seconds apart.
+- Redirects are not followed. A network error, HTTP 429 or a 5xx response gets three attempts. Anything else that is not the expected page or PDF, such as a browser verification page or a redirect, stops the run at once.
