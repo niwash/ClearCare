@@ -13,7 +13,9 @@ export default function StartPage() {
           <p className="text-ink-muted md:text-lg">
             Every HIQA inspection report, one page per home. Every line links back to the report it came from.
           </p>
-          <form action="/" role="search" aria-label="Find a nursing home" className="flex gap-2">
+
+          {/* TODO: Change action="/" to action="/search" */}
+          <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex gap-2">
             <label htmlFor="start-search" className="sr-only">
               Nursing home name, town or Eircode
             </label>
@@ -22,12 +24,13 @@ export default function StartPage() {
               name="q"
               type="search"
               placeholder="Name, town or Eircode"
-              className="h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3"
+              className="h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link"
             />
-            <button type="submit" className="h-11 rounded-md bg-link px-4 font-semibold text-surface">
+            <button type="submit" className="h-11 rounded-md bg-link px-4 font-semibold text-surface hover:opacity-90 transition-opacity">
               Search
             </button>
           </form>
+
           <p className="text-xs text-ink-muted md:text-sm">
             545 registered centres. Latest HIQA reports added on <Placeholder>date</Placeholder>.
           </p>
