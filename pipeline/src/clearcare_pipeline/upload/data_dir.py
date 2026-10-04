@@ -1,4 +1,4 @@
-"""Uploading the raw files and snapshot records the bucket does not have."""
+"""Uploading the raw files and manifest records the bucket does not have."""
 
 import hashlib
 import json
@@ -9,11 +9,49 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from clearcare_pipeline.object_store import ObjectStore, ObjectStoreError
-from clearcare_pipeline.snapshots.manifest import MANIFEST_NAME
+from clearcare_pipeline.reports.manifest import (
+    MANIFEST_NAME as REPORTS_MANIFEST_NAME,
+)
+from clearcare_pipeline.snapshots.manifest import (
+    MANIFEST_NAME as SNAPSHOTS_MANIFEST_NAME,
+)
 
 RAW_PREFIX = "raw/"
-MANIFEST_PREFIX = "manifests/register-snapshots/"
-_SOURCE_NAME = re.compile(r"[a-z0-9_]+")
+MANIFESTS_PREFIX = "manifests/"
+_RECORD_ID = re.compile(r"[a-z0-9_]+")
+
+
+@dataclass(frozen=True)
+class _Manifest:
+    """A local manifest whose lines are each uploaded as one object.
+
+    Attributes:
+        file_name: The manifest's name in the data dir's manifests/.
+        prefix: Where its lines go in the bucket.
+        id_field: The record field that, with fetched_at, names the object.
+        record: What a line holds, for error messages.
+    """
+
+    file_name: str
+    prefix: str
+    id_field: str
+    record: str
+
+
+_MANIFESTS = (
+    _Manifest(
+        file_name=SNAPSHOTS_MANIFEST_NAME,
+        prefix="manifests/register-snapshots/",
+        id_field="source",
+        record="snapshot record",
+    ),
+    _Manifest(
+        file_name=REPORTS_MANIFEST_NAME,
+        prefix="manifests/inspection-reports/",
+        id_field="centre_id",
+        record="centre record",
+    ),
+)
 
 
 @dataclass(frozen=True)
@@ -46,12 +84,15 @@ def upload_data_dir(data_dir: Path, store: ObjectStore) -> UploadReport:
     Raises:
         ObjectStoreError: If the bucket cannot be listed.
     """
-    records, unreadable = _manifest_records(
-        data_dir / "manifests" / MANIFEST_NAME
-    )
+    manifests = [
+        _manifest_records(data_dir / "manifests", manifest)
+        for manifest in _MANIFESTS
+    ]
+    records = [record for found, _ in manifests for record in found]
+    unreadable = [problem for _, problems in manifests for problem in problems]
     candidates = (*_raw_files(data_dir / "raw"), *records)
     existing = store.existing_keys(RAW_PREFIX) | store.existing_keys(
-        MANIFEST_PREFIX
+        MANIFESTS_PREFIX
     )
     missing = tuple(item for item in candidates if item.key not in existing)
     outcomes = tuple((item.key, _upload(item, store)) for item in missing)
@@ -77,13 +118,14 @@ def _raw_files(raw_root: Path) -> Iterator[_Candidate]:
 
 
 def _manifest_records(
-    manifest: Path,
+    manifests_dir: Path, manifest: _Manifest
 ) -> tuple[tuple[_Candidate, ...], tuple[str, ...]]:
-    if not manifest.is_file():
+    path = manifests_dir / manifest.file_name
+    if not path.is_file():
         return (), ()
-    lines = manifest.read_text(encoding="utf-8").splitlines()
+    lines = path.read_text(encoding="utf-8").splitlines()
     keyed = [
-        (number, line, _record_key(line))
+        (number, line, _record_key(line, manifest))
         for number, line in enumerate(lines, 1)
     ]
     return (
@@ -93,24 +135,24 @@ def _manifest_records(
             if key is not None
         ),
         tuple(
-            f"{manifest.name} line {number}: not a snapshot record"
+            f"{manifest.file_name} line {number}: not a {manifest.record}"
             for number, _, key in keyed
             if key is None
         ),
     )
 
 
-def _record_key(line: str) -> str | None:
+def _record_key(line: str, manifest: _Manifest) -> str | None:
     try:
         record = json.loads(line)
         fetched_at = datetime.fromisoformat(record["fetched_at"])
-        source = record["source"]
+        record_id = record[manifest.id_field]
     except (ValueError, KeyError, TypeError):
         return None
-    if not isinstance(source, str) or not _SOURCE_NAME.fullmatch(source):
+    if not isinstance(record_id, str) or not _RECORD_ID.fullmatch(record_id):
         return None
     stamp = fetched_at.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
-    return f"{MANIFEST_PREFIX}{stamp}_{source}.json"
+    return f"{manifest.prefix}{stamp}_{record_id}.json"
 
 
 def _constant(data: bytes) -> Callable[[], bytes]:

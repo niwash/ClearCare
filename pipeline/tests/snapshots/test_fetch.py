@@ -20,6 +20,11 @@ class _Handler(BaseHTTPRequestHandler):
         type(self).user_agents.append(self.headers.get("User-Agent", ""))
         if self.path == "/register.csv":
             self._reply(200, "text/csv; charset=utf-8", REGISTER_BODY)
+        elif self.path == "/moved":
+            self.send_response(302)
+            self.send_header("Location", "/register.csv")
+            self.send_header("Content-Length", "0")
+            self.end_headers()
         else:
             self._reply(503, "text/html", b"<html>Browser Verification</html>")
 
@@ -73,3 +78,17 @@ def test_http_error_status_is_returned_not_raised(server: str) -> None:
 def test_unreachable_host_raises_fetch_error() -> None:
     with pytest.raises(FetchError):
         UrllibFetcher(timeout=2).fetch("http://127.0.0.1:9/")
+
+
+def test_redirect_is_followed_by_default(server: str) -> None:
+    result = UrllibFetcher().fetch(f"{server}/moved")
+
+    assert result.status == 200
+    assert result.body == REGISTER_BODY
+
+
+def test_redirect_can_be_returned_instead_of_followed(server: str) -> None:
+    result = UrllibFetcher(follow_redirects=False).fetch(f"{server}/moved")
+
+    assert result.status == 302
+    assert len(_Handler.user_agents) == 1
