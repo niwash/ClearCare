@@ -28,5 +28,5 @@ Name branches `CCARE-<n>-short-name`, e.g. `CCARE-20-start-frontend`.
 
 Run before opening a pull request:
 
-- `pipeline/`: `uv sync && uv run pytest && uv run ruff check . && uv run pyright`
+- `pipeline/`: `uv sync && uv run pytest && uv run ruff check . && uv run pyright`. The database tests need Docker. Without Docker, skip them with `uv run pytest -m "not database"`.
 - `web/clearcare/`: `npm ci && npm run lint && npm run build`
