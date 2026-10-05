@@ -5,6 +5,8 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 const NAV_ITEMS = [
   { label: "Search for Homes", href: "/search" },
   { label: "About the data", href: null },
+  { label: "Contacts", href: "/contacts" },
+  { label: "Resources", href: "/resources" },
 ] as const;
 
 // Keep navigation visible on small screens with a scrollable second row.
