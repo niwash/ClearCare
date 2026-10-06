@@ -13,6 +13,11 @@
   --line-soft: light-dark(#e3e6ea, #233040);
   --link: light-dark(#1f4e79, #8db8e0);
   --link-hover: light-dark(#123b5e, #b5d2ee);
+  --surface-muted: light-dark(#f7f8f6, #1b2632);
+  /* Judgement markers */
+  --not-compliant: light-dark(#b42318, #f97066);
+  --substantially: light-dark(#9a5b00, #f0b45a);
+  --not-assessed: light-dark(#7b8591, #8a94a0);
 }
 
 :root[data-theme="light"] {
@@ -32,6 +37,10 @@
   --color-line: var(--line);
   --color-line-soft: var(--line-soft);
   --color-link: var(--link);
+  --color-surface-muted: var(--surface-muted);
+  --color-not-compliant: var(--not-compliant);
+  --color-substantially: var(--substantially);
+  --color-not-assessed: var(--not-assessed);
   --font-serif: var(--font-source-serif);
   --font-sans: var(--font-public-sans);
   --font-mono: var(--font-plex-mono);

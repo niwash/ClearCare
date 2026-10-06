@@ -1,8 +1,13 @@
 import { PlaceholderEventList } from "@/components/event-list";
 import { Placeholder } from "@/components/placeholder";
 import { Section } from "@/components/section";
+import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
-export default function StartPage() {
+export default async function StartPage() {
+  // No filters and one result per page: only total is needed.
+  const count = await searchCentres({ page_size: "1" });
+  const total = count.ok ? count.data.total : null;
+
   return (
     <>
       <div className="grid gap-6 md:grid-cols-[2fr_1fr] md:gap-10">
@@ -14,16 +19,17 @@ export default function StartPage() {
             Every HIQA inspection report, one page per home. Every line links back to the report it came from.
           </p>
 
-          {/* TODO: Change action="/" to action="/search" */}
+          {/* Name or Eircode here; the search page works out which. It has address and county too. */}
           <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex gap-2">
             <label htmlFor="start-search" className="sr-only">
-              Nursing home name, town or Eircode
+              Nursing home name or Eircode
             </label>
             <input
               id="start-search"
               name="q"
               type="search"
-              placeholder="Name, town or Eircode"
+              maxLength={MAX_TEXT_LENGTH}
+              placeholder="Name or Eircode"
               className="h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link"
             />
             <button type="submit" className="h-11 rounded-md bg-link px-4 font-semibold text-surface hover:opacity-90 transition-opacity">
@@ -32,7 +38,7 @@ export default function StartPage() {
           </form>
 
           <p className="text-xs text-ink-muted md:text-sm">
-            545 registered centres. Latest HIQA reports added on <Placeholder>date</Placeholder>.
+            {total !== null && `${total} registered ${total === 1 ? "centre" : "centres"}. `}Latest HIQA reports added on <Placeholder>date</Placeholder>.
           </p>
         </div>
         <aside className="rounded-lg border border-line bg-surface p-4 text-sm">
