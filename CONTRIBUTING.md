@@ -32,6 +32,7 @@ Run before opening a pull request:
 
 - `pipeline/`: `uv sync && uv run pytest && uv run ruff check . && uv run pyright`. The database tests need Docker. Without Docker, skip them with `uv run pytest -m "not database"`.
 - `web/clearcare/`: `npm ci && npm run lint && npm run build`
+- `api/`: `./mvnw verify`. The tests need Docker, like the pipeline's database tests.
 
 ## Local database
 
