@@ -11,7 +11,7 @@ Each part of the project has its own top-level folder:
 | `infra/` | VM setup: systemd units and install notes |
 | `infra/postgres/` | Database roles, created once before the first migration |
 | `web/` | Next.js site |
-| `api/` | Spring Boot API (not started yet) |
+| `api/` | Spring Boot API |
 
 ## Branches
 
