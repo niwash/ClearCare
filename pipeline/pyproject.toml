@@ -5,6 +5,8 @@ description = "ClearCare data pipeline"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "boto3>=1.43.103",
+    "openpyxl>=3.1.5",
+    "pymupdf>=1.28.2",
 ]
 
 [dependency-groups]
