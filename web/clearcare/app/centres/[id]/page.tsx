@@ -1,7 +1,7 @@
 // app/centres/[id]/page.tsx
-import { CentreHighlights } from "@/components/centre-highlights";
-import { InspectionHistory } from "@/components/inspection-history";
-import { PromiseTrail } from "@/components/promise-trail";
+import { CentreHighlights } from "@/components/centre/centre-highlights";
+import { InspectionHistory } from "@/components/centre/inspection-history";
+import { PromiseTrail } from "@/components/centre/promise-trail";
 import { formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";

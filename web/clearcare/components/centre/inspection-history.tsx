@@ -1,4 +1,4 @@
-// components/inspection-history.tsx
+// components/centre/inspection-history.tsx
 import Link from "next/link";
 import {
   formatDate,

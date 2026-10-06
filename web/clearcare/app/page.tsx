@@ -1,6 +1,6 @@
-import { PlaceholderEventList } from "@/components/event-list";
-import { Placeholder } from "@/components/placeholder";
-import { Section } from "@/components/section";
+import { PlaceholderEventList } from "@/components/placeholder/event-list";
+import { Placeholder } from "@/components/placeholder/placeholder";
+import { Section } from "@/components/layout/section";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
 export default async function StartPage() {

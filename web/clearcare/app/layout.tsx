@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
-import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme";
+import { SiteFooter } from "@/components/layout/site-footer";
+import { SiteHeader } from "@/components/layout/site-header";
+import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({

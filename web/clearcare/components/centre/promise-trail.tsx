@@ -1,4 +1,4 @@
-// components/promise-trail.tsx
+// components/centre/promise-trail.tsx
 import { formatDate, formatSource, trailAnchor, type Inspection, type PromiseTrail as Trail, type SourceRef } from "@/lib/centres";
 import { JUDGEMENT_LABELS, JudgementIcon, PROMISE_STATUS_LABELS, PromiseStatusIcon } from "./judgement-icon";
 

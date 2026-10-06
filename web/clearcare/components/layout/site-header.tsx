@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // Keep unfinished pages in the navigation as plain text.
 const NAV_ITEMS = [

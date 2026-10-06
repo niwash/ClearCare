@@ -1,4 +1,4 @@
-// components/centre-highlights.tsx
+// components/centre/centre-highlights.tsx
 import { formatDate, formatMonth, trailAnchor, type Highlight, type PromiseTrail } from "@/lib/centres";
 import { JudgementIcon } from "./judgement-icon";
 

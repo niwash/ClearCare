@@ -1,6 +1,6 @@
 // app/centres/[id]/record.csv/route.ts
 // The inspection history table as a CSV: one row per regulation, one column per inspection.
-import { JUDGEMENT_LABELS } from "@/components/judgement-icon";
+import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
 import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
 
 function csvField(value: string | number) {

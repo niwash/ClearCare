@@ -1,4 +1,4 @@
-// components/judgement-icon.tsx
+// components/centre/judgement-icon.tsx
 import type { Judgement, PromiseStatus } from "@/lib/centres";
 
 export const JUDGEMENT_LABELS: Record<Judgement, string> = {

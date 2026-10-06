@@ -1,5 +1,5 @@
 // app/home-details/page.tsx
-import { Section } from "@/components/section";
+import { Section } from "@/components/layout/section";
 import Link from "next/link";
 
 interface NursingHome {

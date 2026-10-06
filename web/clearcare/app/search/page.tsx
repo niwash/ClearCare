@@ -1,5 +1,5 @@
 // app/search/page.tsx
-import { CardResult } from "@/components/card-result";
+import { CardResult } from "@/components/search/card-result";
 import { formatDate } from "@/lib/centres";
 import { COUNTIES, looksLikeEircode, MAX_TEXT_LENGTH, searchCentres, type SearchQuery, type SearchResponse } from "@/lib/search";
 import Link from "next/link";

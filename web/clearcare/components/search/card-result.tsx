@@ -1,4 +1,4 @@
-// components/card-result.tsx
+// components/search/card-result.tsx
 import { formatEircode, type CentreSummary } from "@/lib/search";
 import Link from "next/link";
 
