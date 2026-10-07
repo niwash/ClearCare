@@ -1,0 +1,18 @@
+[Unit]
+Description=ClearCare: load the newest register snapshot into the database
+Documentation=https://github.com/niwash/ClearCare/tree/main/infra/systemd
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+# The env file holds the pipeline's database login; it lives outside the
+# repository and only its owner can read it. The loader only reads the data
+# directory, and reaches the database over the Compose network.
+ExecStart=/usr/bin/docker run --rm --name clearcare-register-load \
+    --user 1001:1001 \
+    --network clearcare_default \
+    --env-file /opt/clearcare/secrets/pipeline-db.env \
+    --volume /opt/clearcare/data:/data:ro \
+    clearcare-pipeline:latest clearcare_pipeline.load_register --data-dir /data
+TimeoutStartSec=10min

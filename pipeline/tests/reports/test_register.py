@@ -25,8 +25,10 @@ def _snapshot_line(source: str, sha256: str | None, error: str | None) -> str:
     return json.dumps(
         {
             "source": source,
+            "url": "https://www.hiqa.ie/register.csv",
             "fetched_at": "2026-10-02T06:05:32+00:00",
             "sha256": sha256,
+            "last_modified": None,
             "error": error,
         }
     )
