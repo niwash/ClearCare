@@ -102,9 +102,7 @@ class Parser:
         try:
             for number in range(document.page_count):
                 page = document[number]
-                blocks = cast(
-                    "list[TextBlockTuple]", page.get_text("blocks")
-                )
+                blocks = cast("list[TextBlockTuple]", page.get_text("blocks"))
                 for block in blocks:
                     text = block[4].strip()
                     if not text:
@@ -121,11 +119,13 @@ class Parser:
         """Returns the index of the section the text starts, if any.
 
         Only sections after the current one are considered, so repeated
-        headings cannot move the parser backwards.
+        headings cannot move the parser backwards. The match is
+        case-sensitive because report headings are capitalised, whereas a
+        body sentence that mentions a section (for example "compliance plan
+        following inspection") is not.
         """
-        lowered = text.lower()
         for index, section in enumerate(self._sections):
-            if index > current and lowered.startswith(section.pattern.lower()):
+            if index > current and text.startswith(section.pattern):
                 return index
         return current
 
