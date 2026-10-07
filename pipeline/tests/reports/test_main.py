@@ -26,7 +26,14 @@ def _data_dir(tmp_path: Path) -> Path:
     sha256 = FileSystemRawStore(tmp_path / "raw").put(REGISTER)
     manifests = tmp_path / "manifests"
     manifests.mkdir()
-    line = {"source": "older_persons_register", "sha256": sha256, "error": None}
+    line = {
+        "source": "older_persons_register",
+        "url": "https://www.hiqa.ie/register.csv",
+        "fetched_at": "2026-10-02T06:05:32+00:00",
+        "sha256": sha256,
+        "last_modified": None,
+        "error": None,
+    }
     (manifests / "register-snapshots.jsonl").write_text(json.dumps(line) + "\n")
     return tmp_path
 

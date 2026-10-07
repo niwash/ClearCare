@@ -45,7 +45,7 @@ curl -i https://<hostname>/centres
 
 ## The pipeline
 
-The register loader (CCARE-31, not written yet) will reach the database from its container with `--network clearcare_default` and the host name `clearcare-db`, logging in as `clearcare_pipeline`.
+The register loader reaches the database from its container with `--network clearcare_default` and the host name `clearcare-db`, logging in as `clearcare_pipeline`. Its setup is in [infra/systemd/README.md](../systemd/README.md).
 
 ## Start again from an empty database
 

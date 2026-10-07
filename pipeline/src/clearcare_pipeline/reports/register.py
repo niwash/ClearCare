@@ -4,6 +4,8 @@ import csv
 import io
 import json
 from dataclasses import dataclass
+from datetime import datetime
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 from clearcare_pipeline.snapshots.sources import OLDER_PERSONS_REGISTER
@@ -20,6 +22,19 @@ class RegisteredCentre:
     url: str
 
 
+@dataclass(frozen=True)
+class RegisterDownload:
+    """A successful download of the register, as the manifest records it.
+
+    last_modified is HIQA's Last-Modified header, if it sent one that parses.
+    """
+
+    sha256: str
+    url: str
+    fetched_at: datetime
+    last_modified: datetime | None
+
+
 class RegisterError(Exception):
     """The register snapshot is missing or not in the expected form."""
 
@@ -29,37 +44,56 @@ def latest_register_sha256(manifest: Path) -> str:
 
     Raises:
         RegisterError: If the manifest has no successful snapshot of the
-            register of centres, or a line is not JSON.
+            register of centres, or a line is not a snapshot record.
+    """
+    return latest_register_download(manifest).sha256
+
+
+def latest_register_download(manifest: Path) -> RegisterDownload:
+    """Returns the newest successful download of the register.
+
+    Raises:
+        RegisterError: If the manifest has no successful snapshot of the
+            register of centres, or a line is not a snapshot record.
     """
     lines = (
         manifest.read_text(encoding="utf-8").splitlines()
         if manifest.is_file()
         else []
     )
-    latest: str | None = None
+    latest: RegisterDownload | None = None
     for number, line in enumerate(lines, 1):
         try:
             record = json.loads(line)
-            source, error, sha256 = (
-                record["source"],
-                record["error"],
-                record["sha256"],
-            )
+            if (
+                record["source"] == OLDER_PERSONS_REGISTER.name
+                and record["error"] is None
+                and isinstance(record["sha256"], str)
+            ):
+                latest = RegisterDownload(
+                    sha256=record["sha256"],
+                    url=record["url"],
+                    fetched_at=datetime.fromisoformat(record["fetched_at"]),
+                    last_modified=_http_date(record["last_modified"]),
+                )
         except (ValueError, KeyError, TypeError) as problem:
             raise RegisterError(
                 f"{manifest.name} line {number}: not a snapshot record"
             ) from problem
-        if (
-            source == OLDER_PERSONS_REGISTER.name
-            and error is None
-            and isinstance(sha256, str)
-        ):
-            latest = sha256
     if latest is None:
         raise RegisterError(
             f"{manifest.name} has no successful snapshot of the register"
         )
     return latest
+
+
+def _http_date(value: str | None) -> datetime | None:
+    # The header is only a note on the download, so one that does not parse
+    # is left out rather than stopping the run.
+    try:
+        return parsedate_to_datetime(value) if value else None
+    except ValueError:
+        return None
 
 
 def centres_in_county(

@@ -5,13 +5,13 @@ description = "ClearCare data pipeline"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "boto3>=1.43.103",
+    "psycopg[binary]>=3.2",
     "pymupdf>=1.28.2",
 ]
 
 [dependency-groups]
 dev = [
     "boto3-stubs[s3]>=1.43.103",
-    "psycopg[binary]>=3.2",
     "pyright>=1.1.414",
     "pytest>=8.4",
     "pytest-cov>=6.2",
