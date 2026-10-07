@@ -132,6 +132,69 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres
 
+  /centres/{centre_id}:
+    get:
+      operationId: getCentre
+      summary: Get one centre from the published register snapshot
+      description: |
+        Returns the centre with this `centre_id` from the register snapshot
+        that ClearCare currently serves, with the same fields as a search
+        result.
+
+        Any value that is not the ID of a centre in that snapshot gives 404,
+        including one that is not a number.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre, and the register snapshot it was read from.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreResult"
+              example:
+                centre:
+                  centre_id: "34"
+                  centre_name: Elm Hall Nursing Home
+                  address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                  county: Kildare
+                  eircode: W23P6EX
+                  maximum_occupancy: 62
+                  hiqa_url: https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home
+                register_snapshot:
+                  fetched_at: "2026-10-05T06:12:54Z"
+                  url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
+                  sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34
+
 components:
   schemas:
     CentreSearchResult:
@@ -149,6 +212,15 @@ components:
         total:
           type: integer
           description: The number of matching centres on all pages.
+        register_snapshot:
+          $ref: "#/components/schemas/RegisterSnapshot"
+
+    CentreResult:
+      type: object
+      required: [centre, register_snapshot]
+      properties:
+        centre:
+          $ref: "#/components/schemas/Centre"
         register_snapshot:
           $ref: "#/components/schemas/RegisterSnapshot"
 
