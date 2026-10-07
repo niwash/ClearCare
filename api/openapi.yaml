@@ -1,0 +1,264 @@
+openapi: 3.1.0
+info:
+  title: ClearCare API
+  version: 0.1.0
+  description: >
+    Reads the HIQA register data that ClearCare has loaded. The web site and
+    the Java code both follow this file. Property names are snake_case, the
+    same as the database views.
+
+paths:
+  /centres:
+    get:
+      operationId: searchCentres
+      summary: Search the centres in the published register snapshot
+      description: |
+        Returns centres from the register snapshot that ClearCare currently
+        serves. Every parameter is optional. When several are given, a centre
+        must match all of them. With none, every centre is returned, one page
+        at a time.
+
+        `name` and `address` are compared after folding: accents are removed
+        (`aras` finds "Áras"), case is ignored, apostrophes are dropped
+        (`joseph's`, `joseph’s` and `josephs` are the same), and every other
+        character that is not a letter or a digit separates words. Each word
+        of the input must be the start of a word in the field, in any order:
+        `hall elm` finds "Elm Hall Nursing Home", but `lm` does not. `St` and
+        `Saint` are different words. A value that is blank, or has no letters
+        or digits, is ignored.
+
+        Centres are sorted by their folded name, character by character in
+        code order (so a space comes before any letter), then by `centre_id`
+        as a number. Results are not ranked.
+
+        An unknown parameter, or a parameter given more than once, is
+        refused with 400.
+      parameters:
+        - name: name
+          in: query
+          description: Words that start words of the centre's name.
+          schema:
+            type: string
+            maxLength: 100
+          example: hall elm
+        - name: address
+          in: query
+          description: >
+            Words that start words of the centre's address, such as a town.
+            Most addresses do not name their county, so use `county` to search
+            by county.
+          schema:
+            type: string
+            maxLength: 100
+          example: celbridge
+        - name: eircode
+          in: query
+          description: >
+            A routing key (`W23`, `D6W`) finds every Eircode that starts with
+            it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
+            removed and letters made upper case first. Only the letters and
+            digits used in Eircodes are accepted, and `O` is not read as `0`.
+          schema:
+            type: string
+          example: W23
+        - name: county
+          in: query
+          description: A county, spelt as on the register. Case matters.
+          schema:
+            $ref: "#/components/schemas/County"
+          example: Dublin
+        - name: page
+          in: query
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+            default: 1
+        - name: page_size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        "200":
+          description: >
+            One page of the matching centres. A page past the last one has no
+            centres, and `total` is still the number of matches. No matches
+            give `"centres": []` and `"total": 0`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreSearchResult"
+              example:
+                centres:
+                  - centre_id: "34"
+                    centre_name: Elm Hall Nursing Home
+                    address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                    county: Kildare
+                    eircode: W23P6EX
+                    maximum_occupancy: 62
+                    hiqa_url: https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home
+                page: 1
+                page_size: 20
+                total: 1
+                register_snapshot:
+                  fetched_at: "2026-10-05T06:12:54Z"
+                  url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
+                  sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+        "400":
+          description: >
+            A parameter is unknown, given more than once, too long, out of
+            range, or not of the expected type or shape.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Bad Request
+                status: 400
+                detail: page_size must be between 1 and 50
+                instance: /centres
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres
+
+components:
+  schemas:
+    CentreSearchResult:
+      type: object
+      required: [centres, page, page_size, total, register_snapshot]
+      properties:
+        centres:
+          type: array
+          items:
+            $ref: "#/components/schemas/Centre"
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total:
+          type: integer
+          description: The number of matching centres on all pages.
+        register_snapshot:
+          $ref: "#/components/schemas/RegisterSnapshot"
+
+    Centre:
+      type: object
+      description: A centre's entry in the register snapshot, as HIQA wrote it.
+      required:
+        - centre_id
+        - centre_name
+        - address
+        - county
+        - eircode
+        - maximum_occupancy
+        - hiqa_url
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        centre_name:
+          type: string
+          minLength: 1
+        address:
+          type: string
+          minLength: 1
+        county:
+          type: string
+          minLength: 1
+        eircode:
+          type: [string, "null"]
+          description: >
+            Upper case, without spaces. null when the address does not end in
+            a valid Eircode.
+        maximum_occupancy:
+          type: [integer, "null"]
+          minimum: 0
+          description: >
+            The most residents HIQA registered the centre for. It is not the
+            number of free beds.
+        hiqa_url:
+          type: string
+          format: uri
+          description: The centre's page on hiqa.ie.
+
+    RegisterSnapshot:
+      type: object
+      description: The register file these results were read from.
+      required: [fetched_at, url, sha256]
+      properties:
+        fetched_at:
+          type: string
+          format: date-time
+          description: >
+            When ClearCare downloaded the register, in UTC to the second
+            (YYYY-MM-DDTHH:MM:SSZ).
+        url:
+          type: string
+          format: uri
+        sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: The SHA-256 of the downloaded file.
+
+    County:
+      type: string
+      enum:
+        - Carlow
+        - Cavan
+        - Clare
+        - Cork
+        - Donegal
+        - Dublin
+        - Galway
+        - Kerry
+        - Kildare
+        - Kilkenny
+        - Laois
+        - Leitrim
+        - Limerick
+        - Longford
+        - Louth
+        - Mayo
+        - Meath
+        - Monaghan
+        - Offaly
+        - Roscommon
+        - Sligo
+        - Tipperary
+        - Waterford
+        - Westmeath
+        - Wexford
+        - Wicklow
+
+    Problem:
+      type: object
+      description: >
+        An error, as defined by RFC 9457. `type` is left out, which means
+        `about:blank`: the status code says what kind of error it is.
+      required: [title, status, detail]
+      properties:
+        type:
+          type: string
+          default: about:blank
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+          description: What was wrong, in English.
+        instance:
+          type: string
+          description: The path of the request.
