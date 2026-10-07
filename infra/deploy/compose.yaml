@@ -1,0 +1,69 @@
+# The database and the API on the VM. README.md in this folder explains how to
+# use it. The passwords come from .env next to this file.
+
+name: clearcare
+
+services:
+  db:
+    # The same image as the root compose.yaml and the database tests.
+    image: postgres:18.6
+    # Named, so that the API and the pipeline reach it as clearcare-db. The
+    # API is also on the proxy's network, where another "db" may exist.
+    container_name: clearcare-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: clearcare
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see README.md}
+      CLEARCARE_MIGRATOR_PASSWORD: ${CLEARCARE_MIGRATOR_PASSWORD:?see README.md}
+      CLEARCARE_PIPELINE_PASSWORD: ${CLEARCARE_PIPELINE_PASSWORD:?see README.md}
+      CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see README.md}
+    # No ports: only containers on this project's network reach the database.
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ../postgres/roles.sql:/docker-entrypoint-initdb.d/roles.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "clearcare"]
+      interval: 2s
+      retries: 15
+
+  # Applies the migrations in db/ and exits (ADR-0010), as in the root file.
+  migrate:
+    image: flyway/flyway:13.9.0
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://clearcare-db:5432/clearcare
+      FLYWAY_USER: clearcare_migrator
+      FLYWAY_PASSWORD: ${CLEARCARE_MIGRATOR_PASSWORD:?see README.md}
+      FLYWAY_INIT_SQL: SET ROLE clearcare_owner
+      FLYWAY_DEFAULT_SCHEMA: public
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+    volumes:
+      - ../../db:/flyway/sql:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    image: clearcare-api
+    build:
+      context: ../../api
+    container_name: clearcare-api
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://clearcare-db:5432/clearcare
+      CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see README.md}
+    networks:
+      - default
+      - proxy
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+networks:
+  # The reverse proxy's network. The proxy reaches the API as clearcare-api.
+  proxy:
+    external: true
+    name: eco-return_backend-net
+
+volumes:
+  db-data:
