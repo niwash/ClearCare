@@ -80,7 +80,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <Link href="/" className="hover:underline">
+          <Link href="/home" className="hover:underline">
             Home
           </Link>
           <span>/</span>

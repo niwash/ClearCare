@@ -99,7 +99,7 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
       <div className="flex min-w-0 flex-col gap-2.5">
         {/* TODO: Check the breadcrumb once the API is live. It only goes to the county, not back to the search the user came from. */}
         <div className="text-sm text-ink-muted">
-          <Link href="/">Home</Link> ›{" "}
+          <Link href="/home">Home</Link> ›{" "}
           <Link href={`/search?${new URLSearchParams({ county: centre.county })}`}>Co. {centre.county}</Link>
         </div>
         <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
@@ -163,7 +163,7 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-sm text-ink-muted">
-        <Link href="/">Home</Link>
+        <Link href="/home">Home</Link>
       </div>
       <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
         <p className="font-medium">This record isn&apos;t available right now</p>

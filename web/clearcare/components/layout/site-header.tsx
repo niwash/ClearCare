@@ -12,7 +12,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 px-4 pt-2 md:gap-x-8 md:px-8 lg:py-3">
-        <Link href="/" className="font-serif text-xl font-semibold text-ink no-underline hover:text-ink md:text-2xl">
+        <Link href="/home" className="font-serif text-xl font-semibold text-ink no-underline hover:text-ink md:text-2xl">
           ClearCare
         </Link>
         <nav aria-label="Main" className="order-last -mx-4 w-full overflow-x-auto px-4 md:-mx-8 md:px-8 lg:order-none lg:mx-0 lg:w-auto lg:flex-1 lg:px-0">
@@ -31,7 +31,7 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none">
-          <form action="/" role="search" aria-label="Search nursing homes" className="min-w-0 flex-1 sm:flex-none">
+          <form action="/search" role="search" aria-label="Search nursing homes" className="min-w-0 flex-1 sm:flex-none">
             <label htmlFor="site-search" className="sr-only">
               Search nursing homes
             </label>
