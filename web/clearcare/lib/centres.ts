@@ -90,9 +90,15 @@ export interface PromiseTrail {
   };
 }
 
-// GET /centres/{centre_id}: the centre's register entry, the same fields as a search result,
-// plus the register snapshot it was read from. The API returns 404 for an unknown ID or a
-// centre that isn't on the current register.
+// GET /centres/{centre_id} (CentreResult in api/openapi.yaml): the centre's register entry, the
+// same fields as a search result, and the register snapshot it was read from. The API returns 404
+// for an unknown ID or a centre that isn't on the current register.
+interface CentreResult {
+  centre: CentreSummary;
+  register_snapshot: RegisterSnapshot;
+}
+
+// What the page uses: the centre with its snapshot alongside, flattened from CentreResult.
 export interface CentreDetail extends CentreSummary {
   register_snapshot: RegisterSnapshot;
 }
@@ -119,7 +125,8 @@ export const getCentre = cache(async (id: string): Promise<CentreDetail | null> 
     const body = await response.json().catch(() => null);
     throw new Error(body?.detail ?? `GET /centres/${id} failed with ${response.status}`);
   }
-  return response.json();
+  const { centre, register_snapshot }: CentreResult = await response.json();
+  return { ...centre, register_snapshot };
 });
 
 function mockCentre(id: string): CentreDetail | null {
