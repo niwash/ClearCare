@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
-import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme";
+import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({

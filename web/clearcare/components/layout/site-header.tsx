@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ThemeToggle } from "./theme-toggle";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // Keep unfinished pages in the navigation as plain text.
 const NAV_ITEMS = [
-  { label: "Homes", href: "/home" },
+  { label: "Search for Homes", href: "/search" },
   { label: "About the data", href: null },
 ] as const;
 
@@ -31,7 +31,7 @@ export function SiteHeader() {
           </ul>
         </nav>
         <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none">
-          <form action="/home" role="search" aria-label="Search nursing homes" className="min-w-0 flex-1 sm:flex-none">
+          <form action="/search" role="search" aria-label="Search nursing homes" className="min-w-0 flex-1 sm:flex-none">
             <label htmlFor="site-search" className="sr-only">
               Search nursing homes
             </label>
