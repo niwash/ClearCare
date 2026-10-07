@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -35,8 +36,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /**
- * GET /centres against PostgreSQL with the roles and schema from this repository, logged in as
- * clearcare_api. The cases follow api/openapi.yaml.
+ * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
+ * repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -235,10 +236,59 @@ class CentreSearchTest {
   }
 
   @Test
-  void isUnavailableUntilASnapshotIsPublished() throws Exception {
+  void returnsOneCentreWithTheSnapshotItCameFrom() throws Exception {
+    // Strict: the same fields as a search result, and no others.
+    mvc.perform(get("/centres/" + ELM_HALL))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {
+                      "centre": {
+                        "centre_id": "34",
+                        "centre_name": "Elm Hall Nursing Home",
+                        "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
+                        "county": "Kildare",
+                        "eircode": "W23P6EX",
+                        "maximum_occupancy": 62,
+                        "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home"
+                      },
+                      "register_snapshot": {
+                        "fetched_at": "2026-10-05T06:12:54Z",
+                        "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
+                        "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
+                      }
+                    }
+                    """,
+                    JsonCompareMode.STRICT));
+  }
+
+  // A value that is not a centre ID at all is not found either, rather than refused.
+  @ParameterizedTest
+  @ValueSource(strings = {"999", "elm-hall"})
+  void doesNotFindACentreThatIsNotInTheSnapshot(String centreId) throws Exception {
+    mvc.perform(get("/centres/" + centreId))
+        .andExpect(status().isNotFound())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"title": "Not Found", "status": 404,
+                     "detail": "The register has no centre with this centre_id.",
+                     "instance": "/centres/%s"}
+                    """
+                        .formatted(centreId)));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"/centres", "/centres/" + ELM_HALL})
+  void isUnavailableUntilASnapshotIsPublished(String path) throws Exception {
     execute("DELETE FROM clearcare.register_publication");
     try {
-      search("")
+      mvc.perform(get(path))
           .andExpect(status().isServiceUnavailable())
           .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
           .andExpect(
