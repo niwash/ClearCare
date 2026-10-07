@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads search results from the two views the clearcare_api role can read (db/V1). */
+/** Reads centres from the two views the clearcare_api role can read (db/V1). */
 @Repository
 class CentreSearchRepository {
 
@@ -51,6 +51,13 @@ class CentreSearchRepository {
       """
           .formatted(MATCHES);
 
+  private static final String CENTRE =
+      """
+      SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url
+      FROM clearcare.centre_search
+      WHERE centre_id = :centre_id
+      """;
+
   private final JdbcClient jdbc;
 
   CentreSearchRepository(JdbcClient jdbc) {
@@ -64,8 +71,7 @@ class CentreSearchRepository {
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreSearchResult> search(CentreSearchParameters parameters) {
-    Optional<RegisterSnapshot> snapshot =
-        jdbc.sql(REGISTER_SNAPSHOT).query(CentreSearchRepository::registerSnapshot).optional();
+    Optional<RegisterSnapshot> snapshot = publishedSnapshot();
     if (snapshot.isEmpty()) {
       return Optional.empty();
     }
@@ -75,6 +81,26 @@ class CentreSearchRepository {
     return Optional.of(
         new CentreSearchResult(
             centres, parameters.page(), parameters.pageSize(), total, snapshot.get()));
+  }
+
+  /**
+   * Returns the centre with this centre_id and the register snapshot it was read from, or nothing
+   * if no snapshot has been published. The centre is null if the snapshot does not have it. Both
+   * are read in one transaction, as in search.
+   */
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+  Optional<CentreResult> find(String centreId) {
+    Optional<RegisterSnapshot> snapshot = publishedSnapshot();
+    if (snapshot.isEmpty()) {
+      return Optional.empty();
+    }
+    Centre centre =
+        jdbc.sql(CENTRE).param("centre_id", centreId).query(Centre.class).optional().orElse(null);
+    return Optional.of(new CentreResult(centre, snapshot.get()));
+  }
+
+  private Optional<RegisterSnapshot> publishedSnapshot() {
+    return jdbc.sql(REGISTER_SNAPSHOT).query(CentreSearchRepository::registerSnapshot).optional();
   }
 
   // The text parameters are typed so that PostgreSQL knows their type when they are null.
