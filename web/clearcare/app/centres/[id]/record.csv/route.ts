@@ -2,6 +2,7 @@
 // The inspection history table as a CSV: one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
 import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
+import { unavailableMessage } from "@/lib/search";
 
 function csvField(value: string | number) {
   const text = String(value);
@@ -10,8 +11,10 @@ function csvField(value: string | number) {
 
 export async function GET(_request: Request, { params }: RouteContext<"/centres/[id]/record.csv">) {
   const { id } = await params;
-  const centre = await getCentre(id);
-  if (!centre) return new Response("Nursing home not found", { status: 404 });
+  const lookup = await getCentre(id);
+  if (lookup.status === "not-found") return new Response("Nursing home not found", { status: 404 });
+  if (lookup.status === "unavailable") return new Response(unavailableMessage(lookup.httpStatus), { status: 503 });
+  const { centre } = lookup;
   const reports = await getCentreReports(id);
   if (!reports) return new Response("No inspection reports for this home yet", { status: 404 });
 

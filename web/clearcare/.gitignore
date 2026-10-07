@@ -39,7 +39,3 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-
-# Ignore next js auto generate when running dev server
-/AGENTS.md
-/CLAUDE.md

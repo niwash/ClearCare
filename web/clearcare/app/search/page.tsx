@@ -1,7 +1,15 @@
 // app/search/page.tsx
 import { CardResult } from "@/components/search/card-result";
 import { formatDate } from "@/lib/centres";
-import { COUNTIES, looksLikeEircode, MAX_TEXT_LENGTH, searchCentres, type SearchQuery, type SearchResponse } from "@/lib/search";
+import {
+  COUNTIES,
+  looksLikeEircode,
+  MAX_TEXT_LENGTH,
+  searchCentres,
+  unavailableMessage,
+  type SearchQuery,
+  type SearchResponse,
+} from "@/lib/search";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -222,12 +230,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
 }
 
 function SearchError({ status, detail }: { status: number; detail: string }) {
-  const message =
-    status === 400
-      ? detail
-      : status === 503
-        ? "The HIQA register hasn't been loaded yet, so search isn't available. Please try again in a few minutes."
-        : "Search isn't working at the moment. Please try again later.";
+  const message = status === 400 ? detail : unavailableMessage(status);
 
   return (
     <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">

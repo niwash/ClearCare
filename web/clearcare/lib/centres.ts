@@ -6,7 +6,7 @@
 import { cache } from "react";
 import { MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
 import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
-import type { CentreSummary, RegisterSnapshot } from "./search";
+import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
 
@@ -113,30 +113,39 @@ export interface CentreReports {
   trails: PromiseTrail[];
 }
 
-// Cached so the page and its metadata make one request between them.
-export const getCentre = cache(async (id: string): Promise<CentreDetail | null> => {
-  if (!/^\d+$/.test(id)) return null; // centre IDs are digits only
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) return mockCentre(id);
+export type CentreLookup =
+  | { status: "found"; centre: CentreDetail }
+  | { status: "not-found" }
+  | { status: "unavailable"; httpStatus: number }; // e.g. 503 before the register is loaded
 
-  const response = await fetch(`${apiUrl.replace(/\/$/, "")}/centres/${id}`, { cache: "no-store" });
-  if (response.status === 404) return null;
-  if (!response.ok) {
-    const body = await response.json().catch(() => null);
-    throw new Error(body?.detail ?? `GET /centres/${id} failed with ${response.status}`);
+// Cached so the page and its metadata make one request between them.
+export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
+  if (!/^\d+$/.test(id)) return { status: "not-found" }; // centre IDs are digits only
+  if (mockDataEnabled()) return mockCentre(id);
+  const url = apiUrl();
+  if (!url) return { status: "unavailable", httpStatus: 0 };
+
+  let response: Response;
+  try {
+    response = await fetch(`${url}/centres/${id}`, { cache: "no-store" });
+  } catch {
+    return { status: "unavailable", httpStatus: 0 };
   }
+  if (response.status === 404) return { status: "not-found" };
+  if (!response.ok) return { status: "unavailable", httpStatus: response.status };
   const { centre, register_snapshot }: CentreResult = await response.json();
-  return { ...centre, register_snapshot };
+  return { status: "found", centre: { ...centre, register_snapshot } };
 });
 
-function mockCentre(id: string): CentreDetail | null {
+function mockCentre(id: string): CentreLookup {
   const centre = MOCK_CENTRES.find((c) => c.centre_id === id);
-  return centre ? { ...centre, register_snapshot: MOCK_SNAPSHOT } : null;
+  return centre ? { status: "found", centre: { ...centre, register_snapshot: MOCK_SNAPSHOT } } : { status: "not-found" };
 }
 
-// TODO: Call the API once it serves reports. Until then only Elm Hall (34) has any.
+// TODO: Call the API once it serves reports. Until then there are none, so a real home never
+// shows sample quotes. With USE_MOCK_DATA=true, Elm Hall (34) has the wireframe's sample reports.
 export async function getCentreReports(id: string): Promise<CentreReports | null> {
-  return id === SAMPLE_REPORTS_CENTRE_ID ? SAMPLE_REPORTS : null;
+  return mockDataEnabled() && id === SAMPLE_REPORTS_CENTRE_ID ? SAMPLE_REPORTS : null;
 }
 
 const DAY = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });

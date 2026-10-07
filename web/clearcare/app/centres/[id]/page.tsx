@@ -3,7 +3,7 @@ import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
-import { formatEircode } from "@/lib/search";
+import { formatEircode, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
@@ -15,15 +15,18 @@ interface CentrePageProps {
 
 export async function generateMetadata({ params }: CentrePageProps) {
   const { id } = await params;
-  const centre = await getCentre(id);
-  return { title: centre ? centre.centre_name : "Nursing home not found" };
+  const lookup = await getCentre(id);
+  if (lookup.status === "found") return { title: lookup.centre.centre_name };
+  return { title: lookup.status === "not-found" ? "Nursing home not found" : "Nursing home record unavailable" };
 }
 
 export default async function CentrePage({ params, searchParams }: CentrePageProps) {
   const { id } = await params;
   const { regulations } = await searchParams;
-  const centre = await getCentre(id);
-  if (!centre) notFound();
+  const lookup = await getCentre(id);
+  if (lookup.status === "not-found") notFound();
+  if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
+  const { centre } = lookup;
   const reports = await getCentreReports(id);
 
   return (
@@ -152,6 +155,21 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
         </a>
       </div>
     </section>
+  );
+}
+
+// The same message the search page shows when the data can't be read.
+function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <div className="text-sm text-ink-muted">
+        <Link href="/">Home</Link>
+      </div>
+      <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
+        <p className="font-medium">This record isn&apos;t available right now</p>
+        <p className="mt-1 text-ink-muted">{unavailableMessage(httpStatus)}</p>
+      </div>
+    </div>
   );
 }
 

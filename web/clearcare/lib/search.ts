@@ -1,7 +1,8 @@
 // lib/search.ts
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
-// Until the API is running, searchCentres answers from the mock register using the same rules.
-// Set API_URL (e.g. in .env.local) to search the real API instead.
+// searchCentres calls the API at API_URL. For local work without the API, set USE_MOCK_DATA=true
+// (e.g. in .env.local) to answer from the invented mock register instead, using the same rules.
+// With neither, search reports that it isn't working rather than showing invented centres.
 import { MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
 
 export interface CentreSummary {
@@ -53,9 +54,28 @@ export const COUNTIES = [
   "Offaly", "Roscommon", "Sligo", "Tipperary", "Waterford", "Westmeath", "Wexford", "Wicklow",
 ];
 
+// Only an explicit switch, so production can never show the invented centres as if they were real.
+export function mockDataEnabled() {
+  return process.env.USE_MOCK_DATA === "true";
+}
+
+// The API's base URL, or null if it isn't set.
+export function apiUrl() {
+  return process.env.API_URL?.replace(/\/$/, "") || null;
+}
+
 export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
-  const apiUrl = process.env.API_URL;
-  return apiUrl ? fetchCentres(apiUrl, query) : mockSearch(query);
+  if (mockDataEnabled()) return mockSearch(query);
+  const url = apiUrl();
+  if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
+  return fetchCentres(url, query);
+}
+
+// What to tell the user when the data can't be read: the same words on every page.
+export function unavailableMessage(status: number) {
+  return status === 503
+    ? "The HIQA register hasn't been loaded yet. Please try again in a few minutes."
+    : "ClearCare can't reach its data at the moment. Please try again later.";
 }
 
 async function fetchCentres(apiUrl: string, query: SearchQuery): Promise<SearchResult> {
@@ -66,7 +86,7 @@ async function fetchCentres(apiUrl: string, query: SearchQuery): Promise<SearchR
 
   let response: Response;
   try {
-    response = await fetch(`${apiUrl.replace(/\/$/, "")}/centres?${params}`, { cache: "no-store" });
+    response = await fetch(`${apiUrl}/centres?${params}`, { cache: "no-store" });
   } catch {
     return { ok: false, status: 0, detail: "The search service couldn't be reached." };
   }
