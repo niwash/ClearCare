@@ -48,9 +48,20 @@ export function CardResult({ centre }: CardResultProps) {
         <a href={centre.hiqa_url} target="_blank" rel="noopener noreferrer">
           HIQA register entry<span className="sr-only"> (opens in a new tab)</span>
         </a>
-        <Link href={`/centres/${centre.centre_id}`} className="font-medium text-link hover:underline">
-          View record &rarr;
-        </Link>
+        <div className="flex items-center gap-3">
+          {/* TODO: Add the centre to the user's list (CCARE-46). Does nothing yet. */}
+          <button
+            type="button"
+            aria-disabled="true"
+            title="Coming soon"
+            className="h-8 cursor-not-allowed rounded-md border border-link px-3 font-medium text-link opacity-50"
+          >
+            Add to list<span className="sr-only"> ({centre.centre_name}, coming soon)</span>
+          </button>
+          <Link href={`/centres/${centre.centre_id}`} className="font-medium text-link hover:underline">
+            View record &rarr;
+          </Link>
+        </div>
       </div>
     </article>
   );

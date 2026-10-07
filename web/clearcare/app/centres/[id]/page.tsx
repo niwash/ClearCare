@@ -94,6 +94,7 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
   return (
     <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
       <div className="flex min-w-0 flex-col gap-2.5">
+        {/* TODO: Check the breadcrumb once the API is live. It only goes to the county, not back to the search the user came from. */}
         <div className="text-sm text-ink-muted">
           <Link href="/">Home</Link> ›{" "}
           <Link href={`/search?${new URLSearchParams({ county: centre.county })}`}>Co. {centre.county}</Link>
