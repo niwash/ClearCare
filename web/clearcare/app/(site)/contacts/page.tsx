@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Section } from "@/components/section";
+import { Section } from "@/components/layout/section";
 import { GUIDES } from "@/lib/guides";
 
 export const metadata: Metadata = {
