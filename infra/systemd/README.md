@@ -13,6 +13,8 @@ The credentials are in `/opt/clearcare/secrets/object-storage.env` (mode 600, ne
 
 ## Install or update
 
+Every merge to `main` does this through `infra/deploy/deploy.sh` ([infra/deploy/README.md](../deploy/README.md)). By hand:
+
 ```sh
 cd /opt/clearcare/src && git pull
 docker build -t clearcare-pipeline:latest \
