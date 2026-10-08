@@ -1,5 +1,5 @@
-import { GuideHeader, guideMetadata } from "@/components/guide-header";
-import { Placeholder } from "@/components/placeholder";
+import { GuideHeader, guideMetadata } from "@/components/guides/guide-header";
+import { Placeholder } from "@/components/placeholder/placeholder";
 import { getGuide } from "@/lib/guides";
 
 const guide = getGuide("reading-inspection-reports");
