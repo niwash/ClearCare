@@ -5,6 +5,8 @@ description = "ClearCare data pipeline"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "boto3>=1.43.103",
+    "psycopg[binary]>=3.2",
+    "pymupdf>=1.28.2",
 ]
 
 [dependency-groups]
@@ -14,6 +16,7 @@ dev = [
     "pytest>=8.4",
     "pytest-cov>=6.2",
     "ruff>=0.16.9",
+    "testcontainers>=4.13",
 ]
 
 [build-system]
@@ -27,6 +30,9 @@ packages = ["src/clearcare_pipeline"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "--cov=clearcare_pipeline --cov-report=term-missing --cov-fail-under=80"
+markers = [
+    "database: needs Docker to start PostgreSQL",
+]
 
 [tool.ruff]
 line-length = 80

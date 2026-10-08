@@ -4,10 +4,14 @@ Documentation=https://github.com/niwash/ClearCare/tree/main/infra/systemd
 Requires=docker.service
 After=docker.service network-online.target
 Wants=network-online.target
-# Copy to object storage after every run, including failed ones, so files
-# stored before a failure still leave the VM.
-OnSuccess=clearcare-raw-upload.service
-OnFailure=clearcare-raw-upload.service
+# After every run, including failed ones, copy to object storage, so files
+# stored before a failure still leave the VM, and load the register. The
+# loader takes the newest successful register snapshot from the manifest and
+# exits 0 if it is already published, so running it after a failed run is
+# safe, and a day on which only the Section 64 register fails still loads
+# the register.
+OnSuccess=clearcare-raw-upload.service clearcare-register-load.service
+OnFailure=clearcare-raw-upload.service clearcare-register-load.service
 
 [Service]
 Type=oneshot

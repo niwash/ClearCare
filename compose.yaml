@@ -1,0 +1,48 @@
+# Local development database. CONTRIBUTING.md explains how to use it.
+
+services:
+  db:
+    # The same image as the database tests in pipeline/tests.
+    image: postgres:18.6
+    environment:
+      # infra/postgres/roles.sql expects this database name.
+      POSTGRES_DB: clearcare
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?see .env.example}
+      CLEARCARE_MIGRATOR_PASSWORD: ${CLEARCARE_MIGRATOR_PASSWORD:?see .env.example}
+      CLEARCARE_PIPELINE_PASSWORD: ${CLEARCARE_PIPELINE_PASSWORD:?see .env.example}
+      CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see .env.example}
+    ports:
+      - 127.0.0.1:${CLEARCARE_DB_PORT:-5432}:5432
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ./infra/postgres/roles.sql:/docker-entrypoint-initdb.d/roles.sql:ro
+    healthcheck:
+      # Over TCP: while the init scripts run, the server listens only on its
+      # socket, so this passes, and Flyway starts, after roles.sql has finished.
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "postgres", "-d", "clearcare"]
+      interval: 2s
+      retries: 15
+
+  # Applies the migrations in db/ and exits (ADR-0010).
+  migrate:
+    image: flyway/flyway:13.9.0
+    command: migrate
+    environment:
+      FLYWAY_URL: jdbc:postgresql://db:5432/clearcare
+      FLYWAY_USER: clearcare_migrator
+      FLYWAY_PASSWORD: ${CLEARCARE_MIGRATOR_PASSWORD:?see .env.example}
+      # Flyway 13 marks initSql as deprecated but still runs it. Move this to an
+      # afterConnect callback when upgrading.
+      FLYWAY_INIT_SQL: SET ROLE clearcare_owner
+      # V1 creates the clearcare schema itself, so Flyway is not told about it
+      # and keeps its history table in public.
+      FLYWAY_DEFAULT_SCHEMA: public
+      FLYWAY_LOCATIONS: filesystem:/flyway/sql
+    volumes:
+      - ./db:/flyway/sql:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db-data:

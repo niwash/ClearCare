@@ -12,5 +12,10 @@ RUN uv sync --frozen --no-dev --no-install-project
 COPY src ./src
 RUN uv sync --frozen --no-dev --no-editable
 
+# The git commit the image is built from, stored with each register entry.
+# Declared after the installs so a new commit does not reinstall them.
+ARG CLEARCARE_PIPELINE_VERSION
+ENV CLEARCARE_PIPELINE_VERSION=$CLEARCARE_PIPELINE_VERSION
+
 USER 65534:65534
 ENTRYPOINT ["/app/.venv/bin/python", "-m"]
