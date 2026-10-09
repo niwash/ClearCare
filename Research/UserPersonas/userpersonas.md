@@ -85,3 +85,67 @@ After researching several homes, David feels much more prepared to speak with hi
 ### User story
 
 > As someone looking for a nursing home for myself, I want to understand what inspectors have found about different homes over time, so that I can decide which homes I want to consider for my own care.
+
+---
+
+## User Story 3: Finding the Right Care for a Parent
+
+### Who is the user?
+
+Mary is 54 and lives in Dublin with her elderly father. Her father has recently been assessed and the family have started thinking about long-term care options. Mary has never gone through this process before and doesn't know where to start. She is overwhelmed and wants to make the right decision for her father.
+
+### Why is she looking?
+
+Mary wants to find a nursing home that is close to home and has a good standard of care. She isn't sure what to look for or how to judge whether a home is suitable.
+
+### What does she find difficult?
+
+While searching online, Mary comes across several nursing homes but has no way of comparing them meaningfully. She discovers that HIQA publishes inspection reports, but they are long, technical, and difficult to interpret without a medical background.
+
+### What does Mary want?
+
+Mary wants a quick, clear summary of each home so she can build a shortlist to discuss with her family. She doesn't need every detail -- she just needs enough to know which homes are worth looking at further.
+
+### How does ClearCare help?
+
+With ClearCare, Mary can get a plain-English overview of each home's inspection history and compliance record without having to read through lengthy reports herself. She can save a shortlist and come back to it when she is ready to discuss options with her family.
+
+### The outcome
+
+Mary uses ClearCare to narrow down her options and feel more confident going into conversations with her family and with the homes directly.
+
+### User story
+
+> As a family member just starting my search, I want a simple overview of nearby nursing homes and their inspection results, so I can build an informed shortlist without reading lengthy reports.
+
+---
+
+## User Story 4: Making a Decision Under Time Pressure
+
+### Who is the user?
+
+Declan is 61 and lives in Limerick. He is coordinating care for his mother, who has been assessed and needs to move into a nursing home within the next few weeks. She needs high dependency care following a stroke. Declan is under time pressure and needs to make a shortlist quickly and confidently. He is comfortable using technology.
+
+### What starts his search?
+
+Declan already knows what care type his mother needs and has a preferred area in mind. His priority is finding homes that meet her care needs and have a strong compliance record, so he can present a credible shortlist to his siblings before a family decision is made.
+
+### What does he struggle with?
+
+Declan finds individual HIQA reports but has no way to filter or compare them side by side. The reports are too long to read across multiple homes in the time he has available.
+
+### What does he want to know?
+
+Declan wants to know which homes in his preferred area offer high dependency care, how they have performed in recent inspections, and whether there are any recurring compliance issues he should be aware of.
+
+### How does ClearCare help?
+
+ClearCare lets Declan filter homes by care type and compliance record and compare them side by side. He can read summarised inspection findings for each home and share his shortlist with his siblings directly from the platform.
+
+### The outcome
+
+Declan uses ClearCare to put together a credible, evidence-based shortlist in a fraction of the time it would have taken him to read through individual reports manually.
+
+### User story
+
+> As a family member who needs to act quickly, I want to filter and compare homes by location, care type, and compliance record, so I can make a confident decision and share it with my family.
