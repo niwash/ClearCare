@@ -18,7 +18,7 @@ export const GUIDES = [
   {
     slug: "choosing-a-nursing-home",
     title: "Choosing a nursing home: questions to ask",
-    summary: "Questions to ask when you visit or call a home.",
+    summary: "Questions to ask yourself before and while you search for a home.",
   },
 ] as const satisfies readonly Guide[];
 

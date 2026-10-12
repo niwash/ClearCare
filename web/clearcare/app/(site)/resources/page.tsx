@@ -18,7 +18,7 @@ export default function ResourcesPage() {
         </p>
       </div>
 
-      <Section title="Guides" description="Plain-language explainers.">
+      <Section title="Guides" description="">
         <ul className="grid gap-2 sm:grid-cols-2">
           {GUIDES.map((guide) => (
             <li key={guide.slug} className="rounded-lg border border-line bg-surface px-4 py-3 text-sm">
