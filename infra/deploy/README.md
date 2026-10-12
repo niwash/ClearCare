@@ -16,7 +16,7 @@ ln -s /opt/clearcare/secrets/db.env /opt/clearcare/src/infra/deploy/.env
 
 `infra/postgres/roles.sql` sets the role passwords only when the database is first created, so a later change to the file does not change them.
 
-## Install or update
+## Install
 
 ```sh
 cd /opt/clearcare/src && git pull
@@ -24,6 +24,20 @@ docker compose -f infra/deploy/compose.yaml up -d --build
 ```
 
 This builds the API image, starts the database, applies any new migrations and starts the API again if its image changed.
+
+## Update
+
+Every push to `main` that passes the checks runs `deploy.sh` on the VM ([ADR-0012](../../docs/adr/0012-main-deploys-to-the-vm-from-ci.md)). The script pulls `main`, runs the command above, and rebuilds the pipeline image and units as in [infra/systemd/README.md](../systemd/README.md). To update by hand, for example after a failed run: `infra/deploy/deploy.sh <commit>`.
+
+The workflow logs in with a key that can run nothing but the script. To set it up:
+
+```sh
+ssh-keygen -t ed25519 -N '' -C clearcare-deploy -f deploy_key
+echo "command=\"/opt/clearcare/src/infra/deploy/deploy.sh\",restrict $(cat deploy_key.pub)" \
+    >> ~/.ssh/authorized_keys    # on the VM
+```
+
+Then add three repository secrets: `DEPLOY_SSH_KEY` (the private key), `DEPLOY_HOST` (`ubuntu@<address>`) and `DEPLOY_KNOWN_HOSTS` (the output of `ssh-keyscan -t ed25519 <address>`).
 
 The proxy needs a site block for the API. The hostname is not decided yet. Add the block to the proxy's Caddyfile, then run `caddy reload` in the proxy's container:
 
