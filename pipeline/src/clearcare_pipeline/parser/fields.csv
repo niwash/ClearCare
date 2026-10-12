@@ -1,0 +1,22 @@
+kind,group,key,location,source,match,index,transform
+field,,centre_name,issuer,table_cell,Name of designated centre:,,collapse_ws
+field,,provider_name,issuer,table_cell,Name of provider:,,collapse_ws
+field,,address,issuer,table_cell,Address of centre:,,collapse_ws
+field,,inspection_type,issuer,table_cell,Type of inspection:,,collapse_ws
+field,,inspection_date,issuer,table_cell,Date of inspection:,,collapse_ws
+field,,centre_code,issuer,regex,OSV-[0-9]+,,strip
+field,,fieldwork_id,issuer,table_cell,Fieldwork ID:,,strip
+field,,residents,about,table_cell,Number of residents on the date of inspection:,,int
+record,inspectors,date,inspection_process,table_row,^[A-Z][a-z]+day,0,strip
+record,inspectors,times,inspection_process,table_row,,1,collapse_ws
+record,inspectors,inspector,inspection_process,table_row,,2,strip
+record,inspectors,role,inspection_process,table_row,,3,strip
+record,regulations,dimension,appendix_1,table_row,,,collapse_ws
+record,regulations,regulation,appendix_1,table_row,^Regulation [0-9],0,strip
+record,regulations,judgment,appendix_1,table_row,,1,collapse_ws
+field,,compliance_date,compliance_plan,label,Date of inspection:,,strip
+record,compliance_items,regulation,section_2,table_row,^Regulation [0-9],0,strip
+record,compliance_items,requirement,section_2,table_row,,1,collapse_ws
+record,compliance_items,judgment,section_2,table_row,,2,collapse_ws
+record,compliance_items,risk_rating,section_2,table_row,,3,strip
+record,compliance_items,date_to_comply,section_2,table_row,,4,strip
