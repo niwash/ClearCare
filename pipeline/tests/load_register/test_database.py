@@ -42,7 +42,7 @@ def database(server: Database, monkeypatch: pytest.MonkeyPatch) -> Database:
         connection.execute(
             "TRUNCATE clearcare.register_publication,"
             " clearcare.register_entry, clearcare.centre,"
-            " clearcare.source_file"
+            " clearcare.source_file CASCADE"
         )
     monkeypatch.setenv("PGHOST", server.host)
     monkeypatch.setenv("PGPORT", str(server.port))

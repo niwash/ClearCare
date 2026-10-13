@@ -18,6 +18,11 @@ class FakeObjectStore:
     def existing_keys(self, prefix: str) -> frozenset[str]:
         return frozenset(key for key in self.objects if key.startswith(prefix))
 
+    def get(self, key: str) -> bytes:
+        if key not in self.objects:
+            raise ObjectStoreError(f"{key}: NoSuchKey")
+        return self.objects[key]
+
     def put(self, key: str, body: bytes) -> None:
         if key in self._failing_keys:
             raise ObjectStoreError(f"{key}: AccessDenied")
