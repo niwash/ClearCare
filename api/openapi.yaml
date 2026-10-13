@@ -195,6 +195,143 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres/34
 
+  /centres/{centre_id}/reports:
+    get:
+      operationId: listCentreReports
+      summary: List a centre's inspection reports
+      description: |
+        Returns the inspection reports ClearCare has loaded for this centre,
+        newest inspection first, each with how many inspectors, regulations and
+        compliance items it holds. `GET /reports/{report_id}` returns one of
+        them in full.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no reports gives `"reports": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's reports, newest inspection first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreReportsResult"
+              example:
+                centre_id: "34"
+                reports:
+                  - report_id: 1
+                    inspection_type: Unannounced
+                    inspection_date: "2026-05-13"
+                    fieldwork_id: MON-0050709
+                    residents: 48
+                    inspector_count: 2
+                    regulation_count: 12
+                    compliance_item_count: 18
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/reports
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/reports
+
+  /reports/{report_id}:
+    get:
+      operationId: getReport
+      summary: Get one inspection report in full
+      description: |
+        Returns one report: the cover values the parser read, the stored PDF
+        they came from, the inspectors the report names, the regulations it
+        considered, and its compliance plan.
+
+        The report does not have to be about a centre in the register snapshot
+        ClearCare currently serves; a report is served as soon as it is loaded.
+        Any value that is not the ID of a report gives 404, including one that
+        is not a number.
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          description: ClearCare's ID for the report.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      responses:
+        "200":
+          description: The report, in full.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResult"
+              example:
+                report:
+                  report_id: 1
+                  centre_id: "34"
+                  centre_code: OSV-0000034
+                  centre_name: Elm Hall Nursing Home
+                  provider_name: Springwood Nursing Homes Limited
+                  address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                  inspection_type: Unannounced
+                  inspection_date: "2026-05-13"
+                  fieldwork_id: MON-0050709
+                  residents: 48
+                  report_file:
+                    sha256: 6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b
+                    url: https://www.hiqa.ie/sites/default/files/2026-06/elm-hall.pdf
+                    fetched_at: "2026-06-01T09:15:00Z"
+                  inspectors:
+                    - date: "2026-05-13"
+                      start_time: "09:00:00"
+                      end_time: "17:20:00"
+                      name: A. Inspector
+                      role: Lead
+                  regulations:
+                    - regulation: Regulation 15
+                      title: Staffing
+                      judgment: Compliant
+                  compliance_items:
+                    - regulation: Regulation 16(1)(a)
+                      requirement: Staff receive appropriate training.
+                      judgment: Not Compliant
+                      risk_rating: Orange
+                      date_to_comply: "2026-09-01"
+        "404":
+          description: There is no report with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: There is no report with this report_id.
+                instance: /reports/999
+
 components:
   schemas:
     CentreSearchResult:
@@ -313,6 +450,212 @@ components:
         - Westmeath
         - Wexford
         - Wicklow
+
+    CentreReportsResult:
+      type: object
+      required: [centre_id, reports]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        reports:
+          type: array
+          description: The centre's reports, newest inspection first.
+          items:
+            $ref: "#/components/schemas/CentreReport"
+
+    CentreReport:
+      type: object
+      description: >
+        One inspection report of a centre, as the centre's page lists it: enough
+        to choose one, and how much it holds.
+      required:
+        - report_id
+        - inspection_type
+        - inspection_date
+        - fieldwork_id
+        - residents
+        - inspector_count
+        - regulation_count
+        - compliance_item_count
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            ClearCare's ID for the report. `GET /reports/{report_id}` returns
+            the report in full.
+        inspection_type:
+          type: [string, "null"]
+        inspection_date:
+          type: [string, "null"]
+          format: date
+          description: The date of the inspection, not of the report.
+        fieldwork_id:
+          type: string
+          description: HIQA's Fieldwork ID.
+        residents:
+          type: [integer, "null"]
+          minimum: 0
+        inspector_count:
+          type: integer
+        regulation_count:
+          type: integer
+        compliance_item_count:
+          type: integer
+
+    ReportResult:
+      type: object
+      required: [report]
+      properties:
+        report:
+          $ref: "#/components/schemas/Report"
+
+    Report:
+      type: object
+      description: One inspection report, as the parser read it.
+      required:
+        - report_id
+        - centre_id
+        - centre_code
+        - centre_name
+        - provider_name
+        - address
+        - inspection_type
+        - inspection_date
+        - fieldwork_id
+        - residents
+        - report_file
+        - inspectors
+        - regulations
+        - compliance_items
+      properties:
+        report_id:
+          type: integer
+          format: int64
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        centre_code:
+          type: string
+          description: >
+            The Centre ID as the report prints it, such as OSV-0000117. The
+            number behind it is centre_id.
+        centre_name:
+          type: string
+          minLength: 1
+        provider_name:
+          type: [string, "null"]
+        address:
+          type: string
+          minLength: 1
+        inspection_type:
+          type: [string, "null"]
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        fieldwork_id:
+          type: string
+          minLength: 1
+        residents:
+          type: [integer, "null"]
+          minimum: 0
+        report_file:
+          $ref: "#/components/schemas/ReportFile"
+        inspectors:
+          type: array
+          description: The inspectors the report names, in the order it prints them.
+          items:
+            $ref: "#/components/schemas/ReportInspector"
+        regulations:
+          type: array
+          description: The regulations the report considered, from Appendix 1.
+          items:
+            $ref: "#/components/schemas/ReportRegulation"
+        compliance_items:
+          type: array
+          description: The report's compliance plan, in the order it prints it.
+          items:
+            $ref: "#/components/schemas/ReportComplianceItem"
+
+    ReportFile:
+      type: object
+      description: The stored PDF this report was read from.
+      required: [fetched_at, url, sha256]
+      properties:
+        fetched_at:
+          type: string
+          format: date-time
+          description: >
+            When ClearCare downloaded the report, in UTC to the second
+            (YYYY-MM-DDTHH:MM:SSZ).
+        url:
+          type: string
+          format: uri
+        sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: The SHA-256 of the downloaded file.
+
+    ReportInspector:
+      type: object
+      description: An inspector named on a report, with the day and times they attended.
+      required: [date, start_time, end_time, name, role]
+      properties:
+        date:
+          type: string
+          format: date
+          description: The day the inspector attended.
+        start_time:
+          type: [string, "null"]
+          format: time
+        end_time:
+          type: [string, "null"]
+          format: time
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: [string, "null"]
+
+    ReportRegulation:
+      type: object
+      description: A regulation a report considered, as Appendix 1 lists it.
+      required: [regulation, title, judgment]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+          description: The regulation's number, such as Regulation 15.
+        title:
+          type: string
+          minLength: 1
+          description: Its title, such as Staffing.
+        judgment:
+          type: string
+          minLength: 1
+
+    ReportComplianceItem:
+      type: object
+      description: One item of a report's compliance plan.
+      required: [regulation, requirement, judgment, risk_rating, date_to_comply]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+        requirement:
+          type: string
+          minLength: 1
+          description: What the centre must change.
+        judgment:
+          type: [string, "null"]
+        risk_rating:
+          type: [string, "null"]
+        date_to_comply:
+          type: [string, "null"]
+          format: date
 
     Problem:
       type: object
