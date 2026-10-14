@@ -1,8 +1,8 @@
 #!/bin/sh
 # Updates the VM to a commit on main. The checks workflow runs this over SSH
 # with a key that can run nothing else, and passes the commit as the SSH
-# command (ADR-0012). It does what the "Install or update" sections of
-# README.md and ../systemd/README.md describe. By hand: deploy.sh <commit>.
+# command (ADR-0012). It does what the "Install or update" section of
+# README.md describes. By hand: deploy.sh <commit>.
 #
 # The body is a function so that the shell has read the whole file before
 # git pull replaces it.
@@ -33,16 +33,32 @@ main() {
     fi
     echo "deploy: main is at $(git rev-parse --short HEAD)"
 
-    docker compose -f infra/deploy/compose.yaml up -d --build --quiet-pull
-    docker build --quiet -t clearcare-pipeline:latest \
-        --build-arg CLEARCARE_PIPELINE_VERSION="$(git rev-parse --short HEAD)" pipeline
-    sudo install -m 644 infra/systemd/clearcare-register-snapshots.service \
-        infra/systemd/clearcare-register-snapshots.timer \
-        infra/systemd/clearcare-raw-upload.service \
-        infra/systemd/clearcare-register-load.service /etc/systemd/system/
-    sudo systemctl daemon-reload
+    export COMPOSE_FILE=compose.yaml:infra/deploy/compose.yaml
+    export COMPOSE_ENV_FILES=/opt/clearcare/secrets/db.env,/opt/clearcare/secrets/object-storage.env
+    CLEARCARE_PIPELINE_VERSION=$(git rev-parse --short HEAD)
+    export CLEARCARE_PIPELINE_VERSION
+    docker compose build --quiet
 
-    docker compose -f infra/deploy/compose.yaml ps -a
+    # Once: the pipeline service replaces the systemd timer (ADR-0014). The
+    # images are built while the timer still runs, its jobs finish before the
+    # pipeline starts, and the units go after that, timer file last, so that a
+    # deploy that fails halfway does this again.
+    timer=/etc/systemd/system/clearcare-register-snapshots.timer
+    if [ -e "$timer" ]; then
+        sudo systemctl disable --now clearcare-register-snapshots.timer
+        while systemctl list-jobs --no-legend 'clearcare-*' | grep -q .; do
+            sleep 10
+        done
+    fi
+    docker compose up -d --quiet-pull
+    if [ -e "$timer" ]; then
+        for unit in register-snapshots.service raw-upload.service \
+            register-load.service register-snapshots.timer; do
+            sudo rm -f "/etc/systemd/system/clearcare-$unit"
+        done
+        sudo systemctl daemon-reload
+    fi
+    docker compose ps -a
 }
 
 main "$@"
