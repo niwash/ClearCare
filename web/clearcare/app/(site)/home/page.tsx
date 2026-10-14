@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Section } from "@/components/layout/section";
 import { PlaceholderEventList } from "@/components/placeholder/event-list";
 import { Placeholder } from "@/components/placeholder/placeholder";
@@ -29,13 +30,17 @@ export default async function StartPage() {
               name="q"
               type="search"
               maxLength={MAX_TEXT_LENGTH}
-              placeholder="Name or Eircode"
+              placeholder="Nursing home name"
               className="h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link"
             />
             <button type="submit" className="h-11 rounded-md bg-link px-4 font-semibold text-surface hover:opacity-90 transition-opacity">
               Search
             </button>
           </form>
+
+          <p className="text-sm">
+            <Link href="/search">Search by address, town or county instead →</Link>
+          </p>
 
           <p className="text-xs text-ink-muted md:text-sm">
             {total !== null && `${total} registered ${total === 1 ? "centre" : "centres"}. `}Latest HIQA reports added on <Placeholder>date</Placeholder>.

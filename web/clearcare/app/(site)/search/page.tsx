@@ -20,6 +20,10 @@ interface SearchPageProps {
 
 const FILTERS = ["name", "address", "county", "eircode"] as const;
 
+// The results grid has 1, 2 or 3 columns depending on screen width. 24 divides by all three, so
+// every full page fills its last row. The API's default of 20 would leave gaps.
+const RESULTS_PER_PAGE = "24";
+
 // Empty form fields arrive as "", which means "not set".
 async function readQuery(searchParams: SearchPageProps["searchParams"]): Promise<SearchQuery> {
   const params = await searchParams;
@@ -74,7 +78,8 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const query = await readQuery(searchParams);
-  const result = await searchCentres(query);
+  // Not added to query itself, so it stays out of the page links.
+  const result = await searchCentres({ ...query, page_size: query.page_size ?? RESULTS_PER_PAGE });
 
   return (
     <div className="flex flex-col gap-6">

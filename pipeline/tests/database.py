@@ -1,6 +1,6 @@
 # A real PostgreSQL for the database tests: infra/postgres/roles.sql runs from
-# the image's init scripts and V1 creates the schema. These tests need Docker;
-# leave them out with `uv run pytest -m "not database"`.
+# the image's init scripts and the migrations create the schema. These tests
+# need Docker; leave them out with `uv run pytest -m "not database"`.
 
 import secrets
 from collections.abc import Generator
@@ -14,7 +14,10 @@ from testcontainers.community.postgres import PostgresContainer
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 ROLES_SQL = REPOSITORY / "infra" / "postgres" / "roles.sql"
-V1_MIGRATION = REPOSITORY / "db" / "V1__register_entries.sql"
+MIGRATIONS = (
+    REPOSITORY / "db" / "V1__register_entries.sql",
+    REPOSITORY / "db" / "V2__inspection_reports.sql",
+)
 POSTGRES_IMAGE = "postgres:18.6"
 SUPERUSER = "postgres"
 MIGRATOR = "clearcare_migrator"
@@ -63,5 +66,6 @@ def migrated_database() -> Generator[Database]:
         # real migrations (ADR-0010).
         with database.connect(MIGRATOR) as connection:
             connection.execute("SET ROLE clearcare_owner")
-            connection.execute(V1_MIGRATION.read_bytes())
+            for migration in MIGRATIONS:
+                connection.execute(migration.read_bytes())
         yield database

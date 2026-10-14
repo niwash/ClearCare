@@ -32,19 +32,7 @@ export function SiteHeader() {
             ))}
           </ul>
         </nav>
-        <div className="flex min-w-0 flex-1 items-center justify-end gap-2 lg:flex-none">
-          <form action="/search" role="search" aria-label="Search nursing homes" className="min-w-0 flex-1 sm:flex-none">
-            <label htmlFor="site-search" className="sr-only">
-              Search nursing homes
-            </label>
-            <input
-              id="site-search"
-              name="q"
-              type="search"
-              placeholder="Name or Eircode"
-              className="h-9 w-full rounded-md border border-line bg-surface px-3 text-sm sm:w-64"
-            />
-          </form>
+        <div className="flex flex-1 items-center justify-end lg:flex-none">
           <ThemeToggle />
         </div>
       </div>
