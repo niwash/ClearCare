@@ -162,6 +162,35 @@ COMPLIANCE_PLAN: Rows = (
         None,
         None,
     ),
+    # This row runs over the page break: the rest of its requirement and of
+    # its judgment are printed again at the top of the next page.
+    (
+        "Regulation 18(1)",
+        "The provider shall ensure that the",
+        None,
+        None,
+        "Substantially",
+        "Yellow",
+        None,
+        None,
+        None,
+        "01/09/2026",
+        None,
+        None,
+    ),
+)
+
+# What the row above continues into: the requirement and the judgment, with
+# nothing in the column that starts a record. The next page prints the table
+# with one cell per column, where the page above merged them.
+COMPLIANCE_PLAN_CONTINUED: Rows = (
+    (
+        None,
+        "premises are kept clean.",
+        "Compliant",
+        None,
+        None,
+    ),
 )
 
 
@@ -244,6 +273,20 @@ def write_report_pdf(path: Path) -> None:
             COMPLIANCE_PLAN,
             columns=12,
             column_width=72,
+            row_height=36,
+            fontsize=7,
+        )
+
+        # The next page carries on the last row of the plan, as a real report
+        # does when a row runs over the page break. It prints the table with
+        # one cell per column, so its columns are not the page's merged ones.
+        continued = document.new_page(width=940, height=_HEIGHT)
+        _grid(
+            continued,
+            90,
+            COMPLIANCE_PLAN_CONTINUED,
+            columns=5,
+            column_width=180,
             row_height=36,
             fontsize=7,
         )

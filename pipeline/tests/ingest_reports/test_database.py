@@ -1,10 +1,13 @@
-"""Database tests for the ingest writer. These need Docker."""
+"""Database tests for the ingest's catalogue and writer. These need Docker."""
 
 from datetime import date, time
 
 import pytest
 
-from clearcare_pipeline.ingest_reports.database import ReportWriter
+from clearcare_pipeline.ingest_reports.database import (
+    DatabaseCatalogue,
+    ReportWriter,
+)
 from clearcare_pipeline.ingest_reports.models import (
     InspectionComplianceItem,
     InspectionInspector,
@@ -14,6 +17,14 @@ from clearcare_pipeline.ingest_reports.models import (
 from tests.database import PIPELINE, migrated_database
 
 SHA = "ab" * 32
+
+# Stores one download of SHA, as the downloader would, and returns its id.
+STORE = (
+    "INSERT INTO clearcare.source_file"
+    " (source, url, sha256, fetched_at)"
+    " VALUES ('inspection-reports', %s, %s, now())"
+    " RETURNING source_file_id"
+)
 
 
 def _report(source_file_id: int) -> InspectionReport:
@@ -68,17 +79,15 @@ def test_batch_is_written_once() -> None:
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
         stored = connection.execute(
-            "INSERT INTO clearcare.source_file"
-            " (source, url, sha256, fetched_at)"
-            " VALUES ('inspection-reports', 'https://example.test/r.pdf',"
-            " %s, now()) RETURNING source_file_id",
-            (SHA,),
+            STORE, ("https://example.test/r.pdf", SHA)
         ).fetchone()
         assert stored is not None
         source_file_id = stored[0]
+        catalogue = DatabaseCatalogue(connection)
         writer = ReportWriter(connection)
 
-        assert writer.source_file_id(SHA) == source_file_id
+        assert catalogue.source_file_id(SHA) == source_file_id
+        assert catalogue.centre_exists("117")
         assert writer.write_batch([_report(source_file_id)]) == 1
         # Writing the same report again adds nothing.
         assert writer.write_batch([_report(source_file_id)]) == 0
@@ -124,6 +133,46 @@ def test_unstored_file_is_not_found() -> None:
         migrated_database() as database,
         database.connect(PIPELINE) as connection,
     ):
-        writer = ReportWriter(connection)
+        catalogue = DatabaseCatalogue(connection)
 
-        assert writer.source_file_id(SHA) is None
+        assert catalogue.source_file_id(SHA) is None
+        assert not catalogue.centre_exists("117")
+
+
+@pytest.mark.database
+def test_centre_is_found_only_when_loaded() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        assert not DatabaseCatalogue(connection).centre_exists("117")
+
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        catalogue = DatabaseCatalogue(connection)
+
+        assert catalogue.centre_exists("117")
+        assert not catalogue.centre_exists("118")
+
+
+@pytest.mark.database
+def test_catalogue_takes_the_newest_download_of_a_file() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        # The same bytes downloaded twice: each download is its own row.
+        connection.execute(
+            "INSERT INTO clearcare.source_file"
+            " (source, url, sha256, fetched_at)"
+            " VALUES ('inspection-reports', 'https://example.test/old.pdf',"
+            " %s, now() - interval '1 day')",
+            (SHA,),
+        )
+        newest = connection.execute(
+            STORE, ("https://example.test/new.pdf", SHA)
+        ).fetchone()
+        assert newest is not None
+
+        assert DatabaseCatalogue(connection).source_file_id(SHA) == newest[0]

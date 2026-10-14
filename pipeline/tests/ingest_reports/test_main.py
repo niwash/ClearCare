@@ -1,5 +1,6 @@
 """Tests for the ingest orchestration and its batching."""
 
+import pymupdf
 import pytest
 
 from clearcare_pipeline.ingest_reports.__main__ import main
@@ -7,7 +8,7 @@ from clearcare_pipeline.ingest_reports.run import ingest
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.parser.fields import Report as ParsedReport
 from clearcare_pipeline.parser.fields import Value
-from tests.ingest_reports.fakes import FakeReportWriter
+from tests.ingest_reports.fakes import FakeCatalogue, FakeReportWriter
 
 
 def _parsed(number: int, *, fieldwork: bool = True) -> ParsedReport:
@@ -39,7 +40,9 @@ def _sources(count: int) -> list[Source]:
 def test_reports_are_written_in_batches() -> None:
     writer = FakeReportWriter()
 
-    summary = ingest(iter(_sources(5)), writer, parse=_parse, batch_size=2)
+    summary = ingest(
+        iter(_sources(5)), FakeCatalogue(), writer, parse=_parse, batch_size=2
+    )
 
     assert [len(batch) for batch in writer.batches] == [2, 2, 1]
     assert summary.parsed == 5
@@ -47,13 +50,58 @@ def test_reports_are_written_in_batches() -> None:
 
 
 def test_unstored_report_is_skipped() -> None:
-    writer = FakeReportWriter(known_files=set())
+    writer = FakeReportWriter()
+    catalogue = FakeCatalogue(known_files=set())
 
-    summary = ingest(iter(_sources(3)), writer, parse=_parse, batch_size=2)
+    summary = ingest(
+        iter(_sources(3)), catalogue, writer, parse=_parse, batch_size=2
+    )
 
     assert writer.batches == []
     assert summary.skipped == 3
     assert summary.written == 0
+
+
+def test_report_for_an_unstored_centre_is_skipped() -> None:
+    # The transform reads centre 117 out of the report's Centre ID.
+    writer = FakeReportWriter()
+    catalogue = FakeCatalogue(known_centres=set())
+
+    summary = ingest(
+        iter(_sources(3)), catalogue, writer, parse=_parse, batch_size=2
+    )
+
+    assert writer.batches == []
+    assert summary.skipped == 3
+    assert summary.written == 0
+
+
+def test_report_for_a_stored_centre_is_not_skipped() -> None:
+    writer = FakeReportWriter()
+    catalogue = FakeCatalogue(known_centres={"117"})
+
+    summary = ingest(
+        iter(_sources(2)), catalogue, writer, parse=_parse, batch_size=2
+    )
+
+    assert summary.skipped == 0
+    assert summary.written == 2
+
+
+def test_a_report_that_cannot_be_read_is_failed() -> None:
+    def parse(body: bytes) -> ParsedReport:
+        if _number(body) == 1:
+            raise pymupdf.FileDataError("cannot open broken.pdf")
+        return _parsed(_number(body))
+
+    writer = FakeReportWriter()
+
+    summary = ingest(
+        iter(_sources(3)), FakeCatalogue(), writer, parse=parse, batch_size=5
+    )
+
+    assert summary.failed == 1
+    assert summary.written == 2
 
 
 def test_rejected_report_is_failed() -> None:
@@ -63,7 +111,9 @@ def test_rejected_report_is_failed() -> None:
 
     writer = FakeReportWriter()
 
-    summary = ingest(iter(_sources(3)), writer, parse=parse, batch_size=5)
+    summary = ingest(
+        iter(_sources(3)), FakeCatalogue(), writer, parse=parse, batch_size=5
+    )
 
     assert summary.failed == 1
     assert summary.written == 2

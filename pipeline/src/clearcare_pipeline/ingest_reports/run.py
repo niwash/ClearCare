@@ -12,7 +12,9 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
 
-from clearcare_pipeline.ingest_reports.database import Writer
+import pymupdf
+
+from clearcare_pipeline.ingest_reports.database import Catalogue, Writer
 from clearcare_pipeline.ingest_reports.models import InspectionReport
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.ingest_reports.transform import (
@@ -52,6 +54,7 @@ def parse_report(body: bytes, mapper: Path, fields: Path) -> ParsedReport:
 
 def ingest(
     source: Iterator[Source],
+    catalogue: Catalogue,
     writer: Writer,
     *,
     parse: Callable[[bytes], ParsedReport],
@@ -60,24 +63,32 @@ def ingest(
     """Parses, transforms and writes every report, a batch at a time.
 
     The transformed rows are held until the batch is full, then written in one
-    transaction and the buffer is cleared. A report whose raw file is not in
-    the database is skipped; a report the transform rejects is counted failed.
+    transaction and the buffer is cleared. A report whose raw file the
+    catalogue does not have is skipped, and so is one whose centre it does not
+    have; a report the transform rejects, or one that cannot be read, is
+    counted failed.
     """
     buffer: list[InspectionReport] = []
     parsed = written = skipped = failed = 0
     batch_number = 0
     for item in source:
         digest = hashlib.sha256(item.body).hexdigest()
-        source_file_id = writer.source_file_id(digest)
+        source_file_id = catalogue.source_file_id(digest)
         if source_file_id is None:
             logger.warning("%s: no stored file with hash %s", item.name, digest)
             skipped += 1
             continue
         try:
             report = to_inspection_report(parse(item.body), source_file_id)
-        except (TransformError, ValueError) as error:
+        except (TransformError, ValueError, pymupdf.FileDataError) as error:
             logger.error("%s: %s", item.name, error)
             failed += 1
+            continue
+        if not catalogue.centre_exists(report.centre_id):
+            logger.warning(
+                "%s: no stored centre %s", item.name, report.centre_id
+            )
+            skipped += 1
             continue
         parsed += 1
         buffer.append(report)
