@@ -7,6 +7,13 @@ expression; the rows of a table become a list of records.
 
 A field names the section its value is in, so the same file reads every
 report, whatever page each section starts on.
+
+The appendix lists the 2015 registration regulations ("Registration
+Regulation 4" and "Registration Regulation 7": renewal applications and
+variation of conditions) beside the care regulations. The mapping's
+``^Regulation [0-9]`` pattern leaves them out on purpose, because they are not
+the care regulations the inspection reports on; reading them would need that
+group's ``dimension`` column, which is what tells the two apart.
 """
 
 # PyMuPDF leaves some members unannotated: the page's `find_tables` and
@@ -86,7 +93,9 @@ def load_fields(path: Path) -> tuple[Field, ...]:
     """Reads the value mapping from a CSV file.
 
     The file has a header row and one row per value: what kind of value it is,
-    where it is, how to read it, and what to do with what is read.
+    where it is, how to read it, and what to do with what is read. A line
+    whose first cell starts with ``#`` is a comment, so a decision the mapping
+    takes can be written beside the row it is about.
 
     Raises:
         ValueError: If the header is not COLUMNS or a row is not usable.
@@ -101,6 +110,8 @@ def load_fields(path: Path) -> tuple[Field, ...]:
             )
         for number, row in enumerate(reader, start=2):
             if not any(cell.strip() for cell in row):
+                continue
+            if row[0].lstrip().startswith("#"):
                 continue
             fields.append(_field(path.name, number, row))
     if not fields:
@@ -439,6 +450,11 @@ def _records(
     say) kept for the records that follow it, until another marker replaces
     it. Every pattern a field gives must match a row for it to be a record,
     which is how header rows are passed over.
+
+    A record whose text runs over a page break is printed again at the top of
+    the next page, with only the cells that carry on from it filled. Such a
+    row has nothing in the column that starts a record, so it is read as the
+    continuation of the record above it rather than as a record of its own.
     """
     ordered = [field for field in group if field.index is not None]
     carried = next((field for field in group if field.index is None), None)
@@ -451,25 +467,89 @@ def _records(
     patterns = [re.compile(field.match) for field in group if field.match]
     records: list[Record] = []
     marker: str | None = None
+    above: list[str] | None = None
+    columns: list[int] = []
+    record: Record | None = None
     for page in pages:
         for table in tables.get(page, ()):
             for row in table:
-                cells = _compact(row)
-                if len(cells) == 1 and carried is not None:
-                    marker = cells[0]
+                cells = _cells(row)
+                if (
+                    _continues(cells)
+                    and above is not None
+                    and record is not None
+                ):
+                    _extend(above, cells, columns)
+                    record.update(_read(group, above, marker))
                     continue
-                if len(cells) != size:
+                above = None
+                record = None
+                compacted = _compact(row)
+                if len(compacted) == 1 and carried is not None:
+                    marker = compacted[0]
                     continue
-                line = "\n".join(cells)
+                if len(compacted) != size:
+                    continue
+                line = "\n".join(compacted)
                 if any(not pattern.search(line) for pattern in patterns):
                     continue
-                record: Record = {}
-                for field in group:
-                    index = field.index
-                    read = marker if index is None else cells[index]
-                    record[field.key] = TRANSFORMS[field.transform](read)
+                record = _read(group, compacted, marker)
                 records.append(record)
+                above = compacted
+                columns = _columns(cells)
     return records
+
+
+def _cells(row: Sequence[str | None]) -> list[str]:
+    """Returns a table row's cells as text, one per column."""
+    return [" ".join((cell or "").split()) for cell in row]
+
+
+def _continues(cells: Sequence[str]) -> bool:
+    """Whether a row carries on the record above it.
+
+    A row that runs over a page break is printed again on the next page with
+    only the cells that carry on from it filled, so it has nothing in the
+    column that starts a record. A marker row fills its first cell instead.
+    """
+    return not cells[0] and any(cells[1:])
+
+
+def _columns(row: Sequence[str]) -> list[int]:
+    """Maps each column of a row to the value that row holds in it.
+
+    A row printed with merged cells repeats a value across them or leaves
+    them empty, so the values a row holds are numbered in the order it fills
+    them. A column that holds nothing is numbered by itself, which is what
+    the same column holds on a page where the table is printed unmerged.
+    """
+    filled = [index for index, text in enumerate(row) if text]
+    numbers = {index: number for number, index in enumerate(filled)}
+    return [numbers.get(index, index) for index in range(len(row))]
+
+
+def _extend(
+    values: list[str], cells: Sequence[str], columns: Sequence[int]
+) -> None:
+    """Joins a continuation's cells onto the record above, column by column."""
+    for index, text in enumerate(cells):
+        if not text:
+            continue
+        column = columns[index] if index < len(columns) else index
+        if column < len(values):
+            values[column] = f"{values[column]} {text}".strip()
+
+
+def _read(
+    group: Sequence[Field], cells: Sequence[str], marker: str | None
+) -> Record:
+    """Returns one record's values, read from a row's cells."""
+    record: Record = {}
+    for field in group:
+        index = field.index
+        read = marker if index is None else cells[index]
+        record[field.key] = TRANSFORMS[field.transform](read)
+    return record
 
 
 def _compact(row: Sequence[str | None]) -> list[str]:

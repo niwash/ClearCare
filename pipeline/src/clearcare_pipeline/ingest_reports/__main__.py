@@ -42,9 +42,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         source = _source(args)
         # autocommit: the writer commits each batch in its own transaction.
         with psycopg.connect(autocommit=True) as connection:
+            # The catalogue is read once, before the first batch is written.
+            catalogue = database.DatabaseCatalogue(connection)
             writer = database.ReportWriter(connection)
             summary = ingest(
                 source,
+                catalogue,
                 writer,
                 parse=lambda body: parse_report(body, args.mapper, args.fields),
                 batch_size=args.batch_size,

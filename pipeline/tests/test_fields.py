@@ -56,7 +56,9 @@ EXPECTED_REGULATIONS = [
         "judgment": "Not compliant",
     },
 ]
-# The risk rating is written into two columns; it is read once.
+# The risk rating is written into two columns; it is read once. The last row
+# runs over a page break, so its requirement and judgment are joined from the
+# row the next page starts with.
 EXPECTED_COMPLIANCE = [
     {
         "regulation": "Regulation 16(1)(a)",
@@ -68,6 +70,15 @@ EXPECTED_COMPLIANCE = [
     {
         "regulation": "Regulation 17(1)",
         "requirement": "The premises suit the residents' needs.",
+        "judgment": "Substantially Compliant",
+        "risk_rating": "Yellow",
+        "date_to_comply": "01/09/2026",
+    },
+    {
+        "regulation": "Regulation 18(1)",
+        "requirement": (
+            "The provider shall ensure that the premises are kept clean."
+        ),
         "judgment": "Substantially Compliant",
         "risk_rating": "Yellow",
         "date_to_comply": "01/09/2026",
@@ -107,6 +118,18 @@ def test_load_fields_reads_every_row() -> None:
     }
 
 
+def test_a_comment_in_a_mapping_is_skipped(tmp_path: Path) -> None:
+    path = _mapping(
+        tmp_path,
+        "# a decision this mapping takes",
+        "field,,centre_name,issuer,label,Name of designated centre:,,",
+    )
+
+    fields = load_fields(path)
+
+    assert [field.key for field in fields] == ["centre_name"]
+
+
 def test_values_are_read_from_the_report(report: Report) -> None:
     assert report.fields == EXPECTED_FIELDS
 
@@ -115,6 +138,18 @@ def test_records_are_read_from_the_report(report: Report) -> None:
     assert report.records["inspectors"] == EXPECTED_INSPECTORS
     assert report.records["regulations"] == EXPECTED_REGULATIONS
     assert report.records["compliance_items"] == EXPECTED_COMPLIANCE
+
+
+def test_a_row_that_runs_over_a_page_break_is_joined(report: Report) -> None:
+    # The row is printed again at the top of the next page, with nothing in
+    # the column that starts a record: one record, joined, and not two.
+    records = report.records["compliance_items"]
+
+    assert len(records) == len(EXPECTED_COMPLIANCE)
+    assert records[-1]["requirement"] == (
+        "The provider shall ensure that the premises are kept clean."
+    )
+    assert records[-1]["judgment"] == "Substantially Compliant"
 
 
 def test_a_value_the_report_does_not_have_is_none(tmp_path: Path) -> None:

@@ -41,16 +41,65 @@ _INSERT_ITEM = (
 Row = tuple[object, ...]
 
 
-class Writer(Protocol):
-    """Where the ingest workflow sends its batches."""
+class Catalogue(Protocol):
+    """What the database already holds, for the ingest to look reports up in.
+
+    The ingest asks this before it writes anything, so an implementation can
+    read it all once rather than answering a query for each report.
+    """
 
     def source_file_id(self, sha256: str) -> int | None:
         """Returns the stored file with this hash, or None if there is none."""
         ...
 
+    def centre_exists(self, centre_id: str) -> bool:
+        """Whether the register has loaded this centre."""
+        ...
+
+
+class Writer(Protocol):
+    """Where the ingest workflow sends its batches."""
+
     def write_batch(self, reports: Sequence[InspectionReport]) -> int:
         """Writes a batch and returns how many reports were new."""
         ...
+
+
+class DatabaseCatalogue:
+    """What the database holds, read once when the catalogue is made.
+
+    A run has a few thousand stored files and a few hundred centres to look
+    up, so it holds them rather than asking the database again for each one.
+    """
+
+    def __init__(self, connection: Connection) -> None:
+        """Reads the stored files and the loaded centres.
+
+        A file's bytes can be downloaded more than once, and each download is
+        its own row, so the newest row is the one the ingest is about.
+        """
+        self._source_files: dict[str, int] = {
+            str(row[0]): int(row[1])
+            for row in connection.execute(
+                "SELECT DISTINCT ON (sha256) sha256, source_file_id"
+                " FROM clearcare.source_file"
+                " ORDER BY sha256, fetched_at DESC"
+            ).fetchall()
+        }
+        self._centres: set[str] = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT centre_id FROM clearcare.centre"
+            ).fetchall()
+        }
+
+    def source_file_id(self, sha256: str) -> int | None:
+        """Returns the stored file with this hash, or None if there is none."""
+        return self._source_files.get(sha256)
+
+    def centre_exists(self, centre_id: str) -> bool:
+        """Whether the register has loaded this centre."""
+        return centre_id in self._centres
 
 
 class ReportWriter:
@@ -63,19 +112,6 @@ class ReportWriter:
     def __init__(self, connection: Connection) -> None:
         """Creates a writer over an open connection."""
         self._connection = connection
-
-    def source_file_id(self, sha256: str) -> int | None:
-        """Returns the newest stored file with this hash, or None.
-
-        A file's bytes can be downloaded more than once, so the newest row is
-        the one the ingest is about.
-        """
-        row = self._connection.execute(
-            "SELECT source_file_id FROM clearcare.source_file"
-            " WHERE sha256 = %s ORDER BY fetched_at DESC LIMIT 1",
-            (sha256,),
-        ).fetchone()
-        return None if row is None else row[0]
 
     def write_batch(self, reports: Sequence[InspectionReport]) -> int:
         """Writes the batch in one transaction; returns how many were new."""
