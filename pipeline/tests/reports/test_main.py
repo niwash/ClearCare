@@ -13,12 +13,13 @@ ELM_HALL = (
     "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home"
 )
 OTHER = "https://www.hiqa.ie/areas-we-work/find-a-centre/other-nursing-home"
+ACLARE = "https://www.hiqa.ie/aclare"
 REPORTS = "https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-"
 REGISTER = (
     "Centre_ID,Centre_Title,County,URL\n"
     f"34,Elm Hall Nursing Home,Kildare,{ELM_HALL}\n"
     f"35,Other Nursing Home,Kildare,{OTHER}\n"
-    "1,Aclare House Nursing Home,Dublin,https://www.hiqa.ie/aclare\n"
+    f"1,Aclare House Nursing Home,Dublin,{ACLARE}\n"
 ).encode()
 
 
@@ -36,6 +37,14 @@ def _data_dir(tmp_path: Path) -> Path:
     }
     (manifests / "register-snapshots.jsonl").write_text(json.dumps(line) + "\n")
     return tmp_path
+
+
+def _page_without_reports(centre_id: str) -> bytes:
+    return (
+        '<div class="views-field views-field-field-centre-id">'
+        f'<div class="field-content">{centre_id}</div></div>'
+        '<div class="view view-display-id-centre_ir_block"></div>'
+    ).encode()
 
 
 def _elm_hall_fetcher() -> FakeFetcher:
@@ -66,6 +75,27 @@ def test_limit_downloads_the_first_centres_of_the_county(
     assert code == 0
     assert OTHER not in fetcher.calls
     assert len(manifest.read_text().splitlines()) == 1
+
+
+def test_without_county_downloads_every_centre_in_the_register(
+    tmp_path: Path,
+) -> None:
+    fetcher = FakeFetcher(
+        {
+            ELM_HALL: [html(_page_without_reports("34"))],
+            OTHER: [html(_page_without_reports("35"))],
+            ACLARE: [html(_page_without_reports("1"))],
+        }
+    )
+
+    code = main(
+        ["--data-dir", str(_data_dir(tmp_path))],
+        fetcher=fetcher,
+        sleep=no_sleep,
+    )
+
+    assert code == 0
+    assert fetcher.calls == [ELM_HALL, OTHER, ACLARE]
 
 
 def test_failed_download_fails_the_run(tmp_path: Path) -> None:
