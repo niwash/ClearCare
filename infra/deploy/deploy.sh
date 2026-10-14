@@ -25,6 +25,12 @@ main() {
         echo "deploy: $commit is not on main" >&2
         exit 1
     fi
+    # This function is the script from before the pull. Run the pulled script
+    # once instead, so that a change to it applies in the deploy that brings it.
+    if [ -z "${CLEARCARE_DEPLOY_PULLED:-}" ]; then
+        export CLEARCARE_DEPLOY_PULLED=1
+        exec infra/deploy/deploy.sh "$commit"
+    fi
     echo "deploy: main is at $(git rev-parse --short HEAD)"
 
     docker compose -f infra/deploy/compose.yaml up -d --build --quiet-pull
