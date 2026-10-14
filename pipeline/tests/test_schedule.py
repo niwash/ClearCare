@@ -15,7 +15,7 @@ BUCKET = {
     "CLEARCARE_S3_ACCESS_KEY_ID": "key-id",
     "CLEARCARE_S3_SECRET_ACCESS_KEY": "secret",
 }
-STARTUP = ["upload", "load_register"]
+STARTUP = ["upload", "load_register", "load_report_files", "ingest_reports"]
 EVERY_STAGE_OF_BOTH_JOBS = [
     *STARTUP,
     "snapshots",
@@ -23,6 +23,8 @@ EVERY_STAGE_OF_BOTH_JOBS = [
     "load_register",
     "reports",
     "upload",
+    "load_report_files",
+    "ingest_reports",
 ]
 
 
@@ -138,12 +140,14 @@ def test_a_new_crawl_scope_makes_the_reports_job_due(tmp_path: Path) -> None:
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=1), crawl="all")
 
-    assert stages.calls == [
-        ("upload", "--data-dir", str(tmp_path)),
-        ("load_register", "--data-dir", str(tmp_path)),
-        ("reports", "--data-dir", str(tmp_path)),
-        ("upload", "--data-dir", str(tmp_path)),
+    assert stages.names() == [
+        *STARTUP,
+        "reports",
+        "upload",
+        "load_report_files",
+        "ingest_reports",
     ]
+    assert ("reports", "--data-dir", str(tmp_path)) in stages.calls
 
 
 def test_crawl_off_only_uploads_and_loads_what_is_there(tmp_path: Path) -> None:
