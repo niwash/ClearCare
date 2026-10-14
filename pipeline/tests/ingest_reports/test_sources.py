@@ -2,7 +2,13 @@
 
 from pathlib import Path
 
-from clearcare_pipeline.ingest_reports.sources import from_paths, from_prefix
+from clearcare_pipeline.ingest_reports.sources import (
+    from_data_dir,
+    from_paths,
+    from_prefix,
+)
+from clearcare_pipeline.raw_store import FileSystemRawStore
+from tests.ingest_reports.fakes import write_reports_manifest
 from tests.object_store_fakes import FakeObjectStore
 
 
@@ -35,3 +41,22 @@ def test_prefix_yields_pdfs_only() -> None:
         "raw/sha256/bb/x",
     ]
     assert items[0].body == b"%PDF-a"
+
+
+def test_data_dir_yields_each_stored_report_file_once(tmp_path: Path) -> None:
+    store = FileSystemRawStore(tmp_path / "raw")
+    first = store.put(b"%PDF-a")
+    second = store.put(b"%PDF-b")
+    write_reports_manifest(
+        tmp_path,
+        {
+            "a.pdf": first,
+            "a-again.pdf": first,
+            "b.pdf": second,
+            "not-downloaded.pdf": None,
+        },
+    )
+
+    items = list(from_data_dir(tmp_path))
+
+    assert [item.body for item in items] == [b"%PDF-a", b"%PDF-b"]

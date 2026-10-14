@@ -34,6 +34,7 @@ class Summary:
 
     parsed: int
     written: int
+    already_loaded: int
     skipped: int
     failed: int
 
@@ -63,16 +64,24 @@ def ingest(
     """Parses, transforms and writes every report, a batch at a time.
 
     The transformed rows are held until the batch is full, then written in one
-    transaction and the buffer is cleared. A report whose raw file the
+    transaction and the buffer is cleared. A report already loaded from the
+    same file is counted and not parsed again. A report whose raw file the
     catalogue does not have is skipped, and so is one whose centre it does not
     have; a report the transform rejects, or one that cannot be read, is
     counted failed.
     """
     buffer: list[InspectionReport] = []
-    parsed = written = skipped = failed = 0
+    parsed = written = already_loaded = skipped = failed = 0
     batch_number = 0
     for item in source:
+        if item.error is not None:
+            logger.error("%s: %s", item.name, item.error)
+            failed += 1
+            continue
         digest = hashlib.sha256(item.body).hexdigest()
+        if catalogue.report_loaded(digest):
+            already_loaded += 1
+            continue
         source_file_id = catalogue.source_file_id(digest)
         if source_file_id is None:
             logger.warning("%s: no stored file with hash %s", item.name, digest)
@@ -93,14 +102,18 @@ def ingest(
         parsed += 1
         buffer.append(report)
         if len(buffer) >= batch_size:
-            batch_number += 1
-            print(f"Processed batch number: {batch_number}")
             written += writer.write_batch(buffer)
+            batch_number += 1
+            logger.info("batch %d written", batch_number)
             buffer.clear()
     if buffer:
-        batch_number += 1
-        print(f"Processed final batch number: {batch_number}")
         written += writer.write_batch(buffer)
+        batch_number += 1
+        logger.info("final batch %d written", batch_number)
     return Summary(
-        parsed=parsed, written=written, skipped=skipped, failed=failed
+        parsed=parsed,
+        written=written,
+        already_loaded=already_loaded,
+        skipped=skipped,
+        failed=failed,
     )

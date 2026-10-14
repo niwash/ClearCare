@@ -1,8 +1,4 @@
-"""Command line entry point: ``python -m clearcare_pipeline.ingest_reports``.
-
-Reads reports from a file list or an object-store prefix, and writes them to
-the database a batch at a time. The parsing and writing live in run.py.
-"""
+"""Command line entry point: ``python -m clearcare_pipeline.ingest_reports``."""
 
 import argparse
 import logging
@@ -17,6 +13,7 @@ from clearcare_pipeline.ingest_reports import database, sources
 from clearcare_pipeline.ingest_reports.run import ingest, parse_report
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.object_store import S3ObjectStore
+from clearcare_pipeline.reports.manifest import ManifestError
 from clearcare_pipeline.s3_settings import S3Settings, make_s3_client
 
 DEFAULT_BATCH_SIZE = 50
@@ -55,10 +52,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     except psycopg.Error as error:
         logger.error("database error: %s", error)
         return 1
+    except (ManifestError, OSError) as error:
+        logger.error("%s", error)
+        return 1
     logger.info(
-        "parsed %d, wrote %d, skipped %d, failed %d",
+        "parsed %d, wrote %d, already loaded %d, skipped %d, failed %d",
         summary.parsed,
         summary.written,
+        summary.already_loaded,
         summary.skipped,
         summary.failed,
     )
@@ -66,7 +67,9 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 
 def _source(args: argparse.Namespace) -> Iterator[Source]:
-    """Returns the reports to ingest, from the prefix or the file list."""
+    """Returns the reports to ingest, from the option that was given."""
+    if args.data_dir is not None:
+        return sources.from_data_dir(args.data_dir)
     if args.prefix is not None:
         settings = S3Settings.from_env(os.environ)
         store = S3ObjectStore(make_s3_client(settings), settings.bucket)
@@ -84,7 +87,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         default=DEFAULT_BATCH_SIZE,
         help=f"reports per database write (default: {DEFAULT_BATCH_SIZE})",
     )
-    parser.add_argument(
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument(
         "--report",
         type=Path,
         action="append",
@@ -92,10 +96,15 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         metavar="PATH",
         help="a report file; repeat the option for several",
     )
-    parser.add_argument(
+    source.add_argument(
         "--prefix",
         metavar="PREFIX",
         help="an object-store key prefix holding the reports",
+    )
+    source.add_argument(
+        "--data-dir",
+        type=Path,
+        help="a directory that holds raw/ and manifests/",
     )
     parser.add_argument(
         "--mapper",
@@ -109,10 +118,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         default=DEFAULT_FIELDS,
         help="the CSV value mapping (default: the parser's own)",
     )
-    args = parser.parse_args(argv)
-    if (args.prefix is None) == (not args.report):
-        parser.error("give exactly one of --report and --prefix")
-    return args
+    return parser.parse_args(argv)
 
 
 def _positive_int(value: str) -> int:
