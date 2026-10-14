@@ -96,10 +96,10 @@ def _http_date(value: str | None) -> datetime | None:
         return None
 
 
-def centres_in_county(
-    register_csv: bytes, county: str
+def registered_centres(
+    register_csv: bytes, county: str | None = None
 ) -> tuple[RegisteredCentre, ...]:
-    """Returns the centres in a county, in register order.
+    """Returns the centres in the register, or in one county, in order.
 
     Raises:
         RegisterError: If a column is missing or a centre's page is not on
@@ -112,7 +112,7 @@ def centres_in_county(
     centres = tuple(
         RegisteredCentre(centre_id=row["Centre_ID"], url=row["URL"])
         for row in rows
-        if row["County"] == county
+        if county is None or row["County"] == county
     )
     for centre in centres:
         if not centre.url.startswith(CENTRE_PAGE_PREFIX):

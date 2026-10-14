@@ -1,9 +1,11 @@
-# Local development database. CONTRIBUTING.md explains how to use it.
+# ClearCare on one machine: the database, the API and the pipeline.
+# CONTRIBUTING.md explains how to use it.
 
 services:
   db:
     # The same image as the database tests in pipeline/tests.
     image: postgres:18.6
+    restart: unless-stopped
     environment:
       # infra/postgres/roles.sql expects this database name.
       POSTGRES_DB: clearcare
@@ -43,6 +45,51 @@ services:
     depends_on:
       db:
         condition: service_healthy
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/clearcare
+      CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see .env.example}
+    ports:
+      - 127.0.0.1:${CLEARCARE_API_PORT:-8080}:8080
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  # Downloads from HIQA when due and loads the database
+  # (pipeline/src/clearcare_pipeline/schedule).
+  pipeline:
+    build:
+      context: ./pipeline
+      args:
+        # Stored with every row the pipeline loads.
+        CLEARCARE_PIPELINE_VERSION: ${CLEARCARE_PIPELINE_VERSION:-local}
+    # The image's entrypoint is python -m.
+    command: [clearcare_pipeline.schedule, --data-dir, /data]
+    # The owner of the data directory, so that the pipeline can write to it.
+    user: ${CLEARCARE_PIPELINE_UID:-1000}:${CLEARCARE_PIPELINE_GID:-1000}
+    # Passes docker stop on to Python, which ignores it as process 1.
+    init: true
+    restart: unless-stopped
+    environment:
+      PGHOST: db
+      PGDATABASE: clearcare
+      PGUSER: clearcare_pipeline
+      PGPASSWORD: ${CLEARCARE_PIPELINE_PASSWORD:?see .env.example}
+      CLEARCARE_CRAWL: ${CLEARCARE_CRAWL:-off}
+      CLEARCARE_S3_ENDPOINT: ${CLEARCARE_S3_ENDPOINT:-}
+      CLEARCARE_S3_REGION: ${CLEARCARE_S3_REGION:-}
+      CLEARCARE_S3_BUCKET: ${CLEARCARE_S3_BUCKET:-}
+      CLEARCARE_S3_ACCESS_KEY_ID: ${CLEARCARE_S3_ACCESS_KEY_ID:-}
+      CLEARCARE_S3_SECRET_ACCESS_KEY: ${CLEARCARE_S3_SECRET_ACCESS_KEY:-}
+    volumes:
+      - ${CLEARCARE_DATA_DIR:-./data}:/data
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
 
 volumes:
   db-data:
