@@ -4,7 +4,6 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
-import { MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
 import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
 import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
 
@@ -121,7 +120,6 @@ export type CentreLookup =
 // Cached so the page and its metadata make one request between them.
 export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   if (!/^\d+$/.test(id)) return { status: "not-found" }; // centre IDs are digits only
-  if (mockDataEnabled()) return mockCentre(id);
   const url = apiUrl();
   if (!url) return { status: "unavailable", httpStatus: 0 };
 
@@ -137,13 +135,8 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   return { status: "found", centre: { ...centre, register_snapshot } };
 });
 
-function mockCentre(id: string): CentreLookup {
-  const centre = MOCK_CENTRES.find((c) => c.centre_id === id);
-  return centre ? { status: "found", centre: { ...centre, register_snapshot: MOCK_SNAPSHOT } } : { status: "not-found" };
-}
-
 // TODO: Call the API once it serves reports. Until then there are none, so a real home never
-// shows sample quotes. With USE_MOCK_DATA=true, Elm Hall (34) has the wireframe's sample reports.
+// shows sample quotes. With USE_MOCK_DATA=true, centre 34 has the wireframe's sample reports.
 export async function getCentreReports(id: string): Promise<CentreReports | null> {
   return mockDataEnabled() && id === SAMPLE_REPORTS_CENTRE_ID ? SAMPLE_REPORTS : null;
 }

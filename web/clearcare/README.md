@@ -5,6 +5,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 The site reads centres from the ClearCare API (`api/openapi.yaml`). Set these in `.env.local`, or in Vercel's environment variables:
 
 - `API_URL`: the API's base URL. Production must set it.
-- `USE_MOCK_DATA=true`: use the invented centres in `lib/mock-centres.ts` instead, for local work without the API. Elm Hall (34) also gets sample inspection reports. Never set it in production.
+- `USE_MOCK_DATA=true`: give centre 34 the sample inspection reports in `lib/sample-reports.ts`, until the API serves reports. Never set it in production.
 
-With neither, search and centre pages say the data isn't available.
+Without `API_URL`, search and centre pages say the data isn't available.
