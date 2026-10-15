@@ -12,8 +12,8 @@ export const GUIDES = [
   },
   {
     slug: "reading-inspection-reports",
-    title: "How to read a HIQA inspection report",
-    summary: "What each part of an inspection report covers and where to find the findings.",
+    title: "How to read a HIQA inspection report (Draft)",
+    summary: "A straightforward guide to nursing home inspection reports.",
   },
   {
     slug: "choosing-a-nursing-home",
