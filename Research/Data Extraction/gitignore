@@ -1,6 +1,10 @@
 # Environment / secrets
 .env
 
+# Generated data - too large for git, reproduced by running the pipeline
+Data/pdfs/
+Data/centres.json
+
 # Python
 __pycache__/
 *.pyc
