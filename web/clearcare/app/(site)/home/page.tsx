@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { Section } from "@/components/layout/section";
-import { PlaceholderEventList } from "@/components/placeholder/event-list";
-import { Placeholder } from "@/components/placeholder/placeholder";
+import { Suspense } from "react";
+import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
 export default async function StartPage() {
@@ -42,9 +41,11 @@ export default async function StartPage() {
             <Link href="/search">Search by address, town or county instead →</Link>
           </p>
 
-          <p className="text-xs text-ink-muted md:text-sm">
-            {total !== null && `${total} registered ${total === 1 ? "centre" : "centres"}. `}Latest HIQA reports added on <Placeholder>date</Placeholder>.
-          </p>
+          {total !== null && (
+            <p className="text-xs text-ink-muted md:text-sm">
+              {total} registered {total === 1 ? "centre" : "centres"}.
+            </p>
+          )}
         </div>
         <aside className="rounded-lg border border-line bg-surface p-4 text-sm">
           <h2 className="font-semibold">What this site doesn&apos;t do</h2>
@@ -55,19 +56,10 @@ export default async function StartPage() {
         </aside>
       </div>
 
-      <Section
-        title={
-          <>
-            An example: <Placeholder>Centre name</Placeholder>
-          </>
-        }
-      >
-        <PlaceholderEventList count={5} />
-      </Section>
-
-      <Section title="Recent changes across Ireland">
-        <PlaceholderEventList count={4} />
-      </Section>
+      {/* A new home on every load. The page above arrives first; the example streams in. */}
+      <Suspense fallback={<SampleCentreFallback />}>
+        <SampleCentre total={total} />
+      </Suspense>
     </>
   );
 }

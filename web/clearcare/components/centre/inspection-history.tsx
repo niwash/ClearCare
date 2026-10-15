@@ -1,10 +1,11 @@
 // components/centre/inspection-history.tsx
 import Link from "next/link";
 import {
+  changeFrom,
   formatDate,
   formatMonth,
-  SEVERITY,
   trailAnchor,
+  type Change,
   type Inspection,
   type Judgement,
   type PromiseTrail,
@@ -24,7 +25,7 @@ const SHORT_LABELS: Record<Judgement, string> = {
 
 type Cell = {
   judgement: Judgement;
-  change?: "same" | "worse" | "better";
+  change?: Change;
   trail?: PromiseTrail; // this inspection made the finding the trail starts from
   promisesTraced?: { trail: PromiseTrail; count: number }; // this inspection followed the promises up
 };
@@ -41,10 +42,7 @@ function buildCells(row: RegulationHistory, inspections: Inspection[], trails: P
     const result = row.results[inspection.id];
     const cell: Cell = { judgement: result ?? "not-assessed" };
 
-    if (result && result !== "compliant" && previous) {
-      const difference = SEVERITY[result] - SEVERITY[previous];
-      cell.change = difference === 0 ? "same" : difference > 0 ? "worse" : "better";
-    }
+    if (result && result !== "compliant" && previous) cell.change = changeFrom(previous, result);
     if (result) previous = result;
 
     cell.trail = rowTrails.find((trail) => trail.finding.inspectionId === inspection.id);
