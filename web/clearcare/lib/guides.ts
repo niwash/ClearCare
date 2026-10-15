@@ -6,6 +6,11 @@ export type Guide = {
 
 export const GUIDES = [
   {
+    slug: "user-journey",
+    title: "How a family chooses a nursing home",
+    summary: "The steps from first talking it through to moving in, and what to do if the answer is no.",
+  },
+  {
     slug: "fair-deal",
     title: "Fair Deal explained",
     summary: "How the Nursing Homes Support Scheme works, who qualifies and what do you need to know.",
