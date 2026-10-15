@@ -56,6 +56,10 @@ class Catalogue(Protocol):
         """Whether the register has loaded this centre."""
         ...
 
+    def report_loaded(self, sha256: str) -> bool:
+        """Whether a report has been loaded from a file with this hash."""
+        ...
+
 
 class Writer(Protocol):
     """Where the ingest workflow sends its batches."""
@@ -73,7 +77,7 @@ class DatabaseCatalogue:
     """
 
     def __init__(self, connection: Connection) -> None:
-        """Reads the stored files and the loaded centres.
+        """Reads the stored files, the loaded centres and loaded reports.
 
         A file's bytes can be downloaded more than once, and each download is
         its own row, so the newest row is the one the ingest is about.
@@ -92,6 +96,14 @@ class DatabaseCatalogue:
                 "SELECT centre_id FROM clearcare.centre"
             ).fetchall()
         }
+        # By hash, so a file downloaded again is not parsed again.
+        self._loaded: set[str] = {
+            str(row[0])
+            for row in connection.execute(
+                "SELECT DISTINCT sha256 FROM clearcare.source_file"
+                " JOIN clearcare.inspection_report USING (source_file_id)"
+            ).fetchall()
+        }
 
     def source_file_id(self, sha256: str) -> int | None:
         """Returns the stored file with this hash, or None if there is none."""
@@ -100,6 +112,10 @@ class DatabaseCatalogue:
     def centre_exists(self, centre_id: str) -> bool:
         """Whether the register has loaded this centre."""
         return centre_id in self._centres
+
+    def report_loaded(self, sha256: str) -> bool:
+        """Whether a report has been loaded from a file with this hash."""
+        return sha256 in self._loaded
 
 
 class ReportWriter:

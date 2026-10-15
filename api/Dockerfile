@@ -1,4 +1,4 @@
-# The API image. infra/deploy/compose.yaml builds it on the VM.
+# The API image. compose.yaml builds it.
 
 FROM eclipse-temurin:21-jdk AS build
 WORKDIR /build

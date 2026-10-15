@@ -88,9 +88,11 @@ def test_batch_is_written_once() -> None:
 
         assert catalogue.source_file_id(SHA) == source_file_id
         assert catalogue.centre_exists("117")
+        assert not catalogue.report_loaded(SHA)
         assert writer.write_batch([_report(source_file_id)]) == 1
         # Writing the same report again adds nothing.
         assert writer.write_batch([_report(source_file_id)]) == 0
+        assert DatabaseCatalogue(connection).report_loaded(SHA)
 
         counts = connection.execute(
             "SELECT"

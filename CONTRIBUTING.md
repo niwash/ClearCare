@@ -8,7 +8,7 @@ Each part of the project has its own top-level folder:
 | --- | --- |
 | `pipeline/` | Python pipeline |
 | `db/` | SQL migrations, applied by Flyway ([ADR-0010](docs/adr/0010-schema-in-sql-migrations.md)) |
-| `infra/` | VM setup: systemd units, the deployment Compose file and install notes |
+| `infra/` | VM setup: the Compose file for the VM, the deploy script and install notes |
 | `infra/postgres/` | Database roles, created once before the first migration |
 | `web/` | Next.js site |
 | `api/` | Spring Boot API |
@@ -56,3 +56,21 @@ If `roles.sql` fails on the first run, the `db` log shows the error and Flyway c
 docker compose exec db psql -U postgres -d clearcare -f /docker-entrypoint-initdb.d/roles.sql
 docker compose up migrate
 ```
+
+## Pipeline and API
+
+`docker compose up -d` also builds and starts the API and the pipeline once the migrations have run. The API is on `127.0.0.1:8080`; set `CLEARCARE_API_PORT` in `.env` to change the port.
+
+The pipeline keeps its files in `./data`, unless `CLEARCARE_DATA_DIR` names another directory. When it starts, it loads the newest register snapshot there into the database, and then the inspection reports stored there. A report already in the database is not parsed again. `CLEARCARE_CRAWL` sets what it downloads from HIQA:
+
+- `off`, the default: nothing.
+- A county as the register spells it, such as `Kildare`: the registers once a day, and the reports of that county's centres once a week.
+- `all`: the same for every centre in the register. The first run makes a few thousand requests at least 3 seconds apart, so it takes a few hours.
+
+If the five `CLEARCARE_S3_*` settings are set, the pipeline copies new files to the bucket when it starts and after each download, failed or not. After a register download it also loads the register, and after a report download the reports. A failed report download is tried again a day later. Some report layouts (Restrictive Practice thematic and National Standards reports) cannot be loaded yet ([ADR-0013](docs/adr/0013-parsed-inspection-reports-loaded-in-batches.md)), so they count as failed on every run and `ingest_reports` exits 1, while the other reports still load.
+
+`schedule-state.json` in the data directory holds each job's last success and next attempt. To run both jobs now, stop the pipeline with `docker compose stop pipeline`, delete the file, and start it again with `docker compose start pipeline`.
+
+To follow its log, run `docker compose logs -f pipeline`.
+
+On Linux, create the data directory before the first start, and set `CLEARCARE_PIPELINE_UID` and `CLEARCARE_PIPELINE_GID` to its owner. Otherwise Docker creates the directory as root and the pipeline cannot write to it.
