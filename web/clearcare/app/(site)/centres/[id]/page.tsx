@@ -125,7 +125,8 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
             <Fact label="Latest report">
               Inspected {formatDate(latest.date)}
               <span className="block text-[13px] text-ink-muted">
-                Published {formatDate(latest.publishedDate)} · {reports.inspections.length}{" "}
+                {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
+                {reports.inspections.length}{" "}
                 {reports.inspections.length === 1 ? "report" : "reports"} since {new Date(first.date).getUTCFullYear()}
               </span>
             </Fact>
