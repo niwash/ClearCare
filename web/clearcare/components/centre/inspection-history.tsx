@@ -3,6 +3,7 @@ import Link from "next/link";
 import {
   formatDate,
   formatMonth,
+  SEVERITY,
   trailAnchor,
   type Inspection,
   type Judgement,
@@ -13,12 +14,6 @@ import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-ic
 
 // Rows shown before "Show all".
 const SHORT_LIST = 7;
-
-const SEVERITY: Record<Exclude<Judgement, "not-assessed">, number> = {
-  compliant: 0,
-  "substantially-compliant": 1,
-  "not-compliant": 2,
-};
 
 const SHORT_LABELS: Record<Judgement, string> = {
   compliant: "Compliant",
@@ -131,7 +126,8 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
                     {formatDate(inspection.date)}
                   </a>
                   <div className="text-xs text-ink-muted">
-                    {inspection.type} · published {formatDate(inspection.publishedDate)}
+                    {inspection.type}
+                    {inspection.publishedDate && ` · published ${formatDate(inspection.publishedDate)}`}
                   </div>
                 </th>
               ))}
