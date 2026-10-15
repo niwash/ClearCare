@@ -19,6 +19,14 @@ export const SEVERITY: Record<Exclude<Judgement, "not-assessed">, number> = {
   "not-compliant": 2,
 };
 
+export type Change = "same" | "worse" | "better";
+
+// How a judgement compares with the last one given for the same regulation.
+export function changeFrom(previous: Exclude<Judgement, "not-assessed">, current: Exclude<Judgement, "not-assessed">): Change {
+  const difference = SEVERITY[current] - SEVERITY[previous];
+  return difference === 0 ? "same" : difference > 0 ? "worse" : "better";
+}
+
 export interface Regulation {
   number: number;
   title: string;
