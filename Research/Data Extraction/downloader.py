@@ -1,11 +1,10 @@
 """
 downloader.py
 -------------
-Downloads the most recent HIQA inspection report PDF for each Dublin nursing home
-from the Oracle Cloud object storage bucket.
+Downloads the most recent HIQA inspection report PDF for each Dublin nursing home from the Oracle Cloud object storage bucket.
 
-The bucket already provides an index.csv with all the metadata we need --
-centre names, inspection dates, file names. No HIQA website scraping required.
+The bucket already provides an index.csv with all the metadata we need: centre names, inspection dates, file names. 
+No HIQA website scraping required.
 
 Usage
 -----
@@ -13,8 +12,8 @@ Usage
 
 Output
 ------
-data/pdfs/<centre_id>-<file_name>.pdf   -- one PDF per nursing home
-data/centres.json                        -- manifest used by the extractor
+data/pdfs/<centre_id>-<file_name>.pdf   - one PDF per nursing home
+data/centres.json                       - manifest used by the extractor
 """
 
 import csv
@@ -53,7 +52,7 @@ PDF_DIR = Path("data/pdfs")
 MANIFEST_PATH = Path("data/centres.json")
 
 HEADERS = {"User-Agent": "ClearCare-Research/1.0 (TU Dublin MSc project)"}
-REQUEST_DELAY_SECONDS = 0.5  # polite pause between PDF downloads
+REQUEST_DELAY_SECONDS = 0.5  # pause between PDF downloads
 
 # ---------------------------------------------------------------------------
 
