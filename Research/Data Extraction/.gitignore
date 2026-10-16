@@ -2,8 +2,7 @@
 .env
 
 # Generated data - too large for git, reproduced by running the pipeline
-Data/pdfs/
-Data/centres.json
+Data/
 
 # Python
 __pycache__/
