@@ -4,6 +4,7 @@
 requests==2.32.3          # HTTP downloads from OCI bucket
 pdfplumber==0.11.4        # PDF text extraction
 openai==1.51.0            # OpenAI API client (GPT-4o-mini)
+httpx<0.28                # pinned, newer httpx breaks openai==1.51.0's client init
 pydantic==2.9.2           # structured output schema
 python-dotenv==1.0.1      # loads .env
 tqdm==4.66.5              # progress bar
