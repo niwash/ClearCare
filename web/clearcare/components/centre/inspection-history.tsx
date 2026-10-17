@@ -86,9 +86,17 @@ type InspectionHistoryProps = {
   history: RegulationHistory[];
   trails: PromiseTrail[];
   showAll: boolean;
+  from?: string; // the search the page was opened from, kept so the breadcrumb still works
 };
 
-export function InspectionHistory({ inspections, history, trails, showAll }: InspectionHistoryProps) {
+function showAllHref(showAll: boolean, from?: string) {
+  const params = new URLSearchParams();
+  if (from !== undefined) params.set("from", from);
+  if (showAll) params.set("regulations", "all");
+  return `?${params}#history`;
+}
+
+export function InspectionHistory({ inspections, history, trails, showAll, from }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
   const firstJudged = inspections.find((inspection) => inspection.regulationJudgements);
 
@@ -220,7 +228,7 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
 
       <div className="flex flex-col gap-1 px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
         {history.length > SHORT_LIST ? (
-          <Link href={showAll ? "?#history" : "?regulations=all#history"} scroll={false}>
+          <Link href={showAllHref(!showAll, from)} scroll={false}>
             {showAll
               ? "Show fewer regulations"
               : `Show all ${history.length} regulations assessed${firstJudged ? ` since ${formatMonth(firstJudged.date)}` : ""}`}
