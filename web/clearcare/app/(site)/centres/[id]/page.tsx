@@ -146,9 +146,22 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
         {reports && (
           <a
             href={`/centres/${centre.centre_id}/record.csv`}
-            className="flex h-11 items-center justify-center rounded-md border border-link bg-surface px-5 font-medium text-link no-underline hover:bg-surface-muted"
+            download
+            className="flex min-h-12 items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-link"
           >
-            Download this record (CSV)
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5 shrink-0"
+            >
+              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+            </svg>
+            Download as a spreadsheet
           </a>
         )}
         <a href={centre.hiqa_url} className="pt-1 text-center text-sm">
