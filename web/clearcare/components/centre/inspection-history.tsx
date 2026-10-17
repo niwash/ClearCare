@@ -108,7 +108,55 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
         </ul>
       </div>
 
-      <div className="overflow-x-auto border-t border-line-soft">
+      {/* Phones: one card per regulation, listing each inspection's result. */}
+      <div className="border-t border-line-soft md:hidden">
+        {inspections
+          .filter((inspection) => !inspection.regulationJudgements)
+          .map((inspection) => (
+            <p
+              key={inspection.id}
+              className="mx-4 mt-4 rounded-md border border-line-soft bg-surface-muted px-3 py-2.5 text-[13px] leading-normal text-ink-muted"
+            >
+              <span className="font-mono font-medium text-ink">{formatDate(inspection.date)}</span> · {inspection.type}
+              <br />
+              {inspection.summary} <a href={inspection.reportUrl}>Read its findings</a>
+            </p>
+          ))}
+        <ul className="divide-y divide-line-soft">
+          {rows.map((row) => {
+            const cells = buildCells(row, inspections, trails);
+            return (
+              <li key={row.regulation.number} className="px-4 py-4">
+                <h3 className="text-sm">
+                  <span className="font-mono text-[13px] text-ink-muted">{row.regulation.number}</span>{" "}
+                  {row.regulation.title}
+                </h3>
+                <dl className="mt-2.5 flex flex-col gap-1.5 text-sm">
+                  {inspections.map((inspection) => {
+                    const cell = cells.get(inspection.id);
+                    if (!cell) return null;
+                    return (
+                      <div key={inspection.id} className="flex gap-4">
+                        <dt className="w-24 shrink-0">
+                          <a href={inspection.reportUrl} className="font-mono text-[13px] text-ink-muted no-underline hover:underline">
+                            {formatDate(inspection.date)}
+                          </a>
+                        </dt>
+                        <dd className="min-w-0">
+                          <JudgementCell cell={cell} />
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* relative: keeps the sr-only text inside this scroll box so it can't widen the page. */}
+      <div className="relative hidden overflow-x-auto border-t border-line-soft md:block">
         <table className="w-full min-w-[48rem] table-fixed text-left text-sm">
           <colgroup>
             <col className="w-[18rem]" />
