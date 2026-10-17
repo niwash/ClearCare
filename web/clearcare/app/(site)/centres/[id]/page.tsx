@@ -10,7 +10,7 @@ import type { ReactNode } from "react";
 
 interface CentrePageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ regulations?: string; from?: string }>;
+  searchParams: Promise<{ regulations?: string; inspections?: string; from?: string }>;
 }
 
 export async function generateMetadata({ params }: CentrePageProps) {
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: CentrePageProps) {
 
 export default async function CentrePage({ params, searchParams }: CentrePageProps) {
   const { id } = await params;
-  const { regulations, from } = await searchParams;
+  const { regulations, inspections, from } = await searchParams;
   const lookup = await getCentre(id);
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
@@ -55,6 +55,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
             history={reports.history}
             trails={reports.trails}
             showAll={regulations === "all"}
+            showAllInspections={inspections === "all"}
             from={from}
           />
 
