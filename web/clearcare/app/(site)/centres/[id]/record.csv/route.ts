@@ -1,8 +1,9 @@
 // app/centres/[id]/record.csv/route.ts
-// The inspection history table as a CSV: one row per regulation, one column per inspection.
+// The home's details, a blank row, then the inspection history table as a CSV:
+// one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
 import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
-import { unavailableMessage } from "@/lib/search";
+import { formatEircode, unavailableMessage } from "@/lib/search";
 
 function csvField(value: string | number) {
   const text = String(value);
@@ -18,6 +19,22 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
   const reports = await getCentreReports(id);
   if (!reports) return new Response("No inspection reports for this home yet", { status: 404 });
 
+  const details = [
+    ["Nursing home", centre.centre_name],
+    ["Address", centre.address],
+    ["County", `Co. ${centre.county}`],
+    ["Eircode", centre.eircode ? formatEircode(centre.eircode) : "Not stated"],
+    ["HIQA centre ID", centre.centre_id],
+    [
+      "Registered for",
+      centre.maximum_occupancy !== null
+        ? `Up to ${centre.maximum_occupancy} residents (the most HIQA allows, not free beds)`
+        : "Not stated",
+    ],
+    ["HIQA page", centre.hiqa_url],
+    ["Downloaded", formatDate(new Date().toISOString())],
+  ];
+
   const inspections = reports.inspections.filter((inspection) => inspection.regulationJudgements);
   const header = [
     "Regulation",
@@ -29,7 +46,9 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     row.regulation.title,
     ...inspections.map((inspection) => JUDGEMENT_LABELS[row.results[inspection.id] ?? "not-assessed"]),
   ]);
-  const csv = [header, ...rows].map((fields) => fields.map(csvField).join(",")).join("\r\n");
+  const lines = [...details, [], header, ...rows].map((fields) => fields.map(csvField).join(","));
+  // The byte order mark tells Excel the file is UTF-8, so names like "Áras" show correctly.
+  const csv = "﻿" + lines.join("\r\n");
   const filename = `${centre.centre_id}-${centre.centre_name}`.replace(/[^A-Za-z0-9-]+/g, "-");
 
   return new Response(csv, {
