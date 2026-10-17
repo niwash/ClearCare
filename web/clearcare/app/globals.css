@@ -48,6 +48,11 @@
 
 /* In the base layer so that utility classes can override them. */
 @layer base {
+  /* Always reserve the scrollbar's space, so short pages don't shift sideways. */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   body {
     background: var(--page);
     color: var(--ink);
