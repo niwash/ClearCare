@@ -11,6 +11,8 @@ import {
   type PromiseTrail,
   type RegulationHistory,
 } from "@/lib/centres";
+import { HistoryScroller } from "./history-scroller";
+import { HistoryToast } from "./history-toast";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 
 // Rows shown before "Show all".
@@ -54,6 +56,9 @@ function buildCells(row: RegulationHistory, inspections: Inspection[], trails: P
   return cells;
 }
 
+// Inspections shown before "Show all inspections": the most recent, which fit with full labels.
+const LATEST_INSPECTIONS = 4;
+
 function JudgementCell({ cell }: { cell: Cell }) {
   const label = (
     <>
@@ -63,18 +68,19 @@ function JudgementCell({ cell }: { cell: Cell }) {
   );
 
   return (
-    <span className={`flex items-center gap-2 ${cell.judgement === "not-assessed" ? "text-ink-muted" : ""}`}>
-      <JudgementIcon judgement={cell.judgement} />
+    <span className="flex items-start gap-2">
+      {/* Lines the icon up with the first line of text. */}
+      <span className="flex h-6 items-center">
+        <JudgementIcon judgement={cell.judgement} />
+      </span>
       <span>
         {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`}>{label}</a> : label}
-        {cell.change && ` · ${cell.change}`}
+        {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
+        {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
         {cell.promisesTraced && (
-          <>
-            {" · "}
-            <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`}>
-              {cell.promisesTraced.count} {cell.promisesTraced.count === 1 ? "promise" : "promises"} traced
-            </a>
-          </>
+          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block text-sm">
+            {cell.promisesTraced.count} {cell.promisesTraced.count === 1 ? "promise" : "promises"} traced
+          </a>
         )}
       </span>
     </span>
@@ -86,19 +92,55 @@ type InspectionHistoryProps = {
   history: RegulationHistory[];
   trails: PromiseTrail[];
   showAll: boolean;
+  showAllInspections: boolean;
+  from?: string; // the search the page was opened from, kept so the breadcrumb still works
 };
 
-export function InspectionHistory({ inspections, history, trails, showAll }: InspectionHistoryProps) {
+// Column widths. With every inspection shown, each inspection column is wide enough for full
+// labels and the table scrolls sideways instead of squeezing them.
+const REGULATION_COLUMN_REM = 18;
+const SCROLLING_COLUMN_REM = 10;
+
+// Keeps the Regulation column in place while the table scrolls sideways. Its divider from the
+// judgements is drawn inside the cell, since table borders don't stay with a sticky cell.
+const stickyClass = "sticky left-0 z-10 after:absolute after:inset-y-0 after:right-0 after:w-0.5 after:bg-line";
+
+// The "Show all / fewer" toggles: links styled as buttons, at least 44px tall (WCAG 2.5.5).
+const toggleClass =
+  "flex min-h-11 items-center justify-center rounded-md border-2 border-link bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
+
+// Keeps the other toggle and the breadcrumb's search when one toggle changes.
+function historyHref({ from, regulations, inspections }: { from?: string; regulations: boolean; inspections: boolean }) {
+  const params = new URLSearchParams();
+  if (from !== undefined) params.set("from", from);
+  if (regulations) params.set("regulations", "all");
+  if (inspections) params.set("inspections", "all");
+  return `?${params}#history`;
+}
+
+export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections, from }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
   const firstJudged = inspections.find((inspection) => inspection.regulationJudgements);
+  // Cells are still built from every inspection, so "worse" and "better" compare with the right one.
+  const shown = showAllInspections ? inspections : inspections.slice(-LATEST_INSPECTIONS);
+  // More columns than fit: the table scrolls sideways, with the Regulation column fixed.
+  const scrolls = shown.length > LATEST_INSPECTIONS;
+  const firstYear = shown.length ? new Date(shown[0].date).getUTCFullYear() : null;
+  const lastYear = shown.length ? new Date(shown[shown.length - 1].date).getUTCFullYear() : null;
+  const years = firstYear === lastYear ? `from ${firstYear}` : `from ${firstYear} to ${lastYear}`;
+  const yearsMessage = `Now showing ${showAllInspections ? "more" : "fewer"} inspections, ${years}`;
 
   return (
     <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
+      <HistoryToast
+        inspectionsMessage={yearsMessage}
+        regulationsMessage={`Now showing ${showAll ? "more" : "fewer"} regulations`}
+      />
       <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:px-7">
-        <h2 id="hist-h" className="font-serif text-xl font-semibold md:text-2xl">
+        <h2 id="hist-h" className="shrink-0 font-serif text-xl font-semibold md:text-2xl">
           Inspection history
         </h2>
-        <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
+        <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
           {JUDGEMENT_ORDER.map((judgement) => (
             <li key={judgement} className="flex items-center gap-1.5">
               <JudgementIcon judgement={judgement} size={12} />
@@ -108,22 +150,73 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
         </ul>
       </div>
 
-      <div className="overflow-x-auto border-t border-line-soft">
-        <table className="w-full min-w-[48rem] table-fixed text-left text-sm">
+      {/* Phones and tablets, where the table's columns don't fit: one card per regulation,
+          listing each inspection's result. */}
+      <div className="border-t border-line-soft lg:hidden">
+        {shown
+          .filter((inspection) => !inspection.regulationJudgements)
+          .map((inspection) => (
+            <p
+              key={inspection.id}
+              className="mx-4 mt-4 rounded-md border border-line-soft bg-surface-muted px-3 py-2.5 text-sm leading-normal text-ink-muted"
+            >
+              <span className="font-mono font-medium text-ink">{formatDate(inspection.date)}</span> · {inspection.type}
+              <br />
+              {inspection.summary} <a href={inspection.reportUrl}>Read its findings</a>
+            </p>
+          ))}
+        <ul className="divide-y-2 divide-line-soft">
+          {rows.map((row) => {
+            const cells = buildCells(row, inspections, trails);
+            return (
+              <li key={row.regulation.number} className="px-4 py-4">
+                <h3 className="text-base">
+                  <span className="font-mono text-sm text-ink-muted">#{row.regulation.number}</span> <span aria-hidden className="text-ink-muted">·</span>{" "}
+                  {row.regulation.title}
+                </h3>
+                <dl className="mt-2.5 flex flex-col gap-1.5 text-base">
+                  {shown.map((inspection) => {
+                    const cell = cells.get(inspection.id);
+                    if (!cell) return null;
+                    return (
+                      <div key={inspection.id} className="flex gap-4">
+                        <dt className="w-28 shrink-0">
+                          <a href={inspection.reportUrl} className="font-mono text-sm text-ink-muted no-underline hover:underline">
+                            {formatDate(inspection.date)}
+                          </a>
+                        </dt>
+                        <dd className="min-w-0">
+                          <JudgementCell cell={cell} />
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      <HistoryScroller scrolls={scrolls}>
+        <table
+          className="w-full min-w-[48rem] table-fixed text-left text-base"
+          style={scrolls ? { width: `${REGULATION_COLUMN_REM + shown.length * SCROLLING_COLUMN_REM}rem` } : undefined}
+        >
           <colgroup>
-            <col className="w-[18rem]" />
+            <col style={{ width: `${REGULATION_COLUMN_REM}rem` }} />
           </colgroup>
           <thead className="bg-surface-muted">
-            <tr className="border-b border-line-soft">
-              <th scope="col" className="px-4 py-3 align-top text-xs font-normal uppercase tracking-wide text-ink-muted md:px-7">
-                Regulation
+            <tr className="border-b-2 border-line">
+              <th scope="col" className={`${stickyClass} bg-surface-muted px-4 py-3 align-top text-sm font-normal text-ink-muted md:px-7`}>
+                <span className="uppercase tracking-wide">Regulation #</span>
               </th>
-              {inspections.map((inspection) => (
+              {shown.map((inspection) => (
                 <th key={inspection.id} scope="col" className="px-4 py-3 align-top font-normal">
-                  <a href={inspection.reportUrl} className="font-mono text-[13px] font-medium text-ink no-underline hover:underline">
+                  <a href={inspection.reportUrl} className="font-mono text-sm font-medium text-ink no-underline hover:underline">
                     {formatDate(inspection.date)}
                   </a>
-                  <div className="text-xs text-ink-muted">
+                  <div className="text-sm text-ink-muted">
                     {inspection.type}
                     {inspection.publishedDate && ` · published ${formatDate(inspection.publishedDate)}`}
                   </div>
@@ -135,12 +228,12 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
             {rows.map((row, rowIndex) => {
               const cells = buildCells(row, inspections, trails);
               return (
-                <tr key={row.regulation.number} className="border-b border-line-soft">
-                  <th scope="row" className="px-4 py-3 font-normal md:px-7">
-                    <span className="font-mono text-[13px] text-ink-muted">{row.regulation.number}</span>{" "}
+                <tr key={row.regulation.number} className="border-b-2 border-line-soft">
+                  <th scope="row" className={`${stickyClass} bg-surface-muted px-4 py-3 font-normal md:px-7`}>
+                    <span className="font-mono text-sm text-ink-muted">#{row.regulation.number}</span> <span aria-hidden className="text-ink-muted">·</span>{" "}
                     {row.regulation.title}
                   </th>
-                  {inspections.map((inspection) => {
+                  {shown.map((inspection) => {
                     const cell = cells.get(inspection.id);
                     if (cell) {
                       return (
@@ -155,7 +248,7 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
                       <td
                         key={inspection.id}
                         rowSpan={rows.length}
-                        className="border-x border-line-soft bg-[repeating-linear-gradient(135deg,var(--page)_0_8px,var(--surface)_8px_16px)] p-4 align-top text-[13px] leading-normal text-ink-muted"
+                        className="border-x border-line-soft bg-[repeating-linear-gradient(135deg,var(--page)_0_8px,var(--surface)_8px_16px)] p-4 align-top text-sm leading-normal text-ink-muted"
                       >
                         <div className="rounded-md border border-line-soft bg-surface px-3 py-2.5">
                           {inspection.summary} <a href={inspection.reportUrl}>Read its findings</a>
@@ -168,19 +261,45 @@ export function InspectionHistory({ inspections, history, trails, showAll }: Ins
             })}
           </tbody>
         </table>
-      </div>
+      </HistoryScroller>
 
-      <div className="flex flex-col gap-1 px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
-        {history.length > SHORT_LIST ? (
-          <Link href={showAll ? "?#history" : "?regulations=all#history"} scroll={false}>
-            {showAll
-              ? "Show fewer regulations"
-              : `Show all ${history.length} regulations assessed${firstJudged ? ` since ${formatMonth(firstJudged.date)}` : ""}`}
-          </Link>
-        ) : (
-          <span />
+      {/* Three rows: what the table shows, the toggles, then the note about older reports. */}
+      <div className="flex flex-col gap-3 px-4 pb-4 pt-4 text-base md:px-7">
+        {/* Says what the table covers, and stays: the toast is only a passing cue. */}
+        {inspections.length > LATEST_INSPECTIONS && (
+          <p className="text-ink">
+            {showAllInspections
+              ? `Showing all ${inspections.length} inspections, ${years}.`
+              : `Showing the latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
+            {/* Only the table scrolls; the phone cards list every inspection. */}
+            {scrolls && <span className="hidden lg:inline"> Scroll the table sideways to see older inspections.</span>}
+          </p>
         )}
-        <span className="text-ink-muted">Reports before 2023 are available from HIQA on request.</span>
+        {(inspections.length > LATEST_INSPECTIONS || history.length > SHORT_LIST) && (
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            {inspections.length > LATEST_INSPECTIONS && (
+              <Link
+                href={historyHref({ from, regulations: showAll, inspections: !showAllInspections })}
+                scroll={false}
+                className={toggleClass}
+              >
+                {showAllInspections ? `Show the latest ${LATEST_INSPECTIONS} inspections` : `Show all ${inspections.length} inspections`}
+              </Link>
+            )}
+            {history.length > SHORT_LIST && (
+              <Link
+                href={historyHref({ from, regulations: !showAll, inspections: showAllInspections })}
+                scroll={false}
+                className={toggleClass}
+              >
+                {showAll
+                  ? "Show fewer regulations"
+                  : `Show all ${history.length} regulations assessed${firstJudged ? ` since ${formatMonth(firstJudged.date)}` : ""}`}
+              </Link>
+            )}
+          </div>
+        )}
+        <p className="border-t border-line-soft pt-3 text-sm text-ink-muted">Reports before 2023 are available from HIQA on request.</p>
       </div>
     </section>
   );

@@ -3,14 +3,14 @@ import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
-import { formatEircode, unavailableMessage } from "@/lib/search";
+import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface CentrePageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ regulations?: string }>;
+  searchParams: Promise<{ regulations?: string; inspections?: string; from?: string }>;
 }
 
 export async function generateMetadata({ params }: CentrePageProps) {
@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: CentrePageProps) {
 
 export default async function CentrePage({ params, searchParams }: CentrePageProps) {
   const { id } = await params;
-  const { regulations } = await searchParams;
+  const { regulations, inspections, from } = await searchParams;
   const lookup = await getCentre(id);
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
@@ -31,7 +31,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHeader centre={centre} reports={reports} />
+      <CentreHeader centre={centre} reports={reports} from={from} />
 
       {reports ? (
         <>
@@ -55,6 +55,8 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
             history={reports.history}
             trails={reports.trails}
             showAll={regulations === "all"}
+            showAllInspections={inspections === "all"}
+            from={from}
           />
 
           {reports.trails.map((trail) => (
@@ -90,18 +92,31 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
   );
 }
 
-function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
+function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports: CentreReports | null; from?: string }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
 
   return (
     <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
       <div className="flex min-w-0 flex-col gap-2.5">
-        {/* TODO: Check the breadcrumb once the API is live. It only goes to the county, not back to the search the user came from. */}
-        <div className="text-sm text-ink-muted">
-          <Link href="/home">Home</Link> ›{" "}
-          <Link href={`/search?${new URLSearchParams({ county: centre.county })}`}>Co. {centre.county}</Link>
-        </div>
+        {/* "Search results" goes back to the search the user came from, or to an empty search
+            when there isn't one (a shared link, the start page). */}
+        <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
+          <ol className="flex flex-wrap gap-x-1.5">
+            <li>
+              <Link href="/home">Home</Link> <span aria-hidden>›</span>
+            </li>
+            <li>
+              <Link href={from !== undefined ? searchHref(from) : "/search"}>Search results</Link>{" "}
+              <span aria-hidden>›</span>
+            </li>
+            <li>
+              <Link href={`/search?${new URLSearchParams({ county: centre.county })}`}>Co. {centre.county}</Link>{" "}
+              <span aria-hidden>›</span>
+            </li>
+            <li aria-current="page">{centre.centre_name}</li>
+          </ol>
+        </nav>
         <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
         {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
         <p className="text-ink-muted">{centre.address}</p>
@@ -146,9 +161,22 @@ function CentreHeader({ centre, reports }: { centre: CentreDetail; reports: Cent
         {reports && (
           <a
             href={`/centres/${centre.centre_id}/record.csv`}
-            className="flex h-11 items-center justify-center rounded-md border border-link bg-surface px-5 font-medium text-link no-underline hover:bg-surface-muted"
+            download
+            className="flex min-h-12 items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-link"
           >
-            Download this record (CSV)
+            <svg
+              aria-hidden
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="size-5 shrink-0"
+            >
+              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+            </svg>
+            Download as a spreadsheet
           </a>
         )}
         <a href={centre.hiqa_url} className="pt-1 text-center text-sm">

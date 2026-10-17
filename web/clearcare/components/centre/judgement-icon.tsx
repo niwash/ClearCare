@@ -36,7 +36,7 @@ export function JudgementIcon({ judgement, size = 14 }: { judgement: Judgement; 
           stroke="currentColor"
           strokeWidth="1.4"
           strokeDasharray="2 2"
-          className="text-not-assessed"
+          className="text-ink"
         />
       )}
     </svg>
