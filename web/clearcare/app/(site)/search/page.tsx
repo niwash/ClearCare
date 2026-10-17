@@ -51,12 +51,16 @@ function describe(query: SearchQuery) {
   return parts.join(", ");
 }
 
-function pageHref(query: SearchQuery, page: number) {
+function pageQuery(query: SearchQuery, page: number) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries({ ...query, page: String(page) })) {
     if (value && !(key === "page" && value === "1")) params.set(key, value);
   }
-  const search = params.toString();
+  return params.toString();
+}
+
+function pageHref(query: SearchQuery, page: number) {
+  const search = pageQuery(query, page);
   return search ? `/search?${search}` : "/search";
 }
 
@@ -207,7 +211,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
-              <CardResult key={centre.centre_id} centre={centre} />
+              <CardResult key={centre.centre_id} centre={centre} from={pageQuery(query, page)} />
             ))}
           </div>
         </>

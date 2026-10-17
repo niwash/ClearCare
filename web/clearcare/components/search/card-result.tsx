@@ -4,6 +4,7 @@ import Link from "next/link";
 
 interface CardResultProps {
   centre: CentreSummary;
+  from: string; // the search this card is shown in, for the centre page's breadcrumb
 }
 
 // The register's address usually starts with the centre's name, which the card already shows.
@@ -12,7 +13,8 @@ function addressWithoutName({ centre_name, address }: CentreSummary) {
   return address.toLowerCase().startsWith(prefix) ? address.slice(prefix.length).trim() : address;
 }
 
-export function CardResult({ centre }: CardResultProps) {
+export function CardResult({ centre, from }: CardResultProps) {
+  const href = `/centres/${centre.centre_id}?${new URLSearchParams({ from })}`;
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // The address often ends with the Eircode already.
   let address = addressWithoutName(centre);
@@ -23,7 +25,7 @@ export function CardResult({ centre }: CardResultProps) {
       <div className="flex flex-col gap-2">
         <h3 className="font-serif text-xl font-semibold tracking-tight text-ink">
           <Link
-            href={`/centres/${centre.centre_id}`}
+            href={href}
             className="rounded hover:underline focus:outline-none focus:ring-2 focus:ring-link"
           >
             {centre.centre_name}
@@ -58,7 +60,7 @@ export function CardResult({ centre }: CardResultProps) {
           >
             Add to list<span className="sr-only"> ({centre.centre_name}, coming soon)</span>
           </button>
-          <Link href={`/centres/${centre.centre_id}`} className="font-medium text-link hover:underline">
+          <Link href={href} className="font-medium text-link hover:underline">
             View record &rarr;
           </Link>
         </div>
