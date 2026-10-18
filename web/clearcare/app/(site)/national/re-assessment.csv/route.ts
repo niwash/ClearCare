@@ -2,8 +2,7 @@
 // The re-assessment matrix as a CSV: one row per starting judgment, with what the judgments became
 // at the centre's next report and the re-check rate.
 import { toCsv } from "@/lib/csv";
-import { unavailableMessage } from "@/lib/search";
-import { getReAssessmentStatistics } from "@/lib/statistics";
+import { getReAssessmentStatistics, statisticsUnavailableMessage } from "@/lib/statistics";
 
 function formatRate(rate: number | null) {
   return rate === null ? "" : `${(rate * 100).toFixed(1)}%`;
@@ -12,11 +11,7 @@ function formatRate(rate: number | null) {
 export async function GET() {
   const lookup = await getReAssessmentStatistics();
   if (lookup.status === "unavailable") {
-    const message =
-      lookup.httpStatus === 503
-        ? "No inspection reports have been loaded yet. Please try again later."
-        : unavailableMessage(lookup.httpStatus);
-    return new Response(message, { status: 503 });
+    return new Response(statisticsUnavailableMessage(lookup.httpStatus), { status: 503 });
   }
   const { matrix, re_check_rate, data_date } = lookup.statistics;
 

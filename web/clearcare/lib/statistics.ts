@@ -1,29 +1,41 @@
 // lib/statistics.ts
 // National statistics from the API. Field names are the API's and stay snake_case. Every count and
-// rate comes from the API; the site only formats them.
-import type { ISODate } from "./centres";
-import { apiUrl } from "./search";
+// rate comes from the API; the site formats them and works out only the shares it draws.
+import type { ISODate, Judgement } from "./centres";
+import { apiUrl, unavailableMessage } from "./search";
 
-type StartingJudgment = "Compliant" | "Substantially compliant" | "Not compliant";
+export type StartingJudgment = "Compliant" | "Substantially compliant" | "Not compliant";
+
+// The site's marker for each starting judgment.
+export const STARTING_JUDGEMENTS: Record<StartingJudgment, Exclude<Judgement, "not-assessed">> = {
+  Compliant: "compliant",
+  "Substantially compliant": "substantially-compliant",
+  "Not compliant": "not-compliant",
+};
+
+// How many judgments of one starting judgment had each result at the home's next report.
+export interface NextResultCounts {
+  judgment: StartingJudgment;
+  compliant: number;
+  substantially_compliant: number;
+  not_compliant: number;
+  not_re_assessed: number;
+  no_later_report: number;
+  total: number;
+}
+
+export interface ReCheckRate {
+  judgment: StartingJudgment;
+  with_later_report: number;
+  re_assessed: number;
+  rate: number | null; // null when no judgment has a later report
+}
 
 // GET /statistics/re-assessment (ReAssessmentStatistics in api/openapi.yaml): what each judgment
 // became at the centre's next report, one row per starting judgment.
 export interface ReAssessmentStatistics {
-  matrix: {
-    judgment: StartingJudgment;
-    compliant: number;
-    substantially_compliant: number;
-    not_compliant: number;
-    not_re_assessed: number;
-    no_later_report: number;
-    total: number;
-  }[];
-  re_check_rate: {
-    judgment: StartingJudgment;
-    with_later_report: number;
-    re_assessed: number;
-    rate: number | null; // null when no judgment has a later report
-  }[];
+  matrix: NextResultCounts[];
+  re_check_rate: ReCheckRate[];
   coverage: {
     reports_loaded: number;
     centres_with_two_or_more_reports: number;
@@ -50,4 +62,24 @@ export async function getReAssessmentStatistics(): Promise<StatisticsLookup> {
   }
   if (!response.ok) return { status: "unavailable", httpStatus: response.status };
   return { status: "found", statistics: await response.json() };
+}
+
+const COUNT = new Intl.NumberFormat("en-IE");
+const PERCENT = new Intl.NumberFormat("en-IE", { style: "percent" });
+
+// "3,799"
+export function formatCount(count: number) {
+  return COUNT.format(count);
+}
+
+// "88%". Whole percentages: the counts beside them carry the detail.
+export function formatPercent(fraction: number) {
+  return PERCENT.format(fraction);
+}
+
+// The API answers 503 until a report is loaded, which is not the register's 503.
+export function statisticsUnavailableMessage(status: number) {
+  return status === 503
+    ? "No inspection reports have been loaded yet. Please try again later."
+    : unavailableMessage(status);
 }

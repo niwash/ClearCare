@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 // Keep unfinished pages in the navigation as plain text.
 const NAV_ITEMS = [
   { label: "Search for Homes", href: "/search" },
+  { label: "National figures", href: "/national" },
   { label: "About the data", href: null },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
