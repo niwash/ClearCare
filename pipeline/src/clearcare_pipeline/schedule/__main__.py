@@ -23,6 +23,7 @@ from clearcare_pipeline.load_report_files.__main__ import (
 from clearcare_pipeline.reports.__main__ import main as reports
 from clearcare_pipeline.s3_settings import S3Settings, SettingsError
 from clearcare_pipeline.snapshots.__main__ import main as snapshots
+from clearcare_pipeline.split_commitments import main as split_commitments
 from clearcare_pipeline.upload.__main__ import main as upload
 
 Stage = Callable[[Sequence[str]], int]
@@ -35,6 +36,8 @@ STAGES: Mapping[str, Stage] = {
     "load_report_files": load_report_files,
     "ingest_reports": ingest_reports,
     "extract_text": extract_text,
+    # It reads only stored text, so it takes no data directory.
+    "split_commitments": lambda _: split_commitments([]),
 }
 STATE_NAME = "schedule-state.json"
 CHECK_SECONDS = 3600.0
@@ -114,6 +117,7 @@ def main(
         "load_report_files",
         "ingest_reports",
         "extract_text",
+        "split_commitments",
     ):
         _run_stage(stages, (name,), data_dir)
     jobs = _jobs(crawl, bucket)
@@ -156,6 +160,7 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
                 "load_report_files",
                 "ingest_reports",
                 "extract_text",
+                "split_commitments",
             ),
             wait_after_success=timedelta(days=7),
         ),
