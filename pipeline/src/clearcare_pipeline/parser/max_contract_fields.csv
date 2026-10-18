@@ -1,0 +1,9 @@
+kind,group,key,location,source,match,index,transform
+record,contract_prices,county,contract_prices,table_label,,0,collapse_ws
+record,contract_prices,centre_name,contract_prices,table_column,,1,collapse_ws
+record,contract_prices,centre_id,contract_prices,table_column,(?m)^\d+$,2,strip
+record,contract_prices,address_line_1,contract_prices,table_column,,3,collapse_ws
+record,contract_prices,address_line_2,contract_prices,table_column,,4,collapse_ws
+record,contract_prices,address_line_3,contract_prices,table_column,,5,collapse_ws
+record,contract_prices,telephone,contract_prices,table_column,,6,collapse_ws
+record,contract_prices,contract_price,contract_prices,table_column,,7,collapse_ws

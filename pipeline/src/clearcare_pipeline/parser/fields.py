@@ -5,6 +5,12 @@ change to the layout is a change to the file rather than to this module. A
 value is read from a table cell, a label in the section's text, or a regular
 expression; the rows of a table become a list of records.
 
+A table's rows are read either by ``table_row``, which numbers the values a
+row fills (handy when the report merges cells), or by ``table_column``, which
+reads each field from its own column so a blank cell doesn't shift the rest.
+A column the report writes once for a block of rows, like the county on a
+price list, is a ``table_label``; its value is carried down the block.
+
 A field names the section its value is in, so the same file reads every
 report, whatever page each section starts on.
 
@@ -38,7 +44,14 @@ if TYPE_CHECKING:
     from clearcare_pipeline.parser.parser import TextBlock
 
 KINDS: Final = ("field", "record")
-SOURCES: Final = ("label", "regex", "table_cell", "table_row")
+SOURCES: Final = (
+    "label",
+    "regex",
+    "table_cell",
+    "table_row",
+    "table_column",
+    "table_label",
+)
 TRANSFORM_NAMES: Final = (
     "none",
     "strip",
@@ -157,8 +170,16 @@ def _field(name: str, number: int, row: Sequence[str]) -> Field:
         raise bad("a record needs a group")
     if cells["kind"] == "field" and cells["group"]:
         raise bad("a field must not have a group")
-    if cells["source"] == "table_row" and cells["kind"] != "record":
-        raise bad("table_row is only for a record")
+    if (
+        cells["source"] in ("table_row", "table_column", "table_label")
+        and cells["kind"] != "record"
+    ):
+        raise bad(f"{cells['source']} is only for a record")
+    if (
+        cells["source"] in ("table_column", "table_label")
+        and not cells["index"]
+    ):
+        raise bad(f"{cells['source']} needs a column index")
     index = None
     if cells["index"]:
         if not cells["index"].isdigit():
@@ -181,8 +202,8 @@ def _check_groups(name: str, fields: Sequence[Field]) -> None:
 
     Raises:
         ValueError: If a group reads more than one location, has more than
-            one value read from a table's stand-alone marker row, or reads no
-            table column at all.
+            one marker value, reads no table column at all, or mixes
+            table_row and table_column.
     """
     groups: dict[str, list[Field]] = {}
     for field in fields:
@@ -201,8 +222,21 @@ def _check_groups(name: str, fields: Sequence[Field]) -> None:
                 f"{name}: group {group} has more than one marker value:"
                 f" {', '.join(field.key for field in carried)}"
             )
-        if all(field.index is None for field in members):
+        if not any(
+            field.source in ("table_row", "table_column")
+            and field.index is not None
+            for field in members
+        ):
             raise ValueError(f"{name}: group {group} reads no table column")
+        sources = {
+            field.source
+            for field in members
+            if field.source in ("table_row", "table_column")
+        }
+        if len(sources) > 1:
+            raise ValueError(
+                f"{name}: group {group} mixes table_row and table_column"
+            )
 
 
 def _unchanged(value: Value) -> Value:
@@ -456,22 +490,50 @@ def _records(
     it. Every pattern a field gives must match a row for it to be a record,
     which is how header rows are passed over.
 
+    A ``table_label`` field reads a column the report fills once for a block
+    and then leaves blank, such as the county on a price list. Its value is
+    carried into the rows below, and the column is left out of the record's
+    shape.
+
+    A ``table_row`` group numbers the values a row fills, so a report that
+    merges cells still lines up on every page. A ``table_column`` group reads
+    each field at its own column, so a blank cell doesn't shift the fields
+    after it.
+
     A record whose text runs over a page break is printed again at the top of
     the next page, with only the cells that carry on from it filled. Such a
     row has nothing in the column that starts a record, so it is read as the
     continuation of the record above it rather than as a record of its own.
     """
-    ordered = [field for field in group if field.index is not None]
+    labels = [field for field in group if field.source == "table_label"]
+    columns = [field for field in group if field.source == "table_column"]
+    if columns:
+        return _column_records(group, labels, columns, pages, tables)
+    return _row_records(group, labels, pages, tables)
+
+
+def _row_records(
+    group: Sequence[Field],
+    labels: Sequence[Field],
+    pages: Sequence[int],
+    tables: Mapping[int, Sequence[Table]],
+) -> list[Record]:
+    """Reads a ``table_row`` group's records, in reading order."""
+    ordered = [field for field in group if field.source == "table_row"]
     carried = next((field for field in group if field.index is None), None)
+    hidden = sorted(field.index for field in labels if field.index is not None)
     indexes: list[int] = []
     for field in ordered:
         index = field.index
         if index is not None:
-            indexes.append(index)
+            indexes.append(_adjusted(index, hidden))
     size = max(indexes) + 1
+    # Where a record starts: its first table column.
+    first = min(indexes)
     patterns = [re.compile(field.match) for field in group if field.match]
     records: list[Record] = []
     marker: str | None = None
+    carried_labels: dict[str, Value] = {field.key: None for field in labels}
     above: list[str] | None = None
     columns: list[int] = []
     record: Record | None = None
@@ -479,17 +541,26 @@ def _records(
         for table in tables.get(page, ()):
             for row in table:
                 cells = _cells(row)
+                found = {
+                    field.key: cells[field.index]
+                    for field in labels
+                    if field.index is not None
+                }
+                if hidden:
+                    cells = _without(cells, hidden)
                 if (
-                    _continues(cells)
+                    _continues(cells, first)
                     and above is not None
                     and record is not None
                 ):
                     _extend(above, cells, columns)
-                    record.update(_read(group, above, marker))
+                    record.update(
+                        _read(group, above, marker, hidden, carried_labels)
+                    )
                     continue
                 above = None
                 record = None
-                compacted = _compact(row)
+                compacted = _compact(cells)
                 if len(compacted) == 1 and carried is not None:
                     marker = compacted[0]
                     continue
@@ -498,11 +569,95 @@ def _records(
                 line = "\n".join(compacted)
                 if any(not pattern.search(line) for pattern in patterns):
                     continue
-                record = _read(group, compacted, marker)
+                for key, value in found.items():
+                    if value:
+                        carried_labels[key] = value
+                record = _read(group, compacted, marker, hidden, carried_labels)
                 records.append(record)
                 above = compacted
                 columns = _columns(cells)
     return records
+
+
+def _column_records(
+    group: Sequence[Field],
+    labels: Sequence[Field],
+    columns: Sequence[Field],
+    pages: Sequence[int],
+    tables: Mapping[int, Sequence[Table]],
+) -> list[Record]:
+    """Reads a ``table_column`` group's records, in reading order.
+
+    Each field comes from its own column, so a blank cell stays blank and
+    does not shift the fields after it.
+    """
+    carried = next((field for field in group if field.index is None), None)
+    hidden = sorted(field.index for field in labels if field.index is not None)
+    indexes = [
+        _adjusted(field.index, hidden)
+        for field in columns
+        if field.index is not None
+    ]
+    size = max(indexes) + 1
+    first = min(indexes)
+    patterns = [re.compile(field.match) for field in group if field.match]
+    records: list[Record] = []
+    marker: str | None = None
+    carried_labels: dict[str, Value] = {field.key: None for field in labels}
+    above: list[str] | None = None
+    record: Record | None = None
+    for page in pages:
+        for table in tables.get(page, ()):
+            for row in table:
+                cells = _cells(row)
+                found = {
+                    field.key: cells[field.index]
+                    for field in labels
+                    if field.index is not None
+                }
+                if hidden:
+                    cells = _without(cells, hidden)
+                cells = _pad(cells, size)
+                if not any(cells):
+                    above = None
+                    record = None
+                    continue
+                if (
+                    _continues(cells, first)
+                    and above is not None
+                    and record is not None
+                ):
+                    _extend(above, cells, range(len(cells)))
+                    record.update(
+                        _read(group, above, marker, hidden, carried_labels)
+                    )
+                    continue
+                above = None
+                record = None
+                filled = [cell for cell in cells if cell]
+                if len(filled) == 1 and carried is not None:
+                    marker = filled[0]
+                    continue
+                line = "\n".join(cells)
+                if any(not pattern.search(line) for pattern in patterns):
+                    continue
+                for key, value in found.items():
+                    if value:
+                        carried_labels[key] = value
+                record = _read(group, cells, marker, hidden, carried_labels)
+                records.append(record)
+                above = list(cells)
+    return records
+
+
+def _without(cells: Sequence[str], hidden: Sequence[int]) -> list[str]:
+    """Returns a row's cells with the given columns left out."""
+    return [cell for index, cell in enumerate(cells) if index not in hidden]
+
+
+def _pad(cells: list[str], size: int) -> list[str]:
+    """Pads a row with empty cells out to the table's width."""
+    return cells + [""] * (size - len(cells)) if len(cells) < size else cells
 
 
 def _cells(row: Sequence[str | None]) -> list[str]:
@@ -510,14 +665,18 @@ def _cells(row: Sequence[str | None]) -> list[str]:
     return [" ".join((cell or "").split()) for cell in row]
 
 
-def _continues(cells: Sequence[str]) -> bool:
+def _continues(cells: Sequence[str], first: int) -> bool:
     """Whether a row carries on the record above it.
 
     A row that runs over a page break is printed again on the next page with
     only the cells that carry on from it filled, so it has nothing in the
     column that starts a record. A marker row fills its first cell instead.
     """
-    return not cells[0] and any(cells[1:])
+    if first >= len(cells):
+        return False
+    return not cells[first] and any(
+        cell for index, cell in enumerate(cells) if index != first
+    )
 
 
 def _columns(row: Sequence[str]) -> list[int]:
@@ -545,14 +704,33 @@ def _extend(
             values[column] = f"{values[column]} {text}".strip()
 
 
+def _adjusted(index: int, hidden: Sequence[int]) -> int:
+    """Returns a column's position once the hidden columns are left out."""
+    return index - sum(1 for column in hidden if column < index)
+
+
 def _read(
-    group: Sequence[Field], cells: Sequence[str], marker: str | None
+    group: Sequence[Field],
+    cells: Sequence[str],
+    marker: str | None,
+    hidden: Sequence[int],
+    labels: Mapping[str, Value],
 ) -> Record:
-    """Returns one record's values, read from a row's cells."""
+    """Returns one record's values, read from a row's cells.
+
+    A ``table_label`` value comes from the block it was written above, not
+    from the row itself.
+    """
     record: Record = {}
     for field in group:
         index = field.index
-        read = marker if index is None else cells[index]
+        read: Value
+        if field.source == "table_label":
+            read = labels.get(field.key)
+        elif index is None:
+            read = marker
+        else:
+            read = cells[_adjusted(index, hidden)]
         record[field.key] = TRANSFORMS[field.transform](read)
     return record
 
