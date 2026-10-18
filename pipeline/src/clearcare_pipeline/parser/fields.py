@@ -32,6 +32,8 @@ from typing import TYPE_CHECKING, Any, Final, cast
 
 import pymupdf
 
+from clearcare_pipeline.parser.text import ReportText
+
 if TYPE_CHECKING:
     from clearcare_pipeline.parser.parser import TextBlock
 
@@ -87,6 +89,9 @@ class Report:
 
     fields: dict[str, Value]
     records: dict[str, list[Record]]
+    text: tuple[ReportText, ...] = ()
+    # Each regulation whose response was not stored, and why.
+    missing_responses: tuple[tuple[str, str], ...] = ()
 
 
 def load_fields(path: Path) -> tuple[Field, ...]:

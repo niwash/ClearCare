@@ -6,6 +6,8 @@ These mirror the tables in db/V2__inspection_reports.sql.
 from dataclasses import dataclass
 from datetime import date, time
 
+from clearcare_pipeline.parser.text import ReportText
+
 
 @dataclass(frozen=True)
 class InspectionInspector:
@@ -55,3 +57,4 @@ class InspectionReport:
     inspectors: tuple[InspectionInspector, ...]
     regulations: tuple[InspectionRegulation, ...]
     compliance_items: tuple[InspectionComplianceItem, ...]
+    text: tuple[ReportText, ...] = ()

@@ -1,0 +1,11 @@
+kind,location,start,end,ignore,boundary
+# Intro is the opening inspector narrative: observations up to Capacity and capability. The cover and provider description (about) and inspection procedure are not inspector findings.
+intro,observations,,,^Page\s+\d+\s+of\s+\d+\s*$,
+# A summary is a section's opening text, after its heading and up to its first regulation or registration regulation heading. A section that opens with a regulation heading has none, and one without any is all summary. Rules run in reading order, so rows come in reading order too.
+capacity_summary,capacity_and_capability,,,"^(?:Page\s+\d+\s+of\s+\d+|Capacity and capability)\s*$","^(?:Registration\s+)?Regulation\s+[0-9]+\s*:[^.:;!?,]+"
+# Headings may wrap; a narrative includes its Judgment line. A response ends at the next regulation heading or the end of Section 1.
+narrative,capacity_and_capability,"^(?P<regulation>Regulation\s+[0-9]+)\s*:[^.:;!?,]+",^Judgment:\s*(?:Not compliant|Substantially compliant|Compliant)\s*$,^Page\s+\d+\s+of\s+\d+\s*$,
+quality_summary,quality_safety,,,"^(?:Page\s+\d+\s+of\s+\d+|Quality and safety)\s*$","^(?:Registration\s+)?Regulation\s+[0-9]+\s*:[^.:;!?,]+"
+narrative,quality_safety,"^(?P<regulation>Regulation\s+[0-9]+)\s*:[^.:;!?,]+",^Judgment:\s*(?:Not compliant|Substantially compliant|Compliant)\s*$,^Page\s+\d+\s+of\s+\d+\s*$,
+# Registration headings end a response but do not match its stored start. A provider may repeat the heading it answers, alone or opening a paragraph; that continues the response.
+response,section_1,"^(?P<regulation>Regulation\s+[0-9]+)\s*:[^.:;!?,]+",,^Page\s+\d+\s+of\s+\d+\s*$,"^(?P<regulation>(?:Registration\s+)?Regulation\s+[0-9]+)\s*:[^.:;!?,]+"

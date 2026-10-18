@@ -71,10 +71,18 @@ def from_data_dir(data_dir: Path) -> Iterator[Source]:
         if report.sha256
     }
     store = FileSystemRawStore(data_dir / "raw")
-    return (_read(store, name, sha256) for sha256, name in names.items())
+    return (
+        read_stored_report(store, name, sha256)
+        for sha256, name in names.items()
+    )
 
 
-def _read(store: FileSystemRawStore, name: str, sha256: str) -> Source:
+def read_stored_report(
+    store: FileSystemRawStore,
+    name: str,
+    sha256: str,
+) -> Source:
+    """Reads one content-addressed PDF and verifies its stored hash."""
     try:
         body = store.path_for(sha256).read_bytes()
     except OSError as error:

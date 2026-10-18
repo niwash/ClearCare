@@ -21,6 +21,7 @@ import argparse
 import csv
 import json
 import logging
+import re
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -42,6 +43,8 @@ class Section:
 
     pattern: str
     key: str
+    # A whole line that starts the section inside a larger block, if any.
+    line: str = ""
 
 
 @dataclass(frozen=True)
@@ -56,7 +59,8 @@ def load_mapping(path: Path) -> list[Section]:
     """Reads the section mapping from a CSV file.
 
     The file has a header row and one row per section: the text that starts
-    the section, then the key its text is stored under.
+    the section, the key its text is stored under and, optionally, a regular
+    expression for a whole line that starts the section inside a block.
 
     Raises:
         ValueError: If a row does not have two non-empty columns.
@@ -72,7 +76,8 @@ def load_mapping(path: Path) -> list[Section]:
                 raise ValueError(
                     f"{path.name} line {number}: expected two columns"
                 )
-            sections.append(Section(row[0].strip(), row[1].strip()))
+            line = row[2].strip() if len(row) > 2 else ""
+            sections.append(Section(row[0].strip(), row[1].strip(), line))
     return sections
 
 
@@ -93,7 +98,8 @@ class Parser:
     def parse(self) -> dict[str, list[TextBlock]]:
         """Returns the text of every section, in reading order.
 
-        Headings are matched against the start of each text block. A report
+        Headings are matched against the start of each text block, or a line
+        inside one that the mapping's whole-line pattern matches. A report
         lists its sections in the mapping order, so a heading only starts a
         new section when it comes after the current one. This keeps the
         "Capacity and capability" and "Quality and safety" labels repeated in
@@ -112,13 +118,36 @@ class Parser:
                     text = block[4].strip()
                     if not text:
                         continue
-                    current = self._match(text, current)
-                    if current >= 0:
-                        key = self._sections[current].key
-                        parsed[key].append(TextBlock(number + 1, text))
+                    for part in self._split(text):
+                        current = self._match(part, current)
+                        if current >= 0:
+                            key = self._sections[current].key
+                            parsed[key].append(TextBlock(number + 1, part))
         finally:
             document.close()
         return parsed
+
+    def _split(self, text: str) -> list[str]:
+        """Splits a block before each line that is a section heading.
+
+        Some PDFs print a heading as one line of a larger block. Only a whole
+        line counts, because the compliance plan's instructions also start a
+        line with "Section 1".
+        """
+        lines = text.splitlines(keepends=True)
+        cuts = [
+            index
+            for index, line in enumerate(lines)
+            if index == 0
+            or any(
+                section.line and re.fullmatch(section.line, line.strip())
+                for section in self._sections
+            )
+        ]
+        return [
+            "".join(lines[start:end]).strip()
+            for start, end in zip(cuts, [*cuts[1:], len(lines)], strict=True)
+        ]
 
     def _match(self, text: str, current: int) -> int:
         """Returns the index of the section the text starts, if any.

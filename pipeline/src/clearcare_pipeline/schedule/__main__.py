@@ -14,6 +14,7 @@ from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from clearcare_pipeline.extract_text import main as extract_text
 from clearcare_pipeline.ingest_reports.__main__ import main as ingest_reports
 from clearcare_pipeline.load_register.__main__ import main as load_register
 from clearcare_pipeline.load_report_files.__main__ import (
@@ -33,6 +34,7 @@ STAGES: Mapping[str, Stage] = {
     "reports": reports,
     "load_report_files": load_report_files,
     "ingest_reports": ingest_reports,
+    "extract_text": extract_text,
 }
 STATE_NAME = "schedule-state.json"
 CHECK_SECONDS = 3600.0
@@ -106,7 +108,13 @@ def main(
     if bucket:
         _run_stage(stages, ("upload",), data_dir)
     # The centres first, as a report is loaded only for a stored centre.
-    for name in ("load_register", "load_report_files", "ingest_reports"):
+    # Text extraction then writes only what this pipeline version lacks.
+    for name in (
+        "load_register",
+        "load_report_files",
+        "ingest_reports",
+        "extract_text",
+    ):
         _run_stage(stages, (name,), data_dir)
     jobs = _jobs(crawl, bucket)
     while True:
@@ -143,7 +151,12 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
             name="reports",
             scope=crawl,
             download=("reports", *county),
-            then=(*upload_stages, "load_report_files", "ingest_reports"),
+            then=(
+                *upload_stages,
+                "load_report_files",
+                "ingest_reports",
+                "extract_text",
+            ),
             wait_after_success=timedelta(days=7),
         ),
     )
