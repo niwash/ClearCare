@@ -9,7 +9,7 @@ import hashlib
 import logging
 import tempfile
 from collections.abc import Callable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 import pymupdf
@@ -24,6 +24,8 @@ from clearcare_pipeline.ingest_reports.transform import (
 from clearcare_pipeline.parser.fields import Report as ParsedReport
 from clearcare_pipeline.parser.fields import extract, load_fields
 from clearcare_pipeline.parser.parser import Parser
+from clearcare_pipeline.parser.text import extract as extract_text
+from clearcare_pipeline.parser.text import validate
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,19 @@ def parse_report(body: bytes, mapper: Path, fields: Path) -> ParsedReport:
         handle.flush()
         path = Path(handle.name)
         sections = Parser(path, mapper).parse()
-        return extract(path, sections, load_fields(fields))
+        parsed = extract(path, sections, load_fields(fields))
+        text, uncut = extract_text(sections)
+        missing = validate(
+            text,
+            {
+                " ".join(
+                    str(row["regulation"]).partition(":")[0].split()
+                ): " ".join(str(row["judgment"]).split())
+                for row in parsed.records.get("regulations", ())
+            },
+            uncut,
+        )
+        return replace(parsed, text=text, missing_responses=missing)
 
 
 def ingest(
@@ -88,7 +102,10 @@ def ingest(
             skipped += 1
             continue
         try:
-            report = to_inspection_report(parse(item.body), source_file_id)
+            extracted = parse(item.body)
+            for regulation, reason in extracted.missing_responses:
+                logger.warning("%s, %s: %s", item.name, regulation, reason)
+            report = to_inspection_report(extracted, source_file_id)
         except (TransformError, ValueError, pymupdf.FileDataError) as error:
             logger.error("%s: %s", item.name, error)
             failed += 1

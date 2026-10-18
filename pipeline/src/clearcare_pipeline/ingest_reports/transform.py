@@ -52,6 +52,7 @@ def to_inspection_report(
         raise TransformError(f"Centre ID is not OSV-nnnnnnn: {centre_code!r}")
     return InspectionReport(
         source_file_id=source_file_id,
+        text=parsed.text,
         centre_id=str(int(match.group(1))),
         centre_code=centre_code,
         centre_name=_required(parsed, "centre_name"),

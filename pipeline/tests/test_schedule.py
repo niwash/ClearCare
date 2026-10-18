@@ -15,7 +15,13 @@ BUCKET = {
     "CLEARCARE_S3_ACCESS_KEY_ID": "key-id",
     "CLEARCARE_S3_SECRET_ACCESS_KEY": "secret",
 }
-STARTUP = ["upload", "load_register", "load_report_files", "ingest_reports"]
+STARTUP = [
+    "upload",
+    "load_register",
+    "load_report_files",
+    "ingest_reports",
+    "extract_text",
+]
 EVERY_STAGE_OF_BOTH_JOBS = [
     *STARTUP,
     "snapshots",
@@ -25,6 +31,7 @@ EVERY_STAGE_OF_BOTH_JOBS = [
     "upload",
     "load_report_files",
     "ingest_reports",
+    "extract_text",
 ]
 
 
@@ -114,6 +121,8 @@ def test_upload_and_load_run_after_failed_downloads_and_uploads(
             "snapshots": 1,
             "reports": RuntimeError("unexpected page"),
             "upload": 1,
+            # Backfill exits 1 while a response is missing from its source.
+            "extract_text": 1,
         }
     )
 
@@ -146,6 +155,7 @@ def test_a_new_crawl_scope_makes_the_reports_job_due(tmp_path: Path) -> None:
         "upload",
         "load_report_files",
         "ingest_reports",
+        "extract_text",
     ]
     assert ("reports", "--data-dir", str(tmp_path)) in stages.calls
 
