@@ -48,7 +48,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
   ]);
   const lines = [...details, [], header, ...rows].map((fields) => fields.map(csvField).join(","));
   // The byte order mark tells Excel the file is UTF-8, so names like "Áras" show correctly.
-  const csv = "﻿" + lines.join("\r\n");
+  const csv = "\uFEFF" + lines.join("\r\n");
   const filename = `${centre.centre_id}-${centre.centre_name}`.replace(/[^A-Za-z0-9-]+/g, "-");
 
   return new Response(csv, {
