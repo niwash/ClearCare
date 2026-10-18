@@ -13,6 +13,7 @@ import {
 } from "@/lib/centres";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
+import { JudgementsPerInspection } from "./judgements-per-inspection";
 
 // Rows shown before "Show all".
 const SHORT_LIST = 7;
@@ -143,6 +144,9 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           ))}
         </ul>
       </div>
+
+      {/* Inside this section so it shares the key above and follows the same inspections toggle. */}
+      <JudgementsPerInspection inspections={inspections} shown={shown} history={history} />
 
       {/* Phones and tablets, where the table's columns don't fit: one card per regulation,
           listing each inspection's result. */}
