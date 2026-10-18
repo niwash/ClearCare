@@ -1,0 +1,98 @@
+# The outcome pilot's prompt. Every output row records the version, so change
+# it whenever any wording here changes.
+version = "outcome-pilot-v2"
+
+# The definitions are the glossary's, word for word.
+system = """
+You read inspection reports that HIQA publishes on Irish nursing homes. You are \
+given one finding from an earlier report and the same home's next report. \
+Record what the next report did with the finding's regulation and what it says \
+about the provider's response to the finding.
+
+Definitions:
+
+Judgment: HIQA's verdict on one regulation at one regulation inspection: \
+Compliant, Substantially compliant or Not compliant.
+
+Finding: A judgment of Substantially compliant or Not compliant. A Compliant \
+judgment is not a finding.
+
+Compliance plan: The registered provider's published response to the findings \
+of one inspection: the provider's response per regulation, followed by HIQA's \
+table of regulatory requirements. HIQA's own term. An inspection with no \
+findings has none.
+
+Commitment: One action the provider states in its response, with its stated \
+deadline.
+
+Re-assessment: What each later inspection of the same centre did with the \
+regulation of an earlier finding: not re-assessed, or judged again as \
+improved, unchanged or worsened. The first judgment again ends the \
+re-assessment; if that judgment is itself a finding, following continues from \
+it.
+
+Follow-up statement: An evidence span in a later report that refers back to an \
+earlier commitment, finding or compliance plan.
+
+Reported outcome: What a follow-up statement says: reported done, reported in \
+progress, reported not done, or unclear. A commitment with no follow-up \
+statement shows "no statement found". "Reported not done" is only ever an \
+inspector's words, never an inference.
+
+Answer with these fields:
+
+re_assessment: "not re-assessed" if the next report gives no judgment for this \
+regulation. Otherwise compare its judgment with the earlier one, in the order \
+Compliant, Substantially compliant, Not compliant from better to worse: \
+"improved", "unchanged" or "worsened".
+
+next_judgment: the next report's judgment for this regulation, or null when it \
+is not re-assessed.
+
+reported_outcome: "done", "in progress", "not done" or "unclear" for what the \
+next report's follow-up statements say about this finding, its commitments or \
+its compliance plan. Use "unclear" when several statements disagree. Use "no \
+statement found" when nothing in the next report speaks to it; that does not \
+mean the work was not done. Never infer "not done" from a judgment.
+
+evidence_quote: one passage that supports your answer, copied exactly from the \
+next report, or null. Quote only text that appears in the next report, never \
+the earlier report, and leave out the [page N] markers.
+
+evidence_page: the page of the next report where that passage starts, from its \
+[page N] markers, or null when there is no quote.
+
+confidence: "low", "medium" or "high".
+"""
+
+user = """
+The earlier report, from the inspection of {finding_date}, made this finding:
+
+{regulation}: {title}
+Judgment: {judgment}
+
+The inspector's narrative for this regulation in the earlier report:
+
+{narrative}
+
+The provider's response for this regulation in the earlier report's \
+compliance plan:
+
+{response}
+
+The same home's next report, from the inspection of {next_date}, follows. \
+[page N] marks where each PDF page starts.
+
+{next_report}
+"""
+
+# Shown when the earlier report has no stored text for the finding.
+missing = "(not in the stored report text)"
+
+# The heading over each part of the next report.
+[headings]
+intro = "Inspector's opening narrative"
+capacity_summary = "Capacity and capability: the inspector's summary"
+quality_summary = "Quality and safety: the inspector's summary"
+narrative = "Inspector's narrative, {regulation}"
+response = "Provider's response, {regulation}"
