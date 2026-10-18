@@ -2,7 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from clearcare_pipeline.parser.fields import Field, Report, extract, load_fields
+from clearcare_pipeline.parser.fields import (
+    Field,
+    Record,
+    Report,
+    extract,
+    load_fields,
+)
 from clearcare_pipeline.parser.parser import Parser, TextBlock
 from tests.report_fixtures import write_report_pdf
 
@@ -10,6 +16,9 @@ PARSER = Path(__file__).parents[1] / "src" / "clearcare_pipeline" / "parser"
 MAPPING = PARSER / "mapper.csv"
 FIELDS = PARSER / "fields.csv"
 SAMPLE = PARSER / "sample_hiqa_with_highlights.pdf"
+PRICE_PDF = PARSER.parent / "max_contract_price.pdf"
+PRICE_MAPPER = PARSER / "max_contract_mapper.csv"
+PRICE_FIELDS = PARSER / "max_contract_fields.csv"
 HEADER = "kind,group,key,location,source,match,index,transform\n"
 
 EXPECTED_FIELDS = {
@@ -313,3 +322,88 @@ def test_the_highlighted_sample_is_read() -> None:
     assert report.records["inspectors"][0]["role"] == "Lead"
     assert len(report.records["regulations"]) == 12
     assert len(report.records["compliance_items"]) == 18
+
+
+def test_is_column_index_required(tmp_path: Path) -> None:
+    path = _mapping(tmp_path, "record,g,county,issuer,table_column,,,strip")
+
+    with pytest.raises(ValueError, match="table_column needs a column index"):
+        load_fields(path)
+
+
+def test_is_label_record_only(tmp_path: Path) -> None:
+    path = _mapping(tmp_path, "field,,county,issuer,table_label,,0,strip")
+
+    with pytest.raises(ValueError, match="table_label is only for a record"):
+        load_fields(path)
+
+
+def test_is_one_source_per_group(
+    tmp_path: Path,
+) -> None:
+    path = _mapping(
+        tmp_path,
+        "record,g,name,issuer,table_column,,0,strip",
+        "record,g,role,issuer,table_row,,1,strip",
+    )
+
+    with pytest.raises(ValueError, match="mixes table_row and table_column"):
+        load_fields(path)
+
+
+@pytest.fixture(scope="module")
+def price_records() -> list[Record]:
+    sections = Parser(PRICE_PDF, PRICE_MAPPER).parse()
+    report = extract(PRICE_PDF, sections, load_fields(PRICE_FIELDS))
+    return report.records["contract_prices"]
+
+
+@pytest.mark.skipif(
+    not PRICE_PDF.is_file(),
+    reason="the max contract price list is not committed",
+)
+class TestMaxContractPrice:
+    """The contract price list is one table grouped by county."""
+
+    def test_is_every_centre_read(self, price_records: list[Record]) -> None:
+        assert len(price_records) == 411
+
+    def test_is_first_centre_read(self, price_records: list[Record]) -> None:
+        assert price_records[0] == {
+            "county": "Co. Carlow",
+            "centre_name": "Beechwood Nursing Home",
+            "centre_id": "199",
+            "address_line_1": "Rathvindon",
+            "address_line_2": "Leighlinbridge",
+            "address_line_3": "Co. Carlow",
+            "telephone": "059 9722366",
+            "contract_price": "€1,220",
+        }
+
+    def test_is_header_skipped(self, price_records: list[Record]) -> None:
+        assert all(
+            record["centre_name"] != "Nursing Home Name"
+            for record in price_records
+        )
+
+    def test_is_blank_cell_aligned(self, price_records: list[Record]) -> None:
+        house = next(
+            record
+            for record in price_records
+            if record["centre_name"] == "St. John's House"
+        )
+
+        assert house["address_line_2"] == ""
+        assert house["address_line_3"] == "Dublin 4"
+        assert house["telephone"] == "01 2692213"
+        assert house["contract_price"] == "€1,388"
+
+    def test_is_county_carried(self, price_records: list[Record]) -> None:
+        # Cork runs over a page break; every row still carries the county
+        # heading its block.
+        cork = [
+            record for record in price_records if record["county"] == "Co. Cork"
+        ]
+
+        assert len(cork) > 0
+        assert all(record["county"] == "Co. Cork" for record in cork)
