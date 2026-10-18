@@ -17,7 +17,6 @@
   /* Judgement markers */
   --not-compliant: light-dark(#b42318, #f97066);
   --substantially: light-dark(#9a5b00, #f0b45a);
-  --not-assessed: light-dark(#7b8591, #8a94a0);
 }
 
 :root[data-theme="light"] {
@@ -40,7 +39,6 @@
   --color-surface-muted: var(--surface-muted);
   --color-not-compliant: var(--not-compliant);
   --color-substantially: var(--substantially);
-  --color-not-assessed: var(--not-assessed);
   --font-serif: var(--font-source-serif);
   --font-sans: var(--font-public-sans);
   --font-mono: var(--font-plex-mono);

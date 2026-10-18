@@ -12,7 +12,6 @@ import {
   type RegulationHistory,
 } from "@/lib/centres";
 import { HistoryScroller } from "./history-scroller";
-import { HistoryToast } from "./history-toast";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 
 // Rows shown before "Show all".
@@ -128,14 +127,9 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
   const firstYear = shown.length ? new Date(shown[0].date).getUTCFullYear() : null;
   const lastYear = shown.length ? new Date(shown[shown.length - 1].date).getUTCFullYear() : null;
   const years = firstYear === lastYear ? `from ${firstYear}` : `from ${firstYear} to ${lastYear}`;
-  const yearsMessage = `Now showing ${showAllInspections ? "more" : "fewer"} inspections, ${years}`;
 
   return (
     <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
-      <HistoryToast
-        inspectionsMessage={yearsMessage}
-        regulationsMessage={`Now showing ${showAll ? "more" : "fewer"} regulations`}
-      />
       <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:px-7">
         <h2 id="hist-h" className="shrink-0 font-serif text-xl font-semibold md:text-2xl">
           Inspection history
@@ -267,11 +261,12 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
       <div className="flex flex-col gap-3 px-4 pb-4 pt-4 text-base md:px-7">
         {/* Says what the table covers, and stays: the toast is only a passing cue. */}
         {inspections.length > LATEST_INSPECTIONS && (
-          <p className="text-ink">
+          // A status, so screen readers announce it when a toggle changes the inspections shown.
+          <p role="status" className="text-ink">
             {showAllInspections
               ? `Showing all ${inspections.length} inspections, ${years}.`
               : `Showing the latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
-            {/* Only the table scrolls; the phone cards list every inspection. */}
+            {/* Only the table scrolls sideways; the phone cards stack instead. */}
             {scrolls && <span className="hidden lg:inline"> Scroll the table sideways to see older inspections.</span>}
           </p>
         )}
