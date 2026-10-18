@@ -20,6 +20,7 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V3__inspection_report_views.sql",
     REPOSITORY / "db" / "V4__re_assessment.sql",
     REPOSITORY / "db" / "V5__inspection_report_text.sql",
+    REPOSITORY / "db" / "V6__inspection_commitments.sql",
 )
 POSTGRES_IMAGE = "postgres:18.6"
 SUPERUSER = "postgres"

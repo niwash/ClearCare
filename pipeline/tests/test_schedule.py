@@ -21,6 +21,7 @@ STARTUP = [
     "load_report_files",
     "ingest_reports",
     "extract_text",
+    "split_commitments",
 ]
 EVERY_STAGE_OF_BOTH_JOBS = [
     *STARTUP,
@@ -32,6 +33,7 @@ EVERY_STAGE_OF_BOTH_JOBS = [
     "load_report_files",
     "ingest_reports",
     "extract_text",
+    "split_commitments",
 ]
 
 
@@ -156,6 +158,7 @@ def test_a_new_crawl_scope_makes_the_reports_job_due(tmp_path: Path) -> None:
         "load_report_files",
         "ingest_reports",
         "extract_text",
+        "split_commitments",
     ]
     assert ("reports", "--data-dir", str(tmp_path)) in stages.calls
 
