@@ -17,6 +17,8 @@ ROLES_SQL = REPOSITORY / "infra" / "postgres" / "roles.sql"
 MIGRATIONS = (
     REPOSITORY / "db" / "V1__register_entries.sql",
     REPOSITORY / "db" / "V2__inspection_reports.sql",
+    REPOSITORY / "db" / "V3__inspection_report_views.sql",
+    REPOSITORY / "db" / "V4__re_assessment.sql",
 )
 POSTGRES_IMAGE = "postgres:18.6"
 SUPERUSER = "postgres"
