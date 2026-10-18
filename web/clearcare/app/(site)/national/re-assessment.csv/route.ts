@@ -1,0 +1,58 @@
+// app/national/re-assessment.csv/route.ts
+// The re-assessment matrix as a CSV: one row per starting judgment, with what the judgments became
+// at the centre's next report and the re-check rate.
+import { toCsv } from "@/lib/csv";
+import { unavailableMessage } from "@/lib/search";
+import { getReAssessmentStatistics } from "@/lib/statistics";
+
+function formatRate(rate: number | null) {
+  return rate === null ? "" : `${(rate * 100).toFixed(1)}%`;
+}
+
+export async function GET() {
+  const lookup = await getReAssessmentStatistics();
+  if (lookup.status === "unavailable") {
+    const message =
+      lookup.httpStatus === 503
+        ? "No inspection reports have been loaded yet. Please try again later."
+        : unavailableMessage(lookup.httpStatus);
+    return new Response(message, { status: 503 });
+  }
+  const { matrix, re_check_rate, data_date } = lookup.statistics;
+
+  const header = [
+    "Judgment",
+    "Next report: Compliant",
+    "Next report: Substantially compliant",
+    "Next report: Not compliant",
+    "Not re-assessed",
+    "No later report",
+    "Total",
+    "With a later report",
+    "Re-assessed",
+    "Re-check rate",
+  ];
+  // The API returns both lists in the same order of starting judgments.
+  const rows = matrix.map((row, index) => {
+    const reCheck = re_check_rate[index];
+    return [
+      row.judgment,
+      row.compliant,
+      row.substantially_compliant,
+      row.not_compliant,
+      row.not_re_assessed,
+      row.no_later_report,
+      row.total,
+      reCheck.with_later_report,
+      reCheck.re_assessed,
+      formatRate(reCheck.rate),
+    ];
+  });
+
+  return new Response(toCsv([header, ...rows]), {
+    headers: {
+      "Content-Type": "text/csv; charset=utf-8",
+      "Content-Disposition": `attachment; filename="re-assessment-${data_date}.csv"`,
+    },
+  });
+}

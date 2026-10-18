@@ -3,12 +3,8 @@
 // one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
 import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
+import { toCsv } from "@/lib/csv";
 import { formatEircode, unavailableMessage } from "@/lib/search";
-
-function csvField(value: string | number) {
-  const text = String(value);
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
 
 export async function GET(_request: Request, { params }: RouteContext<"/centres/[id]/record.csv">) {
   const { id } = await params;
@@ -46,9 +42,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     row.regulation.title,
     ...inspections.map((inspection) => JUDGEMENT_LABELS[row.results[inspection.id] ?? "not-assessed"]),
   ]);
-  const lines = [...details, [], header, ...rows].map((fields) => fields.map(csvField).join(","));
-  // The byte order mark tells Excel the file is UTF-8, so names like "Áras" show correctly.
-  const csv = "\uFEFF" + lines.join("\r\n");
+  const csv = toCsv([...details, [], header, ...rows]);
   const filename = `${centre.centre_id}-${centre.centre_name}`.replace(/[^A-Za-z0-9-]+/g, "-");
 
   return new Response(csv, {

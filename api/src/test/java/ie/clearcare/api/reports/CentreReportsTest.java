@@ -55,7 +55,8 @@ class CentreReportsTest {
       List.of(
           "db/V1__register_entries.sql",
           "db/V2__inspection_reports.sql",
-          "db/V3__inspection_report_views.sql");
+          "db/V3__inspection_report_views.sql",
+          "db/V4__re_assessment.sql");
 
   // A register snapshot, so that the centre exists (db/V1), and one parsed report of it
   // (db/V2), as the pipeline loads it. The report's PDF is a second stored file (ADR-0007),

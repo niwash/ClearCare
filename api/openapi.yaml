@@ -332,6 +332,85 @@ paths:
                 detail: There is no report with this report_id.
                 instance: /reports/999
 
+  /statistics/re-assessment:
+    get:
+      operationId: getReAssessmentStatistics
+      summary: Count what each judgment became at the centre's next report
+      description: |
+        Counts the judgments of every loaded report by what the same centre's
+        next report said about the regulation, as defined in
+        ADR-0015: judged again, not
+        re-assessed (the next report does not list the regulation), or no
+        later report. Each count comes with its denominator, so the rates can
+        be checked.
+
+        Only loaded reports are counted. Reports whose layout cannot be
+        loaded yet, such as thematic reports (ADR-0013), are
+        passed over, so the next report is the next one ClearCare has
+        loaded.
+      responses:
+        "200":
+          description: >
+            The counts, one row per starting judgment, in the order Compliant,
+            Substantially compliant, Not compliant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReAssessmentStatistics"
+              example:
+                matrix:
+                  - judgment: Compliant
+                    compliant: 1
+                    substantially_compliant: 0
+                    not_compliant: 0
+                    not_re_assessed: 3
+                    no_later_report: 1
+                    total: 5
+                  - judgment: Substantially compliant
+                    compliant: 0
+                    substantially_compliant: 0
+                    not_compliant: 1
+                    not_re_assessed: 1
+                    no_later_report: 0
+                    total: 2
+                  - judgment: Not compliant
+                    compliant: 1
+                    substantially_compliant: 1
+                    not_compliant: 0
+                    not_re_assessed: 0
+                    no_later_report: 2
+                    total: 4
+                re_check_rate:
+                  - judgment: Compliant
+                    with_later_report: 4
+                    re_assessed: 1
+                    rate: 0.25
+                  - judgment: Substantially compliant
+                    with_later_report: 2
+                    re_assessed: 1
+                    rate: 0.5
+                  - judgment: Not compliant
+                    with_later_report: 2
+                    re_assessed: 2
+                    rate: 1.0
+                coverage:
+                  reports_loaded: 4
+                  centres_with_two_or_more_reports: 1
+                  reports_paired: 2
+                  judgments_paired: 8
+                data_date: "2026-05-13"
+        "503":
+          description: No report with an inspection date has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: No inspection reports have been loaded yet.
+                instance: /statistics/re-assessment
+
 components:
   schemas:
     CentreSearchResult:
@@ -656,6 +735,110 @@ components:
         date_to_comply:
           type: [string, "null"]
           format: date
+
+    ReAssessmentStatistics:
+      type: object
+      required: [matrix, re_check_rate, coverage, data_date]
+      properties:
+        matrix:
+          type: array
+          items:
+            $ref: "#/components/schemas/NextResultCounts"
+        re_check_rate:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReCheckRate"
+        coverage:
+          $ref: "#/components/schemas/Coverage"
+        data_date:
+          type: string
+          format: date
+          description: The latest inspection date among the loaded reports.
+
+    NextResultCounts:
+      type: object
+      description: >
+        How many judgments of one starting judgment had each result at the
+        centre's next report. The judgment columns count only the three
+        spellings HIQA uses, and total counts every judgment, so a judgment
+        printed another way is in total alone.
+      required:
+        - judgment
+        - compliant
+        - substantially_compliant
+        - not_compliant
+        - not_re_assessed
+        - no_later_report
+        - total
+      properties:
+        judgment:
+          type: string
+          enum: [Compliant, Substantially compliant, Not compliant]
+          description: The starting judgment.
+        compliant:
+          type: integer
+        substantially_compliant:
+          type: integer
+        not_compliant:
+          type: integer
+        not_re_assessed:
+          type: integer
+          description: The next report does not list the regulation.
+        no_later_report:
+          type: integer
+          description: The judgment is from the centre's latest loaded report.
+        total:
+          type: integer
+
+    ReCheckRate:
+      type: object
+      description: >
+        Of the judgments of one starting judgment that have a later report,
+        how many the next report judged again.
+      required: [judgment, with_later_report, re_assessed, rate]
+      properties:
+        judgment:
+          type: string
+          enum: [Compliant, Substantially compliant, Not compliant]
+          description: The starting judgment.
+        with_later_report:
+          type: integer
+          description: The denominator, total less no_later_report.
+        re_assessed:
+          type: integer
+          description: >
+            The numerator, the sum of the compliant, substantially_compliant
+            and not_compliant counts.
+        rate:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 1
+          description: >
+            re_assessed divided by with_later_report, not rounded. null when
+            with_later_report is 0.
+
+    Coverage:
+      type: object
+      description: How much of the data the counts rest on.
+      required:
+        - reports_loaded
+        - centres_with_two_or_more_reports
+        - reports_paired
+        - judgments_paired
+      properties:
+        reports_loaded:
+          type: integer
+        centres_with_two_or_more_reports:
+          type: integer
+          description: Centres with two or more loaded reports.
+        reports_paired:
+          type: integer
+          description: >
+            Reports paired with the centre's next report. A report that judged
+            no regulation is not counted.
+        judgments_paired:
+          type: integer
+          description: Judgments of the paired reports.
 
     Problem:
       type: object
