@@ -2,7 +2,7 @@
 // The home's details, a blank row, then the inspection history table as a CSV:
 // one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
-import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
+import { centrePhone, formatDate, getCentre, getCentreReports } from "@/lib/centres";
 import { toCsv } from "@/lib/csv";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
@@ -15,11 +15,13 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
   const reports = await getCentreReports(id);
   if (!reports) return new Response("No inspection reports for this home yet", { status: 404 });
 
+  const phone = centrePhone(centre.centre_phone);
   const details = [
     ["Nursing home", centre.centre_name],
     ["Address", centre.address],
     ["County", `Co. ${centre.county}`],
     ["Eircode", centre.eircode ? formatEircode(centre.eircode) : "Not stated"],
+    ...(phone ? [["Phone", phone.text]] : []),
     ["HIQA centre ID", centre.centre_id],
     [
       "Registered for",
