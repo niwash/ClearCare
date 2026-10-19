@@ -23,7 +23,7 @@ Fair Deal is the Irish government's scheme to help pay for long-term nursing hom
 
 **You pay what you can reasonably afford, and the State (HSE) pays the rest.** Your contribution is worked out by looking at your income and your savings or property. If the nursing home costs more than your contribution, the HSE makes up the difference.
 
-Fair Deal supports over 23,000 people in nursing homes across Ireland ([Comptroller and Auditor General, Special Report 110](https://www.audit.gov.ie/media/u4kaxxwq/special-report-110-the-nursing-homes-support-scheme-fair-deal-_.pdf)). It works for care in public nursing homes, private nursing homes, and voluntary (charitable) nursing homes.
+Fair Deal supported over 23,000 people in nursing homes across Ireland in 2018, the most recent figure in a published audit ([Comptroller and Auditor General, Special Report 110](https://www.audit.gov.ie/media/u4kaxxwq/special-report-110-the-nursing-homes-support-scheme-fair-deal-_.pdf)). It works for care in public nursing homes, private nursing homes, and voluntary (charitable) nursing homes.
 
 ---
 
@@ -75,7 +75,7 @@ The HSE works out how much you pay through a **financial assessment** of your **
 | Couple (combined income) | 40% of combined weekly income (per person in care) |
 | Rental income from your family home (if rented while you are in care) | 40% of that rental income, or you can apply to have it made exempt entirely ([HSE, Financial assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/#:~:text=you%20can%20apply%20to%20have%20all%20your%20rental%20income%20made%20exempt)) |
 
-*For example: if you receive the State Pension (Contributory) of ~€299.30 per week ([Budget 2026](https://www.gov.ie/en/department-of-social-protection/publications/budget-2026/)), 80% of that is about €239. That amount goes toward your nursing home cost.*
+*For example: if you receive the State Pension (Contributory) of €299.30 per week ([Budget 2026](https://www.gov.ie/en/department-of-social-protection/publications/budget-2026/)), 80% of that is about €239. That amount goes toward your nursing home cost.*
 
 ### Your savings and assets
 
@@ -102,23 +102,21 @@ Mary is a widow. Her State Pension is ~€300 per week and she has €20,000 in 
 Tom and Anne are married and have a combined weekly income of ~€600 (two State Pensions). Tom moves into a nursing home. They have €50,000 in savings between them (below the €72,000 couple disregard), and they jointly own their family home, worth €300,000. Anne continues to live there.
 
 - Income contribution: 40% x €600 = **€240 per week**
-- Asset contribution: €0 (combined savings are below the disregard)
-- Home contribution: 3.75% x €300,000 = €11,250 per year, about €216 per week, for up to 3 years, because Anne still lives there ([HSE, NHSS Application Form and Support Information, p.22](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=22)). This can be deferred using the nursing home loan (see below) so Tom and Anne don't have to pay it week to week.
-- **Tom's weekly contribution is €240, plus the home-related amount which can be deferred via the nursing home loan.** The HSE pays the rest of the nursing home cost above that.
+- Asset contribution: the €72,000 couple disregard is taken off their combined savings and home together (savings first, then the home): €50,000 + €300,000 − €72,000 = €278,000. At 3.75% a year, that's €10,425 per year, about €200 per week, for up to 3 years ([HSE, NHSS Application Form and Support Information, p.22](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=22)). The rate is 3.75% because they are a couple, not because Anne still lives there. This amount can be deferred using the nursing home loan (see below) while Anne continues to live in the home, so Tom and Anne don't have to pay it week to week.
+- **Tom's weekly contribution is €240, plus the €200 asset-related amount which can be deferred via the nursing home loan.** The HSE pays the rest of the nursing home cost above that.
 
 Note: 40% (not 80%) is used for the couple's combined income because the HSE assesses each person's share of the combined income at the single rate of 80%, which works out to 40% of the total ([HSE, NHSS Application Form and Support Information, p.25](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=25)). This also applies to couples who have been living together as partners for at least 3 years, not just married couples (same application form, p.25).
 
 ### Example 3: Renting out the family home
 
-Brigid is single and owns her family home. She moves into a nursing home and decides to rent it out for €800 per month (about €185 per week) rather than leave it empty. Her State Pension is ~€299 per week.
+Brigid is single and owns her family home, worth €300,000. She moves into a nursing home and decides to rent it out for €800 per month (about €185 per week) rather than leave it empty. Her State Pension is €299.30 per week.
 
 Because Brigid is renting out her family home while in care, she can apply to have that rental income made exempt from the financial assessment entirely ([HSE, Financial assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/#rental-income-for-your-home)). If she doesn't apply for the exemption, the rental income is instead treated as general income:
 
 - Pension contribution: 80% x €299 = €239 per week
 - Rental income contribution (if not exempted): 80% x €185 = €148 per week, because Brigid is a single person (a couple's income, including rental income, is assessed at 40% instead)
-- **Brigid's total weekly contribution, if she doesn't apply for the exemption: €387.** If she applies for the exemption, only her pension is counted: €239 per week.
-
-Because Brigid still owns her family home, it is also included in the financial assessment (7.5% of its value per year, for up to three years under the 3-year cap explained below) unless she sells it or qualifies for another exemption.
+- Home contribution: 7.5% x (€300,000 − €36,000 disregard) = €19,800 per year, about €381 per week, for up to three years under the 3-year cap (explained below). This amount can be deferred using the nursing home loan.
+- **Brigid's total weekly contribution, if she doesn't apply for the rental exemption: €239 pension + €148 rent + €381 home-related = €768, of which the €381 can be deferred via the nursing home loan.** If she applies for the rental exemption, that drops to €239 pension + €381 home-related, with the €381 still deferrable.
 
 ---
 
@@ -128,7 +126,7 @@ Many families worry that going into a nursing home means losing the family home.
 
 ### How it works
 
-If you own your home, its value is included in the financial assessment after the disregard is applied. The HSE counts **7.5% of your home's value per year** (above the €36,000 single-person disregard) as part of your contribution. For a home worth €300,000, that's 7.5% of €264,000 (€300,000 minus the €36,000 disregard) = €19,800 per year, or about €381 per week. If you are part of a couple, the rate is 3.75%: for the same home, that works out to about €164 per week.
+If you own your home, its value is included in the financial assessment after the disregard is applied. The HSE counts **7.5% of your home's value per year** (above the €36,000 single-person disregard) as part of your contribution. For a home worth €300,000, if the home is your only asset, that's 7.5% of €264,000 (€300,000 minus the €36,000 disregard) = €19,800 per year, or about €381 per week. The disregard comes off your total assets, cash savings first, so if you also have savings, less of the disregard is left to come off the home. If you are part of a couple, the rate is 3.75%: for the same home with no other assets, that works out to about €164 per week.
 
 However, **after three years, the family home is no longer counted at all**, even if you remain in the nursing home for many more years. This three-year limit is called the **3-year cap**.
 
@@ -150,9 +148,9 @@ Some people cannot cover their full contribution from income alone, particularly
 
 ### What it is
 
-Instead of paying the part of your contribution that relates to your home every week, the HSE covers it for you. That amount builds up as a loan, **tied to your home or other property within the State** ([HSE, NHSS Application Form and Support Information, p.26](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=26)). You do not have to repay it while you are in the nursing home, but if you sell or transfer the property, you must repay the loan immediately.
+Instead of paying the part of your contribution that relates to your home every week, the HSE covers it for you. That amount builds up as a loan, **tied to your home or other property within the State** ([HSE, NHSS Application Form and Support Information, p.26](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=26)). You do not have to repay it while you are in the nursing home. If you sell or transfer the property while in care, the loan becomes due straight away. You must tell your local Nursing Homes Support Office within 10 working days and repay the loan to Revenue within 6 months of the sale or transfer, or interest will be charged ([same source, p.27](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=27)).
 
-It is paid back later: within 18 months of your death according to the HSE's loan page (though the application form states 12 months, so it's worth confirming with your local Nursing Homes Support Office), or within 6 months of selling or transferring the property.
+After your death, it is paid back within 18 months according to the HSE's loan page (though the application form states 12 months, so it's worth confirming with your local Nursing Homes Support Office). Bankruptcy or false information on the application can also make the loan due immediately.
 
 ### This is not a commercial bank loan
 
@@ -171,9 +169,9 @@ The loan amount is adjusted for inflation or deflation using the Consumer Price 
 
 Start the application as early as you can. **Funding cannot be backdated.** It is only paid from the date your application is approved, not from when you moved in.
 
-1. **Get the application form.** Download it from [hse.ie/nhss](https://www.hse.ie/nhss/) (available in both Irish and English) or collect it from your local Nursing Home Support Office.
+1. **Get the application form.** Download it from [hse.ie/nhss](https://www.hse.ie/nhss/) (available in both Irish and English) or collect it from your local Nursing Homes Support Office.
 
-2. **Submit your form** to your local Nursing Home Support Office. You can do this yourself, or get help from a family member, solicitor, or social worker. The following people can apply on your behalf: your spouse or partner, a child or step-child aged 18 or over, a registered doctor, nurse, or social worker, or someone with a Registered Enduring Power of Attorney. A Decision-Making Representative appointed by the Circuit Court can also act on your behalf ([Decision Support Service](https://www.decisionsupportservice.ie/services/decision-making-representation-order/becoming-decision-making-representative)). If you also want the nursing home loan (see below) to cover the part of your contribution linked to your home, you can request it on the same form. It is optional and not automatic.
+2. **Submit your form** to your local Nursing Homes Support Office. You can do this yourself, or get help from a family member, solicitor, or social worker. The following people can apply on your behalf: your spouse or partner, a child or step-child aged 18 or over, a registered doctor, nurse, or social worker, or someone with a Registered Enduring Power of Attorney. A Decision-Making Representative appointed by the Circuit Court can also act on your behalf ([Decision Support Service](https://www.decisionsupportservice.ie/services/decision-making-representation-order/becoming-decision-making-representative)). If you also want the nursing home loan (see above) to cover the part of your contribution linked to your home, you can request it on the same form. It is optional and not automatic.
 
 3. **Care needs assessment.** The HSE will arrange a visit to assess whether you need long-term nursing home care. This is usually done by a public health nurse or an HSE assessor ([HSE, Care Needs Assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/care-needs-assessment/)).
 
