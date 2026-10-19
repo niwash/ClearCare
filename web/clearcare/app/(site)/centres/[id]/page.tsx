@@ -71,16 +71,15 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
             Inspection reports
           </h2>
           <p className="mt-2 text-ink-muted">
-            This home&apos;s inspection reports haven&apos;t been added to ClearCare yet. You can read them on{" "}
-            <a href={centre.hiqa_url}>its page on hiqa.ie</a>.
+            We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
           </p>
         </section>
       )}
 
       <div className="flex flex-col gap-2 text-small leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
         <p>
-          Contains information from HIQA inspection reports and the register of designated centres, reused under the
-          Irish PSI licence (CC BY 4.0). ClearCare does not rate or recommend homes.
+          Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
+          rate or recommend homes.
         </p>
         <p className="whitespace-nowrap">
           Source:{" "}
@@ -137,7 +136,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
           <Fact label="Registered for">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
             {/* The most residents HIQA allows, not free beds. */}
-            <span className="block text-small text-ink-muted">The most HIQA allows, not free beds</span>
+            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
           </Fact>
           <Fact label="County">Co. {centre.county}</Fact>
           {centre.eircode && (
@@ -188,11 +187,11 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
             >
               <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
             </svg>
-            Download as a spreadsheet
+            Download spreadsheet
           </a>
         )}
         <a href={centre.hiqa_url} className="pt-1 text-center text-sm adult:flex adult:min-h-11 adult:items-center adult:justify-center adult:pt-0">
-          Open this home on hiqa.ie
+          View on hiqa.ie
         </a>
       </div>
     </section>

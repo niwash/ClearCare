@@ -17,7 +17,7 @@ export default async function StartPage() {
             Check a nursing home&apos;s record
           </h1>
           <p className="text-ink-muted md:text-lg">
-            Every HIQA inspection report, one page per home. Every line links back to the report it came from.
+            Every HIQA inspection report, one page per home, with links to the original reports.
           </p>
 
           {/* Name or Eircode here; the search page works out which. It has address and county too. */}
@@ -39,7 +39,7 @@ export default async function StartPage() {
           </form>
 
           <p className="text-sm">
-            <Link href="/search" className="tap-target">Search by address, town or county instead →</Link>
+            <Link href="/search" className="tap-target">Search by address or county instead →</Link>
           </p>
 
           {total !== null && (

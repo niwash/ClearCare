@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   changeFrom,
   formatDate,
-  formatMonth,
   trailAnchor,
   type Change,
   type Inspection,
@@ -120,14 +119,13 @@ function historyHref({ from, regulations, inspections }: { from?: string; regula
 
 export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections, from }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
-  const firstJudged = inspections.find((inspection) => inspection.regulationJudgements);
   // Cells are still built from every inspection, so "worse" and "better" compare with the right one.
   const shown = showAllInspections ? inspections : inspections.slice(-LATEST_INSPECTIONS);
   // More columns than fit: the table scrolls sideways, with the Regulation column fixed.
   const scrolls = shown.length > LATEST_INSPECTIONS;
   const firstYear = shown.length ? new Date(shown[0].date).getUTCFullYear() : null;
   const lastYear = shown.length ? new Date(shown[shown.length - 1].date).getUTCFullYear() : null;
-  const years = firstYear === lastYear ? `from ${firstYear}` : `from ${firstYear} to ${lastYear}`;
+  const years = firstYear === lastYear ? `${firstYear}` : `${firstYear}–${lastYear}`;
 
   return (
     <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
@@ -139,7 +137,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           {JUDGEMENT_ORDER.map((judgement) => (
             <li key={judgement} className="flex items-center gap-1.5">
               <JudgementIcon judgement={judgement} size={12} />
-              {judgement === "not-assessed" ? "Not assessed at that inspection" : JUDGEMENT_LABELS[judgement]}
+              {JUDGEMENT_LABELS[judgement]}
             </li>
           ))}
         </ul>
@@ -268,10 +266,10 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           // A status, so screen readers announce it when a toggle changes the inspections shown.
           <p role="status" className="text-ink">
             {showAllInspections
-              ? `Showing all ${inspections.length} inspections, ${years}.`
-              : `Showing the latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
+              ? `All ${inspections.length} inspections, ${years}.`
+              : `Latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
             {/* Only the table scrolls sideways; the phone cards stack instead. */}
-            {scrolls && <span className="hidden lg:inline"> Scroll the table sideways to see older inspections.</span>}
+            {scrolls && <span className="hidden lg:inline"> Scroll sideways for older inspections.</span>}
           </p>
         )}
         {(inspections.length > LATEST_INSPECTIONS || history.length > SHORT_LIST) && (
@@ -282,7 +280,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                 scroll={false}
                 className={toggleClass}
               >
-                {showAllInspections ? `Show the latest ${LATEST_INSPECTIONS} inspections` : `Show all ${inspections.length} inspections`}
+                {showAllInspections ? `Show latest ${LATEST_INSPECTIONS} only` : `Show all ${inspections.length} inspections`}
               </Link>
             )}
             {history.length > SHORT_LIST && (
@@ -293,7 +291,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
               >
                 {showAll
                   ? "Show fewer regulations"
-                  : `Show all ${history.length} regulations assessed${firstJudged ? ` since ${formatMonth(firstJudged.date)}` : ""}`}
+                  : `Show all ${history.length} regulations`}
               </Link>
             )}
           </div>

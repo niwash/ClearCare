@@ -17,11 +17,11 @@ type Contact = {
 
 const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
   {
-    title: "Regulation and Inspections",
+    title: "Inspections",
     contacts: [
       {
         name: "HIQA (Health Information and Quality Authority)",
-        purpose: "Registers and inspects nursing homes. Takes information about concerns, but can't resolve individual complaints.",
+        purpose: "Registers and inspects nursing homes. Takes concerns, but can't resolve complaints.",
         website: "https://www.hiqa.ie",
         phone: "021 240 9646",
         email: "concerns@hiqa.ie",
@@ -39,31 +39,31 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
       },
       {
         name: "Citizens Information",
-        purpose: "Free, independent information on entitlements, including Fair Deal and long-term care.",
+        purpose: "Free information on entitlements, including Fair Deal.",
         website: "https://www.citizensinformation.ie",
         phone: "0818 07 4000",
       },
     ],
   },
   {
-    title: "Dementia Support",
+    title: "Dementia",
     contacts: [
       {
         name: "The Alzheimer Society of Ireland",
-        purpose: "Dementia helpline, day care, family carer training and support groups for people with dementia and their families.",
+        purpose: "Dementia helpline, day care, carer training and support groups.",
         website: "https://alzheimer.ie",
         phone: "1800 341 341",
         email: "helpline@alzheimer.ie",
       },
       {
         name: "Dementia: Understand Together",
-        purpose: "HSE-led information on dementia, and a directory of local dementia services and supports.",
+        purpose: "HSE dementia information and a directory of local services.",
         website: "https://www.understandtogether.ie",
         email: "understandtogether@hse.ie",
       },
       {
         name: "Dementia Ireland",
-        purpose: "Non-profit campaigning for dementia and end-of-life care as a national health priority. Runs dementia care training and conferences.",
+        purpose: "Campaigns for better dementia care. Runs training and conferences.",
         website: "https://dementiaireland.com",
         phone: "086 361 2907",
         email: "carmelg@dementiaireland.com",
@@ -71,11 +71,11 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
     ],
   },
   {
-    title: "Advocacy and Support",
+    title: "Support and Advocacy",
     contacts: [
       {
         name: "Family Carers Ireland",
-        purpose: "Support, advice and a careline for family members caring for someone, including through a move into a nursing home.",
+        purpose: "Support and a careline for family carers, including during a move into a nursing home.",
         website: "https://familycarers.ie",
         phone: "1800 24 07 24",
       },
@@ -106,7 +106,7 @@ export default function ContactsPage() {
       <div className="flex max-w-3xl flex-col gap-3">
         <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">Contacts</h1>
         <p className="text-ink-muted md:text-lg">
-          Who to contact about a nursing home in Ireland. ClearCare isn&apos;t connected to any of these organisations.
+          Who to contact about a nursing home. ClearCare isn&apos;t linked to these organisations.
         </p>
       </div>
 

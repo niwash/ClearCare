@@ -208,7 +208,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
             {total === centres.length
               ? `${total} registered ${total === 1 ? "centre" : "centres"}`
               : `Showing ${first}–${last} of ${total} registered centres`}
-            , in alphabetical order.
+            .
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (

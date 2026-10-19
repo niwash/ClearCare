@@ -23,7 +23,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
   return (
     <section aria-labelledby="sample-h" className="rounded-lg border border-line bg-surface">
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
-        <p className="text-xs uppercase tracking-wider text-ink-muted">An example, picked at random</p>
+        <p className="text-xs uppercase tracking-wider text-ink-muted">Randomly picked centre</p>
         <h2 id="sample-h" className="font-serif text-xl font-semibold md:text-2xl">
           <Link href={`/centres/${centre.centre_id}`} className="text-ink tap-target">
             {centre.centre_name}
@@ -36,11 +36,11 @@ export async function SampleCentre({ total }: { total: number | null }) {
 
       <div className="flex flex-col gap-4 px-4 py-5 md:px-7">
         <p>
-          At its latest inspection (
+          Latest inspection (
           <a href={latest.reportUrl}>
             {latest.type.toLowerCase()}, {formatDate(latest.date)}
           </a>
-          ), HIQA assessed {assessed} {assessed === 1 ? "regulation" : "regulations"}:
+          ): {assessed} {assessed === 1 ? "regulation" : "regulations"} assessed
         </p>
 
         <ul aria-label="Judgements at the latest inspection" className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
@@ -55,7 +55,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
         </ul>
 
         {findings.length === 0 ? (
-          <p className="text-sm text-ink-muted">Every regulation assessed was judged compliant.</p>
+          <p className="text-sm text-ink-muted">All assessed regulations were compliant.</p>
         ) : (
           <div className="flex flex-col gap-2">
             <h3 className="text-sm font-semibold">Not fully compliant</h3>
@@ -79,14 +79,14 @@ export async function SampleCentre({ total }: { total: number | null }) {
               ))}
             </ul>
             {findings.length > shown.length && (
-              <p className="text-sm text-ink-muted">and {findings.length - shown.length} more on its record.</p>
+              <p className="text-sm text-ink-muted">and {findings.length - shown.length} more.</p>
             )}
           </div>
         )}
       </div>
 
       <div className="flex flex-col gap-2 border-t border-line-soft px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
-        <Link href={`/centres/${centre.centre_id}`} className="tap-target">See the full record for {centre.centre_name} →</Link>
+        <Link href={`/centres/${centre.centre_id}`} className="tap-target">See full record<span className="sr-only"> for {centre.centre_name}</span> →</Link>
         {/* A plain link, so the browser reloads the page and the server picks again. */}
         <a href="/home" className="tap-target">Show another home</a>
       </div>
@@ -99,7 +99,7 @@ export function SampleCentreFallback() {
   return (
     <section
       aria-busy="true"
-      aria-label="An example, picked at random"
+      aria-label="Randomly picked centre"
       className="flex min-h-64 items-center justify-center rounded-lg border border-line bg-surface p-6 text-sm text-ink-muted"
     >
       Picking a home at random…
