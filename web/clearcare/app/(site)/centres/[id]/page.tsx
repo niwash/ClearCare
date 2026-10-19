@@ -4,7 +4,7 @@ import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { Alert } from "@/components/layout/alert";
 import { comingSoonClass } from "@/components/ui/classes";
-import { formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
+import { centrePhone, formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
 import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -99,6 +99,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // Most register addresses already end with the Eircode, so it only gets its own row when missing.
   const addressHasEircode = eircode !== null && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode!);
+  const phone = centrePhone(centre.centre_phone);
 
   return (
     <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
@@ -145,6 +146,18 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
           {eircode && !addressHasEircode && (
             <Fact label="Eircode">
               <span className="font-mono">{eircode}</span>
+            </Fact>
+          )}
+          {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
+          {phone && (
+            <Fact label="Phone">
+              {phone.tel ? (
+                <a href={`tel:${phone.tel}`} className="tap-target">
+                  {phone.text}
+                </a>
+              ) : (
+                phone.text
+              )}
             </Fact>
           )}
           <Fact label="Registered for">

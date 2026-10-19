@@ -12,6 +12,14 @@ export const MOCK_SNAPSHOT: RegisterSnapshot = {
   sha256: "c24a105a0000000000000000000000000000000000000000000000000000mock",
 };
 
+// Each centre's phone as GET /centres/{centre_id} gives it, one per case the page handles: one
+// number (the contract's example), two numbers, and HIQA's "TBC". The rest have none (null).
+export const MOCK_CENTRE_PHONES: Record<string, string> = {
+  "34": "01 555 0123",
+  "101": "096 21 555 / 096 21 556",
+  "102": "TBC",
+};
+
 export const MOCK_CENTRES: CentreSummary[] = [
   {
     centre_id: "34",

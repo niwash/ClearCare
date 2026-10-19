@@ -4,7 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
-import { MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
+import { MOCK_CENTRE_PHONES, MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
 import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
 import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
 
@@ -106,16 +106,30 @@ export interface PromiseTrail {
 }
 
 // GET /centres/{centre_id} (CentreResult in api/openapi.yaml): the centre's register entry, the
-// same fields as a search result, and the register snapshot it was read from. The API returns 404
-// for an unknown ID or a centre that isn't on the current register.
+// fields of a search result and the centre's phone, and the register snapshot it was read from.
+// The API returns 404 for an unknown ID or a centre that isn't on the current register.
 interface CentreResult {
-  centre: CentreSummary;
+  centre: Omit<CentreDetail, "register_snapshot">;
   register_snapshot: RegisterSnapshot;
 }
 
 // What the page uses: the centre with its snapshot alongside, flattened from CentreResult.
 export interface CentreDetail extends CentreSummary {
+  // The centre's own line, as the register prints it: usually one number, sometimes "TBC" or two
+  // ("01 555 0123 / 01 555 0124"). null when the register gives none. Missing from an API without
+  // CCARE-118 (PR #72), so the page leaves the row out rather than saying "Not stated".
+  centre_phone?: string | null;
   register_snapshot: RegisterSnapshot;
+}
+
+// How to show a centre's phone: a tap-to-call link for one number, anything else as printed, and
+// "Not stated" for none or HIQA's "TBC" placeholder. null when the API doesn't send the field.
+export function centrePhone(printed: string | null | undefined): { text: string; tel?: string } | null {
+  if (printed === undefined) return null;
+  const value = printed?.trim();
+  if (!value || /^tbc$/i.test(value)) return { text: "Not stated" };
+  const digits = value.replace(/[\s()-]/g, "");
+  return /^\+?\d{7,13}$/.test(digits) ? { text: value, tel: digits } : { text: value };
 }
 
 // What the inspection reports say, built from GET /centres/{centre_id}/reports and
@@ -155,7 +169,8 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
 
 function mockCentre(id: string): CentreLookup {
   const centre = MOCK_CENTRES.find((c) => c.centre_id === id);
-  return centre ? { status: "found", centre: { ...centre, register_snapshot: MOCK_SNAPSHOT } } : { status: "not-found" };
+  if (!centre) return { status: "not-found" };
+  return { status: "found", centre: { ...centre, centre_phone: MOCK_CENTRE_PHONES[id] ?? null, register_snapshot: MOCK_SNAPSHOT } };
 }
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
