@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
+import { primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
 export default async function StartPage() {
@@ -30,15 +31,15 @@ export default async function StartPage() {
               type="search"
               maxLength={MAX_TEXT_LENGTH}
               placeholder="Nursing home name"
-              className="h-11 min-w-0 flex-1 rounded-md border border-field bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-primary"
+              className={`${textInputClass} flex-1`}
             />
-            <button type="submit" className="h-11 rounded-md bg-primary px-4 font-semibold text-on-primary transition-opacity hover:opacity-90 adult:transition-none adult:hover:bg-primary-hover adult:hover:opacity-100">
+            <button type="submit" className={primaryButtonClass}>
               Search
             </button>
           </form>
 
           <p className="text-sm">
-            <Link href="/search" className="adult:inline-flex adult:min-h-11 adult:items-center">Search by address, town or county instead →</Link>
+            <Link href="/search" className="tap-target">Search by address, town or county instead →</Link>
           </p>
 
           {total !== null && (

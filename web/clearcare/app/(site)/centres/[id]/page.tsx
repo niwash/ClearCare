@@ -3,6 +3,7 @@ import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { Alert } from "@/components/layout/alert";
+import { comingSoonClass } from "@/components/ui/classes";
 import { formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
 import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
@@ -76,7 +77,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
         </section>
       )}
 
-      <div className="flex flex-col gap-2 text-[0.8125rem] adult:text-xs leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
+      <div className="flex flex-col gap-2 text-small leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
         <p>
           Contains information from HIQA inspection reports and the register of designated centres, reused under the
           Irish PSI licence (CC BY 4.0). ClearCare does not rate or recommend homes.
@@ -105,25 +106,25 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
         <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
           <ol className="flex flex-wrap gap-x-1.5">
             <li>
-              <Link href="/home" className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">
+              <Link href="/home" className="inline-block py-1 tap-target">
                 Home
               </Link>{" "}
               <span aria-hidden>›</span>
             </li>
             <li>
-              <Link href={from !== undefined ? searchHref(from) : "/search"} className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">
+              <Link href={from !== undefined ? searchHref(from) : "/search"} className="inline-block py-1 tap-target">
                 Search results
               </Link>{" "}
               <span aria-hidden>›</span>
             </li>
             <li>
-              <Link href={`/search?${new URLSearchParams({ county: centre.county })}`} className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">
+              <Link href={`/search?${new URLSearchParams({ county: centre.county })}`} className="inline-block py-1 tap-target">
                 Co. {centre.county}
               </Link>{" "}
               <span aria-hidden>›</span>
             </li>
             {/* The same padding as the links, so the name lines up with them. */}
-            <li aria-current="page" className="py-1 adult:inline-flex adult:min-h-11 adult:items-center">
+            <li aria-current="page" className="py-1 tap-target">
               {centre.centre_name}
             </li>
           </ol>
@@ -136,7 +137,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
           <Fact label="Registered for">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
             {/* The most residents HIQA allows, not free beds. */}
-            <span className="block text-[0.8125rem] adult:text-xs text-ink-muted">The most HIQA allows, not free beds</span>
+            <span className="block text-small text-ink-muted">The most HIQA allows, not free beds</span>
           </Fact>
           <Fact label="County">Co. {centre.county}</Fact>
           {centre.eircode && (
@@ -150,7 +151,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
           {latest && first && (
             <Fact label="Latest report">
               Inspected {formatDate(latest.date)}
-              <span className="block text-[0.8125rem] adult:text-xs text-ink-muted">
+              <span className="block text-small text-ink-muted">
                 {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
                 {reports.inspections.length}{" "}
                 {reports.inspections.length === 1 ? "report" : "reports"} since {new Date(first.date).getUTCFullYear()}
@@ -165,7 +166,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
         <span
           aria-disabled="true"
           title="Coming soon"
-          className="flex h-12 cursor-not-allowed items-center justify-center rounded-md border-2 border-dashed border-field bg-surface-muted px-5 font-semibold text-ink-muted"
+          className={`flex h-12 items-center justify-center px-5 font-semibold ${comingSoonClass}`}
         >
           Ask about this home (coming soon)
         </span>
@@ -203,7 +204,7 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-sm text-ink-muted">
-        <Link href="/home" className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">
+        <Link href="/home" className="inline-block py-1 tap-target">
           Home
         </Link>
       </div>

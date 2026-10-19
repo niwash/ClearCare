@@ -34,7 +34,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 md:gap-x-8 md:px-8 lg:py-3 adult:max-lg:pb-0">
-        <Link href="/home" className="font-serif text-xl font-semibold text-ink no-underline hover:text-ink md:text-2xl adult:inline-flex adult:min-h-11 adult:items-center">
+        <Link href="/home" className="font-serif text-xl font-semibold text-ink no-underline hover:text-ink md:text-2xl tap-target">
           ClearCare
         </Link>
         <nav

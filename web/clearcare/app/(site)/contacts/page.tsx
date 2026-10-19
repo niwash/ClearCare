@@ -96,6 +96,10 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
   },
 ];
 
+// Each contact link is its own 44px row in the adult-centred design (WCAG 2.5.5). truncate shortens
+// long emails and addresses instead of letting them overflow the column.
+const contactLinkClass = "adult:block adult:truncate adult:py-2.5";
+
 export default function ContactsPage() {
   return (
     <>
@@ -120,7 +124,7 @@ export default function ContactsPage() {
                     <>
                       <dt>Phone</dt>
                       <dd>
-                        <a className="adult:block adult:truncate adult:py-2.5" href={`tel:${contact.phone.replaceAll(" ", "")}`}>{contact.phone}</a>
+                        <a className={contactLinkClass} href={`tel:${contact.phone.replaceAll(" ", "")}`}>{contact.phone}</a>
                       </dd>
                     </>
                   )}
@@ -128,13 +132,13 @@ export default function ContactsPage() {
                     <>
                       <dt>Email</dt>
                       <dd className="min-w-0 truncate">
-                        <a className="adult:block adult:truncate adult:py-2.5" href={`mailto:${contact.email}`}>{contact.email}</a>
+                        <a className={contactLinkClass} href={`mailto:${contact.email}`}>{contact.email}</a>
                       </dd>
                     </>
                   )}
                   <dt>Website</dt>
                   <dd className="min-w-0 truncate">
-                    <a href={contact.website} className="adult:block adult:truncate adult:py-2.5" target="_blank" rel="noopener noreferrer">
+                    <a href={contact.website} className={contactLinkClass} target="_blank" rel="noopener noreferrer">
                       {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
                     </a>
                   </dd>

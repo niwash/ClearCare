@@ -74,7 +74,7 @@ function JudgementCell({ cell }: { cell: Cell }) {
         <JudgementIcon judgement={cell.judgement} />
       </span>
       <span>
-        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">{label}</a> : label}
+        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 tap-target">{label}</a> : label}
         {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
         {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
         {cell.promisesTraced && (
@@ -179,7 +179,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                     return (
                       <div key={inspection.id} className="flex gap-4">
                         <dt className="w-28 shrink-0">
-                          <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm text-ink-muted no-underline hover:underline adult:underline adult:inline-flex adult:min-h-11 adult:items-start">
+                          <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm text-ink-muted no-underline hover:underline adult:underline tap-target-top">
                             {formatDate(inspection.date)}
                           </a>
                         </dt>
@@ -211,7 +211,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
               </th>
               {shown.map((inspection) => (
                 <th key={inspection.id} scope="col" className="px-4 py-3 align-top font-normal">
-                  <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm font-medium text-ink no-underline hover:underline adult:underline adult:inline-flex adult:min-h-11 adult:items-center">
+                  <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm font-medium text-ink no-underline hover:underline adult:underline tap-target">
                     {formatDate(inspection.date)}
                   </a>
                   <div className="text-sm text-ink-muted">

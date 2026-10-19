@@ -22,7 +22,7 @@ export default function ResourcesPage() {
         <ul className="grid gap-2 sm:grid-cols-2">
           {GUIDES.map((guide) => (
             <li key={guide.slug} className="rounded-lg border border-line bg-surface px-4 py-3 text-sm">
-              <Link href={`/guides/${guide.slug}`} className="font-semibold adult:inline-flex adult:min-h-11 adult:items-center">
+              <Link href={`/guides/${guide.slug}`} className="font-semibold tap-target">
                 {guide.title}
               </Link>
               <p className="mt-1 text-ink-muted">{guide.summary}</p>

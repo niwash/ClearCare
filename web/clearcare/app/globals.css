@@ -175,3 +175,26 @@
   outline-offset: 3px;
   box-shadow: none;
 }
+
+/* WCAG 2.5.5 (AAA): links that stand on their own are at least 44px tall in the adult-centred
+   design. tap-target-top keeps the text at the top, for links that sit beside other text.
+   Outside any layer so it wins over display utilities such as inline-block. */
+:root[data-design="adult-centred"] :is(.tap-target, .tap-target-top) {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+}
+
+:root[data-design="adult-centred"] .tap-target-top {
+  align-items: flex-start;
+}
+
+/* Small print: 13px in the standard design, and text-xs (about 16px) in the adult-centred one. */
+@utility text-small {
+  font-size: 0.8125rem;
+
+  @variant adult {
+    font-size: var(--text-xs);
+    line-height: var(--tw-leading, var(--text-xs--line-height));
+  }
+}

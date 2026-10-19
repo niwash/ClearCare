@@ -25,7 +25,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
         <p className="text-xs uppercase tracking-wider text-ink-muted">An example, picked at random</p>
         <h2 id="sample-h" className="font-serif text-xl font-semibold md:text-2xl">
-          <Link href={`/centres/${centre.centre_id}`} className="text-ink adult:inline-flex adult:min-h-11 adult:items-center">
+          <Link href={`/centres/${centre.centre_id}`} className="text-ink tap-target">
             {centre.centre_name}
           </Link>
         </h2>
@@ -68,7 +68,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
                   {/* The label goes under the title on small screens, beside it on wider ones. */}
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
                     <span>
-                      <span className="font-mono text-[0.8125rem] adult:text-xs text-ink-muted">{regulation.number}</span> {regulation.title}
+                      <span className="font-mono text-small text-ink-muted">{regulation.number}</span> {regulation.title}
                     </span>
                     <span className="text-ink-muted sm:shrink-0 sm:text-right">
                       {JUDGEMENT_LABELS[judgement]}
@@ -86,9 +86,9 @@ export async function SampleCentre({ total }: { total: number | null }) {
       </div>
 
       <div className="flex flex-col gap-2 border-t border-line-soft px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
-        <Link href={`/centres/${centre.centre_id}`} className="adult:inline-flex adult:min-h-11 adult:items-center">See the full record for {centre.centre_name} →</Link>
+        <Link href={`/centres/${centre.centre_id}`} className="tap-target">See the full record for {centre.centre_name} →</Link>
         {/* A plain link, so the browser reloads the page and the server picks again. */}
-        <a href="/home" className="adult:inline-flex adult:min-h-11 adult:items-center">Show another home</a>
+        <a href="/home" className="tap-target">Show another home</a>
       </div>
     </section>
   );
