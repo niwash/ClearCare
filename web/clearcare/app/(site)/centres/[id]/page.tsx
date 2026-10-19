@@ -41,7 +41,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
           {reports.visitQuestions.length > 0 && (
             <section aria-labelledby="visit-h" className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:px-7">
-              <h2 id="visit-h" className="font-serif text-xl font-semibold">
+              <h2 id="visit-h" className="font-heading text-xl font-semibold">
                 Worth asking on a visit
               </h2>
               <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
@@ -67,7 +67,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
         </>
       ) : (
         <section aria-labelledby="reports-h" className="rounded-lg border border-line bg-surface p-6">
-          <h2 id="reports-h" className="font-serif text-xl font-semibold">
+          <h2 id="reports-h" className="font-heading text-xl font-semibold">
             Inspection reports
           </h2>
           <p className="mt-2 text-ink-muted">
@@ -131,7 +131,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
             </li>
           </ol>
         </nav>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
 
         {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
             background in the standard design; the adult-centred design adds a 3:1 edge. */}

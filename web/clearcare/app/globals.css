@@ -28,6 +28,8 @@
   /* Form field borders: 3:1 or more (WCAG 1.4.11). */
   --field: light-dark(#7d8691, #66737f);
   --focus: light-dark(#16202b, #e8ecef);
+  /* Headings are serif in the standard design. */
+  --heading-font: var(--font-source-serif);
   --primary: light-dark(#1f4e79, #8db8e0);
   --primary-hover: light-dark(#123b5e, #b5d2ee);
   --on-primary: var(--surface);
@@ -59,6 +61,9 @@
   --line-soft: light-dark(#e5dfd6, #3a352e);
   --field: var(--line);
   --focus: light-dark(#1f1b16, #f4f0ea);
+  /* Sans serif headings, like the body text. NIA/NLM: "Use a sans serif typeface… that is
+     not condensed". */
+  --heading-font: var(--font-public-sans);
   /* Larger text: the root size is 18px (13.5pt), and small text is no smaller
      than about 16px (NIA/NLM: 12 or 14 point body text). Line spacing of 1.5
      (WCAG 1.4.8). Sizes in rem grow with the root. */
@@ -117,7 +122,7 @@
   --color-on-danger: var(--on-danger);
   --color-not-compliant: var(--not-compliant);
   --color-substantially: var(--substantially);
-  --font-serif: var(--font-source-serif);
+  --font-heading: var(--heading-font);
   --font-sans: var(--font-public-sans);
   --font-mono: var(--font-plex-mono);
 }

@@ -97,7 +97,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <span>/</span>
           <span>Search</span>
         </div>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">
           {hasFilters(query) ? `Results for ${describe(query)}` : "Find a nursing home"}
         </h1>
       </div>

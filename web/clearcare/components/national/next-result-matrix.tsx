@@ -31,7 +31,7 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
         </colgroup>
         <thead>
           <tr className="border-b border-line-soft align-bottom">
-            <th scope="col" className="py-2 pr-3 text-xs font-normal uppercase tracking-wide text-ink-muted">
+            <th scope="col" className="py-2 pr-3 text-xs font-normal uppercase tracking-wide text-ink-muted adult:normal-case adult:tracking-normal">
               Judgment
             </th>
             {COLUMNS.map((column) => (

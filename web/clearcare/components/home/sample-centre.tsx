@@ -23,8 +23,8 @@ export async function SampleCentre({ total }: { total: number | null }) {
   return (
     <section aria-labelledby="sample-h" className="rounded-lg border border-line bg-surface">
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
-        <p className="text-xs uppercase tracking-wider text-ink-muted">Randomly picked centre</p>
-        <h2 id="sample-h" className="font-serif text-xl font-semibold md:text-2xl">
+        <p className="text-xs uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">Randomly picked centre</p>
+        <h2 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
           <Link href={`/centres/${centre.centre_id}`} className="text-ink tap-target">
             {centre.centre_name}
           </Link>

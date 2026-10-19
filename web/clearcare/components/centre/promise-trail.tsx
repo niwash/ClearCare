@@ -44,7 +44,7 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
   return (
     <section id={trailAnchor(regulation)} aria-labelledby={headingId} className="scroll-mt-6 rounded-lg border border-line bg-surface">
       <div className="border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
-        <h2 id={headingId} className="font-serif text-xl font-semibold md:text-2xl">
+        <h2 id={headingId} className="font-heading text-xl font-semibold md:text-2xl">
           Regulation {regulation.number} · {regulation.title}: what happened
         </h2>
       </div>

@@ -13,7 +13,7 @@ export default async function StartPage() {
     <>
       <div className="grid gap-6 md:grid-cols-[2fr_1fr] md:gap-10">
         <div className="flex min-w-0 flex-col gap-3">
-          <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">
             Check a nursing home&apos;s record
           </h1>
           <p className="text-ink-muted md:text-lg">

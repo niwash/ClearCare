@@ -20,7 +20,7 @@ export function GuideHeader({ guide }: { guide: Guide }) {
       <Link href="/resources" className="text-sm tap-target">
         ← Back to resources
       </Link>
-      <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{guide.title}</h1>
+      <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">{guide.title}</h1>
       {guide.status === "draft" && <DraftLabel />}
       <p className="text-ink-muted md:text-lg">{guide.summary}</p>
     </header>

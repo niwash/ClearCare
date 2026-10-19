@@ -130,7 +130,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
   return (
     <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
       <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:px-7">
-        <h2 id="hist-h" className="shrink-0 font-serif text-xl font-semibold md:text-2xl">
+        <h2 id="hist-h" className="shrink-0 font-heading text-xl font-semibold md:text-2xl">
           Inspection history
         </h2>
         <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
@@ -205,7 +205,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           <thead className="bg-surface-muted">
             <tr className="border-b-2 border-line">
               <th scope="col" className={`${stickyClass} bg-surface-muted px-4 py-3 align-top text-sm font-normal text-ink-muted md:px-7`}>
-                <span className="uppercase tracking-wide">Regulation #</span>
+                <span className="uppercase tracking-wide adult:normal-case adult:tracking-normal">Regulation #</span>
               </th>
               {shown.map((inspection) => (
                 <th key={inspection.id} scope="col" className="px-4 py-3 align-top font-normal">

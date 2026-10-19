@@ -23,6 +23,8 @@ How the toggle works:
 | **Link and button colour** | Navy | Saturated rust. Saturated colours are clearer for older eyes than pale ones [[8]](#ref-8), [[9]](#ref-9). A warm hue rather than blue because, for older eyes, hues can look tinted toward yellow, making "green, blue, and violet hard to distinguish" (Johnson & Finn, 2017, as cited in [[7]](#ref-7)) |
 | **Form field borders** | At least 3:1 (WCAG 1.4.11, AA) [[10]](#ref-10). Card edges stay light because they are decorative | Darker borders on cards as well as fields |
 | **Text size** | 16px body text, i.e. 12 point, the lower of the NIA/NLM sizes [[5]](#ref-5). Some smaller labels | 18px body text and header links, i.e. 13.5 point, just under the larger NIA/NLM size of 14 point (about 18.7px) ("Use 12 point or 14 point type size for body text" [[5]](#ref-5)). Small labels are at least about 16px. NN/g found text in apps "too small … for older adults to read comfortably" [[4]](#ref-4) |
+| **Headings** | Serif | Sans serif, like the body text. NIA/NLM: "Use a sans serif typeface… that is not condensed" [[5]](#ref-5) |
+| **Small labels** | Some in small capitals, such as "Randomly picked centre" on the start page | Normal case. NIA/NLM: "Use all capital letters and italics in headlines only" [[5]](#ref-5) |
 | **Line spacing** | Browser and Tailwind defaults | At least 1.5 (WCAG 1.4.8, AAA) [[10]](#ref-10) |
 | **Line length** | Not limited | At most 80 characters (WCAG 1.4.8, AAA) [[10]](#ref-10) |
 | **Links** | Underlined: "Reserve underlining for links" [[5]](#ref-5); see also [[6]](#ref-6) | Thicker underline. Header links are underlined too |
@@ -35,7 +37,7 @@ How the toggle works:
 
 ## The same in both
 
-- **"(coming soon)" labels.** "Ask about this home", "Add to list" and unfinished menu items are shown in readable text with "(coming soon)", not faded out. WCAG doesn't require contrast for inactive controls [[10]](#ref-10), but faded text is hard for anyone to read, and the label explains why nothing happens.
+- **"(coming soon)" labels.** "Ask about this home", "Add to list" and any unfinished menu item are shown in readable text with "(coming soon)", not faded out. WCAG doesn't require contrast for inactive controls [[10]](#ref-10), but faded text is hard for anyone to read, and the label explains why nothing happens.
 - **Judgement shapes and labels, page content, layout and features.** Judgement colours follow each design's palette, so "Substantially compliant" is amber by default and gold in Easier to read.
 - **Light and dark mode.** Dark-on-light stays the default [[5]](#ref-5), [[7]](#ref-7).
 
@@ -43,7 +45,6 @@ How the toggle works:
 
 - **Line spacing.** NIA/NLM says to "double space all body text" [[5]](#ref-5). We used WCAG's 1.5 [[10]](#ref-10), because double spacing makes pages much longer on phones.
 - **Paragraph spacing.** WCAG 1.4.8 also asks for paragraph spacing at least 1.5 times the line spacing [[10]](#ref-10). This isn't applied site-wide yet.
-- **Serif headings.** NIA/NLM recommends a sans serif typeface [[5]](#ref-5). Body text is sans serif, but headings use a serif font in both designs.
 - **Text size.** The Nutrition and Aging Resource Center says website text "should be at least 14-point" [[6]](#ref-6), about 18.7px. Body text is 16px (12 point) by default and 18px (13.5 point) in Easier to read.
 - **Glossary and site map.** NIA/NLM recommends an online glossary of technical terms and a site map [[5]](#ref-5). Neither exists yet.
 - **Chart date links.** The inspection dates in "Judgments at each inspection" on the centre page are under 44px in Easier to read (WCAG 2.5.5). That chart is being reworked, and the fix will go in with it.

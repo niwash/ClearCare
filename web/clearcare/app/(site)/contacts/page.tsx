@@ -206,7 +206,7 @@ export default function ContactsPage() {
   return (
     <>
       <div className="flex max-w-3xl flex-col gap-3">
-        <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">Contacts</h1>
+        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">Contacts</h1>
         <p className="text-ink-muted md:text-lg">
           Who to contact about a nursing home. ClearCare isn&apos;t linked to these organisations.
         </p>
@@ -304,7 +304,7 @@ function ContactSection({ title, children }: { title: string; children: ReactNod
   return (
     <details className="group rounded-lg border border-line bg-surface">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
-        <h2 className="font-serif text-xl font-semibold md:text-2xl">{title}</h2>
+        <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
         <Chevron className="size-6 group-open:rotate-90" />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line px-4 py-4 md:px-6">{children}</div>
