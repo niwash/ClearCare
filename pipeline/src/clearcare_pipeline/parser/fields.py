@@ -11,6 +11,15 @@ reads each field from its own column so a blank cell doesn't shift the rest.
 A column the report writes once for a block of rows, like the county on a
 price list, is a ``table_label``; its value is carried down the block.
 
+A table the report prints with no lines between its rows is read by
+``block_column``: PyMuPDF returns one table row per block of entries, so the
+rows are rebuilt from the text on the page, one row per printed line, and
+each line is put in the column it is printed in.
+
+A value the document states once, like the kind of home a price list covers, is
+a ``constant``: its value is the row's ``match``, and it is read as a field
+rather than repeated on every record.
+
 A field names the section its value is in, so the same file reads every
 report, whatever page each section starts on.
 
@@ -51,6 +60,8 @@ SOURCES: Final = (
     "table_row",
     "table_column",
     "table_label",
+    "block_column",
+    "constant",
 )
 TRANSFORM_NAMES: Final = (
     "none",
@@ -171,10 +182,15 @@ def _field(name: str, number: int, row: Sequence[str]) -> Field:
     if cells["kind"] == "field" and cells["group"]:
         raise bad("a field must not have a group")
     if (
-        cells["source"] in ("table_row", "table_column", "table_label")
+        cells["source"]
+        in ("table_row", "table_column", "table_label", "block_column")
         and cells["kind"] != "record"
     ):
         raise bad(f"{cells['source']} is only for a record")
+    if cells["source"] == "constant" and not cells["match"]:
+        raise bad("constant needs its value in match")
+    if cells["source"] == "constant" and cells["kind"] != "field":
+        raise bad("constant is only for a field")
     if (
         cells["source"] in ("table_column", "table_label")
         and not cells["index"]
@@ -223,19 +239,24 @@ def _check_groups(name: str, fields: Sequence[Field]) -> None:
                 f" {', '.join(field.key for field in carried)}"
             )
         if not any(
-            field.source in ("table_row", "table_column")
+            field.source in ("table_row", "table_column", "block_column")
             and field.index is not None
             for field in members
         ):
             raise ValueError(f"{name}: group {group} reads no table column")
-        sources = {
+        table = {
             field.source
             for field in members
             if field.source in ("table_row", "table_column")
         }
-        if len(sources) > 1:
+        if len(table) > 1:
             raise ValueError(
                 f"{name}: group {group} mixes table_row and table_column"
+            )
+        if table and any(field.source == "block_column" for field in members):
+            raise ValueError(
+                f"{name}: group {group} mixes block_column with"
+                f" {', '.join(sorted(table))}"
             )
 
 
@@ -306,7 +327,9 @@ def extract(
             if field.kind == "field"
         }
         records = {
-            group[0].group: _records(group, pages[group[0].location], tables)
+            group[0].group: _records(
+                group, pages[group[0].location], tables, document
+            )
             for group in _groups(fields)
         }
         return Report(values, records)
@@ -390,7 +413,9 @@ def _scalar(
 ) -> Value:
     """Returns one field's value, or None if the report does not have it."""
     text: str | None
-    if field.source == "table_cell":
+    if field.source == "constant":
+        text = field.match
+    elif field.source == "table_cell":
         text = _first(
             pages,
             lambda page: _cell_value(tables.get(page, ()), field.match),
@@ -481,6 +506,7 @@ def _records(
     group: Sequence[Field],
     pages: Sequence[int],
     tables: Mapping[int, Sequence[Table]],
+    document: pymupdf.Document,
 ) -> list[Record]:
     """Returns the records a group describes, in reading order.
 
@@ -498,7 +524,8 @@ def _records(
     A ``table_row`` group numbers the values a row fills, so a report that
     merges cells still lines up on every page. A ``table_column`` group reads
     each field at its own column, so a blank cell doesn't shift the fields
-    after it.
+    after it. A ``block_column`` group does the same on a table the report
+    prints with no row lines, whose rows are rebuilt from the printed text.
 
     A record whose text runs over a page break is printed again at the top of
     the next page, with only the cells that carry on from it filled. Such a
@@ -506,6 +533,8 @@ def _records(
     continuation of the record above it rather than as a record of its own.
     """
     labels = [field for field in group if field.source == "table_label"]
+    if any(field.source == "block_column" for field in group):
+        return _block_records(group, pages, document)
     columns = [field for field in group if field.source == "table_column"]
     if columns:
         return _column_records(group, labels, columns, pages, tables)
@@ -586,7 +615,34 @@ def _column_records(
     pages: Sequence[int],
     tables: Mapping[int, Sequence[Table]],
 ) -> list[Record]:
-    """Reads a ``table_column`` group's records, in reading order.
+    """Reads a ``table_column`` group's records, in reading order."""
+    rows = (
+        row for page in pages for table in tables.get(page, ()) for row in table
+    )
+    return _read_records(group, labels, columns, rows)
+
+
+def _block_records(
+    group: Sequence[Field],
+    pages: Sequence[int],
+    document: pymupdf.Document,
+) -> list[Record]:
+    """Reads a ``block_column`` group's records, in reading order.
+
+    The rows come from the text on each page rather than from a table.
+    """
+    columns = [field for field in group if field.source == "block_column"]
+    rows = [row for page in pages for row in _block_rows(document, page)]
+    return _read_records(group, (), columns, rows)
+
+
+def _read_records(
+    group: Sequence[Field],
+    labels: Sequence[Field],
+    columns: Sequence[Field],
+    rows: Iterable[Sequence[str | None]],
+) -> list[Record]:
+    """Reads the records of a group whose values each come from a column.
 
     Each field comes from its own column, so a blank cell stays blank and
     does not shift the fields after it.
@@ -606,48 +662,126 @@ def _column_records(
     carried_labels: dict[str, Value] = {field.key: None for field in labels}
     above: list[str] | None = None
     record: Record | None = None
-    for page in pages:
-        for table in tables.get(page, ()):
-            for row in table:
-                cells = _cells(row)
-                found = {
-                    field.key: cells[field.index]
-                    for field in labels
-                    if field.index is not None
-                }
-                if hidden:
-                    cells = _without(cells, hidden)
-                cells = _pad(cells, size)
-                if not any(cells):
-                    above = None
-                    record = None
-                    continue
-                if (
-                    _continues(cells, first)
-                    and above is not None
-                    and record is not None
-                ):
-                    _extend(above, cells, range(len(cells)))
-                    record.update(
-                        _read(group, above, marker, hidden, carried_labels)
-                    )
-                    continue
-                above = None
-                record = None
-                filled = [cell for cell in cells if cell]
-                if len(filled) == 1 and carried is not None:
-                    marker = filled[0]
-                    continue
-                line = "\n".join(cells)
-                if any(not pattern.search(line) for pattern in patterns):
-                    continue
-                for key, value in found.items():
-                    if value:
-                        carried_labels[key] = value
-                record = _read(group, cells, marker, hidden, carried_labels)
-                records.append(record)
-                above = list(cells)
+    for row in rows:
+        cells = _cells(row)
+        found = {
+            field.key: cells[field.index]
+            for field in labels
+            if field.index is not None
+        }
+        if hidden:
+            cells = _without(cells, hidden)
+        cells = _pad(cells, size)
+        if not any(cells):
+            above = None
+            record = None
+            continue
+        if (
+            _continues(cells, first)
+            and above is not None
+            and record is not None
+        ):
+            _extend(above, cells, range(len(cells)))
+            record.update(_read(group, above, marker, hidden, carried_labels))
+            continue
+        above = None
+        record = None
+        filled = [cell for cell in cells if cell]
+        if len(filled) == 1 and carried is not None:
+            marker = filled[0]
+            continue
+        line = "\n".join(cells)
+        if any(not pattern.search(line) for pattern in patterns):
+            continue
+        for key, value in found.items():
+            if value:
+                carried_labels[key] = value
+        record = _read(group, cells, marker, hidden, carried_labels)
+        records.append(record)
+        above = list(cells)
     return records
+
+
+def _block_rows(document: pymupdf.Document, page: int) -> list[list[str]]:
+    """Returns a page's table rows, rebuilt from the text printed on it.
+
+    A table the report prints with no lines between its rows gives PyMuPDF
+    one table row per block of entries, with each cell's values joined by
+    newlines and a blank cell left out of the list, so the row cannot be
+    split back into entries. The report still prints one text block per row,
+    so each block's lines are read and put in the column they are printed in.
+
+    A block of one line is a heading for the entries below it - the county on
+    a public price list, say - and is put in the row's first cell, where the
+    reader takes it as the block's marker.
+    """
+    bounds, (top, bottom) = _table_geometry(document, page)
+    if not bounds:
+        raise ValueError(f"no table on page {page}")
+    content = cast("Any", document[page - 1].get_text("dict"))
+    rows: list[list[str]] = []
+    for block in content["blocks"]:
+        area = block["bbox"]
+        if not top - 1 <= (area[1] + area[3]) / 2 <= bottom + 1:
+            continue
+        lines = [
+            (
+                " ".join(span["text"] for span in line["spans"]).strip(),
+                line["bbox"],
+            )
+            for line in block.get("lines", [])
+        ]
+        printed = [line for line in lines if line[0]]
+        if not printed:
+            continue
+        row = [""] * len(bounds)
+        if len(printed) == 1:
+            row[0] = printed[0][0]
+            rows.append(row)
+            continue
+        for text, bbox in printed:
+            column = _column(bounds, bbox)
+            row[column] = f"{row[column]} {text}".strip()
+        rows.append(row)
+    return rows
+
+
+def _table_geometry(
+    document: pymupdf.Document, page: int
+) -> tuple[list[tuple[float, float]], tuple[float, float]]:
+    """Returns where a page's table sits, and where its columns start and end.
+
+    A table printed without row lines still prints a line of column headings
+    and, on the page it starts on, its own lines, so PyMuPDF finds the
+    columns' extents even where it cannot find the rows.
+    """
+    finder = cast("Any", document[page - 1].find_tables())
+    found = list(finder.tables)
+    if not found:
+        return [], (0.0, 0.0)
+    area = (
+        min(table.bbox[1] for table in found),
+        max(table.bbox[3] for table in found),
+    )
+    bounds: list[tuple[float, float]] = []
+    for table in found:
+        for row in table.rows:
+            cells = [cell for cell in row.cells if cell is not None]
+            if len(cells) > len(bounds):
+                bounds = [(cell[0], cell[2]) for cell in cells]
+    return bounds, area
+
+
+def _column(bounds: Sequence[tuple[float, float]], box: Sequence[float]) -> int:
+    """Returns the column a line printed at box falls in."""
+    centre = (box[0] + box[2]) / 2
+    for index, (start, end) in enumerate(bounds):
+        if start - 2 <= centre <= end + 2:
+            return index
+    return min(
+        range(len(bounds)),
+        key=lambda index: abs(bounds[index][0] - box[0]),
+    )
 
 
 def _without(cells: Sequence[str], hidden: Sequence[int]) -> list[str]:

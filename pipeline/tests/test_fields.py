@@ -17,8 +17,10 @@ MAPPING = PARSER / "mapper.csv"
 FIELDS = PARSER / "fields.csv"
 SAMPLE = PARSER / "sample_hiqa_with_highlights.pdf"
 PRICE_PDF = PARSER.parent / "max_contract_price.pdf"
-PRICE_MAPPER = PARSER / "max_contract_mapper.csv"
-PRICE_FIELDS = PARSER / "max_contract_fields.csv"
+PRICE_MAPPER = PARSER / "contract_price_mapper.csv"
+PRICE_FIELDS = PARSER / "contract_price_private_fields.csv"
+PUBLIC_PRICE_PDF = PARSER.parent / "max_contract_price_public.pdf"
+PUBLIC_PRICE_FIELDS = PARSER / "contract_price_public_fields.csv"
 HEADER = "kind,group,key,location,source,match,index,transform\n"
 
 EXPECTED_FIELDS = {
@@ -351,11 +353,29 @@ def test_is_one_source_per_group(
         load_fields(path)
 
 
+def test_a_constant_needs_a_value(tmp_path: Path) -> None:
+    path = _mapping(tmp_path, "field,,kind,issuer,constant,,,strip")
+
+    with pytest.raises(ValueError, match="constant needs its value in match"):
+        load_fields(path)
+
+
+def test_a_constant_is_a_field(tmp_path: Path) -> None:
+    path = _mapping(tmp_path, "record,g,kind,issuer,constant,public,,")
+
+    with pytest.raises(ValueError, match="constant is only for a field"):
+        load_fields(path)
+
+
 @pytest.fixture(scope="module")
-def price_records() -> list[Record]:
+def price_report() -> Report:
     sections = Parser(PRICE_PDF, PRICE_MAPPER).parse()
-    report = extract(PRICE_PDF, sections, load_fields(PRICE_FIELDS))
-    return report.records["contract_prices"]
+    return extract(PRICE_PDF, sections, load_fields(PRICE_FIELDS))
+
+
+@pytest.fixture(scope="module")
+def price_records(price_report: Report) -> list[Record]:
+    return price_report.records["contract_prices"]
 
 
 @pytest.mark.skipif(
@@ -379,6 +399,15 @@ class TestMaxContractPrice:
             "telephone": "059 9722366",
             "contract_price": "€1,220",
         }
+
+    def test_is_date_modified_read(self, price_report: Report) -> None:
+        # The list prints "Date Modified: 4/9/2026" beside its title.
+        assert price_report.fields["date_modified"] == "4/9/2026"
+
+    def test_is_private_home_type_read(self, price_report: Report) -> None:
+        # The list is the private and voluntary one, so the home type is a
+        # value of the list rather than of each record.
+        assert price_report.fields["home_type"] == "private"
 
     def test_is_header_skipped(self, price_records: list[Record]) -> None:
         assert all(
@@ -407,3 +436,97 @@ class TestMaxContractPrice:
 
         assert len(cork) > 0
         assert all(record["county"] == "Co. Cork" for record in cork)
+
+
+@pytest.fixture(scope="module")
+def public_price_report() -> Report:
+    sections = Parser(PUBLIC_PRICE_PDF, PRICE_MAPPER).parse()
+    return extract(PUBLIC_PRICE_PDF, sections, load_fields(PUBLIC_PRICE_FIELDS))
+
+
+@pytest.fixture(scope="module")
+def public_price_records(public_price_report: Report) -> list[Record]:
+    return public_price_report.records["contract_prices"]
+
+
+@pytest.mark.skipif(
+    not PUBLIC_PRICE_PDF.is_file(),
+    reason="the public contract price list is not committed",
+)
+class TestPublicContractPrice:
+    """The public list prints one row per centre, with no row lines."""
+
+    def test_is_every_centre_read(
+        self, public_price_records: list[Record]
+    ) -> None:
+        assert len(public_price_records) == 115
+
+    def test_is_first_centre_read(
+        self, public_price_records: list[Record]
+    ) -> None:
+        assert public_price_records[0] == {
+            "county": "Carlow",
+            "centre_id": "549",
+            "centre_name": "Sacred Heart Hospital",
+            "address_line_1": "Old Dublin Road",
+            "address_line_2": "Carlow",
+            "address_line_3": "Co. Carlow",
+            "postcode": "R93 V825",
+            "telephone": "059 913 36470",
+            "contract_price": "1,908",
+        }
+
+    def test_is_effective_date_read(self, public_price_report: Report) -> None:
+        # The list prints "* Effective from 1st September 2026" on page 1.
+        assert (
+            public_price_report.fields["effective_date"] == "1st September 2026"
+        )
+
+    def test_is_public_home_type_read(
+        self, public_price_report: Report
+    ) -> None:
+        assert public_price_report.fields["home_type"] == "public"
+
+    def test_is_header_skipped(
+        self, public_price_records: list[Record]
+    ) -> None:
+        assert all(
+            record["centre_name"] != "Name of Public Centre"
+            for record in public_price_records
+        )
+
+    def test_is_blank_cell_aligned(
+        self, public_price_records: list[Record]
+    ) -> None:
+        # The list prints nothing for this centre's second address line, so
+        # the postcode has to be read from its own column, not the next free
+        # cell.
+        john = next(
+            record
+            for record in public_price_records
+            if record["centre_id"] == "660"
+        )
+
+        assert john["address_line_2"] == ""
+        assert john["postcode"] == "F91 H224"
+
+    def test_is_county_carried(
+        self, public_price_records: list[Record]
+    ) -> None:
+        # Cork runs over a page break; every row still carries the heading
+        # its block was printed under.
+        cork = [
+            record
+            for record in public_price_records
+            if record["county"] == "Cork"
+        ]
+
+        assert len(cork) == 20
+        assert all(record["county"] == "Cork" for record in cork)
+
+    def test_is_county_left_raw(
+        self, public_price_records: list[Record]
+    ) -> None:
+        # The list heads its blocks "Carlow", not "Co. Carlow", and the
+        # prefix is put on in the transformation rather than here.
+        assert public_price_records[0]["county"] == "Carlow"
