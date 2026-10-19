@@ -96,6 +96,9 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports: CentreReports | null; from?: string }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
+  const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
+  // Most register addresses already end with the Eircode, so it only gets its own row when missing.
+  const addressHasEircode = eircode !== null && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode!);
 
   return (
     <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
@@ -129,23 +132,25 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
           </ol>
         </nav>
         <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
-        {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
-        <p className="text-ink-muted">{centre.address}</p>
 
-        <dl className="mt-2.5 grid max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-7">
+        {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
+            background in the standard design; the adult-centred design adds a 3:1 edge. */}
+        <dl className="mt-2.5 max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
+          <Fact label="HIQA centre ID">
+            <span className="font-mono">{centre.centre_id}</span>
+          </Fact>
+          <Fact label="County">Co. {centre.county}</Fact>
+          {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
+          <Fact label="Address">{centre.address}</Fact>
+          {eircode && !addressHasEircode && (
+            <Fact label="Eircode">
+              <span className="font-mono">{eircode}</span>
+            </Fact>
+          )}
           <Fact label="Registered for">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
             {/* The most residents HIQA allows, not free beds. */}
             <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
-          </Fact>
-          <Fact label="County">Co. {centre.county}</Fact>
-          {centre.eircode && (
-            <Fact label="Eircode">
-              <span className="font-mono">{formatEircode(centre.eircode)}</span>
-            </Fact>
-          )}
-          <Fact label="HIQA centre ID">
-            <span className="font-mono">{centre.centre_id}</span>
           </Fact>
           {latest && first && (
             <Fact label="Latest report">
@@ -214,9 +219,9 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
 
 function Fact({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div>
-      <dt className="text-xs uppercase tracking-wider text-ink-muted">{label}</dt>
-      <dd className="mt-1">{children}</dd>
+    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="font-medium text-ink-muted">{label}</dt>
+      <dd>{children}</dd>
     </div>
   );
 }

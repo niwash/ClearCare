@@ -68,7 +68,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
                   {/* The label goes under the title on small screens, beside it on wider ones. */}
                   <div className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-4">
                     <span>
-                      <span className="font-mono text-small text-ink-muted">{regulation.number}</span> {regulation.title}
+                      <span className="font-mono text-small text-ink-muted">#{regulation.number}</span> · {regulation.title}
                     </span>
                     <span className="text-ink-muted sm:shrink-0 sm:text-right">
                       {JUDGEMENT_LABELS[judgement]}

@@ -51,8 +51,8 @@ export default async function StartPage() {
         <aside className="rounded-lg border border-line bg-surface p-4 text-sm">
           <h2 className="font-semibold">What this site doesn&apos;t do</h2>
           <p className="mt-1 text-ink-muted">
-            It doesn&apos;t rate or recommend homes, and it can&apos;t tell you where there&apos;s a free bed. For that,
-            ask the home or the hospital social worker.
+            It doesn&apos;t rate or recommend homes, or show free beds. For beds, ask the home or a hospital social
+            worker.
           </p>
         </aside>
       </div>

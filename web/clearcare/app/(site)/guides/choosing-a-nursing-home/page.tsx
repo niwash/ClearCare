@@ -71,6 +71,11 @@ export default function ChoosingANursingHomeGuide() {
   return (
     <>
       <GuideHeader guide={guide} />
+      {/* The questions are written but the answers aren't, so say so before anyone opens one. */}
+      <p className="max-w-3xl rounded-lg border-2 border-dashed border-field bg-surface-muted px-4 py-3 text-sm">
+        <span className="font-semibold">This guide is a work in progress.</span> The questions are ready to use as a
+        checklist, but the answers aren&apos;t written yet.
+      </p>
       <p className="max-w-3xl">
         Before you start browsing homes, it helps to pause and ask yourself a few key questions. This checklist walks
         you through the stages most families go through, so you can search with clarity and confidence.
@@ -100,7 +105,7 @@ export default function ChoosingANursingHomeGuide() {
                       </svg>
                     </summary>
                     <div className="px-4 pb-3 text-sm text-ink-muted">
-                      {answer ?? <Placeholder>TBE</Placeholder>}
+                      {answer ?? <Placeholder>Answer coming soon</Placeholder>}
                     </div>
                   </details>
                 </li>

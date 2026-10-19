@@ -53,7 +53,7 @@ ClearCare will be used by older adults, some with cataracts, low contrast sensit
 ### Features that aren't ready yet *(Both designs)*
 
 - Before, "Ask about this home" and "Add to list" were simply faded out, which was hard to read and didn't say why.
-- They now have a dashed border, readable text and the words "(coming soon)". "About the data" in the menu also says "(coming soon)".
+- They now have a dashed border, readable text and the words "(coming soon)".
 
 ---
 

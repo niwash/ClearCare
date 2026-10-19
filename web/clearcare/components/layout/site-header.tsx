@@ -3,16 +3,17 @@ import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
-// Keep unfinished pages in the navigation as plain text.
-const NAV_ITEMS = [
+// An unfinished page has no href and shows as plain text, "(coming soon)".
+type NavEntry = { label: string; href: string | null };
+
+const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
   { label: "National figures", href: "/national" },
-  { label: "About the data", href: null },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
-] as const;
+];
 
-function NavItem({ item, className }: { item: (typeof NAV_ITEMS)[number]; className: string }) {
+function NavItem({ item, className }: { item: NavEntry; className: string }) {
   return item.href ? (
     <Link
       href={item.href}
