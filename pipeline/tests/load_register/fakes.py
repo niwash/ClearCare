@@ -40,6 +40,7 @@ ELM_HALL = {
     "Centre_Address": ELM_HALL_ADDRESS,
     "County": "Kildare",
     "Maximum_Occupancy": "62",
+    "Centre_Phone": "01 555 0123",
     "Registration_Provider": "Springwood Nursing Homes Limited",
     "CRO_Registration_Number": "409166",
     "URL": ELM_HALL_URL,

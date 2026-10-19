@@ -121,11 +121,11 @@ def _insert_and_publish(
         cursor.executemany(
             "INSERT INTO clearcare.register_entry (source_file_id,"
             " source_record, centre_id, centre_name, address, county,"
-            " eircode, maximum_occupancy, provider_name, provider_cro_number,"
-            " hiqa_url, extracted_at, extractor_version)"
+            " eircode, maximum_occupancy, centre_phone, provider_name,"
+            " provider_cro_number, hiqa_url, extracted_at, extractor_version)"
             " VALUES (%(source_file_id)s, %(source_record)s, %(centre_id)s,"
             " %(centre_name)s, %(address)s, %(county)s, %(eircode)s,"
-            " %(maximum_occupancy)s, %(provider_name)s,"
+            " %(maximum_occupancy)s, %(centre_phone)s, %(provider_name)s,"
             " %(provider_cro_number)s, %(hiqa_url)s, now(),"
             " %(extractor_version)s)",
             [

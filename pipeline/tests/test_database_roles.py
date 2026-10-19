@@ -43,6 +43,7 @@ PUBLIC_COLUMNS = {
     "hiqa_url",
     "name_key",
     "address_key",
+    "centre_phone",
 }
 
 

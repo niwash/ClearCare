@@ -94,7 +94,12 @@ def test_loaded_register_is_what_search_reads(
         tmp_path,
         MONDAY,
         ELM_HALL,
-        centre("35", Centre_Title="Ard Na Ri", Maximum_Occupancy=""),
+        centre(
+            "35",
+            Centre_Title="Ard Na Ri",
+            Maximum_Occupancy="",
+            Centre_Phone="",
+        ),
     )
 
     code = _load(tmp_path)
@@ -105,7 +110,7 @@ def test_loaded_register_is_what_search_reads(
     ):
         rows = cursor.execute(
             "SELECT centre_id, centre_name, county, eircode,"
-            " maximum_occupancy FROM clearcare.centre_search"
+            " maximum_occupancy, centre_phone FROM clearcare.centre_search"
             " ORDER BY centre_id"
         ).fetchall()
     assert code == 0
@@ -116,6 +121,7 @@ def test_loaded_register_is_what_search_reads(
             "county": "Kildare",
             "eircode": "W23P6EX",
             "maximum_occupancy": 62,
+            "centre_phone": "01 555 0123",
         },
         {
             "centre_id": "35",
@@ -123,6 +129,7 @@ def test_loaded_register_is_what_search_reads(
             "county": "Kildare",
             "eircode": "W23P6EX",
             "maximum_occupancy": None,
+            "centre_phone": None,
         },
     ]
 
