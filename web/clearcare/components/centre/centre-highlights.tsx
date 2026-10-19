@@ -82,9 +82,9 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
                   <div key={source}>{source}</div>
                 ))}
                 {hasTrail ? (
-                  <a href={anchor}>Open the trail</a>
+                  <a href={anchor} className="adult:inline-flex adult:min-h-11 adult:items-center">Open the trail</a>
                 ) : (
-                  highlight.reportUrl && <a href={highlight.reportUrl}>Read in the report</a>
+                  highlight.reportUrl && <a href={highlight.reportUrl} className="adult:inline-flex adult:min-h-11 adult:items-center">Read in the report</a>
                 )}
               </div>
             </li>

@@ -28,7 +28,7 @@ ClearCare will be used by older adults, some with cataracts, low contrast sensit
 | Red | A problem | "Not compliant", error messages |
 | Gold (amber by default) | Worth checking | "Substantially compliant" |
 | Near-black | Nothing wrong | "Compliant" |
-| Grey | No information | "Not assessed" |
+| Near-black, dashed outline | No information | "Not assessed" |
 
 ---
 
@@ -48,7 +48,7 @@ ClearCare will be used by older adults, some with cataracts, low contrast sensit
 ### Bigger buttons and links
 
 - Links and buttons are at least 24 px tall, including smaller links (breadcrumbs, "Clear search", "Show all regulations", links inside the history table) (WCAG 2.5.8) [[4]](#ref-4). *(Both designs)*
-- Main buttons, the theme toggle, "Add to list", "View record" and "HIQA register entry" are at least 44 × 44 px (WCAG 2.5.5) [[4]](#ref-4). *(Easier to read)*
+- Main buttons, the theme toggle, "Add to list", "View record" and "HIQA register entry" are at least 44 × 44 px, and the smaller links above are at least 44 px tall (WCAG 2.5.5) [[4]](#ref-4). Links inside sentences, such as "Read its findings", are exempt. *(Easier to read)*
 
 ### Features that aren't ready yet *(Both designs)*
 

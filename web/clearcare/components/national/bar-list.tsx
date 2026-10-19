@@ -35,7 +35,7 @@ function Bar({ fraction }: { fraction: number }) {
   return (
     <svg
       aria-hidden="true"
-      className="h-5 shrink-0 fill-link"
+      className="h-5 shrink-0 fill-primary"
       style={{ width: `calc((100% - ${VALUE_ROOM}) * ${fraction})` }}
     >
       <rect width="100%" height="100%" rx="4" />

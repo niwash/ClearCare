@@ -6,7 +6,7 @@ export default function WelcomePage() {
       <h1 className="mb-6 font-serif text-3xl font-semibold tracking-tight">Welcome to ClearCare</h1>
       <Link
         href="/home"  //temporary redirect to home
-        className="w-56 rounded-lg bg-link py-3 text-center font-medium text-surface no-underline hover:text-surface hover:opacity-90"
+        className="w-56 rounded-lg bg-primary py-3 text-center font-medium text-on-primary no-underline hover:text-on-primary hover:opacity-90 adult:hover:bg-primary-hover adult:hover:opacity-100"
       >
         Log in (coming soon)
       </Link>

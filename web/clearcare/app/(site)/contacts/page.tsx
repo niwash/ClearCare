@@ -115,12 +115,12 @@ export default function ContactsPage() {
                   <h3 className="font-semibold">{contact.name}</h3>
                   <p className="text-ink-muted">{contact.purpose}</p>
                 </div>
-                <dl className="grid grid-cols-[4rem_1fr] gap-x-2 gap-y-0.5 text-ink-muted">
+                <dl className="grid grid-cols-[4rem_1fr] gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
                   {contact.phone && (
                     <>
                       <dt>Phone</dt>
                       <dd>
-                        <a href={`tel:${contact.phone.replaceAll(" ", "")}`}>{contact.phone}</a>
+                        <a className="adult:block adult:truncate adult:py-2.5" href={`tel:${contact.phone.replaceAll(" ", "")}`}>{contact.phone}</a>
                       </dd>
                     </>
                   )}
@@ -128,13 +128,13 @@ export default function ContactsPage() {
                     <>
                       <dt>Email</dt>
                       <dd className="min-w-0 truncate">
-                        <a href={`mailto:${contact.email}`}>{contact.email}</a>
+                        <a className="adult:block adult:truncate adult:py-2.5" href={`mailto:${contact.email}`}>{contact.email}</a>
                       </dd>
                     </>
                   )}
                   <dt>Website</dt>
                   <dd className="min-w-0 truncate">
-                    <a href={contact.website} target="_blank" rel="noopener noreferrer">
+                    <a href={contact.website} className="adult:block adult:truncate adult:py-2.5" target="_blank" rel="noopener noreferrer">
                       {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
                     </a>
                   </dd>

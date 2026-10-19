@@ -108,7 +108,7 @@ export default function ChoosingANursingHomeGuide() {
             </ul>
             {related && (
               <p className="text-sm">
-                <Link href={`/guides/${related.slug}`}>Read: {related.title} →</Link>
+                <Link href={`/guides/${related.slug}`} className="adult:inline-flex adult:min-h-11 adult:items-center">Read: {related.title} →</Link>
               </p>
             )}
           </Section>

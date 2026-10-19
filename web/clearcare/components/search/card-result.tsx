@@ -26,7 +26,7 @@ export function CardResult({ centre, from }: CardResultProps) {
         <h3 className="font-serif text-xl font-semibold tracking-tight text-ink">
           <Link
             href={href}
-            className="rounded hover:underline focus:outline-none focus:ring-2 focus:ring-link"
+            className="rounded hover:underline focus:outline-none focus:ring-2 focus:ring-primary adult:inline-flex adult:min-h-11 adult:items-start"
           >
             {centre.centre_name}
           </Link>
@@ -46,21 +46,26 @@ export function CardResult({ centre, from }: CardResultProps) {
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line/50 pt-3 text-xs text-ink-muted">
-        <a href={centre.hiqa_url} target="_blank" rel="noopener noreferrer">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line/50 pt-3 text-xs text-ink-muted adult:border-line-soft">
+        <a href={centre.hiqa_url} className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center" target="_blank" rel="noopener noreferrer">
           HIQA register entry<span className="sr-only"> (opens in a new tab)</span>
         </a>
-        <div className="flex items-center gap-3">
+        {/* In the adult-centred design the larger text doesn't fit on one line, so the link wraps
+            under the button rather than either label breaking mid-way. */}
+        <div className="flex items-center gap-3 adult:flex-wrap adult:gap-y-1">
           {/* TODO: Add the centre to the user's list (CCARE-46). Does nothing yet. */}
           <button
             type="button"
             aria-disabled="true"
             title="Coming soon"
-            className="h-8 cursor-not-allowed rounded-md border border-link px-3 font-medium text-link opacity-50"
+            className="h-8 cursor-not-allowed rounded-md border-2 border-dashed border-field bg-surface-muted px-3 font-medium text-ink-muted adult:h-11 adult:whitespace-nowrap"
           >
-            Add to list<span className="sr-only"> ({centre.centre_name}, coming soon)</span>
+            Add to list<span className="sr-only"> ({centre.centre_name})</span> (coming soon)
           </button>
-          <Link href={href} className="font-medium text-link hover:underline">
+          <Link
+            href={href}
+            className="inline-block py-1 font-medium text-primary hover:underline adult:inline-flex adult:min-h-11 adult:items-center adult:whitespace-nowrap"
+          >
             View record &rarr;
           </Link>
         </div>

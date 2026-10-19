@@ -142,7 +142,7 @@ export default function ReadingInspectionReportsGuide() {
                 strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="mt-0.5 size-5 shrink-0 text-link"
+                className="mt-0.5 size-5 shrink-0 text-primary"
               >
                 <path d="M5 12.5 10 17.5 19 7" />
               </svg>

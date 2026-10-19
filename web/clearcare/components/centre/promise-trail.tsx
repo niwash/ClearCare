@@ -21,9 +21,9 @@ function Source({ source }: { source: SourceRef }) {
 function StepHeading({ step, title, date }: { step: number; title: string; date?: string }) {
   return (
     <h3 className="flex items-baseline gap-2.5">
-      <span className="font-mono text-[13px] text-ink-muted">{step}</span>
+      <span className="font-mono text-[0.8125rem] adult:text-xs text-ink-muted">{step}</span>
       <span className="font-bold">{title}</span>
-      {date && <span className="font-mono text-[13px] text-ink-muted">{date}</span>}
+      {date && <span className="font-mono text-[0.8125rem] adult:text-xs text-ink-muted">{date}</span>}
     </h3>
   );
 }
@@ -78,7 +78,7 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
               </div>
             </div>
           ))}
-          {planNote && <p className="text-[13px] leading-normal text-ink-muted">{planNote}</p>}
+          {planNote && <p className="text-[0.8125rem] adult:text-xs leading-normal text-ink-muted">{planNote}</p>}
         </li>
 
         <li className="flex flex-col gap-3">

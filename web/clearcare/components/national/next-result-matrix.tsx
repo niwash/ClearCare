@@ -13,15 +13,15 @@ const COLUMNS: { key: keyof Omit<NextResultCounts, "judgment" | "total">; label:
   { key: "no_later_report", label: "No later report yet" },
 ];
 
-// One hue, from the surface to half the link colour. Past half, ink text on the cell falls below
-// 4.5:1 contrast in the dark theme.
+// One hue, from the surface to --shade-max of the primary colour. Any more and ink text on the
+// cell falls below 4.5:1 contrast in the dark theme, or below 7:1 in the adult-centred design.
 function shade(share: number) {
-  return `color-mix(in oklab, var(--link) ${Math.round(share * 50)}%, var(--surface))`;
+  return `color-mix(in oklab, var(--primary) calc(var(--shade-max) * ${share.toFixed(2)}), var(--surface))`;
 }
 
 export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto [--shade-max:50%] adult:[--shade-max:30%]">
       {/* Equal columns where they are wide enough for "Substantially"; below that, each column is as
           wide as its longest word, so the headings don't run into each other. */}
       <table className="w-full min-w-[36rem] border-collapse text-left text-sm lg:table-fixed">
@@ -51,7 +51,9 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
         </thead>
         <tbody>
           {matrix.map((row) => (
-            <tr key={row.judgment}>
+            // No top border on the first row's cells: in a collapsed table their 2px border would
+            // win over the header's 1px divider and hide it above the shaded cells.
+            <tr key={row.judgment} className="[&:first-child>td]:border-t-0">
               <th scope="row" className="py-3 pr-3 font-normal">
                 <span className="flex items-center gap-2">
                   <JudgementIcon judgement={STARTING_JUDGEMENTS[row.judgment]} />

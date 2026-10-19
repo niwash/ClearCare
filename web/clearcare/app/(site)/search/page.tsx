@@ -1,4 +1,5 @@
 // app/search/page.tsx
+import { Alert } from "@/components/layout/alert";
 import { CardResult } from "@/components/search/card-result";
 import { formatDate } from "@/lib/centres";
 import {
@@ -89,7 +90,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <Link href="/home" className="hover:underline">
+          <Link href="/home" className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">
             Home
           </Link>
           <span>/</span>
@@ -112,7 +113,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 }
 
 const inputClass =
-  "h-11 w-full min-w-0 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link";
+  "h-11 w-full min-w-0 rounded-md border border-field bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-primary";
 
 function SearchForm({ query }: { query: SearchQuery }) {
   return (
@@ -149,12 +150,12 @@ function SearchForm({ query }: { query: SearchQuery }) {
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          className="h-11 rounded-md bg-link px-4 font-semibold text-surface transition-opacity hover:opacity-90"
+          className="h-11 rounded-md bg-primary px-4 font-semibold text-on-primary transition-opacity hover:opacity-90 adult:transition-none adult:hover:bg-primary-hover adult:hover:opacity-100"
         >
           Search
         </button>
         {hasFilters(query) && (
-          <Link href="/search" className="text-sm">
+          <Link href="/search" className="inline-block py-1 text-sm adult:inline-flex adult:min-h-11 adult:items-center">
             Clear search
           </Link>
         )}
@@ -219,17 +220,17 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
 
       {lastPage > 1 && (
         <nav aria-label="Result pages" className="flex items-center justify-between gap-4 text-sm">
-          {page > 1 ? <Link href={pageHref(query, page - 1)}>&larr; Previous</Link> : <span />}
+          {page > 1 ? <Link href={pageHref(query, page - 1)} className="adult:inline-flex adult:min-h-11 adult:items-center">&larr; Previous</Link> : <span />}
           <span className="text-ink-muted">
             Page {Math.min(page, lastPage)} of {lastPage}
           </span>
-          {page < lastPage ? <Link href={pageHref(query, page + 1)}>Next &rarr;</Link> : <span />}
+          {page < lastPage ? <Link href={pageHref(query, page + 1)} className="adult:inline-flex adult:min-h-11 adult:items-center">Next &rarr;</Link> : <span />}
         </nav>
       )}
 
       <p className="text-xs text-ink-faint">
         Source:{" "}
-        <a href={register_snapshot.url} className="text-ink-faint">
+        <a href={register_snapshot.url} className="text-ink-faint adult:text-primary">
           HIQA register
         </a>
         , downloaded {formatDate(register_snapshot.fetched_at)}.
@@ -242,9 +243,6 @@ function SearchError({ status, detail }: { status: number; detail: string }) {
   const message = status === 400 ? detail : unavailableMessage(status);
 
   return (
-    <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
-      <p className="font-medium">{status === 400 ? "Please check your search" : "Search unavailable"}</p>
-      <p className="mt-1 text-ink-muted">{message}</p>
-    </div>
+    <Alert title={status === 400 ? "Please check your search" : "Search unavailable"}>{message}</Alert>
   );
 }

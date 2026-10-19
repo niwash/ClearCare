@@ -27,8 +27,9 @@ How the toggle works:
 | **Line length** | Not limited | At most 80 characters (WCAG 1.4.8, AAA) [[10]](#ref-10) |
 | **Links** | Underlined: "Reserve underlining for links" [[5]](#ref-5); see also [[6]](#ref-6) | Thicker underline. Header links are underlined too |
 | **Keyboard focus** | 2px outline on everything, with a focus ring on search fields (WCAG 2.4.7, AA) [[10]](#ref-10) | 3px outline on everything (WCAG 2.4.13, AAA) [[10]](#ref-10). W3C notes that "many people can't see small changes in visual appearance, including older people" [[11]](#ref-11) |
-| **Tap targets** | At least 24px (WCAG 2.5.8, AA) [[10]](#ref-10) | At least 44px (WCAG 2.5.5, AAA) [[10]](#ref-10). NIA/NLM: "large buttons that do not require precise mouse movements" [[5]](#ref-5). NN/g: targets "often displayed at a small size" [[4]](#ref-4) |
+| **Tap targets** | At least 24px (WCAG 2.5.8, AA) [[10]](#ref-10) | At least 44px, including breadcrumbs and links in the history table (WCAG 2.5.5, AAA) [[10]](#ref-10). Links inside sentences are exempt. NIA/NLM: "large buttons that do not require precise mouse movements" [[5]](#ref-5). NN/g: targets "often displayed at a small size" [[4]](#ref-4) |
 | **Colour alone** | Judgements have a shape and a label as well as a colour (WCAG 1.4.1, A) [[10]](#ref-10) | Error messages also get a warning icon and a thicker border. NIA/NLM: text and graphics should be understandable "on a black and white monitor" [[5]](#ref-5) |
+| **National figures shading** | Up to 50% of the link colour | Up to 30%, so text on the darkest cell stays at least 7:1 (WCAG 1.4.6, AAA) [[10]](#ref-10) |
 | **Hover on main buttons** | Fade slightly | Darker colour. |
 | **Navigation on phones and tablets** | Behind a round menu button in the bottom-right corner. | Always visible as a row under the header. NIA/NLM: "Use pull down menus sparingly" and "Incorporate text with the icon if possible" [[5]](#ref-5) |
 
@@ -45,6 +46,7 @@ How the toggle works:
 - **Serif headings.** NIA/NLM recommends a sans serif typeface [[5]](#ref-5). Body text is sans serif, but headings use a serif font in both designs.
 - **Text size.** The Nutrition and Aging Resource Center says website text "should be at least 14-point" [[6]](#ref-6), about 18.7px. Body text is 16px (12 point) by default and 18px (13.5 point) in Easier to read.
 - **Glossary and site map.** NIA/NLM recommends an online glossary of technical terms and a site map [[5]](#ref-5). Neither exists yet.
+- **Chart date links.** The inspection dates in "Judgments at each inspection" on the centre page are under 44px in Easier to read (WCAG 2.5.5). That chart is being reworked, and the fix will go in with it.
 - **Testing with older adults** is still to do: SOARING guideline E1 [[1]](#ref-1), and NIA/NLM's "A Final Check of the Web Site" [[5]](#ref-5).
 
 ## For developers

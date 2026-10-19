@@ -74,11 +74,11 @@ function JudgementCell({ cell }: { cell: Cell }) {
         <JudgementIcon judgement={cell.judgement} />
       </span>
       <span>
-        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`}>{label}</a> : label}
+        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 adult:inline-flex adult:min-h-11 adult:items-center">{label}</a> : label}
         {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
         {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
         {cell.promisesTraced && (
-          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block text-sm">
+          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block py-1 text-sm adult:flex adult:min-h-11 adult:items-center">
             {cell.promisesTraced.count} {cell.promisesTraced.count === 1 ? "promise" : "promises"} traced
           </a>
         )}
@@ -107,7 +107,7 @@ const stickyClass = "sticky left-0 z-10 after:absolute after:inset-y-0 after:rig
 
 // The "Show all / fewer" toggles: links styled as buttons, at least 44px tall (WCAG 2.5.5).
 const toggleClass =
-  "flex min-h-11 items-center justify-center rounded-md border-2 border-link bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
+  "flex min-h-11 items-center justify-center rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
 
 // Keeps the other toggle and the breadcrumb's search when one toggle changes.
 function historyHref({ from, regulations, inspections }: { from?: string; regulations: boolean; inspections: boolean }) {
@@ -179,7 +179,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                     return (
                       <div key={inspection.id} className="flex gap-4">
                         <dt className="w-28 shrink-0">
-                          <a href={inspection.reportUrl} className="font-mono text-sm text-ink-muted no-underline hover:underline">
+                          <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm text-ink-muted no-underline hover:underline adult:underline adult:inline-flex adult:min-h-11 adult:items-start">
                             {formatDate(inspection.date)}
                           </a>
                         </dt>
@@ -211,7 +211,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
               </th>
               {shown.map((inspection) => (
                 <th key={inspection.id} scope="col" className="px-4 py-3 align-top font-normal">
-                  <a href={inspection.reportUrl} className="font-mono text-sm font-medium text-ink no-underline hover:underline">
+                  <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm font-medium text-ink no-underline hover:underline adult:underline adult:inline-flex adult:min-h-11 adult:items-center">
                     {formatDate(inspection.date)}
                   </a>
                   <div className="text-sm text-ink-muted">
@@ -263,7 +263,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
 
       {/* Three rows: what the table shows, the toggles, then the note about older reports. */}
       <div className="flex flex-col gap-3 px-4 pb-4 pt-4 text-base md:px-7">
-        {/* Says what the table covers, and stays: the toast is only a passing cue. */}
+        {/* Says what the table covers. */}
         {inspections.length > LATEST_INSPECTIONS && (
           // A status, so screen readers announce it when a toggle changes the inspections shown.
           <p role="status" className="text-ink">

@@ -1,22 +1,88 @@
 @import "tailwindcss";
 
-/* Colours from the September wireframes. Use the system theme unless
-   data-theme on <html> overrides it. */
+/* Two designs, both following the system theme unless data-theme on <html>
+   overrides it (Documentations/Design/easier-to-read-toggle.md):
+   - Standard, the default: for general users, including older adults who are
+     comfortable online. Meets WCAG 2.2 AA.
+   - Adult-centred, chosen with the "Easier to read" toggle (data-design on
+     <html>): for older adults who struggle. Adds WCAG AAA criteria and the
+     older-adult guidance: warm high-contrast colours, larger and more widely
+     spaced text, thicker underlines, a 3px focus outline and 44px targets.
+   Each filled colour has an on-* colour for text placed on it. */
+
+/* Utility classes that only apply in the adult-centred design, e.g. adult:py-1. */
+@custom-variant adult (&:where([data-design="adult-centred"], [data-design="adult-centred"] *));
+
+/* Standard colours, from the September wireframes. */
 :root {
   color-scheme: light dark;
   --page: light-dark(#f4f5f2, #0f151c);
   --surface: light-dark(#ffffff, #16202b);
+  --surface-muted: light-dark(#f7f8f6, #1b2632);
   --ink: light-dark(#16202b, #e8ecef);
   --ink-muted: light-dark(#4a5563, #a9b2bc);
   --ink-faint: light-dark(#66707b, #8a94a0);
+  /* Card edges and dividers: decorative, so no contrast minimum. */
   --line: light-dark(#d5d9de, #2b3642);
   --line-soft: light-dark(#e3e6ea, #233040);
-  --link: light-dark(#1f4e79, #8db8e0);
-  --link-hover: light-dark(#123b5e, #b5d2ee);
-  --surface-muted: light-dark(#f7f8f6, #1b2632);
+  /* Form field borders: 3:1 or more (WCAG 1.4.11). */
+  --field: light-dark(#7d8691, #66737f);
+  --focus: light-dark(#16202b, #e8ecef);
+  --primary: light-dark(#1f4e79, #8db8e0);
+  --primary-hover: light-dark(#123b5e, #b5d2ee);
+  --on-primary: var(--surface);
+  --info: light-dark(#1e3a8a, #93c5fd);
+  --on-info: light-dark(#ffffff, #0f151c);
+  --success: light-dark(#166534, #86efac);
+  --on-success: light-dark(#ffffff, #0f151c);
+  --warning: light-dark(#7a5300, #fde047);
+  --on-warning: light-dark(#ffffff, #0f151c);
+  --danger: light-dark(#b42318, #f97066);
+  --on-danger: light-dark(#ffffff, #0f151c);
   /* Judgement markers */
-  --not-compliant: light-dark(#b42318, #f97066);
+  --not-compliant: var(--danger);
   --substantially: light-dark(#9a5b00, #f0b45a);
+}
+
+/* Adult-centred colours. */
+:root[data-design="adult-centred"] {
+  --page: light-dark(#faf7f2, #1a1714);
+  --surface: light-dark(#ffffff, #24201c);
+  --surface-muted: light-dark(#f3eee6, #2e2924);
+  --ink: light-dark(#1f1b16, #f4f0ea);
+  --ink-muted: light-dark(#4a4540, #c9c1b6);
+  /* No light grey text: faint text is as dark as muted text. */
+  --ink-faint: var(--ink-muted);
+  /* Input outlines, card edges and dividers that carry meaning (3:1 or more). */
+  --line: light-dark(#857b70, #7d746a);
+  /* Purely decorative row separators. */
+  --line-soft: light-dark(#e5dfd6, #3a352e);
+  --field: var(--line);
+  --focus: light-dark(#1f1b16, #f4f0ea);
+  /* Larger text: the root size is 18px (13.5pt), and small text is no smaller
+     than about 16px (NIA/NLM: 12 or 14 point body text). Line spacing of 1.5
+     (WCAG 1.4.8). Sizes in rem grow with the root. */
+  font-size: 112.5%;
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.5;
+  --primary: light-dark(#8a2e0f, #fdba74);
+  --primary-hover: light-dark(#6b2610, #fed7aa);
+  --on-primary: light-dark(#ffffff, #1a1714);
+  --info: light-dark(#1e3a8a, #93c5fd);
+  --on-info: light-dark(#ffffff, #1a1714);
+  --success: light-dark(#166534, #86efac);
+  --on-success: light-dark(#ffffff, #1a1714);
+  /* Gold, not orange, so it never looks like --primary. */
+  --warning: light-dark(#7a5300, #fde047);
+  --on-warning: light-dark(#ffffff, #1a1714);
+  --danger: light-dark(#b91c1c, #fca5a5);
+  --on-danger: light-dark(#ffffff, #1a1714);
+  /* Judgement markers. Compliant uses --ink so colour only marks problems. */
+  --not-compliant: var(--danger);
+  --substantially: var(--warning);
 }
 
 :root[data-theme="light"] {
@@ -30,13 +96,25 @@
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-ink-faint: var(--ink-faint);
   --color-line: var(--line);
   --color-line-soft: var(--line-soft);
-  --color-link: var(--link);
-  --color-surface-muted: var(--surface-muted);
+  --color-field: var(--field);
+  --color-focus: var(--focus);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-info: var(--info);
+  --color-on-info: var(--on-info);
+  --color-success: var(--success);
+  --color-on-success: var(--on-success);
+  --color-warning: var(--warning);
+  --color-on-warning: var(--on-warning);
+  --color-danger: var(--danger);
+  --color-on-danger: var(--on-danger);
   --color-not-compliant: var(--not-compliant);
   --color-substantially: var(--substantially);
   --font-serif: var(--font-source-serif);
@@ -57,12 +135,43 @@
   }
 
   a {
-    color: var(--link);
+    color: var(--primary);
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 
   a:hover {
-    color: var(--link-hover);
+    color: var(--primary-hover);
   }
+
+  /* WCAG 2.4.7: a visible keyboard focus indicator on everything. The search
+     fields replace it with a focus ring. */
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  /* Lines of no more than 80 characters (WCAG 1.4.8). */
+  :root[data-design="adult-centred"] p {
+    max-width: 80ch;
+  }
+
+  /* Thicker underlines, so links are easy to spot. */
+  :root[data-design="adult-centred"] a {
+    text-underline-offset: 3px;
+    text-decoration-thickness: 2px;
+  }
+
+  :root[data-design="adult-centred"] a:hover {
+    text-decoration-thickness: 3px;
+  }
+}
+
+/* WCAG 2.4.13 (AAA): a thicker outline on everything, in place of the standard
+   design's focus rings. Outside any layer so it wins over utility
+   classes such as focus:outline-none. Never remove this without a replacement. */
+:root[data-design="adult-centred"] :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  box-shadow: none;
 }

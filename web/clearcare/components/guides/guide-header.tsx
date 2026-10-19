@@ -10,7 +10,7 @@ export function guideMetadata(guide: Guide): Metadata {
 export function GuideHeader({ guide }: { guide: Guide }) {
   return (
     <header className="flex max-w-3xl flex-col gap-3">
-      <Link href="/resources" className="text-sm">
+      <Link href="/resources" className="text-sm adult:inline-flex adult:min-h-11 adult:items-center">
         ← Back to resources
       </Link>
       <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">{guide.title}</h1>
