@@ -73,4 +73,8 @@ If the five `CLEARCARE_S3_*` settings are set, the pipeline copies new files to 
 
 To follow its log, run `docker compose logs -f pipeline`.
 
+Ingest also stores the inspector narrative and Section 1 responses, with PDF pages, character offsets at each page boundary, and the extractor version, `EXTRACTOR_VERSION` in `pipeline/src/clearcare_pipeline/parser/text.py`. Change that version when you change `text.csv` or the extractor. The pipeline runs `extract_text` after each ingest. It adds text for loaded reports that have none at the current version, so the first start after the version changes extracts every report again (about half an hour for the national set), and later runs add nothing. Missing files or incomplete text are logged and `extract_text` exits 1, while the stages after it still run.
+
+After `extract_text`, the pipeline runs `split_commitments`, which appends commitments from stored responses and their page offsets. It needs no local PDFs. It uses the splitter's `rules-v3` version; change that version when changing its rules. Repeat runs write nothing new. Month-only stated deadlines retain month precision; their stored date is the last day of that month. Dates need an explicit link to the commitment or a Timeframe or Time Frame label; uncertain wording stays in the response span without a parsed deadline.
+
 On Linux, create the data directory before the first start, and set `CLEARCARE_PIPELINE_UID` and `CLEARCARE_PIPELINE_GID` to its owner. Otherwise Docker creates the directory as root and the pipeline cannot write to it.

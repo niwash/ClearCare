@@ -7,6 +7,7 @@ import psycopg
 from psycopg.rows import TupleRow
 
 from clearcare_pipeline.ingest_reports.models import InspectionReport
+from clearcare_pipeline.parser.text import ReportText
 
 # Held until the transaction ends, so two ingests never write at once. Nothing
 # else takes this lock in this database, so any fixed number works.
@@ -36,6 +37,14 @@ _INSERT_ITEM = (
     "INSERT INTO clearcare.inspection_compliance_item"
     " (report_id, regulation, requirement, judgment, risk_rating,"
     " date_to_comply) VALUES (%s, %s, %s, %s, %s, %s)"
+)
+
+_INSERT_TEXT = (
+    "INSERT INTO clearcare.inspection_report_text"
+    " (report_id, kind, regulation, first_page, last_page, text,"
+    " extractor_version, page_offsets)"
+    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    " ON CONFLICT DO NOTHING"
 )
 
 Row = tuple[object, ...]
@@ -125,15 +134,17 @@ class ReportWriter:
     that is repeated adds nothing.
     """
 
-    def __init__(self, connection: Connection) -> None:
-        """Creates a writer over an open connection."""
+    def __init__(self, connection: Connection, version: str) -> None:
+        """Creates a writer for this extractor version."""
         self._connection = connection
+        self._version = version
 
     def write_batch(self, reports: Sequence[InspectionReport]) -> int:
         """Writes the batch in one transaction; returns how many were new."""
         inspectors: list[Row] = []
         regulations: list[Row] = []
         items: list[Row] = []
+        text: list[Row] = []
         written = 0
         with (
             self._connection.transaction(),
@@ -148,6 +159,7 @@ class ReportWriter:
                     continue
                 report_id = row[0]
                 written += 1
+                text.extend(_text_params(report_id, report.text, self._version))
                 inspectors.extend(
                     (
                         report_id,
@@ -180,6 +192,33 @@ class ReportWriter:
                 cursor.executemany(_INSERT_REGULATION, regulations)
             if items:
                 cursor.executemany(_INSERT_ITEM, items)
+            if text:
+                cursor.executemany(_INSERT_TEXT, text)
+        return written
+
+    def write_text_batch(
+        self,
+        reports: Sequence[tuple[int, Sequence[ReportText]]],
+    ) -> int:
+        """Backfills complete extractions atomically, once per version."""
+        written = 0
+        with (
+            self._connection.transaction(),
+            self._connection.cursor() as cursor,
+        ):
+            cursor.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK_KEY,))
+            for report_id, text in reports:
+                loaded = cursor.execute(
+                    "SELECT 1 FROM clearcare.inspection_report_text"
+                    " WHERE report_id = %s AND extractor_version = %s LIMIT 1",
+                    (report_id, self._version),
+                ).fetchone()
+                if loaded is not None:
+                    continue
+                cursor.executemany(
+                    _INSERT_TEXT, _text_params(report_id, text, self._version)
+                )
+                written += 1
         return written
 
 
@@ -196,3 +235,23 @@ def _report_params(report: InspectionReport) -> Row:
         report.fieldwork_id,
         report.residents,
     )
+
+
+def _text_params(
+    report_id: int,
+    text: Sequence[ReportText],
+    version: str,
+) -> list[Row]:
+    return [
+        (
+            report_id,
+            row.kind,
+            row.regulation,
+            row.first_page,
+            row.last_page,
+            row.text,
+            version,
+            list(row.page_offsets),
+        )
+        for row in text
+    ]

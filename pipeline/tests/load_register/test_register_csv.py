@@ -27,6 +27,7 @@ def test_register_is_read_in_file_order() -> None:
             Centre_Address="Aclare House, Dublin 6W, D6W",
             County="Dublin",
             Maximum_Occupancy="",
+            Centre_Phone="",
             Registration_Provider="Health Service Executive",
             CRO_Registration_Number="",
         ),
@@ -41,6 +42,7 @@ def test_register_is_read_in_file_order() -> None:
             county="Kildare",
             eircode="W23P6EX",
             maximum_occupancy=62,
+            centre_phone="01 555 0123",
             provider_name="Springwood Nursing Homes Limited",
             provider_cro_number="409166",
             hiqa_url=ELM_HALL_URL,
@@ -53,6 +55,7 @@ def test_register_is_read_in_file_order() -> None:
             county="Dublin",
             eircode=None,
             maximum_occupancy=None,
+            centre_phone=None,
             provider_name="Health Service Executive",
             provider_cro_number=None,
             hiqa_url=ELM_HALL_URL,
@@ -65,6 +68,29 @@ def test_address_without_an_eircode_has_none() -> None:
     register = register_csv(centre("34", Centre_Address=address))
 
     assert read_register(register)[0].eircode is None
+
+
+# The register does not always print one number, and the value is kept as it
+# is printed.
+@pytest.mark.parametrize(
+    ("printed", "centre_phone"),
+    [
+        pytest.param(
+            "01 555 0123 / 01 555 0124",
+            "01 555 0123 / 01 555 0124",
+            id="two numbers",
+        ),
+        pytest.param("TBC", "TBC", id="TBC"),
+        pytest.param(" 01 555 0123 ", "01 555 0123", id="spaces around"),
+        pytest.param(" ", None, id="blank"),
+    ],
+)
+def test_centre_phone_is_kept_as_printed(
+    printed: str, centre_phone: str | None
+) -> None:
+    register = register_csv(centre("34", Centre_Phone=printed))
+
+    assert read_register(register)[0].centre_phone == centre_phone
 
 
 @pytest.mark.parametrize(

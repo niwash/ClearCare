@@ -13,6 +13,7 @@ from clearcare_pipeline.ingest_reports import database, sources
 from clearcare_pipeline.ingest_reports.run import ingest, parse_report
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.object_store import S3ObjectStore
+from clearcare_pipeline.parser.text import EXTRACTOR_VERSION
 from clearcare_pipeline.reports.manifest import ManifestError
 from clearcare_pipeline.s3_settings import S3Settings, make_s3_client
 
@@ -41,7 +42,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         with psycopg.connect(autocommit=True) as connection:
             # The catalogue is read once, before the first batch is written.
             catalogue = database.DatabaseCatalogue(connection)
-            writer = database.ReportWriter(connection)
+            writer = database.ReportWriter(connection, EXTRACTOR_VERSION)
             summary = ingest(
                 source,
                 catalogue,
@@ -83,7 +84,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     )
     parser.add_argument(
         "--batch-size",
-        type=_positive_int,
+        type=positive_int,
         default=DEFAULT_BATCH_SIZE,
         help=f"reports per database write (default: {DEFAULT_BATCH_SIZE})",
     )
@@ -121,7 +122,8 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
-def _positive_int(value: str) -> int:
+def positive_int(value: str) -> int:
+    """Reads a positive batch size from a command-line argument."""
     number = int(value)
     if number < 1:
         raise argparse.ArgumentTypeError(f"must be 1 or more, not {number}")

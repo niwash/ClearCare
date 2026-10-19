@@ -60,8 +60,14 @@ class CentreSearchTest {
   private static final List<String> EVERY_CENTRE =
       List.of(ARAS, ELM_HALL, ST_JOSEPHS_CORK, ST_JOSEPHS_DUBLIN, STELLA_MARIS);
 
+  // The register migration and the one that adds centre_phone to it, as Flyway runs them
+  // (ADR-0010). The report migrations between them are not needed here.
+  private static final List<String> MIGRATIONS =
+      List.of("db/V1__register_entries.sql", "db/V7__centre_phone.sql");
+
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
-  // which the API leaves out.
+  // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
+  // row loaded before db/V7 does.
   private static final String SNAPSHOT =
       """
       INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
@@ -75,20 +81,22 @@ class CentreSearchTest {
 
       INSERT INTO clearcare.register_entry (
           source_file_id, centre_id, source_record, centre_name, address, county, eircode,
-          maximum_occupancy, provider_name, hiqa_url, extracted_at, extractor_version)
+          maximum_occupancy, provider_name, hiqa_url, extracted_at, extractor_version,
+          centre_phone)
       VALUES
           (1, '34', 1, 'Elm Hall Nursing Home',
            'Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX', 'Kildare', 'W23P6EX',
            62, 'Springwood Nursing Homes Limited',
-           'https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home', now(), 'test'),
+           'https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home', now(), 'test',
+           '01 555 0123'),
           (1, '456', 2, 'Áras Ui Dhomhnaill Nursing Home', 'Main Street, Dublin 9', 'Dublin',
-           NULL, 40, NULL, 'https://www.hiqa.ie/test/456', now(), 'test'),
+           NULL, 40, NULL, 'https://www.hiqa.ie/test/456', now(), 'test', NULL),
           (1, '9', 3, 'St Joseph''s Nursing Home', 'Main Street, Cork', 'Cork',
-           NULL, NULL, NULL, 'https://www.hiqa.ie/test/9', now(), 'test'),
+           NULL, NULL, NULL, 'https://www.hiqa.ie/test/9', now(), 'test', NULL),
           (1, '10', 4, 'St Joseph''s Nursing Home', 'Main Street, Dublin 6W, D6W FR27', 'Dublin',
-           'D6WFR27', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test'),
+           'D6WFR27', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test', NULL),
           (1, '77', 5, 'Stella Maris Nursing Home', 'Main Street, Galway', 'Galway',
-           NULL, 25, NULL, 'https://www.hiqa.ie/test/77', now(), 'test');
+           NULL, 25, NULL, 'https://www.hiqa.ie/test/77', now(), 'test', NULL);
       """;
 
   private static final String PUBLISH =
@@ -115,18 +123,19 @@ class CentreSearchTest {
 
   @Autowired private MockMvc mvc;
 
-  // As the container's superuser. V1 runs as clearcare_owner, as Flyway runs it (ADR-0010).
+  // As the container's superuser. The migrations run as clearcare_owner, as Flyway runs them.
   @BeforeAll
   static void loadAndPublishASnapshot() throws Exception {
-    Path migration = REPOSITORY.resolve("db/V1__register_entries.sql");
-    execute("SET ROLE clearcare_owner;\n" + Files.readString(migration));
+    for (String migration : MIGRATIONS) {
+      execute("SET ROLE clearcare_owner;\n" + Files.readString(REPOSITORY.resolve(migration)));
+    }
     execute(SNAPSHOT);
     execute(PUBLISH);
   }
 
   @Test
   void returnsCentresWithTheSnapshotTheyCameFrom() throws Exception {
-    // Strict: any other property, such as provider_name, fails the test.
+    // Strict: any other property, such as provider_name or centre_phone, fails the test.
     search("name=elm")
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -237,7 +246,7 @@ class CentreSearchTest {
 
   @Test
   void returnsOneCentreWithTheSnapshotItCameFrom() throws Exception {
-    // Strict: the same fields as a search result, and no others.
+    // Strict: the fields of a search result and centre_phone, and no others.
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -253,7 +262,8 @@ class CentreSearchTest {
                         "county": "Kildare",
                         "eircode": "W23P6EX",
                         "maximum_occupancy": 62,
-                        "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home"
+                        "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home",
+                        "centre_phone": "01 555 0123"
                       },
                       "register_snapshot": {
                         "fetched_at": "2026-10-05T06:12:54Z",
@@ -263,6 +273,18 @@ class CentreSearchTest {
                     }
                     """,
                     JsonCompareMode.STRICT));
+  }
+
+  @Test
+  void returnsNullForACentreWithoutAPhone() throws Exception {
+    mvc.perform(get("/centres/" + STELLA_MARIS))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"centre": {"centre_id": "77", "centre_phone": null}}
+                    """));
   }
 
   // A value that is not a centre ID at all is not found either, rather than refused.
