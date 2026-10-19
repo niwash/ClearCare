@@ -3,7 +3,6 @@ import Link from "next/link";
 import {
   changeFrom,
   formatDate,
-  formatMonth,
   trailAnchor,
   type Change,
   type Inspection,
@@ -74,11 +73,11 @@ function JudgementCell({ cell }: { cell: Cell }) {
         <JudgementIcon judgement={cell.judgement} />
       </span>
       <span>
-        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`}>{label}</a> : label}
+        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 tap-target">{label}</a> : label}
         {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
         {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
         {cell.promisesTraced && (
-          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block text-sm">
+          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block py-1 text-sm adult:flex adult:min-h-11 adult:items-center">
             {cell.promisesTraced.count} {cell.promisesTraced.count === 1 ? "promise" : "promises"} traced
           </a>
         )}
@@ -107,7 +106,7 @@ const stickyClass = "sticky left-0 z-10 after:absolute after:inset-y-0 after:rig
 
 // The "Show all / fewer" toggles: links styled as buttons, at least 44px tall (WCAG 2.5.5).
 const toggleClass =
-  "flex min-h-11 items-center justify-center rounded-md border-2 border-link bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
+  "flex min-h-11 items-center justify-center rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
 
 // Keeps the other toggle and the breadcrumb's search when one toggle changes.
 function historyHref({ from, regulations, inspections }: { from?: string; regulations: boolean; inspections: boolean }) {
@@ -120,26 +119,25 @@ function historyHref({ from, regulations, inspections }: { from?: string; regula
 
 export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections, from }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
-  const firstJudged = inspections.find((inspection) => inspection.regulationJudgements);
   // Cells are still built from every inspection, so "worse" and "better" compare with the right one.
   const shown = showAllInspections ? inspections : inspections.slice(-LATEST_INSPECTIONS);
   // More columns than fit: the table scrolls sideways, with the Regulation column fixed.
   const scrolls = shown.length > LATEST_INSPECTIONS;
   const firstYear = shown.length ? new Date(shown[0].date).getUTCFullYear() : null;
   const lastYear = shown.length ? new Date(shown[shown.length - 1].date).getUTCFullYear() : null;
-  const years = firstYear === lastYear ? `from ${firstYear}` : `from ${firstYear} to ${lastYear}`;
+  const years = firstYear === lastYear ? `${firstYear}` : `${firstYear}–${lastYear}`;
 
   return (
     <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
       <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:px-7">
-        <h2 id="hist-h" className="shrink-0 font-serif text-xl font-semibold md:text-2xl">
+        <h2 id="hist-h" className="shrink-0 font-heading text-xl font-semibold md:text-2xl">
           Inspection history
         </h2>
         <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
           {JUDGEMENT_ORDER.map((judgement) => (
             <li key={judgement} className="flex items-center gap-1.5">
               <JudgementIcon judgement={judgement} size={12} />
-              {judgement === "not-assessed" ? "Not assessed at that inspection" : JUDGEMENT_LABELS[judgement]}
+              {JUDGEMENT_LABELS[judgement]}
             </li>
           ))}
         </ul>
@@ -179,7 +177,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                     return (
                       <div key={inspection.id} className="flex gap-4">
                         <dt className="w-28 shrink-0">
-                          <a href={inspection.reportUrl} className="font-mono text-sm text-ink-muted no-underline hover:underline">
+                          <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm text-ink-muted no-underline hover:underline adult:underline tap-target-top">
                             {formatDate(inspection.date)}
                           </a>
                         </dt>
@@ -207,11 +205,11 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           <thead className="bg-surface-muted">
             <tr className="border-b-2 border-line">
               <th scope="col" className={`${stickyClass} bg-surface-muted px-4 py-3 align-top text-sm font-normal text-ink-muted md:px-7`}>
-                <span className="uppercase tracking-wide">Regulation #</span>
+                <span className="uppercase tracking-wide adult:normal-case adult:tracking-normal">Regulation #</span>
               </th>
               {shown.map((inspection) => (
                 <th key={inspection.id} scope="col" className="px-4 py-3 align-top font-normal">
-                  <a href={inspection.reportUrl} className="font-mono text-sm font-medium text-ink no-underline hover:underline">
+                  <a href={inspection.reportUrl} className="inline-block py-1 font-mono text-sm font-medium text-ink no-underline hover:underline adult:underline tap-target">
                     {formatDate(inspection.date)}
                   </a>
                   <div className="text-sm text-ink-muted">
@@ -263,15 +261,15 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
 
       {/* Three rows: what the table shows, the toggles, then the note about older reports. */}
       <div className="flex flex-col gap-3 px-4 pb-4 pt-4 text-base md:px-7">
-        {/* Says what the table covers, and stays: the toast is only a passing cue. */}
+        {/* Says what the table covers. */}
         {inspections.length > LATEST_INSPECTIONS && (
           // A status, so screen readers announce it when a toggle changes the inspections shown.
           <p role="status" className="text-ink">
             {showAllInspections
-              ? `Showing all ${inspections.length} inspections, ${years}.`
-              : `Showing the latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
+              ? `All ${inspections.length} inspections, ${years}.`
+              : `Latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
             {/* Only the table scrolls sideways; the phone cards stack instead. */}
-            {scrolls && <span className="hidden lg:inline"> Scroll the table sideways to see older inspections.</span>}
+            {scrolls && <span className="hidden lg:inline"> Scroll sideways for older inspections.</span>}
           </p>
         )}
         {(inspections.length > LATEST_INSPECTIONS || history.length > SHORT_LIST) && (
@@ -282,7 +280,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                 scroll={false}
                 className={toggleClass}
               >
-                {showAllInspections ? `Show the latest ${LATEST_INSPECTIONS} inspections` : `Show all ${inspections.length} inspections`}
+                {showAllInspections ? `Show latest ${LATEST_INSPECTIONS} only` : `Show all ${inspections.length} inspections`}
               </Link>
             )}
             {history.length > SHORT_LIST && (
@@ -293,7 +291,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
               >
                 {showAll
                   ? "Show fewer regulations"
-                  : `Show all ${history.length} regulations assessed${firstJudged ? ` since ${formatMonth(firstJudged.date)}` : ""}`}
+                  : `Show all ${history.length} regulations`}
               </Link>
             )}
           </div>

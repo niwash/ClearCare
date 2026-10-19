@@ -51,7 +51,7 @@ export const PROMISE_STATUS_LABELS: Record<PromiseStatus, string> = {
 
 export function PromiseStatusIcon({ status }: { status: PromiseStatus }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" className="shrink-0 text-link">
+    <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" className="shrink-0 text-primary adult:text-ink">
       {status === "done" && (
         <>
           <circle cx="7" cy="7" r="6" fill="currentColor" />

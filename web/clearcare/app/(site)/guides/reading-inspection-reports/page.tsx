@@ -91,7 +91,7 @@ export default function ReadingInspectionReportsGuide() {
             may describe fire doors or evacuation plans, maintenance problems, infection-control concerns, care-plan
             gaps, incident notifications, staffing or training, or residents’ rights and activities.
           </p>
-          <aside className="rounded-lg border border-line border-l-4 border-l-link bg-surface px-4 py-3 text-sm">
+          <aside className="rounded-lg border border-line border-l-4 border-l-primary bg-surface px-4 py-3 text-sm">
             <span className="font-semibold">N.B.</span> These are examples found in the 16 reports hand reviewed by
             ClearCare; they should not be assumed to occur in every nursing home.
           </aside>
@@ -142,7 +142,7 @@ export default function ReadingInspectionReportsGuide() {
                 strokeWidth={2.5}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="mt-0.5 size-5 shrink-0 text-link"
+                className="mt-0.5 size-5 shrink-0 text-primary"
               >
                 <path d="M5 12.5 10 17.5 19 7" />
               </svg>

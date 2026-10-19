@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${sourceSerif.variable} ${publicSans.variable} ${plexMono.variable} h-full antialiased`}
-      suppressHydrationWarning // the theme script sets data-theme before React hydrates
+      suppressHydrationWarning // the theme script sets data-theme and data-design before React hydrates
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_SAVED_THEME_SCRIPT }} />

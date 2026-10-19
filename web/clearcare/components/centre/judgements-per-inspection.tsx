@@ -53,7 +53,7 @@ export function JudgementsPerInspection({ inspections, shown, history }: Judgeme
   return (
     <div className="border-t border-line-soft px-4 py-5 md:px-7">
       <h3 className="font-semibold">Judgments at each inspection</h3>
-      <p className="mt-1 text-sm text-ink-muted">Counts the regulations HIQA assessed on the day of each inspection.</p>
+      <p className="mt-1 text-sm text-ink-muted">Regulations HIQA assessed at each inspection.</p>
       <ul className="mt-4 flex flex-col gap-4">
         {shown.map((inspection) => {
           const inspectionCounts = counts.get(inspection.id)!;

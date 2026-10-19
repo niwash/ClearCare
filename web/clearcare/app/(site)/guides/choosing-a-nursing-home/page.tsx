@@ -71,13 +71,20 @@ export default function ChoosingANursingHomeGuide() {
   return (
     <>
       <GuideHeader guide={guide} />
+      {/* The questions are written but the answers aren't, so say so before anyone opens one. */}
+      <p className="max-w-3xl rounded-lg border-2 border-dashed border-field bg-surface-muted px-4 py-3 text-sm">
+        <span className="font-semibold">This guide is a work in progress.</span> The questions are ready to use as a
+        checklist, but the answers aren&apos;t written yet.
+      </p>
       <p className="max-w-3xl">
         Before you start browsing homes, it helps to pause and ask yourself a few key questions. This checklist walks
         you through the stages most families go through, so you can search with clarity and confidence.
       </p>
 
       {STAGES.map((stage, index) => {
-        const related = stage.relatedGuide && getGuide(stage.relatedGuide);
+        // A guide that isn't written yet isn't linked, as on the resources page.
+        const relatedGuide = stage.relatedGuide && getGuide(stage.relatedGuide);
+        const related = relatedGuide && relatedGuide.status !== "coming-soon" ? relatedGuide : undefined;
         return (
           <Section key={stage.title} title={`Stage ${index + 1}: ${stage.title}`}>
             <ul className="max-w-3xl divide-y divide-line-soft rounded-lg border border-line bg-surface">
@@ -100,7 +107,7 @@ export default function ChoosingANursingHomeGuide() {
                       </svg>
                     </summary>
                     <div className="px-4 pb-3 text-sm text-ink-muted">
-                      {answer ?? <Placeholder>TBE</Placeholder>}
+                      {answer ?? <Placeholder>Answer coming soon</Placeholder>}
                     </div>
                   </details>
                 </li>
@@ -108,7 +115,7 @@ export default function ChoosingANursingHomeGuide() {
             </ul>
             {related && (
               <p className="text-sm">
-                <Link href={`/guides/${related.slug}`}>Read: {related.title} →</Link>
+                <Link href={`/guides/${related.slug}`} className="tap-target">Read: {related.title} →</Link>
               </p>
             )}
           </Section>

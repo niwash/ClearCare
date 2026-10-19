@@ -2,6 +2,7 @@
 // What each judgment became at the home's next inspection report, across every report ClearCare
 // has loaded. The figures come from GET /statistics/re-assessment; the page only draws them.
 import { JudgementIcon } from "@/components/centre/judgement-icon";
+import { Alert } from "@/components/layout/alert";
 import { Section } from "@/components/layout/section";
 import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
@@ -28,7 +29,7 @@ export default async function NationalPage() {
   return (
     <>
       <div className="flex max-w-3xl flex-col gap-3">
-        <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">
           Re-assessment at the next inspection
         </h1>
         <p className="text-ink-muted md:text-lg">
@@ -41,13 +42,10 @@ export default async function NationalPage() {
         <NationalFigures statistics={lookup.statistics} />
       ) : (
         // The same message the centre page shows when its record can't be read.
-        <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
-          <p className="font-medium">These figures aren&apos;t available right now</p>
-          <p className="mt-1 text-ink-muted">{statisticsUnavailableMessage(lookup.httpStatus)}</p>
-        </div>
+        <Alert title="These figures aren't available right now">{statisticsUnavailableMessage(lookup.httpStatus)}</Alert>
       )}
 
-      <p className="text-[13px] leading-relaxed text-ink-muted">
+      <p className="text-small leading-relaxed text-ink-muted">
         Contains information from HIQA inspection reports, reused under the Irish PSI licence (CC BY 4.0). ClearCare
         does not rate or recommend homes.
       </p>
@@ -158,7 +156,7 @@ function Chart({ note, children }: { note: ReactNode; children: ReactNode }) {
 
 function ChartNote({ count, dataDate, children }: { count: string; dataDate: ISODate; children?: ReactNode }) {
   return (
-    <p className="text-[13px] leading-relaxed text-ink-muted">
+    <p className="text-small leading-relaxed text-ink-muted">
       n = {count}. {children}Not re-assessed: the regulation does not appear in the next report ClearCare holds;
       thematic reports are not read. Latest inspection {formatDate(dataDate)}.{" "}
       <a href="/national/re-assessment.csv">Download the figures (CSV)</a>
