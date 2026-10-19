@@ -145,20 +145,9 @@ The WCAG 2.2 Understanding document for 1.4.8 lists sufficient techniques but no
 
 ## How this is applied to the site
 
-ClearCare has two designs. Users can choose between them with the **Easier to read: Off / On** button in the header.
+ClearCare has two designs, switched with the **Easier to read: Off / On** button in the header. Off, the default, is for families and confident older adults and meets WCAG 2.2 Level AA, which W3C says covers most older users' needs [[2]](#ref-2), [[3]](#ref-3). On is for older adults who struggle, and adds the AAA criteria above and the older-adult guidance.
 
-- **Off (the default)** is for families and confident older adults. It meets WCAG 2.2 Level AA, which W3C says covers most older users' needs [[2]](#ref-2), [[3]](#ref-3). It uses a cool navy palette, underlined links, a visible focus outline, 3:1 form-field borders and 24px targets.
-- **On** is for older adults who struggle. It adds the AAA criteria above and the older-adult guidance: a warm high-contrast palette, sans serif headings, no small capitals in labels, 18px text with 1.5 line spacing, lines of 80 characters or fewer, thicker underlines, a 3px focus outline, 44px targets, warning icons on errors, and navigation that is always visible.
-
-The full side-by-side comparison is in [easier-to-read-toggle.md](../../Documentations/Design/easier-to-read-toggle.md).
-
-### Not yet applied
-
-- Double-spaced body text [[5]](#ref-5). We use WCAG's 1.5 line spacing instead [[10]](#ref-10).
-- Paragraph spacing of 1.5 times the line spacing (WCAG 1.4.8) [[10]](#ref-10).
-- A glossary of technical terms, and a site map [[5]](#ref-5).
-- 14-point text. The Nutrition and Aging Resource Center says website text "should be at least 14-point" [[6]](#ref-6), about 18.7px. Body text is 16px (12 point) by default and 18px (13.5 point) in Easier to read.
-- Testing with older adults [[1]](#ref-1), [[5]](#ref-5).
+What each design does, and the guidance not yet applied, are in [easier-to-read-toggle.md](../../Documentations/Design/easier-to-read-toggle.md): see [What changes](../../Documentations/Design/easier-to-read-toggle.md#what-changes) and [Known gaps](../../Documentations/Design/easier-to-read-toggle.md#known-gaps-as-of-19-october-2026).
 
 ---
 

@@ -82,7 +82,9 @@ export default function ChoosingANursingHomeGuide() {
       </p>
 
       {STAGES.map((stage, index) => {
-        const related = stage.relatedGuide && getGuide(stage.relatedGuide);
+        // A guide that isn't written yet isn't linked, as on the resources page.
+        const relatedGuide = stage.relatedGuide && getGuide(stage.relatedGuide);
+        const related = relatedGuide && relatedGuide.status !== "coming-soon" ? relatedGuide : undefined;
         return (
           <Section key={stage.title} title={`Stage ${index + 1}: ${stage.title}`}>
             <ul className="max-w-3xl divide-y divide-line-soft rounded-lg border border-line bg-surface">

@@ -134,19 +134,18 @@ const FAIR_DEAL_CONTACTS: Contact[] = [
   },
 ];
 
-const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
+const INSPECTION_CONTACTS: Contact[] = [
   {
-    title: "Inspections",
-    contacts: [
-      {
-        name: "HIQA (Health Information and Quality Authority)",
-        purpose: "Registers and inspects nursing homes. Takes concerns, but can't resolve complaints.",
-        website: "https://www.hiqa.ie",
-        phone: "021 240 9646",
-        email: "concerns@hiqa.ie",
-      },
-    ],
+    name: "HIQA (Health Information and Quality Authority)",
+    purpose: "Registers and inspects nursing homes. Takes concerns, but can't resolve complaints.",
+    website: "https://www.hiqa.ie",
+    phone: "021 240 9646",
+    email: "concerns@hiqa.ie",
   },
+];
+
+// The groups after Fair Deal.
+const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
   {
     title: "Dementia",
     contacts: [
@@ -213,11 +212,9 @@ export default function ContactsPage() {
       </div>
 
       <div className="flex max-w-4xl flex-col gap-3">
-        {CONTACT_GROUPS.slice(0, 1).map((group) => (
-          <ContactSection key={group.title} title={group.title}>
-            <ContactList contacts={group.contacts} />
-          </ContactSection>
-        ))}
+        <ContactSection title="Inspections">
+          <ContactList contacts={INSPECTION_CONTACTS} />
+        </ContactSection>
 
         <ContactSection title="Fair Deal">
           <p className="text-sm text-ink-muted">
@@ -283,7 +280,7 @@ export default function ContactsPage() {
           </p>
         </ContactSection>
 
-        {CONTACT_GROUPS.slice(1).map((group) => (
+        {CONTACT_GROUPS.map((group) => (
           <ContactSection key={group.title} title={group.title}>
             <ContactList contacts={group.contacts} />
           </ContactSection>

@@ -51,7 +51,7 @@ export default function UserJourneyGuide() {
         <figcaption className="text-sm text-ink-muted">Select the flowchart to open it full size.</figcaption>
       </figure>
 
-      <aside className="max-w-3xl rounded-lg border border-line border-l-4 border-l-link bg-surface px-4 py-3 text-sm">
+      <aside className="max-w-3xl rounded-lg border border-line border-l-4 border-l-primary bg-surface px-4 py-3 text-sm">
         <span className="font-semibold">This is a general guide.</span> It shows the ideal way to choose a nursing home.
         It is not advice. Every case is different. After an accident or a hospital stay, for example, the process may
         move faster with less choice of home. Check your own situation with the HSE, a GP or a social worker.

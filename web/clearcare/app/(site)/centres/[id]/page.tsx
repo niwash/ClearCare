@@ -98,7 +98,7 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
   const first = reports?.inspections[0];
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // Most register addresses already end with the Eircode, so it only gets its own row when missing.
-  const addressHasEircode = eircode !== null && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode!);
+  const addressHasEircode = Boolean(centre.eircode && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode));
 
   return (
     <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">

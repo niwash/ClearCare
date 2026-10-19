@@ -35,11 +35,21 @@ How the toggle works:
 | **Hover on main buttons** | Fade slightly | Darker colour. |
 | **Navigation on phones and tablets** | Behind a round menu button in the bottom-right corner. | Always visible as a row under the header. NIA/NLM: "Use pull down menus sparingly" and "Incorporate text with the icon if possible" [[5]](#ref-5) |
 
+### What the colours mean
+
+| Colour | Means | Used for |
+| --- | --- | --- |
+| Navy (rust in Easier to read) | You can click this | Links and main buttons |
+| Red | A problem | "Not compliant", error messages |
+| Amber (gold in Easier to read) | Worth checking | "Substantially compliant" |
+| Near-black | Nothing wrong | "Compliant" |
+| Near-black, dashed outline | No information | "Not assessed" |
+
 ## The same in both
 
 - **"(coming soon)" labels.** "Ask about this home", "Add to list" and any unfinished menu item are shown in readable text with "(coming soon)", not faded out. WCAG doesn't require contrast for inactive controls [[10]](#ref-10), but faded text is hard for anyone to read, and the label explains why nothing happens.
 - **Judgement shapes and labels, page content, layout and features.** Judgement colours follow each design's palette, so "Substantially compliant" is amber by default and gold in Easier to read.
-- **Light and dark mode.** Dark-on-light stays the default [[5]](#ref-5), [[7]](#ref-7).
+- **Light and dark mode.** Both designs follow the device's light or dark setting until the user picks one with the theme button, and the choice is saved. Dark-on-light is the better choice for most older readers [[5]](#ref-5), [[7]](#ref-7), and the theme button sits next to the Easier to read toggle.
 
 ## Known gaps as of 19 October 2026
 
