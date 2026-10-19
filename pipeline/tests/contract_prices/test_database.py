@@ -27,8 +27,12 @@ PUBLIC_PDF = (
     / "max_contract_price_public.pdf"
 )
 
-PUBLIC_FILE = SourceFile("hse_nhss", "https://example.test/one", "a" * 64)
-SECOND_FILE = SourceFile("hse_nhss", "https://example.test/two", "b" * 64)
+PUBLIC_FILE = SourceFile(
+    "contract-price-public", "https://example.test/one", "a" * 64
+)
+SECOND_FILE = SourceFile(
+    "contract-price-public", "https://example.test/two", "b" * 64
+)
 PRICE_LIST = ContractPriceList(
     home_type="public",
     record_date=date(2026, 9, 1),

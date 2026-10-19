@@ -182,7 +182,8 @@ def test_pipeline_loads_a_contract_price(database: Database) -> None:
         source_file_id = connection.execute(
             "INSERT INTO clearcare.source_file"
             " (source, url, sha256, fetched_at)"
-            " VALUES ('hse_section40', 'https://example.test/list', %s, now())"
+            " VALUES ('contract-price-private',"
+            " 'https://example.test/list', %s, now())"
             " RETURNING source_file_id",
             ("d" * 64,),
         ).fetchone()

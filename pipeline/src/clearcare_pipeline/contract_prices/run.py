@@ -1,4 +1,5 @@
-"""Parsing, transforming and writing contract price lists.
+"""Parsing, transforming and writing contract price lists (CCARE-76).
+
 This is the workflow behind the command line entry point: it reads a list's
 file, parses and transforms it, checks it against what the database holds, and
 writes the list and its prices in one transaction.
@@ -25,8 +26,11 @@ from clearcare_pipeline.parser.parser import Parser
 
 logger = logging.getLogger(__name__)
 
-# What the stored file is called by source, per home type.
-SOURCES = {"public": "hse_nhss", "private": "hse_section40"}
+# What the stored file's source is called, per home type.
+SOURCES = {
+    "public": "contract-price-public",
+    "private": "contract-price-private",
+}
 
 
 @dataclass(frozen=True)

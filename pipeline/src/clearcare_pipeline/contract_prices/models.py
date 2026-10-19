@@ -1,6 +1,6 @@
 """The rows a parsed contract price list becomes.
 
-These mirror the tables in db/V7__contract_prices.sql, and the source_file row
+These mirror the tables in db/V8__contract_prices.sql, and the source_file row
 the list's PDF is stored as. A list does not carry its source_file_id: the
 file is stored in the same transaction, so the id exists only once it has
 been written.

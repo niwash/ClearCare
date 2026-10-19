@@ -65,7 +65,7 @@ def test_each_list_is_written_once(tmp_path: Path) -> None:
     assert written.home_type == "public"
     assert written.record_date == date(2026, 9, 1)
     assert written.prices == (ContractPrice("549", Decimal("1908")),)
-    assert source_file.source == "hse_nhss"
+    assert source_file.source == "contract-price-public"
     assert source_file.url == "https://example.test/public"
     assert len(source_file.sha256) == 64
 
