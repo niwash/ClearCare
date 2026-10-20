@@ -6,6 +6,11 @@
 export const primaryButtonClass =
   "h-11 rounded-md bg-primary px-4 font-semibold text-on-primary transition-opacity hover:opacity-90 adult:transition-none adult:hover:bg-primary-hover adult:hover:opacity-100";
 
+// A link styled as a large button, such as "Read guide" or "See contacts". On a brand-colour band
+// (brand-band, globals.css) it turns white with brand-colour text.
+export const actionLinkClass =
+  "inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline hover:bg-primary-hover hover:text-on-primary";
+
 // A text field. The ring replaces the focus outline in the standard design (WCAG 2.4.7).
 export const textInputClass =
   "h-11 min-w-0 rounded-md border border-field bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-primary";
