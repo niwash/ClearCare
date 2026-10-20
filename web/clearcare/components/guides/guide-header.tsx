@@ -6,10 +6,13 @@ export function guideMetadata(guide: Guide): Metadata {
   return { title: `${guide.title} · ClearCare`, description: guide.summary };
 }
 
-// Marks a guide that is readable but still changing, on its page and on the resources page.
+// Marks a guide that is readable but still changing, on its page, its card and its home page
+// slide. Worded for readers ("Work in progress") rather than as "Draft".
 export function DraftLabel() {
   return (
-    <span className="w-fit rounded border border-field px-1.5 py-0.5 text-xs font-normal text-ink-muted">Draft</span>
+    <span className="w-fit rounded border border-field px-1.5 py-0.5 text-xs font-normal text-ink-muted">
+      Work in progress
+    </span>
   );
 }
 

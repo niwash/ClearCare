@@ -38,7 +38,7 @@ export const GUIDES = [
     title: "Fair Deal Explained",
     summary: "How the scheme works, who qualifies and how to apply.",
     photo: "/home/fair-deal.jpg",
-    status: "coming-soon",
+    status: "draft",
   },
   {
     slug: "using-clearcare",
