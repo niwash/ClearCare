@@ -34,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_SAVED_THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+      {/* overflow-x-clip: a full-width band (100vw) includes the scrollbar on Windows, which would
+          otherwise let the page scroll sideways. Clip, not hidden, so sticky positioning still works. */}
+      <body className="flex min-h-full flex-col overflow-x-clip font-sans">{children}</body>
     </html>
   );
 }
