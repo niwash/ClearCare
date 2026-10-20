@@ -127,6 +127,16 @@
   --brand: light-dark(#8a2e0f, #5a2410);
 }
 
+/* The header's band: a deeper shade of the same colour, so it frames the page rather than
+   matching the brand-colour bands in the content below it. */
+.brand-band.brand-band-deep {
+  --brand: light-dark(#14324f, #0d2236);
+}
+
+:root[data-design="adult-centred"] .brand-band.brand-band-deep {
+  --brand: light-dark(#5e1f0a, #3d170a);
+}
+
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);

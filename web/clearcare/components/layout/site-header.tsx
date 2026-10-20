@@ -10,6 +10,9 @@ type NavEntry = { label: string; href: string | null };
 const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
   { label: "National Figures", href: "/national" },
+  // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
+  // the first things families need to understand.
+  { label: "Fair Deal", href: "/guides/fair-deal" },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
 ];
@@ -37,7 +40,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
-      <div className="brand-band">
+      <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
           <Link href="/home" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
             ClearCare

@@ -23,7 +23,7 @@ Fair Deal is the Irish government's scheme to help pay for long-term nursing hom
 
 **You pay what you can reasonably afford, and the State (HSE) pays the rest.** Your contribution is worked out by looking at your income and your savings or property. If the nursing home costs more than your contribution, the HSE makes up the difference.
 
-Fair Deal supported over 23,000 people in nursing homes across Ireland in 2018, the most recent figure in a published audit ([Comptroller and Auditor General, Special Report 110](https://www.audit.gov.ie/media/u4kaxxwq/special-report-110-the-nursing-homes-support-scheme-fair-deal-_.pdf)). It works for care in public nursing homes, private nursing homes, and voluntary (charitable) nursing homes.
+Fair Deal supports about 23,500 people, according to the Minister of State at the Department of Health in November 2024 ([Dáil Éireann, written answer, 5 November 2024](https://www.oireachtas.ie/en/debates/question/2024-11-05/1069/)). It works for care in any nursing home approved for Fair Deal: public, voluntary (charitable), or a private home on the HSE's approved list ([HSE, Finding the right nursing home](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/finding-the-right-nursing-home/)).
 
 ---
 
@@ -42,7 +42,7 @@ There is no income or savings threshold that stops you from applying. Whether yo
 
 ## What Does Fair Deal Cover?
 
-Fair Deal covers the main costs of being in a HIQA-registered nursing home:
+Fair Deal covers the main costs of being in a nursing home approved for Fair Deal:
 
 - Your room and bed
 - All your meals
@@ -72,7 +72,7 @@ The HSE works out how much you pay through a **financial assessment** of your **
 | Situation | Rate assessed |
 |---|---|
 | Single person | 80% of weekly income |
-| Couple (combined income) | 40% of combined weekly income (per person in care) |
+| Couple (combined income) | 40% of the couple's combined weekly income, which is 80% of the half that is counted as yours |
 | Rental income from your family home (if rented while you are in care) | You can apply to have it made exempt entirely ([HSE, Financial assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/#:~:text=you%20can%20apply%20to%20have%20all%20your%20rental%20income%20made%20exempt)). If you don't, it is counted with your other income: 80% for a single person, 40% for a couple. |
 
 *For example: if you receive the State Pension (Contributory) of €299.30 per week ([Budget 2026](https://www.gov.ie/en/department-of-social-protection/publications/budget-2026/)), 80% of that is about €239. That amount goes toward your nursing home cost.*
@@ -87,7 +87,7 @@ Assets include cash savings, investments, and non-cash assets such as property, 
 
 ### Your contribution is the same at every nursing home
 
-Once the HSE calculates your weekly contribution, **that amount stays the same no matter which HIQA-registered nursing home you choose.** The HSE pays the difference between your contribution and what the nursing home charges.
+Once the HSE calculates your weekly contribution, **that amount stays the same at any nursing home approved for Fair Deal (public, voluntary, or a private home on the HSE's approved list).** The HSE pays the difference between your contribution and what the nursing home charges ([HSE, Finding the right nursing home](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/finding-the-right-nursing-home/)).
 
 ### Example 1: Single person
 
@@ -150,17 +150,17 @@ Some people cannot cover their full contribution from income alone, particularly
 
 Instead of paying the part of your contribution that relates to your home every week, the HSE covers it for you. That amount builds up as a loan, **tied to your home or other property within the State** ([HSE, NHSS Application Form and Support Information, p.26](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=26)). You do not have to repay it while you are in the nursing home. If you sell or transfer the property while in care, the loan becomes due straight away. You must tell your local Nursing Homes Support Office within 10 working days and repay the loan to Revenue within 6 months of the sale or transfer, or interest will be charged ([same source, p.27](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=27)).
 
-After your death, it is paid back within 18 months according to the HSE's loan page (though the application form states 12 months, so it's worth confirming with your local Nursing Homes Support Office). Bankruptcy or false information on the application can also make the loan due immediately.
+After your death, it is paid back within 18 months ([HSE, Nursing home loan](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/nursing-home-loan/)). The application form still says 12 months (p.27), so confirm this with your local Nursing Homes Support Office. Bankruptcy or false information on the application can also make the loan due immediately.
 
 ### This is not a commercial bank loan
 
-The loan amount is adjusted for inflation or deflation using the Consumer Price Index (CPI) while it builds up. If you apply to the HSE for the loan, the HSE pays the amount on your behalf and registers a charge on the property (p.26 of the application form above). If the loan isn't repaid within 18 months of death (the form says 12, see above), interest is charged from the date of death. After a sale or transfer, interest is charged from 6 months after the sale.
+The loan amount is adjusted for inflation or deflation using the Consumer Price Index (CPI) while it builds up. If you apply to the HSE for the loan, the HSE pays the amount on your behalf and registers a charge on the property (p.26 of the application form above). If the loan isn't repaid within 18 months of death, interest is charged from the date of death. After a sale or transfer, interest is charged from 6 months after the sale.
 
 ### Key things to know
 
 - You can apply for the nursing home loan when you apply for Fair Deal funding, or later if you are already a resident in a nursing home (p.26). Applying for both at the same time is recommended: a loan applied for later is only paid from its own approval date, and approval can take several months (p.3).
 - Taking the loan is **completely optional**. You can instead pay the full amount from savings or income if you prefer.
-- If your spouse or partner is still living in the family home, they must apply to the National Nursing Homes Support Office to defer repayment of the loan (p.28). This is not automatic. Deferral only applies if the loan is on your main home, and the loan amount continues to rise with inflation (CPI) while deferred ([HSE, Nursing home loan](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/nursing-home-loan/#:~:text=You%20can%20only%20defer)). This applies to partners who have lived together for at least 3 years too, not just married or civil partners.
+- If your spouse or partner is still living in the family home, they must apply to the National Nursing Homes Support Office to defer repayment of the loan (p.28). This is not automatic. Deferral only applies if the loan is on your main home, and only if the house is their only residence, they lived in it for at least 3 years before the original application for the loan, and they have no interest in any other property. The loan amount continues to rise with inflation (CPI) while deferred ([HSE, Nursing home loan](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/nursing-home-loan/#:~:text=You%20can%20only%20defer)).
 - The 3-year cap applies to the loan on your family home, the proceeds if you sell it, or a farm/business with an approved successor ([HSE, NHSS Application Form and Support Information, p.30](https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf#page=30)). A loan on any other land or property has no cap and continues to build for as long as you are in care. The cap limits the home-related contribution to 22.5% of its value for a single person, or 11.25% for a couple. Because the loan amount is adjusted for inflation while it builds up, the final amount actually repaid can be slightly more than that.
 
 ---
@@ -173,11 +173,11 @@ Start the application as early as you can. **Funding cannot be backdated.** It i
 
 2. **Submit your form** to your local Nursing Homes Support Office. You can do this yourself, or get help from a family member, solicitor, or social worker. The following people can apply on your behalf: your spouse or partner, a child or step-child aged 18 or over, a registered doctor, nurse, or social worker, or someone with a Registered Enduring Power of Attorney. A Decision-Making Representative appointed by the Circuit Court can also act on your behalf ([Decision Support Service](https://www.decisionsupportservice.ie/services/decision-making-representation-order/becoming-decision-making-representative)). If you also want the nursing home loan (see above) to cover the part of your contribution linked to your home, you can request it on the same form. It is optional and not automatic.
 
-3. **Care needs assessment.** The HSE will arrange a visit to assess whether you need long-term nursing home care. This is usually done by a public health nurse or an HSE assessor ([HSE, Care Needs Assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/care-needs-assessment/)).
+3. **Care needs assessment.** The HSE will arrange a visit to assess whether you need long-term nursing home care. This is done by a healthcare professional, such as a public health nurse, a geriatrician or an occupational therapist ([HSE, Care Needs Assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/care-needs-assessment/)).
 
 4. **Financial assessment.** The HSE will look at your income and what you own to work out your weekly contribution. You will need to provide things like bank statements, details of any property you own, and your most recent tax notice from Revenue.
 
-5. **Approval and nursing home selection.** If your application is approved, you will be told your weekly contribution. You can then choose any nursing home registered with HIQA (public, private, or voluntary). Your contribution amount stays the same regardless of which home you pick. It's a good idea to contact your preferred nursing home as soon as possible, as there can be waiting lists.
+5. **Approval and nursing home selection.** You don't need to wait for approval to start looking: you can shortlist and visit homes once your application is sent. If your application is approved, you will be told your weekly contribution. You can choose any nursing home approved for Fair Deal (public, voluntary, or a private home on the HSE's approved list). Your contribution amount stays the same regardless of which home you pick. It's a good idea to contact your preferred nursing home as soon as possible, as there can be waiting lists ([HSE, Finding the right nursing home](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/finding-the-right-nursing-home/)).
 
 > **Important:** If you move into a nursing home before your Fair Deal is approved, you or your family will need to cover the full cost in the meantime. Fair Deal will not cover any costs from before your approval date.
 
@@ -188,7 +188,8 @@ Start the application as early as you can. **Funding cannot be backdated.** It i
 | Who | What they can help with | Contact |
 |---|---|---|
 | HSE Nursing Homes Support Scheme | Applications, financial assessments, the nursing home loan | [hse.ie/nhss](https://www.hse.ie/nhss/) |
-| Your local Nursing Homes Support Office | Starting your application, collecting forms | Search by county on hse.ie |
+| Your local Nursing Homes Support Office | Starting your application, collecting forms | [Find your local office on hse.ie](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/contact/) |
+| HSE Live | Help with the application form and general Fair Deal questions | Free on 1800 700 700, Monday to Friday 8am to 8pm, Saturday 9am to 5pm |
 | Citizens Information | Free, independent advice on Fair Deal | [citizensinformation.ie](https://www.citizensinformation.ie) or call 0818 07 4000 |
 | ALONE | Free support and advocacy for older people | [alone.ie](https://alone.ie) or call 0818 222 024 |
 | Age Action Ireland | Information and support for older people | [ageaction.ie](https://www.ageaction.ie) |
@@ -197,8 +198,8 @@ Start the application as early as you can. **Funding cannot be backdated.** It i
 ### Key things to remember
 
 - Apply **as early as possible**. Funding only starts from the date of approval.
-- You are free to choose **any HIQA-registered nursing home**. Your contribution does not change based on which one you pick.
-- The **family home is protected** after three years of the scheme.
+- You are free to choose **any nursing home approved for Fair Deal** (public, voluntary, or a private home on the HSE's approved list). Your contribution does not change based on which one you pick.
+- The **family home is protected** after three years in care.
 - The **nursing home loan is optional** and is not a commercial bank loan.
 - If you need help filling in the forms, Citizens Information, ALONE, or a solicitor can all assist you.
 

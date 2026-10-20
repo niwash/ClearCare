@@ -2,6 +2,9 @@
 // A news item on the home page, as a band of brand colour like nhi.ie's: why choosing care well
 // matters more each year. brand-band (globals.css) turns everything inside light-on-dark.
 // Figures from the ESRI's announcement of 30 June 2025, linked below.
+import { actionLinkClass } from "@/components/ui/classes";
+import { ExternalIcon } from "@/components/ui/external-icon";
+
 const ESRI_URL =
   "https://www.esri.ie/news/new-esri-report-projects-that-long-term-residential-care-and-home-support-requirements-will";
 
@@ -26,12 +29,10 @@ export function NewsBanner() {
             href={ESRI_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-1 inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline hover:bg-primary-hover hover:text-on-primary"
+            className={`${actionLinkClass} mt-1`}
           >
             Read more<span className="sr-only"> on the ESRI website (opens in a new tab)</span>
-            <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="size-4">
-              <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
-            </svg>
+            <ExternalIcon />
           </a>
         </div>
 

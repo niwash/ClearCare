@@ -19,7 +19,7 @@ type Feature = {
 };
 
 // Photos are free to use without credit (Unsplash and Pexels licences), downloaded at 1600px wide:
-// search.jpg     Centre for Ageing Better, https://unsplash.com/photos/an-old-woman-using-a-laptop-pm5V4RP2zN4
+// report.jpg     SHVETS production, https://www.pexels.com/photo/elderly-woman-reading-a-document-7545330/
 // family.jpg     Kampus Production, https://www.pexels.com/photo/a-woman-and-an-elderly-man-in-the-living-room-7551665/
 // fair-deal.jpg  Kampus Production, https://www.pexels.com/photo/elderly-couple-sitting-at-the-table-with-documents-and-using-a-smartphone-7477702/
 // phone.jpg      Karolina Grabowska (kaboompics.com), https://www.pexels.com/photo/serious-lady-talking-on-smartphone-and-taking-notes-on-paper-4491477/
@@ -51,7 +51,7 @@ const FEATURES: Feature[] = [
     title: "Check a nursing home's record",
     text: "Every HIQA inspection report, one page per home.",
     href: "/search",
-    photo: "/home/search.jpg",
+    photo: "/home/report.jpg",
   },
 ];
 
