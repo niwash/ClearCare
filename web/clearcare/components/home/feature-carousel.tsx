@@ -22,7 +22,7 @@ type Feature = {
 // search.jpg     Centre for Ageing Better, https://unsplash.com/photos/an-old-woman-using-a-laptop-pm5V4RP2zN4
 // family.jpg     Kampus Production, https://www.pexels.com/photo/a-woman-and-an-elderly-man-in-the-living-room-7551665/
 // fair-deal.jpg  Kampus Production, https://www.pexels.com/photo/elderly-couple-sitting-at-the-table-with-documents-and-using-a-smartphone-7477702/
-// phone.jpg      Karola G, https://www.pexels.com/photo/serious-lady-talking-on-smartphone-and-taking-notes-on-paper-4491477/
+// phone.jpg      Karolina Grabowska (kaboompics.com), https://www.pexels.com/photo/serious-lady-talking-on-smartphone-and-taking-notes-on-paper-4491477/
 // They only set the mood, so their alt text is empty; the card's words carry the meaning.
 const FEATURES: Feature[] = [
   {
@@ -33,7 +33,7 @@ const FEATURES: Feature[] = [
     photo: "/home/family.jpg",
   },
   {
-    title: "What is Fair Deal?",
+    title: "Fair Deal explained",
     text: "How the HSE helps pay for nursing home care.",
     href: "/guides/fair-deal",
     guide: getGuide("fair-deal"),
@@ -55,8 +55,11 @@ const FEATURES: Feature[] = [
   },
 ];
 
+// On phones the slide is a photo above a text panel, so the arrows sit at the middle of the photo,
+// not of the whole slide, where they would cover the heading. The photo is 3:2 and as wide as the
+// slide: 88% of the list's width (the viewport less its 1rem padding each side), all of it from sm.
 const arrowClass =
-  "absolute top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink shadow-md hover:border-primary md:size-12 adult:hidden";
+  "absolute top-[calc((100vw_-_2rem)*0.88/3)] sm:top-[calc((100vw_-_2rem)/3)] md:top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-ink shadow-md hover:border-primary md:size-12 adult:hidden";
 
 export function FeatureCarousel() {
   const listRef = useRef<HTMLUListElement>(null);
@@ -106,9 +109,10 @@ export function FeatureCarousel() {
           onScroll={onScroll}
           className="relative flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto scroll-smooth px-4 [scrollbar-width:none] motion-reduce:scroll-auto md:scroll-px-0 md:gap-0 md:px-0 adult:grid adult:snap-none adult:overflow-visible adult:px-0 sm:adult:grid-cols-2 md:adult:gap-4"
         >
-          {FEATURES.map((feature) => (
+          {FEATURES.map((feature, index) => (
             <li key={feature.href} className="w-[88%] shrink-0 snap-start sm:w-full adult:w-full">
-              <FeatureCard feature={feature} />
+              {/* The first slide's photo is the largest thing on the page, so it loads first. */}
+              <FeatureCard feature={feature} priority={index === 0} />
             </li>
           ))}
         </ul>
@@ -174,7 +178,7 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
 // a link: a deliberate exception to the design guide's rule that links are underlined. The focus
 // outline (globals.css) still shows for keyboard users. A guide that isn't written yet has no link,
 // a "Coming soon" label in place of the button, and in the grid the dashed coming-soon look.
-function FeatureCard({ feature }: { feature: Feature }) {
+function FeatureCard({ feature, priority = false }: { feature: Feature; priority?: boolean }) {
   const comingSoon = feature.guide?.status === "coming-soon";
 
   return (
@@ -190,6 +194,7 @@ function FeatureCard({ feature }: { feature: Feature }) {
           src={feature.photo}
           alt=""
           fill
+          priority={priority}
           sizes="(min-width: 768px) 60vw, 90vw"
           className="object-cover object-[50%_30%]"
         />
