@@ -68,8 +68,9 @@ export default function ResourcesPage() {
           </h2>
         </div>
         <ul className="grid gap-4 sm:grid-cols-2 md:gap-6">
-          {GUIDES.map((guide) => (
-            <GuideCard key={guide.slug} guide={guide} />
+          {GUIDES.map((guide, index) => (
+            // The first card's photo is the largest thing near the top of the page, so it loads first.
+            <GuideCard key={guide.slug} guide={guide} priority={index === 0} />
           ))}
         </ul>
       </section>
@@ -102,7 +103,7 @@ function ResourcesHero() {
 // A photo card per guide, like the home page's. The whole card is the link, through the button
 // stretched over it. A guide that isn't written yet has no link, a "Coming soon" label in place of
 // the button, and the dashed look of other unfinished features.
-function GuideCard({ guide }: { guide: Guide }) {
+function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boolean }) {
   const comingSoon = guide.status === "coming-soon";
 
   return (
@@ -112,7 +113,7 @@ function GuideCard({ guide }: { guide: Guide }) {
       }`}
     >
       <div className="relative aspect-[3/2]">
-        <Image src={guide.photo} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover object-[50%_30%]" />
+        <Image src={guide.photo} alt="" fill priority={priority} sizes="(min-width: 640px) 50vw, 100vw" className="object-cover object-[50%_30%]" />
       </div>
       <div className="flex flex-1 flex-col items-start gap-2 p-5 md:p-6">
         <h3 className="font-heading text-xl font-semibold text-ink md:text-2xl">{guide.title}</h3>
