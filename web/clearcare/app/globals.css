@@ -127,6 +127,31 @@
   --brand: light-dark(#8a2e0f, #5a2410);
 }
 
+/* The header's band: a deeper shade of the same colour, so it frames the page rather than
+   matching the brand-colour bands in the content below it. */
+.brand-band.brand-band-deep {
+  --brand: light-dark(#14324f, #0d2236);
+}
+
+:root[data-design="adult-centred"] .brand-band.brand-band-deep {
+  --brand: light-dark(#5e1f0a, #3d170a);
+}
+
+/* The publisher logos on the resources page are in their own colours, mostly dark greens and
+   navies that fade into a dark card, so dark mode brightens them and fades them less. Dark mode is the system's
+   unless the theme toggle has chosen (data-theme). */
+:root[data-theme="dark"] .logo-watermark {
+  filter: brightness(2.2);
+  opacity: 0.55;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .logo-watermark {
+    filter: brightness(2.2);
+    opacity: 0.55;
+  }
+}
+
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);

@@ -37,7 +37,7 @@ export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
-      <div className="brand-band">
+      <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
           <Link href="/home" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
             ClearCare
