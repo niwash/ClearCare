@@ -82,10 +82,11 @@ def ingest(
     """Parses, transforms and writes every list.
 
     A list already loaded from the same bytes is counted and not parsed again.
-    A list that cannot be read, whose home type is missing, or that says a
-    different home type from the option that named it, is counted failed. A
-    price whose centre the register does not have, and one the list does not
-    print as an amount, is counted skipped.
+    A list that cannot be read, whose home type is missing, that says a
+    different home type from the option that named it, or that has no price
+    for a stored centre, is counted failed and not recorded. A price whose
+    centre the register does not have, and one the list does not print as an
+    amount, is counted skipped.
     """
     parsed = written = already_loaded = prices = skipped = failed = 0
     for item in files:
@@ -117,7 +118,6 @@ def ingest(
             )
             failed += 1
             continue
-        parsed += 1
         for drop in dropped:
             logger.warning(
                 "%s: centre %s: %s", item.path, drop.centre_id, drop.reason
@@ -129,6 +129,18 @@ def ingest(
             if _known(item.path, price.centre_id, catalogue)
         )
         skipped += len(price_list.prices) - len(kept)
+        if not kept:
+            # A list with nothing left is not recorded, or a run made before
+            # the register was loaded would count as loaded and its prices
+            # would never arrive.
+            logger.error(
+                "%s: no price in the list is for a stored centre;"
+                " load the register first",
+                item.path,
+            )
+            failed += 1
+            continue
+        parsed += 1
         source_file = SourceFile(
             source=SOURCES[price_list.home_type],
             url=item.url,

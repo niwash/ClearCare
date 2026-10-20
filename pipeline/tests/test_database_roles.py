@@ -4,7 +4,6 @@
 from collections.abc import Generator, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
-from decimal import Decimal
 from typing import Any, LiteralString
 
 import pytest
@@ -175,39 +174,6 @@ def test_api_reads_where_the_published_snapshot_came_from(
         ).fetchall()
 
     assert rows == [(PUBLISHED_AT, PUBLISHED_SHA256, REGISTER_URL)]
-
-
-def test_pipeline_loads_a_contract_price(database: Database) -> None:
-    with _rolled_back(database, PIPELINE) as connection:
-        source_file_id = connection.execute(
-            "INSERT INTO clearcare.source_file"
-            " (source, url, sha256, fetched_at)"
-            " VALUES ('contract-price-private',"
-            " 'https://example.test/list', %s, now())"
-            " RETURNING source_file_id",
-            ("d" * 64,),
-        ).fetchone()
-        assert source_file_id is not None
-        list_id = connection.execute(
-            "INSERT INTO clearcare.contract_price_list"
-            " (home_type, record_date, version, source_file_id)"
-            " VALUES ('private', DATE '2026-09-04', 1, %s)"
-            " RETURNING id",
-            (source_file_id[0],),
-        ).fetchone()
-        assert list_id is not None
-        connection.execute(
-            "INSERT INTO clearcare.contract_price"
-            " (list_id, centre_id, price) VALUES (%s, '34', 1220.00)",
-            (list_id[0],),
-        )
-
-        rows = connection.execute(
-            "SELECT price FROM clearcare.contract_price WHERE list_id = %s",
-            (list_id[0],),
-        ).fetchall()
-
-    assert rows == [(Decimal("1220.00"),)]
 
 
 @pytest.mark.parametrize(

@@ -547,65 +547,16 @@ def _row_records(
     pages: Sequence[int],
     tables: Mapping[int, Sequence[Table]],
 ) -> list[Record]:
-    """Reads a ``table_row`` group's records, in reading order."""
-    ordered = [field for field in group if field.source == "table_row"]
-    carried = next((field for field in group if field.index is None), None)
-    hidden = sorted(field.index for field in labels if field.index is not None)
-    indexes: list[int] = []
-    for field in ordered:
-        index = field.index
-        if index is not None:
-            indexes.append(_adjusted(index, hidden))
-    size = max(indexes) + 1
-    # Where a record starts: its first table column.
-    first = min(indexes)
-    patterns = [re.compile(field.match) for field in group if field.match]
-    records: list[Record] = []
-    marker: str | None = None
-    carried_labels: dict[str, Value] = {field.key: None for field in labels}
-    above: list[str] | None = None
-    columns: list[int] = []
-    record: Record | None = None
-    for page in pages:
-        for table in tables.get(page, ()):
-            for row in table:
-                cells = _cells(row)
-                found = {
-                    field.key: cells[field.index]
-                    for field in labels
-                    if field.index is not None
-                }
-                if hidden:
-                    cells = _without(cells, hidden)
-                if (
-                    _continues(cells, first)
-                    and above is not None
-                    and record is not None
-                ):
-                    _extend(above, cells, columns)
-                    record.update(
-                        _read(group, above, marker, hidden, carried_labels)
-                    )
-                    continue
-                above = None
-                record = None
-                compacted = _compact(cells)
-                if len(compacted) == 1 and carried is not None:
-                    marker = compacted[0]
-                    continue
-                if len(compacted) != size:
-                    continue
-                line = "\n".join(compacted)
-                if any(not pattern.search(line) for pattern in patterns):
-                    continue
-                for key, value in found.items():
-                    if value:
-                        carried_labels[key] = value
-                record = _read(group, compacted, marker, hidden, carried_labels)
-                records.append(record)
-                above = compacted
-                columns = _columns(cells)
-    return records
+    """Reads a ``table_row`` group's records, in reading order.
+
+    A report's table merges cells, so its rows are read compacted: the empty
+    and repeated cells are left out.
+    """
+    columns = [field for field in group if field.source == "table_row"]
+    rows = (
+        row for page in pages for table in tables.get(page, ()) for row in table
+    )
+    return _read_records(group, labels, columns, rows, compact=True)
 
 
 def _column_records(
@@ -641,11 +592,15 @@ def _read_records(
     labels: Sequence[Field],
     columns: Sequence[Field],
     rows: Iterable[Sequence[str | None]],
+    *,
+    compact: bool = False,
 ) -> list[Record]:
     """Reads the records of a group whose values each come from a column.
 
     Each field comes from its own column, so a blank cell stays blank and
-    does not shift the fields after it.
+    does not shift the fields after it. A ``table_row`` group is read
+    compacted instead, because the report merges cells: empty and repeated
+    cells are left out, and a row of another width is not a record.
     """
     carried = next((field for field in group if field.index is None), None)
     hidden = sorted(field.index for field in labels if field.index is not None)
@@ -662,6 +617,8 @@ def _read_records(
     carried_labels: dict[str, Value] = {field.key: None for field in labels}
     above: list[str] | None = None
     record: Record | None = None
+    # How the row above holds its values, for a row that carries on from it.
+    widths: Sequence[int] = ()
     for row in rows:
         cells = _cells(row)
         found = {
@@ -671,34 +628,40 @@ def _read_records(
         }
         if hidden:
             cells = _without(cells, hidden)
-        cells = _pad(cells, size)
-        if not any(cells):
-            above = None
-            record = None
-            continue
+        if not compact:
+            cells = _pad(cells, size)
         if (
             _continues(cells, first)
             and above is not None
             and record is not None
         ):
-            _extend(above, cells, range(len(cells)))
+            _extend(above, cells, widths)
             record.update(_read(group, above, marker, hidden, carried_labels))
             continue
         above = None
         record = None
-        filled = [cell for cell in cells if cell]
+        if compact:
+            line = _compact(cells)
+        else:
+            if not any(cells):
+                continue
+            line = cells
+        filled = [cell for cell in line if cell]
         if len(filled) == 1 and carried is not None:
             marker = filled[0]
             continue
-        line = "\n".join(cells)
-        if any(not pattern.search(line) for pattern in patterns):
+        if compact and len(line) != size:
+            continue
+        text = "\n".join(line)
+        if any(not pattern.search(text) for pattern in patterns):
             continue
         for key, value in found.items():
             if value:
                 carried_labels[key] = value
-        record = _read(group, cells, marker, hidden, carried_labels)
+        record = _read(group, line, marker, hidden, carried_labels)
         records.append(record)
-        above = list(cells)
+        above = list(line)
+        widths = _columns(cells) if compact else range(len(cells))
     return records
 
 

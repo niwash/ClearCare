@@ -20,11 +20,11 @@ CREATE TABLE clearcare.contract_price_list (
     UNIQUE (home_type, record_date, version)
 );
 
--- One center's price in one loaded list.
+-- One centre's price in one loaded list.
 CREATE TABLE clearcare.contract_price (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     list_id bigint NOT NULL REFERENCES clearcare.contract_price_list,
-    -- The center the price is for: the number behind its HIQA Center ID,
+    -- The centre the price is for: the number behind its HIQA Center ID,
     -- which is how the register names centres (text, as clearcare.centre is).
     centre_id text NOT NULL REFERENCES clearcare.centre,
     -- Euro per resident per week, parsed from the "€1,220" the private list
