@@ -1,5 +1,7 @@
 // app/search/page.tsx
+import { Alert } from "@/components/layout/alert";
 import { CardResult } from "@/components/search/card-result";
+import { primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { formatDate } from "@/lib/centres";
 import {
   COUNTIES,
@@ -19,6 +21,10 @@ interface SearchPageProps {
 }
 
 const FILTERS = ["name", "address", "county", "eircode"] as const;
+
+// The results grid has 1, 2 or 3 columns depending on screen width. 24 divides by all three, so
+// every full page fills its last row. The API's default of 20 would leave gaps.
+const RESULTS_PER_PAGE = "24";
 
 // Empty form fields arrive as "", which means "not set".
 async function readQuery(searchParams: SearchPageProps["searchParams"]): Promise<SearchQuery> {
@@ -47,12 +53,16 @@ function describe(query: SearchQuery) {
   return parts.join(", ");
 }
 
-function pageHref(query: SearchQuery, page: number) {
+function pageQuery(query: SearchQuery, page: number) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries({ ...query, page: String(page) })) {
     if (value && !(key === "page" && value === "1")) params.set(key, value);
   }
-  const search = params.toString();
+  return params.toString();
+}
+
+function pageHref(query: SearchQuery, page: number) {
+  const search = pageQuery(query, page);
   return search ? `/search?${search}` : "/search";
 }
 
@@ -74,19 +84,20 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const query = await readQuery(searchParams);
-  const result = await searchCentres(query);
+  // Not added to query itself, so it stays out of the page links.
+  const result = await searchCentres({ ...query, page_size: query.page_size ?? RESULTS_PER_PAGE });
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <Link href="/home" className="hover:underline">
+          <Link href="/home" className="inline-block py-1 tap-target">
             Home
           </Link>
           <span>/</span>
           <span>Search</span>
         </div>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight">
           {hasFilters(query) ? `Results for ${describe(query)}` : "Find a nursing home"}
         </h1>
       </div>
@@ -102,8 +113,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
-const inputClass =
-  "h-11 w-full min-w-0 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link";
+const inputClass = `${textInputClass} w-full`;
 
 function SearchForm({ query }: { query: SearchQuery }) {
   return (
@@ -140,12 +150,12 @@ function SearchForm({ query }: { query: SearchQuery }) {
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          className="h-11 rounded-md bg-link px-4 font-semibold text-surface transition-opacity hover:opacity-90"
+          className={primaryButtonClass}
         >
           Search
         </button>
         {hasFilters(query) && (
-          <Link href="/search" className="text-sm">
+          <Link href="/search" className="inline-block py-1 text-sm tap-target">
             Clear search
           </Link>
         )}
@@ -198,11 +208,11 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
             {total === centres.length
               ? `${total} registered ${total === 1 ? "centre" : "centres"}`
               : `Showing ${first}–${last} of ${total} registered centres`}
-            , in alphabetical order.
+            .
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
-              <CardResult key={centre.centre_id} centre={centre} />
+              <CardResult key={centre.centre_id} centre={centre} from={pageQuery(query, page)} />
             ))}
           </div>
         </>
@@ -210,17 +220,17 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
 
       {lastPage > 1 && (
         <nav aria-label="Result pages" className="flex items-center justify-between gap-4 text-sm">
-          {page > 1 ? <Link href={pageHref(query, page - 1)}>&larr; Previous</Link> : <span />}
+          {page > 1 ? <Link href={pageHref(query, page - 1)} className="tap-target">&larr; Previous</Link> : <span />}
           <span className="text-ink-muted">
             Page {Math.min(page, lastPage)} of {lastPage}
           </span>
-          {page < lastPage ? <Link href={pageHref(query, page + 1)}>Next &rarr;</Link> : <span />}
+          {page < lastPage ? <Link href={pageHref(query, page + 1)} className="tap-target">Next &rarr;</Link> : <span />}
         </nav>
       )}
 
       <p className="text-xs text-ink-faint">
         Source:{" "}
-        <a href={register_snapshot.url} className="text-ink-faint">
+        <a href={register_snapshot.url} className="text-ink-faint adult:text-primary">
           HIQA register
         </a>
         , downloaded {formatDate(register_snapshot.fetched_at)}.
@@ -233,9 +243,6 @@ function SearchError({ status, detail }: { status: number; detail: string }) {
   const message = status === 400 ? detail : unavailableMessage(status);
 
   return (
-    <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
-      <p className="font-medium">{status === 400 ? "Please check your search" : "Search unavailable"}</p>
-      <p className="mt-1 text-ink-muted">{message}</p>
-    </div>
+    <Alert title={status === 400 ? "Please check your search" : "Search unavailable"}>{message}</Alert>
   );
 }

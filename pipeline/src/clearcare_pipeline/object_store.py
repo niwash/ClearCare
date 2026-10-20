@@ -21,6 +21,10 @@ class ObjectStore(Protocol):
         """Returns every key that starts with the prefix."""
         ...
 
+    def get(self, key: str) -> bytes:
+        """Returns the body stored under the key."""
+        ...
+
     def put(self, key: str, body: bytes) -> None:
         """Stores the body under the key."""
         ...
@@ -52,6 +56,18 @@ class S3ObjectStore:
             )
         except (BotoCoreError, ClientError) as error:
             raise ObjectStoreError(f"listing {prefix}: {error}") from error
+
+    def get(self, key: str) -> bytes:
+        """Returns the body stored under the key.
+
+        Raises:
+            ObjectStoreError: If the object cannot be read.
+        """
+        try:
+            response = self._client.get_object(Bucket=self._bucket, Key=key)
+            return response["Body"].read()
+        except (BotoCoreError, ClientError) as error:
+            raise ObjectStoreError(f"{key}: {error}") from error
 
     def put(self, key: str, body: bytes) -> None:
         """Stores the body, letting the server verify it against its MD5.

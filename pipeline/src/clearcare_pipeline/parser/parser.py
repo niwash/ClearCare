@@ -4,6 +4,9 @@ The report layout is described by a mapping file rather than hard-coded in
 the parser, so a change to the layout can be handled by editing the mapping.
 Every block of text is stored under the section whose heading it follows,
 together with the page it was read from.
+
+With ``--fields``, a second mapping (fields.py) reads key values and record
+tables out of those sections (CCARE-34).
 """
 
 # PyMuPDF ships py.typed but leaves some members unannotated: the
@@ -18,12 +21,15 @@ import argparse
 import csv
 import json
 import logging
+import re
 import sys
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import cast
 
 import pymupdf
+
+from clearcare_pipeline.parser.fields import extract, load_fields
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +43,8 @@ class Section:
 
     pattern: str
     key: str
+    # A whole line that starts the section inside a larger block, if any.
+    line: str = ""
 
 
 @dataclass(frozen=True)
@@ -51,7 +59,8 @@ def load_mapping(path: Path) -> list[Section]:
     """Reads the section mapping from a CSV file.
 
     The file has a header row and one row per section: the text that starts
-    the section, then the key its text is stored under.
+    the section, the key its text is stored under and, optionally, a regular
+    expression for a whole line that starts the section inside a block.
 
     Raises:
         ValueError: If a row does not have two non-empty columns.
@@ -67,7 +76,8 @@ def load_mapping(path: Path) -> list[Section]:
                 raise ValueError(
                     f"{path.name} line {number}: expected two columns"
                 )
-            sections.append(Section(row[0].strip(), row[1].strip()))
+            line = row[2].strip() if len(row) > 2 else ""
+            sections.append(Section(row[0].strip(), row[1].strip(), line))
     return sections
 
 
@@ -88,7 +98,8 @@ class Parser:
     def parse(self) -> dict[str, list[TextBlock]]:
         """Returns the text of every section, in reading order.
 
-        Headings are matched against the start of each text block. A report
+        Headings are matched against the start of each text block, or a line
+        inside one that the mapping's whole-line pattern matches. A report
         lists its sections in the mapping order, so a heading only starts a
         new section when it comes after the current one. This keeps the
         "Capacity and capability" and "Quality and safety" labels repeated in
@@ -107,13 +118,36 @@ class Parser:
                     text = block[4].strip()
                     if not text:
                         continue
-                    current = self._match(text, current)
-                    if current >= 0:
-                        key = self._sections[current].key
-                        parsed[key].append(TextBlock(number + 1, text))
+                    for part in self._split(text):
+                        current = self._match(part, current)
+                        if current >= 0:
+                            key = self._sections[current].key
+                            parsed[key].append(TextBlock(number + 1, part))
         finally:
             document.close()
         return parsed
+
+    def _split(self, text: str) -> list[str]:
+        """Splits a block before each line that is a section heading.
+
+        Some PDFs print a heading as one line of a larger block. Only a whole
+        line counts, because the compliance plan's instructions also start a
+        line with "Section 1".
+        """
+        lines = text.splitlines(keepends=True)
+        cuts = [
+            index
+            for index, line in enumerate(lines)
+            if index == 0
+            or any(
+                section.line and re.fullmatch(section.line, line.strip())
+                for section in self._sections
+            )
+        ]
+        return [
+            "".join(lines[start:end]).strip()
+            for start, end in zip(cuts, [*cuts[1:], len(lines)], strict=True)
+        ]
 
     def _match(self, text: str, current: int) -> int:
         """Returns the index of the section the text starts, if any.
@@ -131,7 +165,7 @@ class Parser:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Parses a report and writes its sections to a JSON file."""
+    """Parses a report and writes its sections, and any values, to JSON."""
     args = _parse_args(argv)
     logging.basicConfig(
         level=logging.INFO, format="%(levelname)s %(name)s: %(message)s"
@@ -142,16 +176,29 @@ def main(argv: list[str] | None = None) -> int:
     if not args.mapper_path.is_file():
         logger.error("Mapping file not found: %s", args.mapper_path)
         return 1
+    if args.fields is not None and not args.fields.is_file():
+        logger.error("Value mapping not found: %s", args.fields)
+        return 1
 
     logger.info("Parsing %s...", args.pdf_path.name)
     sections = Parser(args.pdf_path, args.mapper_path).parse()
-    output: Path = args.output or (
-        Path.cwd() / f"{args.pdf_path.stem}_parsed.json"
-    )
-    payload = {
+    payload: dict[str, object] = {
         key: [asdict(block) for block in blocks]
         for key, blocks in sections.items()
     }
+    if args.fields is not None:
+        try:
+            report = extract(args.pdf_path, sections, load_fields(args.fields))
+        except ValueError as problem:
+            logger.error("%s", problem)
+            return 1
+        payload = {
+            "fields": report.fields,
+            "records": report.records,
+        }
+    output: Path = args.output or (
+        Path.cwd() / f"{args.pdf_path.stem}_parsed.json"
+    )
     output.write_text(
         json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -167,6 +214,12 @@ def _parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser.add_argument("pdf_path", type=Path, help="Path to the PDF to parse")
     parser.add_argument(
         "mapper_path", type=Path, help="Path to the CSV section mapping"
+    )
+    parser.add_argument(
+        "--fields",
+        type=Path,
+        default=None,
+        help="also read the values in this CSV mapping",
     )
     parser.add_argument(
         "-o",

@@ -138,8 +138,9 @@ paths:
       summary: Get one centre from the published register snapshot
       description: |
         Returns the centre with this `centre_id` from the register snapshot
-        that ClearCare currently serves, with the same fields as a search
-        result.
+        that ClearCare currently serves, with the fields of a search result,
+        the centre's phone number, and the latest contract price published for
+        it.
 
         Any value that is not the ID of a centre in that snapshot gives 404,
         including one that is not a number.
@@ -168,10 +169,12 @@ paths:
                   eircode: W23P6EX
                   maximum_occupancy: 62
                   hiqa_url: https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home
+                  centre_phone: "01 555 0123"
                 register_snapshot:
                   fetched_at: "2026-10-05T06:12:54Z"
                   url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+                contract_price: 1908.00
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -195,6 +198,222 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres/34
 
+  /centres/{centre_id}/reports:
+    get:
+      operationId: listCentreReports
+      summary: List a centre's inspection reports
+      description: |
+        Returns the inspection reports ClearCare has loaded for this centre,
+        newest inspection first, each with how many inspectors, regulations and
+        compliance items it holds. `GET /reports/{report_id}` returns one of
+        them in full.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no reports gives `"reports": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's reports, newest inspection first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreReportsResult"
+              example:
+                centre_id: "34"
+                reports:
+                  - report_id: 1
+                    inspection_type: Unannounced
+                    inspection_date: "2026-05-13"
+                    fieldwork_id: MON-0050709
+                    residents: 48
+                    inspector_count: 2
+                    regulation_count: 12
+                    compliance_item_count: 18
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/reports
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/reports
+
+  /reports/{report_id}:
+    get:
+      operationId: getReport
+      summary: Get one inspection report in full
+      description: |
+        Returns one report: the cover values the parser read, the stored PDF
+        they came from, the inspectors the report names, the regulations it
+        considered, and its compliance plan.
+
+        The report does not have to be about a centre in the register snapshot
+        ClearCare currently serves; a report is served as soon as it is loaded.
+        Any value that is not the ID of a report gives 404, including one that
+        is not a number.
+      parameters:
+        - name: report_id
+          in: path
+          required: true
+          description: ClearCare's ID for the report.
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      responses:
+        "200":
+          description: The report, in full.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportResult"
+              example:
+                report:
+                  report_id: 1
+                  centre_id: "34"
+                  centre_code: OSV-0000034
+                  centre_name: Elm Hall Nursing Home
+                  provider_name: Springwood Nursing Homes Limited
+                  address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                  inspection_type: Unannounced
+                  inspection_date: "2026-05-13"
+                  fieldwork_id: MON-0050709
+                  residents: 48
+                  report_file:
+                    sha256: 6b86b273ff34fce19d6b804eff5a3f5747ada4eaa22f1d49c01e52ddb7875b4b
+                    url: https://www.hiqa.ie/sites/default/files/2026-06/elm-hall.pdf
+                    fetched_at: "2026-06-01T09:15:00Z"
+                  inspectors:
+                    - date: "2026-05-13"
+                      start_time: "09:00:00"
+                      end_time: "17:20:00"
+                      name: A. Inspector
+                      role: Lead
+                  regulations:
+                    - regulation: Regulation 15
+                      title: Staffing
+                      judgment: Compliant
+                  compliance_items:
+                    - regulation: Regulation 16(1)(a)
+                      requirement: Staff receive appropriate training.
+                      judgment: Not Compliant
+                      risk_rating: Orange
+                      date_to_comply: "2026-09-01"
+        "404":
+          description: There is no report with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: There is no report with this report_id.
+                instance: /reports/999
+
+  /statistics/re-assessment:
+    get:
+      operationId: getReAssessmentStatistics
+      summary: Count what each judgment became at the centre's next report
+      description: |
+        Counts the judgments of every loaded report by what the same centre's
+        next report said about the regulation, as defined in
+        ADR-0015: judged again, not
+        re-assessed (the next report does not list the regulation), or no
+        later report. Each count comes with its denominator, so the rates can
+        be checked.
+
+        Only loaded reports are counted. Reports whose layout cannot be
+        loaded yet, such as thematic reports (ADR-0013), are
+        passed over, so the next report is the next one ClearCare has
+        loaded.
+      responses:
+        "200":
+          description: >
+            The counts, one row per starting judgment, in the order Compliant,
+            Substantially compliant, Not compliant.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReAssessmentStatistics"
+              example:
+                matrix:
+                  - judgment: Compliant
+                    compliant: 1
+                    substantially_compliant: 0
+                    not_compliant: 0
+                    not_re_assessed: 3
+                    no_later_report: 1
+                    total: 5
+                  - judgment: Substantially compliant
+                    compliant: 0
+                    substantially_compliant: 0
+                    not_compliant: 1
+                    not_re_assessed: 1
+                    no_later_report: 0
+                    total: 2
+                  - judgment: Not compliant
+                    compliant: 1
+                    substantially_compliant: 1
+                    not_compliant: 0
+                    not_re_assessed: 0
+                    no_later_report: 2
+                    total: 4
+                re_check_rate:
+                  - judgment: Compliant
+                    with_later_report: 4
+                    re_assessed: 1
+                    rate: 0.25
+                  - judgment: Substantially compliant
+                    with_later_report: 2
+                    re_assessed: 1
+                    rate: 0.5
+                  - judgment: Not compliant
+                    with_later_report: 2
+                    re_assessed: 2
+                    rate: 1.0
+                coverage:
+                  reports_loaded: 4
+                  centres_with_two_or_more_reports: 1
+                  reports_paired: 2
+                  judgments_paired: 8
+                data_date: "2026-05-13"
+        "503":
+          description: No report with an inspection date has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: No inspection reports have been loaded yet.
+                instance: /statistics/re-assessment
+
 components:
   schemas:
     CentreSearchResult:
@@ -217,12 +436,35 @@ components:
 
     CentreResult:
       type: object
-      required: [centre, register_snapshot]
+      required: [centre, register_snapshot, contract_price]
       properties:
         centre:
-          $ref: "#/components/schemas/Centre"
+          $ref: "#/components/schemas/CentreDetail"
         register_snapshot:
           $ref: "#/components/schemas/RegisterSnapshot"
+        contract_price:
+          type: [number, "null"]
+          description: >
+            The latest published contract price for the centre, in euro per
+            resident per week. Null when no price list has been loaded for it.
+          example: 1908.00
+
+    CentreDetail:
+      description: >
+        A centre as `GET /centres/{centre_id}` returns it: the fields of a
+        search result and the centre's phone number.
+      allOf:
+        - $ref: "#/components/schemas/Centre"
+        - type: object
+          required: [centre_phone]
+          properties:
+            centre_phone:
+              type: [string, "null"]
+              description: >
+                The centre's phone number as the register prints it, which is
+                not always one number: a few say TBC or give two. null when the
+                register gives none, or the snapshot was loaded before
+                ClearCare kept it.
 
     Centre:
       type: object
@@ -313,6 +555,316 @@ components:
         - Westmeath
         - Wexford
         - Wicklow
+
+    CentreReportsResult:
+      type: object
+      required: [centre_id, reports]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        reports:
+          type: array
+          description: The centre's reports, newest inspection first.
+          items:
+            $ref: "#/components/schemas/CentreReport"
+
+    CentreReport:
+      type: object
+      description: >
+        One inspection report of a centre, as the centre's page lists it: enough
+        to choose one, and how much it holds.
+      required:
+        - report_id
+        - inspection_type
+        - inspection_date
+        - fieldwork_id
+        - residents
+        - inspector_count
+        - regulation_count
+        - compliance_item_count
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            ClearCare's ID for the report. `GET /reports/{report_id}` returns
+            the report in full.
+        inspection_type:
+          type: [string, "null"]
+        inspection_date:
+          type: [string, "null"]
+          format: date
+          description: The date of the inspection, not of the report.
+        fieldwork_id:
+          type: string
+          description: HIQA's Fieldwork ID.
+        residents:
+          type: [integer, "null"]
+          minimum: 0
+        inspector_count:
+          type: integer
+        regulation_count:
+          type: integer
+        compliance_item_count:
+          type: integer
+
+    ReportResult:
+      type: object
+      required: [report]
+      properties:
+        report:
+          $ref: "#/components/schemas/Report"
+
+    Report:
+      type: object
+      description: One inspection report, as the parser read it.
+      required:
+        - report_id
+        - centre_id
+        - centre_code
+        - centre_name
+        - provider_name
+        - address
+        - inspection_type
+        - inspection_date
+        - fieldwork_id
+        - residents
+        - report_file
+        - inspectors
+        - regulations
+        - compliance_items
+      properties:
+        report_id:
+          type: integer
+          format: int64
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        centre_code:
+          type: string
+          description: >
+            The Centre ID as the report prints it, such as OSV-0000117. The
+            number behind it is centre_id.
+        centre_name:
+          type: string
+          minLength: 1
+        provider_name:
+          type: [string, "null"]
+        address:
+          type: string
+          minLength: 1
+        inspection_type:
+          type: [string, "null"]
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        fieldwork_id:
+          type: string
+          minLength: 1
+        residents:
+          type: [integer, "null"]
+          minimum: 0
+        report_file:
+          $ref: "#/components/schemas/ReportFile"
+        inspectors:
+          type: array
+          description: The inspectors the report names, in the order it prints them.
+          items:
+            $ref: "#/components/schemas/ReportInspector"
+        regulations:
+          type: array
+          description: The regulations the report considered, from Appendix 1.
+          items:
+            $ref: "#/components/schemas/ReportRegulation"
+        compliance_items:
+          type: array
+          description: The report's compliance plan, in the order it prints it.
+          items:
+            $ref: "#/components/schemas/ReportComplianceItem"
+
+    ReportFile:
+      type: object
+      description: The stored PDF this report was read from.
+      required: [fetched_at, url, sha256]
+      properties:
+        fetched_at:
+          type: string
+          format: date-time
+          description: >
+            When ClearCare downloaded the report, in UTC to the second
+            (YYYY-MM-DDTHH:MM:SSZ).
+        url:
+          type: string
+          format: uri
+        sha256:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: The SHA-256 of the downloaded file.
+
+    ReportInspector:
+      type: object
+      description: An inspector named on a report, with the day and times they attended.
+      required: [date, start_time, end_time, name, role]
+      properties:
+        date:
+          type: string
+          format: date
+          description: The day the inspector attended.
+        start_time:
+          type: [string, "null"]
+          format: time
+        end_time:
+          type: [string, "null"]
+          format: time
+        name:
+          type: string
+          minLength: 1
+        role:
+          type: [string, "null"]
+
+    ReportRegulation:
+      type: object
+      description: A regulation a report considered, as Appendix 1 lists it.
+      required: [regulation, title, judgment]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+          description: The regulation's number, such as Regulation 15.
+        title:
+          type: string
+          minLength: 1
+          description: Its title, such as Staffing.
+        judgment:
+          type: string
+          minLength: 1
+
+    ReportComplianceItem:
+      type: object
+      description: One item of a report's compliance plan.
+      required: [regulation, requirement, judgment, risk_rating, date_to_comply]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+        requirement:
+          type: string
+          minLength: 1
+          description: What the centre must change.
+        judgment:
+          type: [string, "null"]
+        risk_rating:
+          type: [string, "null"]
+        date_to_comply:
+          type: [string, "null"]
+          format: date
+
+    ReAssessmentStatistics:
+      type: object
+      required: [matrix, re_check_rate, coverage, data_date]
+      properties:
+        matrix:
+          type: array
+          items:
+            $ref: "#/components/schemas/NextResultCounts"
+        re_check_rate:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReCheckRate"
+        coverage:
+          $ref: "#/components/schemas/Coverage"
+        data_date:
+          type: string
+          format: date
+          description: The latest inspection date among the loaded reports.
+
+    NextResultCounts:
+      type: object
+      description: >
+        How many judgments of one starting judgment had each result at the
+        centre's next report. The judgment columns count only the three
+        spellings HIQA uses, and total counts every judgment, so a judgment
+        printed another way is in total alone.
+      required:
+        - judgment
+        - compliant
+        - substantially_compliant
+        - not_compliant
+        - not_re_assessed
+        - no_later_report
+        - total
+      properties:
+        judgment:
+          type: string
+          enum: [Compliant, Substantially compliant, Not compliant]
+          description: The starting judgment.
+        compliant:
+          type: integer
+        substantially_compliant:
+          type: integer
+        not_compliant:
+          type: integer
+        not_re_assessed:
+          type: integer
+          description: The next report does not list the regulation.
+        no_later_report:
+          type: integer
+          description: The judgment is from the centre's latest loaded report.
+        total:
+          type: integer
+
+    ReCheckRate:
+      type: object
+      description: >
+        Of the judgments of one starting judgment that have a later report,
+        how many the next report judged again.
+      required: [judgment, with_later_report, re_assessed, rate]
+      properties:
+        judgment:
+          type: string
+          enum: [Compliant, Substantially compliant, Not compliant]
+          description: The starting judgment.
+        with_later_report:
+          type: integer
+          description: The denominator, total less no_later_report.
+        re_assessed:
+          type: integer
+          description: >
+            The numerator, the sum of the compliant, substantially_compliant
+            and not_compliant counts.
+        rate:
+          type: [number, "null"]
+          minimum: 0
+          maximum: 1
+          description: >
+            re_assessed divided by with_later_report, not rounded. null when
+            with_later_report is 0.
+
+    Coverage:
+      type: object
+      description: How much of the data the counts rest on.
+      required:
+        - reports_loaded
+        - centres_with_two_or_more_reports
+        - reports_paired
+        - judgments_paired
+      properties:
+        reports_loaded:
+          type: integer
+        centres_with_two_or_more_reports:
+          type: integer
+          description: Centres with two or more loaded reports.
+        reports_paired:
+          type: integer
+          description: >
+            Reports paired with the centre's next report. A report that judged
+            no regulation is not counted.
+        judgments_paired:
+          type: integer
+          description: Judgments of the paired reports.
 
     Problem:
       type: object

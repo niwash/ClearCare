@@ -21,9 +21,9 @@ function Source({ source }: { source: SourceRef }) {
 function StepHeading({ step, title, date }: { step: number; title: string; date?: string }) {
   return (
     <h3 className="flex items-baseline gap-2.5">
-      <span className="font-mono text-[13px] text-ink-muted">{step}</span>
+      <span className="font-mono text-small text-ink-muted">{step}</span>
       <span className="font-bold">{title}</span>
-      {date && <span className="font-mono text-[13px] text-ink-muted">{date}</span>}
+      {date && <span className="font-mono text-small text-ink-muted">{date}</span>}
     </h3>
   );
 }
@@ -44,7 +44,7 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
   return (
     <section id={trailAnchor(regulation)} aria-labelledby={headingId} className="scroll-mt-6 rounded-lg border border-line bg-surface">
       <div className="border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
-        <h2 id={headingId} className="font-serif text-xl font-semibold md:text-2xl">
+        <h2 id={headingId} className="font-heading text-xl font-semibold md:text-2xl">
           Regulation {regulation.number} · {regulation.title}: what happened
         </h2>
       </div>
@@ -78,7 +78,7 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
               </div>
             </div>
           ))}
-          {planNote && <p className="text-[13px] leading-normal text-ink-muted">{planNote}</p>}
+          {planNote && <p className="text-small leading-normal text-ink-muted">{planNote}</p>}
         </li>
 
         <li className="flex flex-col gap-3">

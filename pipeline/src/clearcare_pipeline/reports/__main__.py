@@ -16,8 +16,8 @@ from clearcare_pipeline.reports.download import (
 from clearcare_pipeline.reports.manifest import MANIFEST_NAME, ManifestError
 from clearcare_pipeline.reports.register import (
     RegisterError,
-    centres_in_county,
     latest_register_sha256,
+    registered_centres,
 )
 from clearcare_pipeline.snapshots.fetch import Fetcher, UrllibFetcher
 from clearcare_pipeline.snapshots.manifest import (
@@ -46,9 +46,10 @@ def main(
     fetcher: Fetcher | None = None,
     sleep: Callable[[float], None] = time.sleep,
 ) -> int:
-    """Downloads the reports of one county's centres into the data dir."""
+    """Downloads the reports of the register's centres into the data dir."""
     parser = argparse.ArgumentParser(
-        description="Download the inspection reports of a county's centres."
+        description="Download the inspection reports of the register's "
+        "centres, or of one county's."
     )
     parser.add_argument(
         "--data-dir",
@@ -57,7 +58,8 @@ def main(
         help="directory that holds raw/ and manifests/",
     )
     parser.add_argument(
-        "--county", required=True, help="County as the register spells it"
+        "--county",
+        help="only this county, as the register spells it (default: all)",
     )
     parser.add_argument(
         "--limit",
@@ -71,14 +73,15 @@ def main(
         register = latest_register_sha256(
             data_dir / "manifests" / SNAPSHOT_MANIFEST_NAME
         )
-        centres = centres_in_county(
+        centres = registered_centres(
             store.path_for(register).read_bytes(), args.county
         )
     except (RegisterError, OSError) as error:
         logger.error("cannot read the register: %s", error)
         return 1
     if not centres:
-        logger.error("no centres in county %r", args.county)
+        where = f"county {args.county!r}" if args.county else "the register"
+        logger.error("no centres in %s", where)
         return 1
     try:
         summary = download_reports(
