@@ -24,6 +24,7 @@ PUBLIC_PDF = (
     Path(__file__).resolve().parents[2]
     / "src"
     / "clearcare_pipeline"
+    / "parser"
     / "max_contract_price_public.pdf"
 )
 

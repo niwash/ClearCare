@@ -5,10 +5,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
-from clearcare_pipeline.contract_prices.models import (
-    ContractPrice,
-    ContractPriceList,
-)
+from clearcare_pipeline.contract_prices.models import ContractPrice
 from clearcare_pipeline.contract_prices.run import PriceListFile, ingest
 from clearcare_pipeline.contract_prices.transform import TransformError
 from clearcare_pipeline.parser.fields import Report
@@ -89,7 +86,8 @@ def test_a_list_already_loaded_is_not_parsed_again(tmp_path: Path) -> None:
     assert writer.lists == []
 
 
-def test_a_price_for_an_unknown_centre_is_skipped(tmp_path: Path) -> None:
+def test_a_list_with_no_known_centre_fails(tmp_path: Path) -> None:
+    """A run made before the register was loaded must not record the list."""
     private = tmp_path / "private.pdf"
     private.write_bytes(b"private")
     writer = FakeWriter()
@@ -102,8 +100,35 @@ def test_a_price_for_an_unknown_centre_is_skipped(tmp_path: Path) -> None:
     )
 
     assert summary.skipped == 1
+    assert summary.failed == 1
+    assert summary.written == 0
+    assert writer.lists == []
+
+
+def test_an_unknown_centre_is_skipped_from_a_written_list(
+    tmp_path: Path,
+) -> None:
+    private = tmp_path / "private.pdf"
+    private.write_bytes(b"private")
+    writer = FakeWriter()
+
+    def parse(body: bytes, home_type: str) -> Report:
+        return _parsed(
+            "private", "4/9/2026", ("199", "€1,220"), ("446", "€1,300")
+        )
+
+    summary = ingest(
+        [PriceListFile("private", PRIVATE.url, private)],
+        FakeCatalogue(known_centres={"199"}),
+        writer,
+        parse=parse,
+    )
+
+    assert summary.skipped == 1
+    assert summary.failed == 0
     assert summary.written == 1
-    assert writer.lists[0][0].prices == ()
+    written, _ = writer.lists[0]
+    assert written.prices == (ContractPrice("199", Decimal("1220")),)
 
 
 def test_a_list_named_as_the_other_home_type_fails(tmp_path: Path) -> None:
@@ -162,19 +187,3 @@ def test_a_list_the_writer_skips_is_counted_as_loaded(tmp_path: Path) -> None:
 
     assert summary.already_loaded == 1
     assert summary.written == 0
-
-
-def test_a_written_list_keeps_its_prices(tmp_path: Path) -> None:
-    public = tmp_path / "public.pdf"
-    public.write_bytes(b"public")
-    writer = FakeWriter()
-
-    ingest(
-        [PriceListFile("public", PUBLIC.url, public)],
-        FakeCatalogue(),
-        writer,
-        parse=_parse,
-    )
-
-    written: ContractPriceList = writer.lists[0][0]
-    assert len(written.prices) == 1

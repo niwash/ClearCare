@@ -34,7 +34,8 @@ _IS_LOADED = (
     " JOIN clearcare.source_file USING (source_file_id)"
     " WHERE sha256 = %s LIMIT 1"
 )
-# The n-th distinct file loaded for a home type and date.
+# The n-th distinct file loaded for a home type and date. Taken under the
+# advisory lock, so a version cannot be taken twice.
 _NEXT_VERSION = (
     "SELECT coalesce(max(version), 0) + 1 FROM clearcare.contract_price_list"
     " WHERE home_type = %s AND record_date = %s"
@@ -42,7 +43,7 @@ _NEXT_VERSION = (
 _INSERT_LIST = (
     "INSERT INTO clearcare.contract_price_list"
     " (home_type, record_date, version, source_file_id)"
-    " VALUES (%s, %s, %s, %s) ON CONFLICT DO NOTHING RETURNING id"
+    " VALUES (%s, %s, %s, %s) RETURNING id"
 )
 _INSERT_PRICE = (
     "INSERT INTO clearcare.contract_price (list_id, centre_id, price)"
@@ -180,5 +181,6 @@ class PriceListWriter:
                 found[0],
             ),
         ).fetchone()
+        # INSERT ... RETURNING gives back the row it inserted.
         assert written is not None
         return int(written[0])
