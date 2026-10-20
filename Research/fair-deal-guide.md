@@ -73,7 +73,7 @@ The HSE works out how much you pay through a **financial assessment** of your **
 |---|---|
 | Single person | 80% of weekly income |
 | Couple (combined income) | 40% of combined weekly income (per person in care) |
-| Rental income from your family home (if rented while you are in care) | 40% of that rental income, or you can apply to have it made exempt entirely ([HSE, Financial assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/#:~:text=you%20can%20apply%20to%20have%20all%20your%20rental%20income%20made%20exempt)) |
+| Rental income from your family home (if rented while you are in care) | You can apply to have it made exempt entirely ([HSE, Financial assessment](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/#:~:text=you%20can%20apply%20to%20have%20all%20your%20rental%20income%20made%20exempt)). If you don't, it is counted with your other income: 80% for a single person, 40% for a couple. |
 
 *For example: if you receive the State Pension (Contributory) of €299.30 per week ([Budget 2026](https://www.gov.ie/en/department-of-social-protection/publications/budget-2026/)), 80% of that is about €239. That amount goes toward your nursing home cost.*
 
@@ -154,7 +154,7 @@ After your death, it is paid back within 18 months according to the HSE's loan p
 
 ### This is not a commercial bank loan
 
-The loan amount is adjusted for inflation or deflation using the Consumer Price Index (CPI) while it builds up. If you apply to the HSE for the loan, the HSE pays the amount on your behalf and registers a charge on the property (p.26 of the application form above). If the loan isn't repaid within 18 months of death, or within 6 months of a sale or transfer, interest begins to apply from that date.
+The loan amount is adjusted for inflation or deflation using the Consumer Price Index (CPI) while it builds up. If you apply to the HSE for the loan, the HSE pays the amount on your behalf and registers a charge on the property (p.26 of the application form above). If the loan isn't repaid within 18 months of death (the form says 12, see above), interest is charged from the date of death. After a sale or transfer, interest is charged from 6 months after the sale.
 
 ### Key things to know
 
@@ -187,7 +187,7 @@ Start the application as early as you can. **Funding cannot be backdated.** It i
 
 | Who | What they can help with | Contact |
 |---|---|---|
-| HSE Nursing Home Support Scheme | Applications, financial assessments, the nursing home loan | [hse.ie/nhss](https://www.hse.ie/nhss/) |
+| HSE Nursing Homes Support Scheme | Applications, financial assessments, the nursing home loan | [hse.ie/nhss](https://www.hse.ie/nhss/) |
 | Your local Nursing Homes Support Office | Starting your application, collecting forms | Search by county on hse.ie |
 | Citizens Information | Free, independent advice on Fair Deal | [citizensinformation.ie](https://www.citizensinformation.ie) or call 0818 07 4000 |
 | ALONE | Free support and advocacy for older people | [alone.ie](https://alone.ie) or call 0818 222 024 |
