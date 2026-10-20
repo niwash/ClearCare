@@ -70,8 +70,10 @@ NOT_EMPTY = ("Centre_Title", "Centre_Address", "County", "URL")
 class RegisterEntry:
     """One centre on the register, in the columns the database keeps.
 
-    The register's phone numbers, persons in charge and management contacts
-    are personal data and are left out.
+    The centre's phone is kept, as printed: it is the centre's own line, and
+    HIQA prints it on the centre's public page. The persons in charge, their
+    phones, the provider's phone and the management contacts are personal data
+    and are left out (db/V7).
     """
 
     source_record: int
@@ -81,6 +83,7 @@ class RegisterEntry:
     county: str
     eircode: str | None
     maximum_occupancy: int | None
+    centre_phone: str | None
     provider_name: str | None
     provider_cro_number: str | None
     hiqa_url: str
@@ -174,6 +177,7 @@ def _entry(number: int, fields: list[str]) -> RegisterEntry:
         county=record["County"],
         eircode=_eircode(record["Centre_Address"]),
         maximum_occupancy=int(occupancy) if occupancy else None,
+        centre_phone=record["Centre_Phone"].strip() or None,
         provider_name=record["Registration_Provider"] or None,
         provider_cro_number=record["CRO_Registration_Number"] or None,
         hiqa_url=record["URL"],

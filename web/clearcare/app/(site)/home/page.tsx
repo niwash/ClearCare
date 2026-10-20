@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Section } from "@/components/layout/section";
-import { PlaceholderEventList } from "@/components/placeholder/event-list";
-import { Placeholder } from "@/components/placeholder/placeholder";
+import { Suspense } from "react";
+import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
+import { primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
 export default async function StartPage() {
@@ -13,11 +13,11 @@ export default async function StartPage() {
     <>
       <div className="grid gap-6 md:grid-cols-[2fr_1fr] md:gap-10">
         <div className="flex min-w-0 flex-col gap-3">
-          <h1 className="font-serif text-3xl font-semibold tracking-tight md:text-5xl">
+          <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">
             Check a nursing home&apos;s record
           </h1>
           <p className="text-ink-muted md:text-lg">
-            Every HIQA inspection report, one page per home. Every line links back to the report it came from.
+            Every HIQA inspection report, one page per home, with links to the original reports.
           </p>
 
           {/* Name or Eircode here; the search page works out which. It has address and county too. */}
@@ -31,43 +31,36 @@ export default async function StartPage() {
               type="search"
               maxLength={MAX_TEXT_LENGTH}
               placeholder="Nursing home name"
-              className="h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link"
+              className={`${textInputClass} flex-1`}
             />
-            <button type="submit" className="h-11 rounded-md bg-link px-4 font-semibold text-surface hover:opacity-90 transition-opacity">
+            <button type="submit" className={primaryButtonClass}>
               Search
             </button>
           </form>
 
           <p className="text-sm">
-            <Link href="/search">Search by address, town or county instead →</Link>
+            <Link href="/search" className="tap-target">Search by address or county instead →</Link>
           </p>
 
-          <p className="text-xs text-ink-muted md:text-sm">
-            {total !== null && `${total} registered ${total === 1 ? "centre" : "centres"}. `}Latest HIQA reports added on <Placeholder>date</Placeholder>.
-          </p>
+          {total !== null && (
+            <p className="text-xs text-ink-muted md:text-sm">
+              {total} registered {total === 1 ? "centre" : "centres"}.
+            </p>
+          )}
         </div>
         <aside className="rounded-lg border border-line bg-surface p-4 text-sm">
           <h2 className="font-semibold">What this site doesn&apos;t do</h2>
           <p className="mt-1 text-ink-muted">
-            It doesn&apos;t rate or recommend homes, and it can&apos;t tell you where there&apos;s a free bed. For that,
-            ask the home or the hospital social worker.
+            It doesn&apos;t rate or recommend homes, or show free beds. For beds, ask the home or a hospital social
+            worker.
           </p>
         </aside>
       </div>
 
-      <Section
-        title={
-          <>
-            An example: <Placeholder>Centre name</Placeholder>
-          </>
-        }
-      >
-        <PlaceholderEventList count={5} />
-      </Section>
-
-      <Section title="Recent changes across Ireland">
-        <PlaceholderEventList count={4} />
-      </Section>
+      {/* A new home on every load. The page above arrives first; the example streams in. */}
+      <Suspense fallback={<SampleCentreFallback />}>
+        <SampleCentre total={total} />
+      </Suspense>
     </>
   );
 }

@@ -4,14 +4,17 @@ version = "0.1.0"
 description = "ClearCare data pipeline"
 requires-python = ">=3.13,<3.14"
 dependencies = [
+    "anthropic>=1.15.0",
     "boto3>=1.43.103",
     "psycopg[binary]>=3.2",
+    "pydantic>=2.14.1",
     "pymupdf>=1.28.2",
 ]
 
 [dependency-groups]
 dev = [
     "boto3-stubs[s3]>=1.43.103",
+    "httpx2>=2.14.0",
     "pyright>=1.1.414",
     "pytest>=8.4",
     "pytest-cov>=6.2",

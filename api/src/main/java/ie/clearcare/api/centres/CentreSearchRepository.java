@@ -14,7 +14,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads centres from the two views the clearcare_api role can read (db/V1). */
+/** Reads centres from the two views the clearcare_api role can read (db/V1, db/V7). */
 @Repository
 class CentreSearchRepository {
 
@@ -53,7 +53,8 @@ class CentreSearchRepository {
 
   private static final String CENTRE =
       """
-      SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url
+      SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
+          centre_phone
       FROM clearcare.centre_search
       WHERE centre_id = :centre_id
       """;
@@ -94,8 +95,12 @@ class CentreSearchRepository {
     if (snapshot.isEmpty()) {
       return Optional.empty();
     }
-    Centre centre =
-        jdbc.sql(CENTRE).param("centre_id", centreId).query(Centre.class).optional().orElse(null);
+    CentreDetail centre =
+        jdbc.sql(CENTRE)
+            .param("centre_id", centreId)
+            .query(CentreDetail.class)
+            .optional()
+            .orElse(null);
     return Optional.of(new CentreResult(centre, snapshot.get()));
   }
 
