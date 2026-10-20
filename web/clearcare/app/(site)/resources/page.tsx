@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
-import { comingSoonClass } from "@/components/ui/classes";
-import { GUIDES, type Guide, type GuideSlug } from "@/lib/guides";
+import { ContactsBanner } from "@/components/layout/contacts-banner";
+import { actionLinkClass, comingSoonClass } from "@/components/ui/classes";
+import { GUIDES, type Guide } from "@/lib/guides";
 
 export const metadata: Metadata = {
   title: "Resources · ClearCare",
@@ -52,22 +53,8 @@ const OFFICIAL_LINKS: OfficialLink[] = [
   },
 ];
 
-// One photo per guide: the home page's (credits in components/home/feature-carousel.tsx), and
-// navigate.jpg  Andrea Piacquadio, https://www.pexels.com/photo/cheerful-senior-mother-and-adult-daughter-using-smartphone-together-3791664/
-// They only set the mood, so their alt text is empty.
-const GUIDE_PHOTOS: Record<GuideSlug, string> = {
-  "user-journey": "/home/family.jpg",
-  "choosing-a-nursing-home": "/home/phone.jpg",
-  "reading-inspection-reports": "/home/report.jpg",
-  "fair-deal": "/home/fair-deal.jpg",
-  "using-clearcare": "/resources/navigate.jpg",
-};
-
 // Full-width bands break out of the page's column and padding, as on the home page.
 const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
-
-const buttonClass =
-  "inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline hover:bg-primary-hover hover:text-on-primary";
 
 export default function ResourcesPage() {
   return (
@@ -125,7 +112,7 @@ function GuideCard({ guide }: { guide: Guide }) {
       }`}
     >
       <div className="relative aspect-[3/2]">
-        <Image src={GUIDE_PHOTOS[guide.slug as GuideSlug]} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover object-[50%_30%]" />
+        <Image src={guide.photo} alt="" fill sizes="(min-width: 640px) 50vw, 100vw" className="object-cover object-[50%_30%]" />
       </div>
       <div className="flex flex-1 flex-col items-start gap-2 p-5 md:p-6">
         <h3 className="font-heading text-xl font-semibold text-ink md:text-2xl">{guide.title}</h3>
@@ -134,7 +121,7 @@ function GuideCard({ guide }: { guide: Guide }) {
         {comingSoon ? (
           <span className={`mt-2 inline-flex h-12 items-center px-5 font-semibold ${comingSoonClass}`}>Coming soon</span>
         ) : (
-          <Link href={`/guides/${guide.slug}`} className={`${buttonClass} mt-2 after:absolute after:inset-0`}>
+          <Link href={`/guides/${guide.slug}`} className={`${actionLinkClass} mt-2 after:absolute after:inset-0`}>
             Read guide<span className="sr-only">: {guide.title}</span>
             <span aria-hidden>→</span>
           </Link>
@@ -186,7 +173,7 @@ function OfficialInformation() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${buttonClass} mt-auto after:absolute after:inset-0 after:rounded-lg`}
+                  className={`${actionLinkClass} mt-auto after:absolute after:inset-0 after:rounded-lg`}
                 >
                   {isPdf ? "See Document" : "See Website"}
                   <span className="sr-only">
@@ -198,32 +185,6 @@ function OfficialInformation() {
             );
           })}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-// The end of the page, a band of brand colour like the home page's news: where to turn for a
-// person to talk to. After the guides, and straight above the official information band.
-function ContactsBanner() {
-  return (
-    <section
-      aria-labelledby="contacts-h"
-      className={`${fullWidthClass} brand-band`}
-    >
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-10 md:flex-row md:items-center md:justify-between md:px-8 md:py-14">
-        <div className="flex max-w-2xl flex-col gap-2">
-          <h2 id="contacts-h" className="font-heading text-2xl font-semibold text-ink md:text-4xl">
-            Need to talk to someone?
-          </h2>
-          <p className="text-ink-muted md:text-lg">
-            Our contacts page lists who to call about nursing home care: the regulator, the Fair Deal offices,
-            complaints and advocacy.
-          </p>
-        </div>
-        <Link href="/contacts" className={`${buttonClass} shrink-0`}>
-          See contacts <span aria-hidden>→</span>
-        </Link>
       </div>
     </section>
   );

@@ -1,4 +1,6 @@
-import { GuideHeader, guideMetadata } from "@/components/guides/guide-header";
+import { GuideEnding } from "@/components/guides/guide-ending";
+import { guideMetadata } from "@/components/guides/guide-header";
+import { GuideHero } from "@/components/guides/guide-hero";
 import { Placeholder } from "@/components/placeholder/placeholder";
 import { getGuide } from "@/lib/guides";
 
@@ -9,10 +11,11 @@ export const metadata = guideMetadata(guide);
 export default function FairDealGuide() {
   return (
     <>
-      <GuideHeader guide={guide} />
+      <GuideHero guide={guide} />
       <p>
         <Placeholder>TODO</Placeholder>
       </p>
+      <GuideEnding current={guide} />
     </>
   );
 }
