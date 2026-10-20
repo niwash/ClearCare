@@ -2,13 +2,15 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
+import { ContentsNav, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
 
 const guide = getGuide("fair-deal");
 
 export const metadata = guideMetadata(guide);
 
-// Text from Research/fair-deal-guide.md (CCARE-86, PR #47), unchanged apart from layout.
+// Text from Research/fair-deal-guide.md (CCARE-86, PR #47), checked against the HSE's pages and
+// the current application form, with the same corrections made in both (CCARE-129).
 
 const HSE_FORM =
   "https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf";
@@ -86,23 +88,7 @@ export default function FairDealGuide() {
       </p>
 
       {/* The eight sections at a glance, each a link down to it. */}
-      <nav aria-label="Contents" className="max-w-4xl">
-        <ol className="flex flex-wrap gap-2">
-          {SECTIONS.map((section, index) => (
-            <li key={section.id}>
-              <a
-                href={`#${section.id}`}
-                className="flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink"
-              >
-                <span aria-hidden className="grid size-8 place-items-center rounded-full bg-primary text-on-primary">
-                  {index + 1}
-                </span>
-                {section.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
+      <ContentsNav label="Contents" items={SECTIONS} />
 
       <GuideSection id="what-is-fair-deal">
         <p>
@@ -211,7 +197,8 @@ export default function FairDealGuide() {
 
         <h3 className="font-heading text-lg font-semibold md:text-xl">Your income</h3>
         <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-          <table className="w-full min-w-[32rem] text-left">
+          {/* No minimum width: on a phone the two columns wrap, rather than the table widening the page. */}
+          <table className="w-full text-left">
             <thead className="bg-surface-muted">
               <tr>
                 <th scope="col" className="px-4 py-3 font-semibold">Situation</th>
@@ -633,12 +620,7 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
 function SectionHeading({ index, id }: { index: number; id: SectionId }) {
   return (
     <div className="flex items-center gap-4">
-      <span
-        aria-hidden
-        className="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-heading text-lg font-semibold text-on-primary md:size-12 md:text-xl"
-      >
-        {index + 1}
-      </span>
+      <StepNumber number={index + 1} />
       <h2 id={`${id}-h`} className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
         {SECTIONS[index].title}
       </h2>
@@ -669,12 +651,7 @@ function Figure({ value, label }: { value: string; label: string }) {
 function NumberedCard({ number, children }: { number: number; children: ReactNode }) {
   return (
     <li className="flex gap-4 rounded-lg border border-line bg-surface p-5">
-      <span
-        aria-hidden
-        className="grid size-8 shrink-0 place-items-center rounded-full bg-primary font-semibold text-on-primary"
-      >
-        {number}
-      </span>
+      <StepNumber number={number} size="small" />
       <p>{children}</p>
     </li>
   );
@@ -746,15 +723,17 @@ function Example({
 }) {
   return (
     <details className="group rounded-lg border border-line bg-surface open:border-primary">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 md:p-6 [&::-webkit-details-marker]:hidden">
-        <span className="flex flex-col gap-1">
-          <span className="text-sm font-semibold uppercase tracking-wider text-primary adult:normal-case adult:tracking-normal">
+      {/* A summary may hold a heading but no wrapping block, so its parts are its own grid items:
+          the heading (with the example's number) and description down the left, Show/Hide right. */}
+      <summary className="grid cursor-pointer list-none grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 p-5 md:p-6 [&::-webkit-details-marker]:hidden">
+        <h3 className="col-start-1 flex flex-col gap-1 font-heading text-xl font-semibold">
+          <span className="font-sans text-sm uppercase tracking-wider text-primary adult:normal-case adult:tracking-normal">
             Worked example {number}
           </span>
-          <h3 className="font-heading text-xl font-semibold">{title}</h3>
-          <span className="text-ink-muted">{description}</span>
-        </span>
-        <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
+          {title}
+        </h3>
+        <span className="col-start-1 text-ink-muted">{description}</span>
+        <span className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
           {/* Words as well as the arrow, so it is clear the card opens. */}
           <span className="group-open:hidden">Show</span>
           <span className="hidden group-open:inline">Hide</span>

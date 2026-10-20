@@ -137,21 +137,6 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
-/* The publisher logos on the resources page are in their own colours, mostly dark greens and
-   navies that fade into a dark card, so dark mode brightens them and fades them less. Dark mode is the system's
-   unless the theme toggle has chosen (data-theme). */
-:root[data-theme="dark"] .logo-watermark {
-  filter: brightness(2.2);
-  opacity: 0.55;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .logo-watermark {
-    filter: brightness(2.2);
-    opacity: 0.55;
-  }
-}
-
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);

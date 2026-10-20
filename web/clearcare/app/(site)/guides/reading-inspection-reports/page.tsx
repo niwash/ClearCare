@@ -3,6 +3,7 @@ import { JudgementIcon } from "@/components/centre/judgement-icon";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
+import { StepNumber } from "@/components/guides/step-number";
 import type { Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 
@@ -46,12 +47,7 @@ function Prose({ children }: { children: ReactNode }) {
 function Step({ number, title, children }: { number: number; title: string; children: ReactNode }) {
   return (
     <li className="flex gap-4 rounded-lg border border-line bg-surface p-5 md:gap-6 md:p-8">
-      <span
-        aria-hidden
-        className="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-heading text-lg font-semibold text-on-primary md:size-12 md:text-xl"
-      >
-        {number}
-      </span>
+      <StepNumber number={number} />
       <div className="flex min-w-0 flex-col gap-3">
         <h2 className="font-heading text-xl font-semibold md:text-2xl">
           <span className="sr-only">Step {number}: </span>

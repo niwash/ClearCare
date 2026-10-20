@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
+import { ContentsNav, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
@@ -86,23 +87,7 @@ export default function ChoosingANursingHomeGuide() {
       </div>
 
       {/* The five stages at a glance, each a link down to its card. */}
-      <nav aria-label="Stages" className="max-w-4xl">
-        <ol className="flex flex-wrap gap-2">
-          {STAGES.map((stage, index) => (
-            <li key={stage.title}>
-              <a
-                href={`#stage-${index + 1}`}
-                className="flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink"
-              >
-                <span aria-hidden className="grid size-8 place-items-center rounded-full bg-primary text-on-primary">
-                  {index + 1}
-                </span>
-                {stage.title}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </nav>
+      <ContentsNav label="Stages" items={STAGES.map((stage, index) => ({ id: `stage-${index + 1}`, title: stage.title }))} />
 
       <ol className="flex max-w-4xl flex-col gap-4 md:gap-6">
         {STAGES.map((stage, index) => {
@@ -117,12 +102,7 @@ export default function ChoosingANursingHomeGuide() {
               className="flex scroll-mt-6 flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-8"
             >
               <div className="flex items-center gap-4">
-                <span
-                  aria-hidden
-                  className="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-heading text-lg font-semibold text-on-primary md:size-12 md:text-xl"
-                >
-                  {index + 1}
-                </span>
+                <StepNumber number={index + 1} />
                 <h2 className="font-heading text-xl font-semibold md:text-2xl">
                   <span className="sr-only">Stage {index + 1}: </span>
                   {stage.title}

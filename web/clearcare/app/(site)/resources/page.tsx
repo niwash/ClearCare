@@ -4,6 +4,7 @@ import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { actionLinkClass, comingSoonClass } from "@/components/ui/classes";
+import { ExternalIcon } from "@/components/ui/external-icon";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -92,8 +93,7 @@ function ResourcesHero() {
           Resources
         </h1>
         <p className="max-w-2xl text-ink-muted md:text-lg">
-          Help at every step, from the first conversation to moving in by starting with 
-          our guides.
+          Help at every step, from the first conversation to moving in. Start with our guides.
         </p>
       </div>
     </section>
@@ -160,12 +160,10 @@ function OfficialInformation() {
           {OFFICIAL_LINKS.map((link) => {
             const isPdf = link.href.toLowerCase().endsWith(".pdf");
             return (
-              // isolate: the watermark's -z-10 then sits above the card's background but below its words.
               <li
                 key={link.href}
-                className="relative isolate flex min-h-64 flex-col items-start gap-2 overflow-hidden rounded-lg border border-line bg-surface p-5 hover:border-primary"
+                className="relative flex min-h-64 flex-col items-start gap-2 rounded-lg border border-line bg-surface p-5 hover:border-primary"
               >
-                <LogoWatermark publisher={link.publisher} />
                 <span className="rounded-md bg-band px-2.5 py-1 text-xs font-semibold text-ink">{link.publisher}</span>
                 <h3 className="font-semibold md:text-lg">{link.title}</h3>
                 <p className="text-ink-muted">{link.summary}</p>
@@ -188,63 +186,5 @@ function OfficialInformation() {
         </ul>
       </div>
     </section>
-  );
-}
-
-// Each publisher's logo, from its own website (checked 20 Oct 2026). Citizens Information's is the
-// Citizens Information Board's, which runs it. They only identify who publishes each link; the
-// section says the publishers don't endorse ClearCare. A logo with colours of its own is shown as
-// it is; one in a single colour (the HSE's has none set, Citizens Information's is white, for dark
-// backgrounds) is drawn as a mask in the publisher's colour, as on its own website.
-type PublisherLogo = { src: string; colour?: string };
-
-const PUBLISHER_LOGOS: Record<string, PublisherLogo> = {
-  HSE: { src: "/resources/logos/hse.svg", colour: "#02594c" },
-  "Citizens Information": { src: "/resources/logos/citizens-information.png", colour: "#007cb6" },
-  "Competition and Consumer Protection Commission": { src: "/resources/logos/ccpc.png" },
-  HIQA: { src: "/resources/logos/hiqa.svg" },
-};
-
-// The publisher's logo, large and faded in the card's corner. Decorative: the publisher is named
-// in words above the title. Not in the adult-centred design, which keeps patterns and pictures out
-// from behind text.
-function LogoWatermark({ publisher }: { publisher: string }) {
-  const logo = PUBLISHER_LOGOS[publisher];
-  if (!logo) return null;
-  // Sized to the space beside the button in the card's bottom-right corner, so it never sits
-  // behind words.
-  // logo-watermark (globals.css) brightens it in dark mode.
-  const place = "logo-watermark pointer-events-none absolute bottom-5 right-4 -z-10 h-12 w-32 opacity-40 adult:hidden";
-
-  if (logo.colour) {
-    const mask = { maskImage: `url(${logo.src})`, WebkitMaskImage: `url(${logo.src})`, backgroundColor: logo.colour };
-    return (
-      <span
-        aria-hidden
-        style={mask}
-        className={`${place} [mask-position:right_bottom] [mask-repeat:no-repeat] [mask-size:contain]`}
-      />
-    );
-  }
-  return (
-    // eslint-disable-next-line @next/next/no-img-element -- a small decorative logo; no resizing needed
-    <img src={logo.src} alt="" aria-hidden className={`${place} object-contain object-right-bottom`} />
-  );
-}
-
-function ExternalIcon() {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="size-4"
-    >
-      <path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" />
-    </svg>
   );
 }
