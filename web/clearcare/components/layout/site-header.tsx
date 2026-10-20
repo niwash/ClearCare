@@ -10,6 +10,9 @@ type NavEntry = { label: string; href: string | null };
 const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
   { label: "National Figures", href: "/national" },
+  // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
+  // the first things families need to understand.
+  { label: "Fair Deal", href: "/guides/fair-deal" },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
 ];
