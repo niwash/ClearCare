@@ -1,5 +1,6 @@
 package ie.clearcare.api.centres;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads centres from the two views the clearcare_api role can read (db/V1, db/V7). */
+/** Reads centres from the views the clearcare_api role can read (db/V1, db/V7, db/V9). */
 @Repository
 class CentreSearchRepository {
 
@@ -59,6 +60,10 @@ class CentreSearchRepository {
       WHERE centre_id = :centre_id
       """;
 
+  // One price per centre: the view keeps the latest, so this is a lookup (db/V9).
+  private static final String CONTRACT_PRICE =
+      "SELECT price FROM clearcare.centre_contract_price WHERE centre_id = :centre_id";
+
   private final JdbcClient jdbc;
 
   CentreSearchRepository(JdbcClient jdbc) {
@@ -85,9 +90,10 @@ class CentreSearchRepository {
   }
 
   /**
-   * Returns the centre with this centre_id and the register snapshot it was read from, or nothing
-   * if no snapshot has been published. The centre is null if the snapshot does not have it. Both
-   * are read in one transaction, as in search.
+   * Returns the centre with this centre_id, the register snapshot it was read from and its contract
+   * price, or nothing if no snapshot has been published. The centre is null if the snapshot does
+   * not have it, and the price is null if no list has been loaded for it. All three are read in one
+   * transaction, as in search.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreResult> find(String centreId) {
@@ -101,7 +107,14 @@ class CentreSearchRepository {
             .query(CentreDetail.class)
             .optional()
             .orElse(null);
-    return Optional.of(new CentreResult(centre, snapshot.get()));
+    BigDecimal contractPrice =
+        jdbc
+            .sql(CONTRACT_PRICE)
+            .param("centre_id", centreId)
+            .query(BigDecimal.class)
+            .optional()
+            .orElse(null);
+    return Optional.of(new CentreResult(centre, snapshot.get(), contractPrice));
   }
 
   private Optional<RegisterSnapshot> publishedSnapshot() {

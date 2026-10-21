@@ -19,6 +19,8 @@
   --page: light-dark(#f4f5f2, #0f151c);
   --surface: light-dark(#ffffff, #16202b);
   --surface-muted: light-dark(#f7f8f6, #1b2632);
+  /* A full-width section set apart from the page, such as the home page's welcome. */
+  --band: light-dark(#e7eae4, #1b2632);
   --ink: light-dark(#16202b, #e8ecef);
   --ink-muted: light-dark(#4a5563, #a9b2bc);
   --ink-faint: light-dark(#66707b, #8a94a0);
@@ -51,6 +53,7 @@
   --page: light-dark(#faf7f2, #1a1714);
   --surface: light-dark(#ffffff, #24201c);
   --surface-muted: light-dark(#f3eee6, #2e2924);
+  --band: light-dark(#ede6db, #2e2924);
   --ink: light-dark(#1f1b16, #f4f0ea);
   --ink-muted: light-dark(#4a4540, #c9c1b6);
   /* No light grey text: faint text is as dark as muted text. */
@@ -98,10 +101,47 @@
   color-scheme: dark;
 }
 
+/* The header's top band: a block of brand colour, as on nhi.ie, in light and dark mode alike.
+   It redefines the colour tokens inside it, so the controls there (the display toggles and the
+   log in placeholder) turn light-on-dark without styles of their own. The home page carousel's
+   text panels (feature-panel) use the same colours, in the standard design only. White text is 7:1 or more
+   on every --brand here (WCAG 1.4.6). */
+.brand-band,
+:root:not([data-design="adult-centred"]) .feature-panel {
+  --brand: light-dark(#1f4e79, #163754);
+  --surface: var(--brand);
+  --surface-muted: rgb(255 255 255 / 0.08);
+  --ink: #ffffff;
+  --ink-muted: rgb(255 255 255 / 0.88);
+  --ink-faint: rgb(255 255 255 / 0.88);
+  --line: rgb(255 255 255 / 0.4);
+  --field: rgb(255 255 255 / 0.7);
+  --focus: #ffffff;
+  --primary: #ffffff;
+  --primary-hover: #e8ecef;
+  --on-primary: var(--brand);
+  background-color: var(--brand);
+}
+
+:root[data-design="adult-centred"] .brand-band {
+  --brand: light-dark(#8a2e0f, #5a2410);
+}
+
+/* The header's band: a deeper shade of the same colour, so it frames the page rather than
+   matching the brand-colour bands in the content below it. */
+.brand-band.brand-band-deep {
+  --brand: light-dark(#14324f, #0d2236);
+}
+
+:root[data-design="adult-centred"] .brand-band.brand-band-deep {
+  --brand: light-dark(#5e1f0a, #3d170a);
+}
+
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-band: var(--band);
   --color-ink: var(--ink);
   --color-ink-muted: var(--ink-muted);
   --color-ink-faint: var(--ink-faint);
