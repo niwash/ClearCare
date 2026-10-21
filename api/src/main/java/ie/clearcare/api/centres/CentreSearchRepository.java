@@ -15,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads centres from the views the clearcare_api role can read (db/V1, db/V7, db/V9). */
+/** Reads centres from the views the clearcare_api role can read (db/V1, db/V7, db/V10). */
 @Repository
 class CentreSearchRepository {
 
@@ -115,18 +115,11 @@ class CentreSearchRepository {
         jdbc
             .sql(CONTRACT_PRICE)
             .param("centre_id", centreId)
-            .query(
-                (row, number) ->
-                    new ContractPrice(
-                        row.getBigDecimal("price"), row.getString("home_type")))
+            .query(ContractPrice.class)
             .optional()
-            .orElse(null);
+            .orElse(new ContractPrice(null, null));
     return Optional.of(
-        new CentreResult(
-            centre,
-            snapshot.get(),
-            contractPrice == null ? null : contractPrice.price(),
-            contractPrice == null ? null : contractPrice.homeType()));
+        new CentreResult(centre, snapshot.get(), contractPrice.price(), contractPrice.homeType()));
   }
 
   private Optional<RegisterSnapshot> publishedSnapshot() {

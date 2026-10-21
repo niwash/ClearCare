@@ -451,6 +451,7 @@ components:
           example: 1908.00
         home_type:
           type: [string, "null"]
+          enum: [public, private, null]
           description: >
             The kind of home the contract price is for: "public" for a public
             nursing home or "private" for a private or voluntary one, taken
