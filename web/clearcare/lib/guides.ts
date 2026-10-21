@@ -45,7 +45,7 @@ export const GUIDES = [
     title: "How to navigate ClearCare",
     summary: "Where to find things on this site and how to use them.",
     photo: "/resources/navigate.jpg",
-    status: "coming-soon",
+    status: "draft",
   },
 ] as const satisfies readonly Guide[];
 

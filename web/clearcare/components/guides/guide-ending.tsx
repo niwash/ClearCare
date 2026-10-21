@@ -13,15 +13,23 @@ export function GuideEnding({ current }: { current: Guide }) {
 
   return (
     <>
-      <section aria-labelledby="other-guides-h" className="flex flex-col gap-4">
-        <h2 id="other-guides-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-          Other guides
-        </h2>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {others.map((guide) => (
-            <OtherGuideCard key={guide.slug} guide={guide} />
-          ))}
-        </ul>
+      {/* A tinted band the full width of the window, like the home page's welcome, so the other
+          guides stand apart from the end of this one. The negative bottom margin cancels the page's
+          gap between sections (app/(site)/layout.tsx), so the band meets the contacts banner. */}
+      <section
+        aria-labelledby="other-guides-h"
+        className="mx-[calc(50%-50vw)] -mb-8 w-screen bg-band py-10 md:-mb-12 md:py-14"
+      >
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 md:px-8">
+          <h2 id="other-guides-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            Other guides
+          </h2>
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {others.map((guide) => (
+              <OtherGuideCard key={guide.slug} guide={guide} />
+            ))}
+          </ul>
+        </div>
       </section>
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
@@ -30,7 +38,7 @@ export function GuideEnding({ current }: { current: Guide }) {
   );
 }
 
-function OtherGuideCard({ guide }: { guide: Guide }) {
+export function OtherGuideCard({ guide }: { guide: Guide }) {
   const comingSoon = guide.status === "coming-soon";
 
   return (

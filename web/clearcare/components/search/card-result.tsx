@@ -32,14 +32,11 @@ export function CardResult({ centre, from }: CardResultProps) {
             {centre.centre_name}
           </Link>
         </h3>
-        <p className="text-sm text-ink-muted">
-          {address}, Co. {centre.county}
-          {eircode && (
-            <>
-              {" "}
-              · <span className="whitespace-nowrap font-mono">{eircode}</span>
-            </>
-          )}
+        {/* One part per line, as on an envelope: the street and town, the county, then the Eircode. */}
+        <p className="flex flex-col text-sm text-ink-muted">
+          <span>{address}</span>
+          <span>Co. {centre.county}</span>
+          {eircode && <span className="font-mono">{eircode}</span>}
         </p>
         {centre.maximum_occupancy !== null && (
           // The most residents HIQA allows, not free beds.
@@ -47,29 +44,25 @@ export function CardResult({ centre, from }: CardResultProps) {
         )}
       </div>
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-line/50 pt-3 text-xs text-ink-muted adult:border-line-soft">
-        <a href={centre.hiqa_url} className="inline-block py-1 tap-target" target="_blank" rel="noopener noreferrer">
-          HIQA register entry<span className="sr-only"> (opens in a new tab)</span>
-        </a>
-        {/* In the adult-centred design the larger text doesn't fit on one line, so the link wraps
-            under the button rather than either label breaking mid-way. */}
-        <div className="flex items-center gap-3 adult:flex-wrap adult:gap-y-1">
-          {/* TODO: Add the centre to the user's list (CCARE-46). Does nothing yet. */}
-          <button
-            type="button"
-            aria-disabled="true"
-            title="Coming soon"
-            className={`h-8 px-3 font-medium adult:h-11 adult:whitespace-nowrap ${comingSoonClass}`}
-          >
-            Add to list<span className="sr-only"> ({centre.centre_name})</span> (coming soon)
-          </button>
-          <Link
-            href={href}
-            className="inline-block py-1 font-medium text-primary hover:underline tap-target adult:whitespace-nowrap"
-          >
-            View record &rarr;
-          </Link>
-        </div>
+      {/* Add to list on the left, View record on the right. In the adult-centred design the larger
+          text doesn't fit on one line, so the link wraps under the button rather than either label
+          breaking mid-way. */}
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line/50 pt-3 text-xs text-ink-muted adult:border-line-soft">
+        {/* TODO: Add the centre to the user's list (CCARE-46). Does nothing yet. */}
+        <button
+          type="button"
+          aria-disabled="true"
+          title="Coming soon"
+          className={`h-8 px-3 font-medium adult:h-11 adult:whitespace-nowrap ${comingSoonClass}`}
+        >
+          Add to list<span className="sr-only"> ({centre.centre_name})</span> (coming soon)
+        </button>
+        <Link
+          href={href}
+          className="inline-block py-1 font-medium text-primary hover:underline tap-target adult:whitespace-nowrap"
+        >
+          View record &rarr;
+        </Link>
       </div>
     </article>
   );
