@@ -78,7 +78,7 @@ const STEPS: Step[] = [
     where: "The home’s page",
     detail: (
       <>
-        Call the number displayed at the top of the home’s page. Ask your questions, such as how many beds are free.
+        Call the number on the home’s page, under About this home. Ask your questions, such as how many beds are free.
         ClearCare doesn’t show free beds.
       </>
     ),
@@ -91,12 +91,6 @@ const STEPS: Step[] = [
     link: { href: "/contacts", label: "See contacts" },
   },
 ];
-
-// Each step's number, or null for an optional one, so the numbers run 1 to 5 past the optional steps.
-const NUMBERS = STEPS.reduce<(number | null)[]>((numbers, step) => {
-  const last = numbers.findLast((n) => n !== null) ?? 0;
-  return [...numbers, step.question ? null : last + 1];
-}, []);
 
 function MapPin() {
   return (
@@ -133,10 +127,10 @@ function StepCard({ step, number }: { step: Step; number: number | null }) {
           <span className="w-fit rounded border border-field px-1.5 py-0.5 text-xs text-ink-muted">Optional</span>
         )}
         {step.question && <p className="font-semibold">{step.question} If so:</p>}
-        <h2 className="font-heading text-xl font-semibold md:text-2xl">
+        <h3 className="font-heading text-xl font-semibold md:text-2xl">
           {number !== null && <span className="sr-only">Step {number}: </span>}
           {step.title}
-        </h2>
+        </h3>
         <p className="flex items-center gap-1.5 text-sm font-semibold text-primary">
           <MapPin />
           <span>
@@ -186,8 +180,13 @@ export default function UsingClearCareGuide() {
           The steps in words
         </h2>
         <ol className="flex max-w-4xl flex-col gap-4">
+          {/* An optional step has no number, so the numbers run 1 to 5 past the optional steps. */}
           {STEPS.map((step, index) => (
-            <StepCard key={step.title} step={step} number={NUMBERS[index]} />
+            <StepCard
+              key={step.title}
+              step={step}
+              number={step.question ? null : STEPS.slice(0, index).filter((s) => !s.question).length + 1}
+            />
           ))}
         </ol>
         <p className="max-w-3xl text-ink-muted">

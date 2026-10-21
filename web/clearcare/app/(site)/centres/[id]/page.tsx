@@ -2,10 +2,10 @@
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
-import { OtherGuideCard } from "@/components/guides/guide-ending";
+import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { comingSoonClass } from "@/components/ui/classes";
+import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { centrePhone, formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
@@ -95,7 +95,13 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
         </p>
       </div>
 
-      <HelpWithRecord />
+      {/* So nobody leaves a record unsure what it means or what to do next. */}
+      <GuidesBand
+        id="help-h"
+        title="Making sense of this record"
+        intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
+        guides={RECORD_GUIDES}
+      />
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
       <ContactsBanner className="-mb-6 md:-mb-10" />
@@ -103,38 +109,9 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
   );
 }
 
-// Full-width bands break out of the page's column and padding, as on the home page.
-const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 
 // The guides that help most with a record, in the order a family needs them.
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
-
-// The guides as small photo cards, as at the end of a guide, so nobody leaves a record unsure what
-// it means or what to do next. In a tinted band like the resources page's official information, to
-// set it apart from the record above.
-function HelpWithRecord() {
-  return (
-    // The negative bottom margin cancels the page's gap, so it meets the contacts banner below.
-    <section aria-labelledby="help-h" className={`${fullWidthClass} bg-band -mb-8 py-10 md:-mb-12 md:py-16`}>
-      {/* The same width and side padding as the page's column, so the cards line up with it. */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 md:px-8">
-        <div className="flex max-w-3xl flex-col gap-2">
-          <h2 id="help-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-            Making sense of this record
-          </h2>
-          <p className="text-ink-muted md:text-lg">
-            Inspection reports use a lot of HIQA&apos;s own language. Our guides explain it, and what to ask next.
-          </p>
-        </div>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {RECORD_GUIDES.map((guide) => (
-            <OtherGuideCard key={guide.slug} guide={guide} />
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
-}
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
 // home's name on a band of brand colour (brand-band, globals.css).
@@ -213,7 +190,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
           >
             <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
           </svg>
-          Download home details as a spreadsheet
+          Download this record as a spreadsheet
         </a>
       )}
       <a href={centre.hiqa_url} className={outlineButtonClass}>

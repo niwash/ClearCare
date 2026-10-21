@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
 import { NewsBanner } from "@/components/home/news-banner";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
-import { primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 
 export default async function StartPage() {
@@ -21,7 +21,7 @@ export default async function StartPage() {
           (NIA/NLM: left-justify text). */}
       {/* md:-mt-12 cancels the page's gap between sections, so on wider screens the band starts
           where the carousel ends. */}
-      <section className="mx-[calc(50%-50vw)] w-screen bg-band px-4 py-10 md:-mt-12 md:px-8 md:py-16 adult:md:mt-0">
+      <section className={`${fullWidthClass} bg-band px-4 py-10 md:-mt-12 md:px-8 md:py-16 adult:md:mt-0`}>
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center adult:items-start adult:text-left">
           <div className="flex max-w-3xl flex-col items-center gap-4 adult:items-start">
             <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">Welcome to ClearCare</h1>

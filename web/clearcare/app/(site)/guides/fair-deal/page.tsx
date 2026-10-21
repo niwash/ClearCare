@@ -4,6 +4,7 @@ import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
 import { ContentsNav, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
+import { fullWidthClass } from "@/components/ui/classes";
 
 const guide = getGuide("fair-deal");
 
@@ -552,7 +553,7 @@ export default function FairDealGuide() {
       </GuideSection>
 
       {/* A tinted band the full width of the window, like the HIQA guide's checklist. */}
-      <section aria-labelledby="remember-h" className="mx-[calc(50%-50vw)] w-screen bg-band py-10 md:py-16">
+      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-10 md:py-16`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
           <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
             Key things to remember
@@ -605,7 +606,7 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
     <section
       id={id}
       aria-labelledby={`${id}-h`}
-      className={`scroll-mt-6 ${tinted ? "mx-[calc(50%-50vw)] w-screen bg-band py-10 md:py-14" : ""}`}
+      className={`scroll-mt-6 ${tinted ? `${fullWidthClass} bg-band py-10 md:py-14` : ""}`}
     >
       <div className={tinted ? "mx-auto max-w-6xl px-4 md:px-8" : ""}>
         <div className="flex max-w-4xl flex-col gap-4 leading-relaxed">

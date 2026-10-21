@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { actionLinkClass, comingSoonClass } from "@/components/ui/classes";
+import { actionLinkClass, comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { GUIDES, type Guide } from "@/lib/guides";
 
@@ -54,8 +54,6 @@ const OFFICIAL_LINKS: OfficialLink[] = [
   },
 ];
 
-// Full-width bands break out of the page's column and padding, as on the home page.
-const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 
 export default function ResourcesPage() {
   return (

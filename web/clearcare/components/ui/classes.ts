@@ -6,6 +6,10 @@
 export const primaryButtonClass =
   "h-11 rounded-md bg-primary px-4 font-semibold text-on-primary transition-opacity hover:opacity-90 adult:transition-none adult:hover:bg-primary-hover adult:hover:opacity-100";
 
+// A band the full width of the window, breaking out of the page's column and padding, as on the
+// home page. Add the background and spacing for where it sits.
+export const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
+
 // A link styled as a large button, such as "Read guide" or "See contacts". On a brand-colour band
 // (brand-band, globals.css) it turns white with brand-colour text.
 export const actionLinkClass =

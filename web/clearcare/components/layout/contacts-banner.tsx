@@ -2,13 +2,13 @@
 // "Need to talk to someone?": a full-width band of brand colour pointing to the contacts page, on
 // the resources page and at the end of the guides. className sets its margins for where it sits.
 import Link from "next/link";
-import { actionLinkClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 
 export function ContactsBanner({ className = "" }: { className?: string }) {
   return (
     <section
       aria-labelledby="contacts-h"
-      className={`brand-band mx-[calc(50%-50vw)] w-screen ${className}`}
+      className={`${fullWidthClass} brand-band ${className}`}
     >
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-10 md:flex-row md:items-center md:justify-between md:px-8 md:py-14">
         <div className="flex max-w-2xl flex-col gap-2">

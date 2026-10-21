@@ -2,7 +2,7 @@
 import { Alert } from "@/components/layout/alert";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { CardResult } from "@/components/search/card-result";
-import { actionLinkClass, comingSoonClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { formatDate } from "@/lib/centres";
 import {
   COUNTIES,
@@ -110,8 +110,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
-// Full-width bands break out of the page's column and padding, as on the home page.
-const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 
 // The top of the page, flush under the header as on the resources page: the heading and a line of
 // welcome on a band of brand colour (brand-band, globals.css). The search form sits under it.

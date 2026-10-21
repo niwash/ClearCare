@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { DraftLabel } from "@/components/guides/guide-header";
-import { comingSoonClass } from "@/components/ui/classes";
+import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { getGuide, type Guide } from "@/lib/guides";
 
 type Feature = {
@@ -96,7 +96,7 @@ export function FeatureCarousel() {
     // column and padding. The grid stays in the column.
     <section
       aria-labelledby="features-h"
-      className="-mt-6 mx-[calc(50%-50vw)] flex w-screen flex-col gap-3 md:-mt-10 adult:mx-0 adult:mt-0 adult:w-auto"
+      className={`${fullWidthClass} -mt-6 flex flex-col gap-3 md:-mt-10 adult:mx-0 adult:mt-0 adult:w-auto`}
     >
       {/* A carousel at the top of the page needs no visible heading; the grid gets one. */}
       <h2 id="features-h" className="sr-only font-heading text-xl font-semibold adult:not-sr-only md:text-2xl">
