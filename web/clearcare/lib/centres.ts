@@ -4,7 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
-import { MOCK_CENTRE_PHONES, MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
+import { MOCK_CENTRE_PHONES, MOCK_CENTRE_PRICES, MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
 import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
 import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
 
@@ -105,21 +105,48 @@ export interface PromiseTrail {
   };
 }
 
+// "public" for a public nursing home, "private" for a private or voluntary one (CCARE-133).
+export type HomeType = "public" | "private";
+
+export const HOME_TYPE_LABELS: Record<HomeType, string> = {
+  public: "Public",
+  private: "Private or voluntary",
+};
+
 // GET /centres/{centre_id} (CentreResult in api/openapi.yaml): the centre's register entry, the
-// fields of a search result and the centre's phone, and the register snapshot it was read from.
+// fields of a search result and the centre's phone, the register snapshot it was read from, and
+// the latest Fair Deal contract price with the kind of home it is for.
 // The API returns 404 for an unknown ID or a centre that isn't on the current register.
 interface CentreResult {
-  centre: Omit<CentreDetail, "register_snapshot">;
+  centre: Omit<CentreDetail, "register_snapshot" | "contract_price" | "home_type">;
   register_snapshot: RegisterSnapshot;
+  contract_price?: number | null;
+  home_type?: HomeType | null;
 }
 
-// What the page uses: the centre with its snapshot alongside, flattened from CentreResult.
+// What the page uses: the centre with its snapshot and price alongside, flattened from CentreResult.
 export interface CentreDetail extends CentreSummary {
   // The centre's own line, as the register prints it: usually one number, sometimes "TBC" or two
   // ("01 555 0123 / 01 555 0124"). null when the register gives none. Missing from an API without
   // CCARE-118 (PR #72), so the page leaves the row out rather than saying "Not stated".
   centre_phone?: string | null;
   register_snapshot: RegisterSnapshot;
+  // The newest contract price the HSE published for the home, in euro per resident per week, and
+  // whether it came from the public or the private list (CCARE-76, CCARE-133). null when no list
+  // has been loaded for it; missing from an API without them, so the page leaves the rows out.
+  contract_price?: number | null;
+  home_type?: HomeType | null;
+}
+
+// A weekly price in euro: whole euros when it has no cents, as the HSE's lists mostly are.
+export function formatWeeklyPrice(price: number) {
+  const cents = !Number.isInteger(price);
+  return new Intl.NumberFormat("en-IE", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: cents ? 2 : 0,
+    maximumFractionDigits: 2,
+  }).format(price);
 }
 
 // How to show a centre's phone: a tap-to-call link for one number, anything else as printed, and
@@ -163,14 +190,24 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   }
   if (response.status === 404) return { status: "not-found" };
   if (!response.ok) return { status: "unavailable", httpStatus: response.status };
-  const { centre, register_snapshot }: CentreResult = await response.json();
-  return { status: "found", centre: { ...centre, register_snapshot } };
+  const { centre, register_snapshot, contract_price, home_type }: CentreResult = await response.json();
+  return { status: "found", centre: { ...centre, register_snapshot, contract_price, home_type } };
 });
 
 function mockCentre(id: string): CentreLookup {
   const centre = MOCK_CENTRES.find((c) => c.centre_id === id);
   if (!centre) return { status: "not-found" };
-  return { status: "found", centre: { ...centre, centre_phone: MOCK_CENTRE_PHONES[id] ?? null, register_snapshot: MOCK_SNAPSHOT } };
+  const price = MOCK_CENTRE_PRICES[id];
+  return {
+    status: "found",
+    centre: {
+      ...centre,
+      centre_phone: MOCK_CENTRE_PHONES[id] ?? null,
+      register_snapshot: MOCK_SNAPSHOT,
+      contract_price: price?.contract_price ?? null,
+      home_type: price?.home_type ?? null,
+    },
+  };
 }
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
