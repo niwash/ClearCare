@@ -139,8 +139,8 @@ paths:
       description: |
         Returns the centre with this `centre_id` from the register snapshot
         that ClearCare currently serves, with the fields of a search result,
-        the centre's phone number, and the latest contract price published for
-        it.
+        the centre's phone number, the latest contract price published for it
+        and the kind of home that price is for.
 
         Any value that is not the ID of a centre in that snapshot gives 404,
         including one that is not a number.
@@ -175,6 +175,7 @@ paths:
                   url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
                 contract_price: 1908.00
+                home_type: public
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -436,7 +437,7 @@ components:
 
     CentreResult:
       type: object
-      required: [centre, register_snapshot, contract_price]
+      required: [centre, register_snapshot, contract_price, home_type]
       properties:
         centre:
           $ref: "#/components/schemas/CentreDetail"
@@ -448,6 +449,15 @@ components:
             The latest published contract price for the centre, in euro per
             resident per week. Null when no price list has been loaded for it.
           example: 1908.00
+        home_type:
+          type: [string, "null"]
+          enum: [public, private, null]
+          description: >
+            The kind of home the contract price is for: "public" for a public
+            nursing home or "private" for a private or voluntary one, taken
+            from the price list it came from. Null when no price list has been
+            loaded for the centre.
+          example: public
 
     CentreDetail:
       description: >
