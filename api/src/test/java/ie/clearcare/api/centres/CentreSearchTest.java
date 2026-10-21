@@ -69,7 +69,8 @@ class CentreSearchTest {
           "db/V1__register_entries.sql",
           "db/V7__centre_phone.sql",
           "db/V8__contract_prices.sql",
-          "db/V9__centre_contract_price_view.sql");
+          "db/V9__centre_contract_price_view.sql",
+          "db/V10__centre_contract_price_home_type.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -288,7 +289,8 @@ class CentreSearchTest {
 
   @Test
   void returnsOneCentreWithTheSnapshotItCameFrom() throws Exception {
-    // Strict: the fields of a search result, centre_phone and contract_price, and no others.
+    // Strict: the fields of a search result, centre_phone, contract_price and
+    // home_type, and no others.
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -312,7 +314,8 @@ class CentreSearchTest {
                         "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
                         "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
                       },
-                      "contract_price": 1908.00
+                      "contract_price": 1908.00,
+                      "home_type": "public"
                     }
                     """,
                     JsonCompareMode.STRICT));
@@ -334,7 +337,8 @@ class CentreSearchTest {
   void returnsTheContractPriceInForce() throws Exception {
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.contract_price").value(1908.00));
+        .andExpect(jsonPath("$.contract_price").value(1908.00))
+        .andExpect(jsonPath("$.home_type").value("public"));
   }
 
   // The view keeps the newest of a centre's prices: 456 has two versions of one
@@ -343,21 +347,26 @@ class CentreSearchTest {
   void returnsTheLatestVersionOfTheSameDate() throws Exception {
     mvc.perform(get("/centres/" + ARAS))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.contract_price").value(2200.00));
+        .andExpect(jsonPath("$.contract_price").value(2200.00))
+        .andExpect(jsonPath("$.home_type").value("public"));
   }
 
+  // The home type follows the price: 9 is on both lists, and the private list
+  // is the later one.
   @Test
   void returnsThePriceOfTheLatestList() throws Exception {
     mvc.perform(get("/centres/" + ST_JOSEPHS_CORK))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.contract_price").value(1850.00));
+        .andExpect(jsonPath("$.contract_price").value(1850.00))
+        .andExpect(jsonPath("$.home_type").value("private"));
   }
 
   @Test
   void returnsNoPriceWhenNoListHasTheCentre() throws Exception {
     mvc.perform(get("/centres/" + STELLA_MARIS))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.contract_price").value(nullValue()));
+        .andExpect(jsonPath("$.contract_price").value(nullValue()))
+        .andExpect(jsonPath("$.home_type").value(nullValue()));
   }
 
   // A value that is not a centre ID at all is not found either, rather than refused.
