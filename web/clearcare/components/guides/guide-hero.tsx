@@ -7,10 +7,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
 import type { Guide } from "@/lib/guides";
+import { fullWidthClass } from "@/components/ui/classes";
 
 export function GuideHero({ guide }: { guide: Guide }) {
   return (
-    <header className="mx-[calc(50%-50vw)] -mt-6 w-screen md:-mt-10">
+    <header className={`${fullWidthClass} -mt-6 md:-mt-10`}>
       <div className="relative flex flex-col md:block md:h-[24rem] lg:h-[28rem]">
         <div className="relative aspect-[3/2] md:absolute md:inset-y-0 md:right-0 md:aspect-auto md:w-[60%]">
           <Image

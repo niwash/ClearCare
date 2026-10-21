@@ -2,9 +2,12 @@
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
+import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
-import { comingSoonClass } from "@/components/ui/classes";
+import { ContactsBanner } from "@/components/layout/contacts-banner";
+import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { centrePhone, formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
+import { getGuide } from "@/lib/guides";
 import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -33,7 +36,9 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHeader centre={centre} reports={reports} from={from} />
+      <CentreHero centre={centre} from={from} />
+
+      <CentreFacts centre={centre} reports={reports} />
 
       {reports ? (
         <>
@@ -89,11 +94,113 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           , downloaded {formatDate(centre.register_snapshot.fetched_at)}
         </p>
       </div>
+
+      {/* So nobody leaves a record unsure what it means or what to do next. */}
+      <GuidesBand
+        id="help-h"
+        title="Making sense of this record"
+        intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
+        guides={RECORD_GUIDES}
+      />
+
+      {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
+      <ContactsBanner className="-mb-6 md:-mb-10" />
     </>
   );
 }
 
-function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports: CentreReports | null; from?: string }) {
+
+// The guides that help most with a record, in the order a family needs them.
+const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
+
+// The top of the page, flush under the header as on the resources page: the breadcrumb and the
+// home's name on a band of brand colour (brand-band, globals.css).
+function CentreHero({ centre, from }: { centre: CentreDetail; from?: string }) {
+  return (
+    <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
+        <div className="flex min-w-0 flex-col gap-2.5">
+          {/* "Search results" goes back to the search the user came from, or to an empty search
+              when there isn't one (a shared link, the start page). */}
+          <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
+            <ol className="flex flex-wrap gap-x-1.5">
+              <li>
+                <Link href="/home" className="inline-block py-1 tap-target">
+                  Home
+                </Link>{" "}
+                <span aria-hidden>›</span>
+              </li>
+              <li>
+                <Link href={from !== undefined ? searchHref(from) : "/search"} className="inline-block py-1 tap-target">
+                  Search results
+                </Link>{" "}
+                <span aria-hidden>›</span>
+              </li>
+              <li>
+                <Link href={`/search?${new URLSearchParams({ county: centre.county })}`} className="inline-block py-1 tap-target">
+                  Co. {centre.county}
+                </Link>{" "}
+                <span aria-hidden>›</span>
+              </li>
+              {/* The same padding as the links, so the name lines up with them. */}
+              <li aria-current="page" className="py-1 tap-target">
+                {centre.centre_name}
+              </li>
+            </ol>
+          </nav>
+          <h1 id="centre-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+            {centre.centre_name}
+          </h1>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// The same look for each action button, so they line up in one column.
+const actionButtonClass = "flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold";
+const outlineButtonClass = `${actionButtonClass} border border-line bg-surface text-ink no-underline hover:border-primary hover:text-ink`;
+
+function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
+  return (
+    <div className="flex flex-col gap-2.5 lg:min-w-60">
+      {/* TODO: Link to the assistant once that page exists. */}
+      <span
+        aria-disabled="true"
+        title="Coming soon"
+        className={`${actionButtonClass} ${comingSoonClass}`}
+      >
+        Ask about this home (coming soon)
+      </span>
+      {reports && (
+        <a
+          href={`/centres/${centre.centre_id}/record.csv`}
+          download
+          className={outlineButtonClass}
+        >
+          <svg
+            aria-hidden
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="size-4 shrink-0"
+          >
+            <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
+          </svg>
+          Download this record as a spreadsheet
+        </a>
+      )}
+      <a href={centre.hiqa_url} className={outlineButtonClass}>
+        View on the HIQA website
+      </a>
+    </div>
+  );
+}
+
+function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
@@ -102,41 +209,15 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
   const phone = centrePhone(centre.centre_phone);
 
   return (
-    <section className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-      <div className="flex min-w-0 flex-col gap-2.5">
-        {/* "Search results" goes back to the search the user came from, or to an empty search
-            when there isn't one (a shared link, the start page). */}
-        <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
-          <ol className="flex flex-wrap gap-x-1.5">
-            <li>
-              <Link href="/home" className="inline-block py-1 tap-target">
-                Home
-              </Link>{" "}
-              <span aria-hidden>›</span>
-            </li>
-            <li>
-              <Link href={from !== undefined ? searchHref(from) : "/search"} className="inline-block py-1 tap-target">
-                Search results
-              </Link>{" "}
-              <span aria-hidden>›</span>
-            </li>
-            <li>
-              <Link href={`/search?${new URLSearchParams({ county: centre.county })}`} className="inline-block py-1 tap-target">
-                Co. {centre.county}
-              </Link>{" "}
-              <span aria-hidden>›</span>
-            </li>
-            {/* The same padding as the links, so the name lines up with them. */}
-            <li aria-current="page" className="py-1 tap-target">
-              {centre.centre_name}
-            </li>
-          </ol>
-        </nav>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">{centre.centre_name}</h1>
-
+    <section aria-labelledby="facts-h" className="flex flex-col gap-3">
+      <h2 id="facts-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+        About this home
+      </h2>
+      {/* The details, with the actions beside them on wide screens and under them on narrow ones. */}
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
             background in the standard design; the adult-centred design adds a 3:1 edge. */}
-        <dl className="mt-2.5 max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
+        <dl className="w-full max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
           <Fact label="HIQA centre ID">
             <span className="font-mono">{centre.centre_id}</span>
           </Fact>
@@ -176,41 +257,12 @@ function CentreHeader({ centre, reports, from }: { centre: CentreDetail; reports
             </Fact>
           )}
         </dl>
+        <CentreActions centre={centre} reports={reports} />
       </div>
-
-      <div className="flex flex-col gap-2.5 lg:min-w-60">
-        {/* TODO: Link to the assistant once that page exists. */}
-        <span
-          aria-disabled="true"
-          title="Coming soon"
-          className={`flex h-12 items-center justify-center px-5 font-semibold ${comingSoonClass}`}
-        >
-          Ask about this home (coming soon)
-        </span>
-        {reports && (
-          <a
-            href={`/centres/${centre.centre_id}/record.csv`}
-            download
-            className="flex min-h-12 items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-primary"
-          >
-            <svg
-              aria-hidden
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5 shrink-0"
-            >
-              <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-            </svg>
-            Download spreadsheet
-          </a>
-        )}
-        <a href={centre.hiqa_url} className="pt-1 text-center text-sm adult:flex adult:min-h-11 adult:items-center adult:justify-center adult:pt-0">
-          View on hiqa.ie
-        </a>
+      {/* TODO: Show these with the details once the API has them. */}
+      <div className={`flex w-full max-w-2xl flex-col gap-1 px-4 py-3 ${comingSoonClass}`}>
+        <h3 className="font-semibold text-ink">Coming soon</h3>
+        <p>The home&apos;s care types, services and amenities, so you can see what it offers.</p>
       </div>
     </section>
   );

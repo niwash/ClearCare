@@ -2,7 +2,7 @@
 // A news item on the home page, as a band of brand colour like nhi.ie's: why choosing care well
 // matters more each year. brand-band (globals.css) turns everything inside light-on-dark.
 // Figures from the ESRI's announcement of 30 June 2025, linked below.
-import { actionLinkClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
 
 const ESRI_URL =
@@ -11,7 +11,7 @@ const ESRI_URL =
 export function NewsBanner() {
   return (
     // -mt-8 and md:-mt-12 cancel the page's gap between sections, so it meets the welcome band.
-    <section aria-labelledby="news-h" className="brand-band mx-[calc(50%-50vw)] -mt-8 w-screen md:-mt-12">
+    <section aria-labelledby="news-h" className={`${fullWidthClass} brand-band -mt-8 md:-mt-12`}>
       <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-[2fr_1fr] md:px-8 md:py-14">
         <div className="flex flex-col items-start gap-4">
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">

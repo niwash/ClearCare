@@ -6,6 +6,7 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { StepNumber } from "@/components/guides/step-number";
 import type { Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
+import { fullWidthClass } from "@/components/ui/classes";
 
 const guide = getGuide("reading-inspection-reports");
 
@@ -153,7 +154,7 @@ export default function ReadingInspectionReportsGuide() {
       {/* A tinted band the full width of the window, like the home page's welcome. */}
       <section
         aria-labelledby="checklist-h"
-        className="mx-[calc(50%-50vw)] w-screen bg-band py-10 md:py-16"
+        className={`${fullWidthClass} bg-band py-10 md:py-16`}
       >
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
           <h2 id="checklist-h" className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
