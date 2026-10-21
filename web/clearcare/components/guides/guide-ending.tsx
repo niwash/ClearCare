@@ -27,14 +27,15 @@ type GuidesBandProps = {
   title: string;
   intro?: string;
   guides: readonly Guide[];
+  className?: string; // its bottom margin, for what comes after it
 };
 
 // Guides as small photo cards on a tinted band the full width of the window, like the home page's
-// welcome, so they stand apart from the page above. The negative bottom margin cancels the page's
-// gap between sections (app/(site)/layout.tsx), so the band meets the contacts banner after it.
-export function GuidesBand({ id, title, intro, guides }: GuidesBandProps) {
+// welcome, so they stand apart from the page above. The default negative bottom margin cancels the
+// page's gap between sections (app/(site)/layout.tsx), so the band meets the contacts banner after it.
+export function GuidesBand({ id, title, intro, guides, className = "-mb-8 md:-mb-12" }: GuidesBandProps) {
   return (
-    <section aria-labelledby={id} className={`${fullWidthClass} -mb-8 bg-band py-10 md:-mb-12 md:py-14`}>
+    <section aria-labelledby={id} className={`${fullWidthClass} bg-band py-10 md:py-14 ${className}`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 md:px-8">
         <div className="flex max-w-3xl flex-col gap-2">
