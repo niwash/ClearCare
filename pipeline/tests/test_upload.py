@@ -1,6 +1,10 @@
 import json
+from dataclasses import replace
 from pathlib import Path
 
+from clearcare_pipeline.price_lists.manifest import (
+    MANIFEST_NAME as PRICE_LISTS_MANIFEST_NAME,
+)
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.reports.manifest import (
     MANIFEST_NAME as REPORTS_MANIFEST_NAME,
@@ -15,6 +19,9 @@ MANIFEST_KEY = (
     "manifests/register-snapshots/20260928T060000Z_older_persons_register.json"
 )
 CENTRE_KEY = "manifests/inspection-reports/20261002T155656Z_34.json"
+PRICE_LIST_KEY = (
+    "manifests/price-lists/20261021T060000Z_contract-price-public.json"
+)
 
 
 def _record() -> SnapshotRecord:
@@ -174,3 +181,20 @@ def test_an_unreadable_report_manifest_line_is_reported(
     assert report.failed == (
         f"{REPORTS_MANIFEST_NAME} line 1: not a centre record",
     )
+
+
+def test_price_list_records_are_uploaded(tmp_path: Path) -> None:
+    manifest = tmp_path / "manifests" / PRICE_LISTS_MANIFEST_NAME
+    record = replace(
+        _record(),
+        source="contract-price-public",
+        fetched_at="2026-10-21T06:00:00+00:00",
+    )
+    append_records(manifest, [record])
+    store = FakeObjectStore()
+
+    report = upload_data_dir(tmp_path, store)
+
+    assert report.ok
+    assert report.uploaded == (PRICE_LIST_KEY,)
+    assert store.objects[PRICE_LIST_KEY] == manifest.read_bytes().rstrip(b"\n")

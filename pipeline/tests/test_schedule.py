@@ -18,16 +18,15 @@ BUCKET = {
 STARTUP = [
     "upload",
     "load_register",
+    "load_contract_prices",
     "load_report_files",
     "ingest_reports",
     "extract_text",
     "split_commitments",
 ]
-EVERY_STAGE_OF_BOTH_JOBS = [
-    *STARTUP,
-    "snapshots",
-    "upload",
-    "load_register",
+REGISTER_JOB = ["snapshots", "upload", "load_register"]
+PRICES_JOB = ["price_lists", "upload", "load_contract_prices"]
+REPORTS_JOB = [
     "reports",
     "upload",
     "load_report_files",
@@ -35,6 +34,7 @@ EVERY_STAGE_OF_BOTH_JOBS = [
     "extract_text",
     "split_commitments",
 ]
+EVERY_STAGE_OF_EVERY_JOB = [*STARTUP, *REGISTER_JOB, *PRICES_JOB, *REPORTS_JOB]
 
 
 class Stopped(BaseException):
@@ -79,7 +79,7 @@ def _start(
     )
 
 
-def test_first_start_uploads_and_loads_then_runs_both_jobs(
+def test_first_start_uploads_and_loads_then_runs_every_job(
     tmp_path: Path,
 ) -> None:
     stages = FakeStages()
@@ -87,7 +87,7 @@ def test_first_start_uploads_and_loads_then_runs_both_jobs(
     code = _start(tmp_path, stages, START)
 
     assert code == 0
-    assert stages.names() == EVERY_STAGE_OF_BOTH_JOBS
+    assert stages.names() == EVERY_STAGE_OF_EVERY_JOB
 
 
 def test_after_a_failed_crawl_nothing_runs_for_a_day_even_after_a_restart(
@@ -102,7 +102,7 @@ def test_after_a_failed_crawl_nothing_runs_for_a_day_even_after_a_restart(
 
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=24))
-    assert stages.names() == EVERY_STAGE_OF_BOTH_JOBS
+    assert stages.names() == [*STARTUP, *REGISTER_JOB, *REPORTS_JOB]
 
 
 def test_a_crawl_stopped_midway_waits_a_day_too(tmp_path: Path) -> None:
@@ -121,6 +121,7 @@ def test_upload_and_load_run_after_failed_downloads_and_uploads(
     stages = FakeStages(
         {
             "snapshots": 1,
+            "price_lists": 1,
             "reports": RuntimeError("unexpected page"),
             "upload": 1,
             # Backfill exits 1 while a response is missing from its source.
@@ -130,7 +131,19 @@ def test_upload_and_load_run_after_failed_downloads_and_uploads(
 
     _start(tmp_path, stages, START)
 
-    assert stages.names() == EVERY_STAGE_OF_BOTH_JOBS
+    assert stages.names() == EVERY_STAGE_OF_EVERY_JOB
+
+
+def test_the_price_lists_are_downloaded_once_a_week(tmp_path: Path) -> None:
+    _start(tmp_path, FakeStages(), START)
+
+    stages = FakeStages()
+    _start(tmp_path, stages, START + timedelta(days=6))
+    assert stages.names() == [*STARTUP, *REGISTER_JOB]
+
+    stages.calls.clear()
+    _start(tmp_path, stages, START + timedelta(days=7))
+    assert stages.names() == EVERY_STAGE_OF_EVERY_JOB
 
 
 def test_without_a_bucket_nothing_is_uploaded(tmp_path: Path) -> None:
@@ -151,15 +164,7 @@ def test_a_new_crawl_scope_makes_the_reports_job_due(tmp_path: Path) -> None:
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=1), crawl="all")
 
-    assert stages.names() == [
-        *STARTUP,
-        "reports",
-        "upload",
-        "load_report_files",
-        "ingest_reports",
-        "extract_text",
-        "split_commitments",
-    ]
+    assert stages.names() == [*STARTUP, *REPORTS_JOB]
     assert ("reports", "--data-dir", str(tmp_path)) in stages.calls
 
 

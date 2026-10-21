@@ -71,7 +71,7 @@ docker compose run --rm pipeline clearcare_pipeline.load_register --data-dir /da
 docker compose start pipeline
 ```
 
-`run` uses the pipeline service's user, settings and data directory. The other stages are `snapshots`, `upload`, `reports`, `load_report_files` and `ingest_reports`, each as `clearcare_pipeline.<stage>`.
+`run` uses the pipeline service's user, settings and data directory. The other stages are `snapshots`, `upload`, `reports`, `price_lists`, `load_report_files` and `ingest_reports`, each as `clearcare_pipeline.<stage>`. The scheduler's `load_contract_prices` is `clearcare_pipeline.contract_prices`.
 
 ## Loading the register
 
