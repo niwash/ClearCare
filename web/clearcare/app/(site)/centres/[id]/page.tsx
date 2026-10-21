@@ -6,7 +6,16 @@ import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
-import { centrePhone, formatDate, getCentre, getCentreReports, type CentreDetail, type CentreReports } from "@/lib/centres";
+import {
+  centrePhone,
+  formatDate,
+  formatWeeklyPrice,
+  getCentre,
+  getCentreReports,
+  HOME_TYPE_LABELS,
+  type CentreDetail,
+  type CentreReports,
+} from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
@@ -246,6 +255,30 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
             {/* The most residents HIQA allows, not free beds. */}
             <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
           </Fact>
+          {/* From the HSE price list the price came from. No row when there's no list for the home. */}
+          {centre.home_type && <Fact label="Type of home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
+          {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
+          {centre.contract_price !== undefined && (
+            <Fact label="Weekly cost">
+              {centre.contract_price !== null ? (
+                <>
+                  {formatWeeklyPrice(centre.contract_price)} a week
+                  <span className="block text-small text-ink-muted">
+                    The HSE&apos;s Fair Deal price for this home. With Fair Deal you pay your own contribution, the same
+                    at every home.{" "}
+                    <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
+                      How much will you pay?
+                    </Link>
+                  </span>
+                </>
+              ) : (
+                <>
+                  Not available
+                  <span className="block text-small text-ink-muted">Ask the home</span>
+                </>
+              )}
+            </Fact>
+          )}
           {latest && first && (
             <Fact label="Latest report">
               Inspected {formatDate(latest.date)}
