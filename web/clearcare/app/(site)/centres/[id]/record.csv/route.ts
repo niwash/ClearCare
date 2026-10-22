@@ -34,9 +34,9 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     ...(centre.contract_price !== undefined
       ? [
           [
-            "Maximum weekly cost",
+            "Full weekly cost",
             centre.contract_price !== null
-              ? formatWeeklyPrice(centre.contract_price)
+              ? `${formatWeeklyPrice(centre.contract_price)} per week (not including extra charges)`
               : "Not available",
           ],
         ]
