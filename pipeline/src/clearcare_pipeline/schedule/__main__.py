@@ -14,12 +14,16 @@ from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from clearcare_pipeline.contract_prices.__main__ import (
+    main as load_contract_prices,
+)
 from clearcare_pipeline.extract_text import main as extract_text
 from clearcare_pipeline.ingest_reports.__main__ import main as ingest_reports
 from clearcare_pipeline.load_register.__main__ import main as load_register
 from clearcare_pipeline.load_report_files.__main__ import (
     main as load_report_files,
 )
+from clearcare_pipeline.price_lists.__main__ import main as price_lists
 from clearcare_pipeline.reports.__main__ import main as reports
 from clearcare_pipeline.s3_settings import S3Settings, SettingsError
 from clearcare_pipeline.snapshots.__main__ import main as snapshots
@@ -32,6 +36,8 @@ STAGES: Mapping[str, Stage] = {
     "snapshots": snapshots,
     "upload": upload,
     "load_register": load_register,
+    "price_lists": price_lists,
+    "load_contract_prices": load_contract_prices,
     "reports": reports,
     "load_report_files": load_report_files,
     "ingest_reports": ingest_reports,
@@ -48,7 +54,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Job:
-    """A download from HIQA and the stages that run after every attempt."""
+    """A download and the stages that run after every attempt."""
 
     name: str
     scope: str
@@ -110,10 +116,12 @@ def main(
     )
     if bucket:
         _run_stage(stages, ("upload",), data_dir)
-    # The centres first, as a report is loaded only for a stored centre.
-    # Text extraction then writes only what this pipeline version lacks.
+    # The centres first, as a report or a price is loaded only for a stored
+    # centre. Text extraction then writes only what this pipeline version
+    # lacks.
     for name in (
         "load_register",
+        "load_contract_prices",
         "load_report_files",
         "ingest_reports",
         "extract_text",
@@ -150,6 +158,14 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
             download=("snapshots",),
             then=(*upload_stages, "load_register"),
             wait_after_success=timedelta(days=1),
+        ),
+        # HSE republishes the lists about once a month.
+        Job(
+            name="prices",
+            scope="all",
+            download=("price_lists",),
+            then=(*upload_stages, "load_contract_prices"),
+            wait_after_success=timedelta(days=7),
         ),
         Job(
             name="reports",
