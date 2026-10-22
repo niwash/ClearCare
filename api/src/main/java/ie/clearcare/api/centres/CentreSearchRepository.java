@@ -1,5 +1,6 @@
 package ie.clearcare.api.centres;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads centres from the two views the clearcare_api role can read (db/V1). */
+/** Reads centres from the views the clearcare_api role can read (db/V1, db/V7, db/V10). */
 @Repository
 class CentreSearchRepository {
 
@@ -53,10 +54,19 @@ class CentreSearchRepository {
 
   private static final String CENTRE =
       """
-      SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url
+      SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
+          centre_phone
       FROM clearcare.centre_search
       WHERE centre_id = :centre_id
       """;
+
+  // One price per centre: the view keeps the latest, so this is a lookup (db/V10).
+  private static final String CONTRACT_PRICE =
+      "SELECT price, home_type FROM clearcare.centre_contract_price"
+          + " WHERE centre_id = :centre_id";
+
+  // The price in force, and the kind of home it is for.
+  private record ContractPrice(BigDecimal price, String homeType) {}
 
   private final JdbcClient jdbc;
 
@@ -84,9 +94,10 @@ class CentreSearchRepository {
   }
 
   /**
-   * Returns the centre with this centre_id and the register snapshot it was read from, or nothing
-   * if no snapshot has been published. The centre is null if the snapshot does not have it. Both
-   * are read in one transaction, as in search.
+   * Returns the centre with this centre_id, the register snapshot it was read from and its contract
+   * price and home type, or nothing if no snapshot has been published. The centre is null if the
+   * snapshot does not have it, and the price and home type are null if no list has been loaded for
+   * it. All of them are read in one transaction, as in search.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreResult> find(String centreId) {
@@ -94,9 +105,21 @@ class CentreSearchRepository {
     if (snapshot.isEmpty()) {
       return Optional.empty();
     }
-    Centre centre =
-        jdbc.sql(CENTRE).param("centre_id", centreId).query(Centre.class).optional().orElse(null);
-    return Optional.of(new CentreResult(centre, snapshot.get()));
+    CentreDetail centre =
+        jdbc.sql(CENTRE)
+            .param("centre_id", centreId)
+            .query(CentreDetail.class)
+            .optional()
+            .orElse(null);
+    ContractPrice contractPrice =
+        jdbc
+            .sql(CONTRACT_PRICE)
+            .param("centre_id", centreId)
+            .query(ContractPrice.class)
+            .optional()
+            .orElse(new ContractPrice(null, null));
+    return Optional.of(
+        new CentreResult(centre, snapshot.get(), contractPrice.price(), contractPrice.homeType()));
   }
 
   private Optional<RegisterSnapshot> publishedSnapshot() {

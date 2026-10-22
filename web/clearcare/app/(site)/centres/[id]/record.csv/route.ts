@@ -1,13 +1,10 @@
 // app/centres/[id]/record.csv/route.ts
-// The inspection history table as a CSV: one row per regulation, one column per inspection.
+// The home's details, a blank row, then the inspection history table as a CSV:
+// one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
-import { formatDate, getCentre, getCentreReports } from "@/lib/centres";
-import { unavailableMessage } from "@/lib/search";
-
-function csvField(value: string | number) {
-  const text = String(value);
-  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
-}
+import { centrePhone, formatDate, formatWeeklyPrice, getCentre, getCentreReports, HOME_TYPE_LABELS } from "@/lib/centres";
+import { toCsv } from "@/lib/csv";
+import { formatEircode, unavailableMessage } from "@/lib/search";
 
 export async function GET(_request: Request, { params }: RouteContext<"/centres/[id]/record.csv">) {
   const { id } = await params;
@@ -17,6 +14,36 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
   const { centre } = lookup;
   const reports = await getCentreReports(id);
   if (!reports) return new Response("No inspection reports for this home yet", { status: 404 });
+
+  const phone = centrePhone(centre.centre_phone);
+  const details = [
+    ["Nursing home", centre.centre_name],
+    ["Address", centre.address],
+    ["County", `Co. ${centre.county}`],
+    ["Eircode", centre.eircode ? formatEircode(centre.eircode) : "Not stated"],
+    ...(phone ? [["Phone", phone.text]] : []),
+    ["HIQA centre ID", centre.centre_id],
+    [
+      "Registered for",
+      centre.maximum_occupancy !== null
+        ? `Up to ${centre.maximum_occupancy} residents (the most HIQA allows, not free beds)`
+        : "Not stated",
+    ],
+    // As on the page: no rows from an API without prices.
+    ...(centre.home_type ? [["Type of home", HOME_TYPE_LABELS[centre.home_type]]] : []),
+    ...(centre.contract_price !== undefined
+      ? [
+          [
+            "Weekly cost",
+            centre.contract_price !== null
+              ? `${formatWeeklyPrice(centre.contract_price)} a week (the HSE's Fair Deal price)`
+              : "Not available",
+          ],
+        ]
+      : []),
+    ["HIQA page", centre.hiqa_url],
+    ["Downloaded", formatDate(new Date().toISOString())],
+  ];
 
   const inspections = reports.inspections.filter((inspection) => inspection.regulationJudgements);
   const header = [
@@ -29,7 +56,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     row.regulation.title,
     ...inspections.map((inspection) => JUDGEMENT_LABELS[row.results[inspection.id] ?? "not-assessed"]),
   ]);
-  const csv = [header, ...rows].map((fields) => fields.map(csvField).join(",")).join("\r\n");
+  const csv = toCsv([...details, [], header, ...rows]);
   const filename = `${centre.centre_id}-${centre.centre_name}`.replace(/[^A-Za-z0-9-]+/g, "-");
 
   return new Response(csv, {

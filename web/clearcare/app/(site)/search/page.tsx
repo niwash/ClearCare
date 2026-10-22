@@ -1,5 +1,8 @@
 // app/search/page.tsx
+import { Alert } from "@/components/layout/alert";
+import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { CardResult } from "@/components/search/card-result";
+import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { formatDate } from "@/lib/centres";
 import {
   COUNTIES,
@@ -19,6 +22,14 @@ interface SearchPageProps {
 }
 
 const FILTERS = ["name", "address", "county", "eircode"] as const;
+
+// Filters the API can't apply yet, shown so people know they're on the way.
+// TODO: Make these real filters once the API has the data.
+const COMING_SOON_FILTERS = ["Care types", "Services", "Amenities"] as const;
+
+// The results grid has 1, 2 or 3 columns depending on screen width. 24 divides by all three, so
+// every full page fills its last row. The API's default of 20 would leave gaps.
+const RESULTS_PER_PAGE = "24";
 
 // Empty form fields arrive as "", which means "not set".
 async function readQuery(searchParams: SearchPageProps["searchParams"]): Promise<SearchQuery> {
@@ -47,12 +58,16 @@ function describe(query: SearchQuery) {
   return parts.join(", ");
 }
 
-function pageHref(query: SearchQuery, page: number) {
+function pageQuery(query: SearchQuery, page: number) {
   const params = new URLSearchParams();
   for (const [key, value] of Object.entries({ ...query, page: String(page) })) {
     if (value && !(key === "page" && value === "1")) params.set(key, value);
   }
-  const search = params.toString();
+  return params.toString();
+}
+
+function pageHref(query: SearchQuery, page: number) {
+  const search = pageQuery(query, page);
   return search ? `/search?${search}` : "/search";
 }
 
@@ -74,22 +89,12 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const query = await readQuery(searchParams);
-  const result = await searchCentres(query);
+  // Not added to query itself, so it stays out of the page links.
+  const result = await searchCentres({ ...query, page_size: query.page_size ?? RESULTS_PER_PAGE });
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-sm text-ink-muted">
-          <Link href="/home" className="hover:underline">
-            Home
-          </Link>
-          <span>/</span>
-          <span>Search</span>
-        </div>
-        <h1 className="font-serif text-3xl font-semibold tracking-tight">
-          {hasFilters(query) ? `Results for ${describe(query)}` : "Find a nursing home"}
-        </h1>
-      </div>
+    <>
+      <SearchHero query={query} />
 
       <SearchForm query={query} />
 
@@ -98,22 +103,82 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       ) : (
         <SearchError status={result.status} detail={result.detail} />
       )}
-    </div>
+
+      {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
+      <ContactsBanner className="-mb-6 md:-mb-10" />
+    </>
   );
 }
 
-const inputClass =
-  "h-11 w-full min-w-0 rounded-md border border-line bg-surface px-3 text-ink focus:outline-none focus:ring-2 focus:ring-link";
+
+// The top of the page, flush under the header as on the resources page: the heading and a line of
+// welcome on a band of brand colour (brand-band, globals.css). The search form sits under it.
+function SearchHero({ query }: { query: SearchQuery }) {
+  const searched = hasFilters(query);
+
+  return (
+    <section aria-labelledby="search-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+        <div className="flex flex-col items-start gap-3">
+          <div className="flex items-center gap-2 text-sm text-ink-muted">
+            <Link href="/home" className="inline-block py-1 text-ink tap-target">
+              Home
+            </Link>
+            <span aria-hidden>/</span>
+            <span>Search</span>
+          </div>
+          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+            {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
+          </h1>
+          {!searched && (
+            <p className="max-w-2xl text-ink-muted md:text-lg">
+              Search every nursing home registered with HIQA. Each one has a page with its inspection reports over
+              time. We don&apos;t rate or recommend homes, or show free beds.
+            </p>
+          )}
+        </div>
+
+        {!searched && (
+          <p className="text-sm text-ink-muted">
+            Not sure where to start?{" "}
+            <Link href="/guides/user-journey" className="text-ink tap-target">
+              Read how a family chooses a nursing home →
+            </Link>
+          </p>
+        )}
+      </div>
+    </section>
+  );
+}
+
+const inputClass = `${textInputClass} w-full`;
 
 function SearchForm({ query }: { query: SearchQuery }) {
   return (
     <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_2fr_1fr_1fr]">
-        <Field id="search-name" label="Name">
-          <input id="search-name" name="name" type="search" defaultValue={query.name} maxLength={MAX_TEXT_LENGTH} className={inputClass} />
+        <Field id="search-name" label="Nursing home name">
+          {/* Faded examples, like the Eircode field's. Elm Hall is the home the no-results tips use. */}
+          <input
+            id="search-name"
+            name="name"
+            type="search"
+            defaultValue={query.name}
+            placeholder="Elm Hall"
+            maxLength={MAX_TEXT_LENGTH}
+            className={inputClass}
+          />
         </Field>
         <Field id="search-address" label="Address or town">
-          <input id="search-address" name="address" type="search" defaultValue={query.address} maxLength={MAX_TEXT_LENGTH} className={inputClass} />
+          <input
+            id="search-address"
+            name="address"
+            type="search"
+            defaultValue={query.address}
+            placeholder="Celbridge or Main Street"
+            maxLength={MAX_TEXT_LENGTH}
+            className={inputClass}
+          />
         </Field>
         <Field id="search-county" label="County">
           <select id="search-county" name="county" defaultValue={query.county ?? ""} className={inputClass}>
@@ -137,20 +202,46 @@ function SearchForm({ query }: { query: SearchQuery }) {
           />
         </Field>
       </div>
+      <ComingSoonFilters />
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          className="h-11 rounded-md bg-link px-4 font-semibold text-surface transition-opacity hover:opacity-90"
+          className={primaryButtonClass}
         >
           Search
         </button>
         {hasFilters(query) && (
-          <Link href="/search" className="text-sm">
+          <Link href="/search" className="inline-block py-1 text-sm tap-target">
             Clear search
           </Link>
         )}
       </div>
     </form>
+  );
+}
+
+// Each looks like a closed dropdown, with the dashed look of other unfinished features. They do
+// nothing, and aren't form fields, so they never reach the search.
+function ComingSoonFilters() {
+  return (
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {COMING_SOON_FILTERS.map((label) => (
+        <div key={label} className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-ink-muted">{label}</span>
+          <button
+            type="button"
+            aria-disabled="true"
+            title="Coming soon"
+            className={`flex h-11 items-center justify-between gap-2 px-3 text-left ${comingSoonClass}`}
+          >
+            <span>
+              <span className="sr-only">Filter by {label.toLowerCase()} </span>Coming soon
+            </span>
+            <span aria-hidden>▾</span>
+          </button>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -178,19 +269,28 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
       </h2>
 
       {total === 0 ? (
-        <div className="rounded-lg border border-line bg-surface p-8 text-ink-muted">
-          <p className="font-medium text-ink">No registered centres match {describe(query)}.</p>
-          <ul className="mt-2 list-disc pl-5 text-sm">
+        // In a tinted panel like the resources page's official information, with a way back to every
+        // home, so a search that finds nothing isn't a dead end.
+        <div className="flex flex-col items-start gap-3 rounded-lg bg-band p-6 md:p-8">
+          <p className="font-heading text-xl font-semibold text-ink md:text-2xl">
+            We couldn&apos;t find a registered home matching {describe(query)}
+          </p>
+          <p className="text-ink-muted">A few things that often help:</p>
+          <ul className="list-disc pl-5 text-ink-muted">
             <li>Check the spelling, or type the start of each word, e.g. &ldquo;elm&rdquo; for Elm Hall.</li>
             <li>&ldquo;St&rdquo; and &ldquo;Saint&rdquo; are searched separately, so try the other one.</li>
             <li>Many Dublin addresses don&apos;t include &ldquo;Dublin&rdquo;. Use the County filter instead.</li>
           </ul>
+          <Link href="/search" className={`${actionLinkClass} mt-2`}>
+            See every home <span aria-hidden>→</span>
+          </Link>
         </div>
       ) : centres.length === 0 ? (
-        <div className="rounded-lg border border-line bg-surface p-8 text-ink-muted">
-          <p>
-            There&apos;s no page {page}. <Link href={pageHref(query, 1)}>Go to the first page</Link>.
-          </p>
+        <div className="flex flex-col items-start gap-3 rounded-lg bg-band p-6 md:p-8">
+          <p className="text-ink-muted">There&apos;s no page {page} for this search.</p>
+          <Link href={pageHref(query, 1)} className={actionLinkClass}>
+            Go to the first page <span aria-hidden>→</span>
+          </Link>
         </div>
       ) : (
         <>
@@ -198,11 +298,11 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
             {total === centres.length
               ? `${total} registered ${total === 1 ? "centre" : "centres"}`
               : `Showing ${first}–${last} of ${total} registered centres`}
-            , in alphabetical order.
+            .
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
-              <CardResult key={centre.centre_id} centre={centre} />
+              <CardResult key={centre.centre_id} centre={centre} from={pageQuery(query, page)} />
             ))}
           </div>
         </>
@@ -210,17 +310,17 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
 
       {lastPage > 1 && (
         <nav aria-label="Result pages" className="flex items-center justify-between gap-4 text-sm">
-          {page > 1 ? <Link href={pageHref(query, page - 1)}>&larr; Previous</Link> : <span />}
+          {page > 1 ? <Link href={pageHref(query, page - 1)} className="tap-target">&larr; Previous</Link> : <span />}
           <span className="text-ink-muted">
             Page {Math.min(page, lastPage)} of {lastPage}
           </span>
-          {page < lastPage ? <Link href={pageHref(query, page + 1)}>Next &rarr;</Link> : <span />}
+          {page < lastPage ? <Link href={pageHref(query, page + 1)} className="tap-target">Next &rarr;</Link> : <span />}
         </nav>
       )}
 
       <p className="text-xs text-ink-faint">
         Source:{" "}
-        <a href={register_snapshot.url} className="text-ink-faint">
+        <a href={register_snapshot.url} className="text-ink-faint adult:text-primary">
           HIQA register
         </a>
         , downloaded {formatDate(register_snapshot.fetched_at)}.
@@ -233,9 +333,6 @@ function SearchError({ status, detail }: { status: number; detail: string }) {
   const message = status === 400 ? detail : unavailableMessage(status);
 
   return (
-    <div role="alert" className="rounded-lg border border-not-compliant bg-surface p-5 text-sm">
-      <p className="font-medium">{status === 400 ? "Please check your search" : "Search unavailable"}</p>
-      <p className="mt-1 text-ink-muted">{message}</p>
-    </div>
+    <Alert title={status === 400 ? "Please check your search" : "Search unavailable"}>{message}</Alert>
   );
 }

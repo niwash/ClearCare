@@ -1,8 +1,13 @@
 """Tests for the section-aware report parser."""
 
+# PyMuPDF leaves some members unannotated; scoped to this module as in
+# parser.py.
+# pyright: reportUnknownMemberType=false
+
 import json
 from pathlib import Path
 
+import pymupdf
 import pytest
 
 from clearcare_pipeline.parser.parser import Parser, TextBlock, load_mapping
@@ -38,6 +43,33 @@ def test_sections_keep_the_page_they_came_from() -> None:
 
     assert first.page == 1
     assert first.text.startswith("Report of an inspection")
+
+
+def test_a_heading_line_inside_a_block_starts_its_section(
+    tmp_path: Path,
+) -> None:
+    # Some PDFs print a heading as one line of a larger block. Only the whole
+    # line counts: the instructions also open a sentence with "Section 1".
+    document = pymupdf.open()
+    document.new_page().insert_text(
+        (72, 72),
+        "Appendix 1\nRegulation 9: Residents' rights\nNot compliant\n"
+        "Compliance Plan for Example House\n"
+        "Section 1 is the compliance plan.\n"
+        "Section 1\nThe provider sets out its actions.",
+    )
+    pdf = tmp_path / "report.pdf"
+    document.save(str(pdf))
+
+    sections = Parser(pdf, MAPPING).parse()
+
+    assert _text(sections, "appendix_1").endswith("Not compliant")
+    assert _text(sections, "compliance_plan") == (
+        "Compliance Plan for Example House\nSection 1 is the compliance plan."
+    )
+    assert _text(sections, "section_1") == (
+        "Section 1\nThe provider sets out its actions."
+    )
 
 
 def test_load_mapping_reads_every_row() -> None:

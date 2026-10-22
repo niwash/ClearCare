@@ -6,8 +6,8 @@ import pytest
 from clearcare_pipeline.reports.register import (
     RegisteredCentre,
     RegisterError,
-    centres_in_county,
     latest_register_sha256,
+    registered_centres,
 )
 
 REGISTER = (
@@ -76,8 +76,8 @@ def test_unreadable_manifest_line_is_an_error(tmp_path: Path) -> None:
         latest_register_sha256(manifest)
 
 
-def test_centres_in_county_keeps_register_order() -> None:
-    assert centres_in_county(REGISTER, "Dublin") == (
+def test_centres_in_a_county_keep_register_order() -> None:
+    assert registered_centres(REGISTER, "Dublin") == (
         RegisteredCentre(
             centre_id="1",
             url="https://www.hiqa.ie/areas-we-work/find-a-centre/"
@@ -93,11 +93,11 @@ def test_centres_in_county_keeps_register_order() -> None:
 
 def test_register_without_expected_columns_is_an_error() -> None:
     with pytest.raises(RegisterError, match="URL"):
-        centres_in_county(b"Centre_ID,County\n1,Dublin\n", "Dublin")
+        registered_centres(b"Centre_ID,County\n1,Dublin\n", "Dublin")
 
 
 def test_centre_page_outside_hiqa_is_an_error() -> None:
     register = b"Centre_ID,County,URL\n1,Dublin,https://example.com/1\n"
 
     with pytest.raises(RegisterError, match="centre 1"):
-        centres_in_county(register, "Dublin")
+        registered_centres(register, "Dublin")

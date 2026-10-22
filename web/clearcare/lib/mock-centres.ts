@@ -2,6 +2,7 @@
 // Invented centres in the shape GET /centres returns, for testing the search page before the
 // API (CCARE-45) is running. Only Elm Hall comes from the example in the contract.
 // Each one covers a case the page has to handle; see the comments.
+import type { HomeType } from "./centres";
 import type { CentreSummary, RegisterSnapshot } from "./search";
 
 const hiqaUrl = (slug: string) => `https://www.hiqa.ie/areas-we-work/find-a-centre/${slug}`;
@@ -10,6 +11,23 @@ export const MOCK_SNAPSHOT: RegisterSnapshot = {
   fetched_at: "2026-10-05T06:12:54Z",
   url: "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
   sha256: "c24a105a0000000000000000000000000000000000000000000000000000mock",
+};
+
+// Each centre's phone as GET /centres/{centre_id} gives it, one per case the page handles: one
+// number (the contract's example), two numbers, and HIQA's "TBC". The rest have none (null).
+export const MOCK_CENTRE_PHONES: Record<string, string> = {
+  "34": "01 555 0123",
+  "101": "096 21 555 / 096 21 556",
+  "102": "TBC",
+};
+
+// Each centre's contract price as GET /centres/{centre_id} gives it, one per case the page handles:
+// a public home (the contract's example), a private one with cents, and one with no price list
+// loaded. The rest have none (null).
+export const MOCK_CENTRE_PRICES: Record<string, { contract_price: number | null; home_type: HomeType | null }> = {
+  "34": { contract_price: 1908, home_type: "public" },
+  "101": { contract_price: 1245.5, home_type: "private" },
+  "102": { contract_price: null, home_type: null },
 };
 
 export const MOCK_CENTRES: CentreSummary[] = [

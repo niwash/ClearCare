@@ -34,7 +34,7 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
   return (
     <section aria-labelledby="first-h" className="rounded-lg border border-line bg-surface">
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:gap-6 md:px-7">
-        <h2 id="first-h" className="font-serif text-xl font-semibold md:text-2xl">
+        <h2 id="first-h" className="font-heading text-xl font-semibold md:text-2xl">
           What to look at first
         </h2>
         <p className="text-sm text-ink-muted">
@@ -82,9 +82,9 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
                   <div key={source}>{source}</div>
                 ))}
                 {hasTrail ? (
-                  <a href={anchor}>Open the trail</a>
+                  <a href={anchor} className="tap-target">Open the trail</a>
                 ) : (
-                  highlight.reportUrl && <a href={highlight.reportUrl}>Read in the report</a>
+                  highlight.reportUrl && <a href={highlight.reportUrl} className="tap-target">Read in the report</a>
                 )}
               </div>
             </li>

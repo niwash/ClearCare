@@ -1,0 +1,12 @@
+kind,group,key,location,source,match,index,transform
+field,,effective_date,contract_prices,label,Effective from,,strip
+record,contract_prices,county,contract_prices,block_column,,,collapse_ws
+record,contract_prices,centre_id,contract_prices,block_column,(?m)^\d+$,0,strip
+record,contract_prices,centre_name,contract_prices,block_column,,1,collapse_ws
+record,contract_prices,address_line_1,contract_prices,block_column,,2,collapse_ws
+record,contract_prices,address_line_2,contract_prices,block_column,,3,collapse_ws
+record,contract_prices,address_line_3,contract_prices,block_column,,4,collapse_ws
+record,contract_prices,postcode,contract_prices,block_column,,5,strip
+record,contract_prices,telephone,contract_prices,block_column,,6,collapse_ws
+record,contract_prices,contract_price,contract_prices,block_column,,7,collapse_ws
+field,,home_type,contract_prices,constant,public,,strip

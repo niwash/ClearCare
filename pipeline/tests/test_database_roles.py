@@ -43,6 +43,7 @@ PUBLIC_COLUMNS = {
     "hiqa_url",
     "name_key",
     "address_key",
+    "centre_phone",
 }
 
 
@@ -193,6 +194,8 @@ def test_api_reads_where_the_published_snapshot_came_from(
         (API, "SELECT * FROM clearcare.centre"),
         (API, "SELECT * FROM clearcare.register_entry"),
         (API, "SELECT * FROM clearcare.register_publication"),
+        (API, "SELECT * FROM clearcare.contract_price_list"),
+        (API, "SELECT * FROM clearcare.contract_price"),
     ],
 )
 def test_role_is_refused(
