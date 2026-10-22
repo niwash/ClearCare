@@ -34,9 +34,9 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     ...(centre.contract_price !== undefined
       ? [
           [
-            "Weekly cost",
+            "Maximum weekly cost",
             centre.contract_price !== null
-              ? `${formatWeeklyPrice(centre.contract_price)} a week (the HSE's Fair Deal price)`
+              ? formatWeeklyPrice(centre.contract_price)
               : "Not available",
           ],
         ]

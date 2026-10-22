@@ -259,13 +259,12 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
           {centre.home_type && <Fact label="Type of home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
           {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
           {centre.contract_price !== undefined && (
-            <Fact label="Weekly cost">
+            <Fact label="Maximum weekly cost">
               {centre.contract_price !== null ? (
                 <>
-                  {formatWeeklyPrice(centre.contract_price)} a week
+                  {formatWeeklyPrice(centre.contract_price)}
                   <span className="block text-small text-ink-muted">
-                    The HSE&apos;s Fair Deal price for this home. With Fair Deal you pay your own contribution, the same
-                    at every home.{" "}
+                    With Fair Deal you pay your own contribution.{" "}
                     <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
                       How much will you pay?
                     </Link>
