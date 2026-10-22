@@ -14,6 +14,10 @@ from clearcare_pipeline.contract_prices.run import (
     ingest,
     parse_price_list,
 )
+from clearcare_pipeline.contract_prices.stored import (
+    StoredPriceListsError,
+    stored_price_lists,
+)
 
 PARSER_DIR = Path(__file__).resolve().parents[1] / "parser"
 DEFAULT_MAPPER = PARSER_DIR / "contract_price_mapper.csv"
@@ -24,13 +28,26 @@ logger = logging.getLogger(__name__)
 def main(argv: Sequence[str] | None = None) -> int:
     """Runs the ingest from the command line.
 
-    Each option gives the list's PDF and the page it was published on, which
-    is stored beside it.
+    --public and --private each give the list's PDF and the page it was
+    published on, which is stored beside it. --data-dir takes the newest
+    downloaded copy of each list instead, and the PDF's own URL.
     """
     args = _parse_args(argv)
     logging.basicConfig(
         level=logging.INFO, format="%(levelname)s %(name)s: %(message)s"
     )
+    if args.data_dir is None:
+        files = _files(args)
+    else:
+        try:
+            files = stored_price_lists(args.data_dir)
+        except StoredPriceListsError as error:
+            logger.error("%s", error)
+            return 1
+        if not files:
+            # Nothing has been downloaded yet, as on a fresh clone.
+            logger.info("no stored price lists")
+            return 0
     try:
         # autocommit: the writer commits each list in its own transaction.
         with psycopg.connect(autocommit=True) as connection:
@@ -38,7 +55,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             catalogue = database.DatabaseCatalogue(connection)
             writer = database.PriceListWriter(connection)
             summary = ingest(
-                _files(args),
+                files,
                 catalogue,
                 writer,
                 parse=lambda body, home_type: parse_price_list(
@@ -92,14 +109,23 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help="the private list's PDF, and the page it was published on",
     )
     parser.add_argument(
+        "--data-dir",
+        type=Path,
+        help="directory that holds raw/ and manifests/; loads the newest"
+        " downloaded copy of each list",
+    )
+    parser.add_argument(
         "--mapper",
         type=Path,
         default=DEFAULT_MAPPER,
         help="the CSV section mapping (default: the parser's own)",
     )
     args = parser.parse_args(argv)
-    if args.public is None and args.private is None:
-        parser.error("give --public, --private, or both")
+    lists_given = args.public is not None or args.private is not None
+    if args.data_dir is not None and lists_given:
+        parser.error("give --data-dir, or --public and --private, not both")
+    if args.data_dir is None and not lists_given:
+        parser.error("give --data-dir, or --public, --private, or both")
     return args
 
 
