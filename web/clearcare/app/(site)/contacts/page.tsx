@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { GuidesBand } from "@/components/guides/guide-ending";
+import { fullWidthClass } from "@/components/ui/classes";
+import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
   title: "Contacts · ClearCare",
@@ -204,33 +208,21 @@ const contactLinkClass = "adult:block adult:truncate adult:py-2.5";
 export default function ContactsPage() {
   return (
     <>
-      <div className="flex max-w-3xl flex-col gap-3">
-        <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">Contacts</h1>
-        <p className="text-ink-muted md:text-lg">
-          Who to contact about a nursing home. ClearCare isn&apos;t linked to these organisations.
-        </p>
-      </div>
+      <ContactsHero />
 
       <div className="flex max-w-4xl flex-col gap-3">
-        <ContactSection title="Inspections">
+        <ContactSection title="Inspections and Concerns">
           <ContactList contacts={INSPECTION_CONTACTS} />
         </ContactSection>
 
-        <ContactSection title="Fair Deal">
-          <p className="text-sm text-ink-muted">
-            Contact your local Nursing Homes Support Office about your application, and send your completed form there.
-            For general questions, call HSE Live.
-          </p>
-          <ContactList contacts={FAIR_DEAL_CONTACTS} />
-
-          <h3 className="mt-3 border-t border-line pt-4 font-semibold">Local Nursing Homes Support Offices</h3>
+        <ContactSection title="Local Nursing Homes Support Offices">
           {/* One closed row per office, so a long entry like Cork's seven lines only shows when asked for. */}
           <ul className="divide-y divide-line rounded-md border border-line">
             {FAIR_DEAL_OFFICES.map((office) => (
               <li key={office.area}>
                 <details className="group/office">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-3 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
-                    <h4 className="font-semibold">{office.area}</h4>
+                    <h3 className="font-semibold">{office.area}</h3>
                     <Chevron className="size-5 group-open/office:rotate-90" />
                   </summary>
                   <div className="flex flex-col gap-2 px-3 pb-3 text-sm md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
@@ -280,13 +272,61 @@ export default function ContactsPage() {
           </p>
         </ContactSection>
 
+        <ContactSection title="Fair Deal">
+          <ContactList contacts={FAIR_DEAL_CONTACTS} />
+        </ContactSection>
+
         {CONTACT_GROUPS.map((group) => (
           <ContactSection key={group.title} title={group.title}>
             <ContactList contacts={group.contacts} />
           </ContactSection>
         ))}
       </div>
+
+      {/* So nobody leaves without knowing what to ask. The bottom margin cancels the page's padding,
+          so it meets the footer. */}
+      <GuidesBand
+        id="contacts-guides-h"
+        title="Before you call"
+        intro="Our guides explain Fair Deal and inspection reports, and what to ask a nursing home."
+        guides={CONTACTS_GUIDES}
+        className="-mb-6 md:-mb-10"
+      />
     </>
+  );
+}
+
+// The guides that help most before a call, in the order a family needs them.
+const CONTACTS_GUIDES = [getGuide("user-journey"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
+
+// The top of the page, flush under the header as on the resources page: the breadcrumb, the
+// heading and a line of welcome on a band of brand colour (brand-band, globals.css).
+function ContactsHero() {
+  return (
+    <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-8 md:px-8 md:py-12">
+        <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
+          <ol className="flex flex-wrap gap-x-1.5">
+            <li>
+              <Link href="/home" className="inline-block py-1 tap-target">
+                Home
+              </Link>{" "}
+              <span aria-hidden>›</span>
+            </li>
+            <li aria-current="page" className="py-1 tap-target">
+              Contacts
+            </li>
+          </ol>
+        </nav>
+        <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          Need to talk to someone?
+        </h1>
+        <p className="max-w-2xl text-ink-muted md:text-lg">
+          These organisations can answer questions about Fair Deal, take a concern about a home, or support you and
+          the person moving.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -299,7 +339,7 @@ function telHref(phone: string) {
 // find-in-page still opens it.
 function ContactSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <details className="group rounded-lg border border-line bg-surface">
+    <details className="group rounded-lg border border-line bg-surface hover:border-primary">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
         <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
         <Chevron className="size-6 group-open:rotate-90" />

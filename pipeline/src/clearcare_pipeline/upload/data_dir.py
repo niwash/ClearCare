@@ -9,6 +9,9 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from clearcare_pipeline.object_store import ObjectStore, ObjectStoreError
+from clearcare_pipeline.price_lists.manifest import (
+    MANIFEST_NAME as PRICE_LISTS_MANIFEST_NAME,
+)
 from clearcare_pipeline.reports.manifest import (
     MANIFEST_NAME as REPORTS_MANIFEST_NAME,
 )
@@ -18,7 +21,7 @@ from clearcare_pipeline.snapshots.manifest import (
 
 RAW_PREFIX = "raw/"
 MANIFESTS_PREFIX = "manifests/"
-_RECORD_ID = re.compile(r"[a-z0-9_]+")
+_RECORD_ID = re.compile(r"[a-z0-9_-]+")
 
 
 @dataclass(frozen=True)
@@ -50,6 +53,12 @@ _MANIFESTS = (
         prefix="manifests/inspection-reports/",
         id_field="centre_id",
         record="centre record",
+    ),
+    _Manifest(
+        file_name=PRICE_LISTS_MANIFEST_NAME,
+        prefix="manifests/price-lists/",
+        id_field="source",
+        record="price list record",
     ),
 )
 
