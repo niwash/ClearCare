@@ -2,7 +2,7 @@
 // The home's details, a blank row, then the inspection history table as a CSV:
 // one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
-import { centrePhone, formatDate, getCentre, getCentreReports } from "@/lib/centres";
+import { centrePhone, formatDate, formatWeeklyPrice, getCentre, getCentreReports, HOME_TYPE_LABELS } from "@/lib/centres";
 import { toCsv } from "@/lib/csv";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
@@ -29,6 +29,18 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
         ? `Up to ${centre.maximum_occupancy} residents (the most HIQA allows, not free beds)`
         : "Not stated",
     ],
+    // As on the page: no rows from an API without prices.
+    ...(centre.home_type ? [["Type of home", HOME_TYPE_LABELS[centre.home_type]]] : []),
+    ...(centre.contract_price !== undefined
+      ? [
+          [
+            "Weekly cost",
+            centre.contract_price !== null
+              ? `${formatWeeklyPrice(centre.contract_price)} a week (the HSE's Fair Deal price)`
+              : "Not available",
+          ],
+        ]
+      : []),
     ["HIQA page", centre.hiqa_url],
     ["Downloaded", formatDate(new Date().toISOString())],
   ];
