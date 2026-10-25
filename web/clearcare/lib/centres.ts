@@ -4,8 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
-import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
-import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
+import { apiUrl, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
 
@@ -232,9 +231,8 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 }
 
 // null when the home has no reports in ClearCare, or they can't be read right now; the page
-// then points to hiqa.ie. With USE_MOCK_DATA=true, Elm Hall (34) has the wireframe's sample reports.
+// then points to hiqa.ie.
 export const getCentreReports = cache(async (id: string): Promise<CentreReports | null> => {
-  if (mockDataEnabled()) return id === SAMPLE_REPORTS_CENTRE_ID ? SAMPLE_REPORTS : null;
   const url = apiUrl();
   if (!url) return null;
 

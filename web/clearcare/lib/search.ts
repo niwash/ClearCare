@@ -51,11 +51,6 @@ export const COUNTIES = [
   "Offaly", "Roscommon", "Sligo", "Tipperary", "Waterford", "Westmeath", "Wexford", "Wicklow",
 ];
 
-// Only an explicit switch, so production can never show the sample reports as if they were real.
-export function mockDataEnabled() {
-  return process.env.USE_MOCK_DATA === "true";
-}
-
 // The API's base URL, or null if it isn't set.
 export function apiUrl() {
   return process.env.API_URL?.replace(/\/$/, "") || null;
