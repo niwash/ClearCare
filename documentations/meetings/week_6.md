@@ -1,4 +1,4 @@
-# Minutes of the Meeting - Week 4
+# Minutes of the Meeting - Week 6
 
 **Project Title:** ClearCare
 
