@@ -92,7 +92,7 @@ type InspectionHistoryProps = {
   trails: PromiseTrail[];
   showAll: boolean;
   showAllInspections: boolean;
-  from?: string; // the search the page was opened from, kept so the breadcrumb still works
+  from?: string; // the search the page was opened from, kept so "Back to your results" still works
 };
 
 // Column widths. With every inspection shown, each inspection column is wide enough for full
@@ -108,7 +108,7 @@ const stickyClass = "sticky left-0 z-10 after:absolute after:inset-y-0 after:rig
 const toggleClass =
   "flex min-h-11 items-center justify-center rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
 
-// Keeps the other toggle and the breadcrumb's search when one toggle changes.
+// Keeps the other toggle and the search to go back to when one toggle changes.
 function historyHref({ from, regulations, inspections }: { from?: string; regulations: boolean; inspections: boolean }) {
   const params = new URLSearchParams();
   if (from !== undefined) params.set("from", from);

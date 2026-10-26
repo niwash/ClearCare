@@ -3,6 +3,7 @@
 // has loaded. The figures come from GET /statistics/re-assessment; the page only draws them.
 import { JudgementIcon } from "@/components/centre/judgement-icon";
 import { Alert } from "@/components/layout/alert";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { Section } from "@/components/layout/section";
 import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
@@ -28,7 +29,8 @@ export default async function NationalPage() {
 
   return (
     <>
-      <div className="flex max-w-3xl flex-col gap-3">
+      <div className="flex max-w-3xl flex-col items-start gap-3">
+        <Breadcrumb trail={[]} current="National Figures" />
         <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">
           Re-assessment at the next inspection
         </h1>

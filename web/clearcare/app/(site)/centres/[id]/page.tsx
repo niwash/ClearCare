@@ -4,6 +4,7 @@ import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
+import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import {
@@ -129,34 +130,24 @@ function CentreHero({ centre, from }: { centre: CentreDetail; from?: string }) {
     <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
         <div className="flex min-w-0 flex-col gap-2.5">
-          {/* "Search results" goes back to the search the user came from, or to an empty search
-              when there isn't one (a shared link, the start page). */}
-          <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
-            <ol className="flex flex-wrap gap-x-1.5">
-              <li>
-                <Link href="/home" className="inline-block py-1 tap-target">
-                  Home
-                </Link>{" "}
-                <span aria-hidden>›</span>
-              </li>
-              <li>
-                <Link href={from !== undefined ? searchHref(from) : "/search"} className="inline-block py-1 tap-target">
-                  Search results
-                </Link>{" "}
-                <span aria-hidden>›</span>
-              </li>
-              <li>
-                <Link href={`/search?${new URLSearchParams({ county: centre.county })}`} className="inline-block py-1 tap-target">
-                  Co. {centre.county}
-                </Link>{" "}
-                <span aria-hidden>›</span>
-              </li>
-              {/* The same padding as the links, so the name lines up with them. */}
-              <li aria-current="page" className="py-1 tap-target">
-                {centre.centre_name}
-              </li>
-            </ol>
-          </nav>
+          {/* The breadcrumb is where the home sits in the site, the same however the user got here.
+              The way back to the search they came from is a link of its own, only when there is one
+              (not from a shared link or the start page). On phones it has a line of its own, so it
+              isn't read as part of the breadcrumb's "‹ Co. …". */}
+          <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6">
+            <Breadcrumb
+              trail={[
+                SEARCH_CRUMB,
+                { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
+              ]}
+              current={centre.centre_name}
+            />
+            {from !== undefined && (
+              <Link href={searchHref(from)} className="inline-block py-1 text-sm tap-target">
+                ← Back to your results
+              </Link>
+            )}
+          </div>
           <h1 id="centre-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
             {centre.centre_name}
           </h1>

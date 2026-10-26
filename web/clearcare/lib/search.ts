@@ -62,8 +62,9 @@ export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
   return fetchCentres(url, query);
 }
 
-// A centre page opened from the results gets the search as ?from=, so its breadcrumb can go back to it.
-// Only the search's own parameters are kept, so ?from= can't point the breadcrumb anywhere else.
+// A centre page opened from the results gets the search as ?from=, so its "Back to your results"
+// link can go back to it. Only the search's own parameters are kept, so ?from= can't point that
+// link anywhere else.
 export function searchHref(from: string) {
   const given = new URLSearchParams(from);
   const params = new URLSearchParams();

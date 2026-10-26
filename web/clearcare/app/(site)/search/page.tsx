@@ -1,5 +1,6 @@
 // app/search/page.tsx
 import { Alert } from "@/components/layout/alert";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { CardResult } from "@/components/search/card-result";
 import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
@@ -120,13 +121,7 @@ function SearchHero({ query }: { query: SearchQuery }) {
     <section aria-labelledby="search-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
         <div className="flex flex-col items-start gap-3">
-          <div className="flex items-center gap-2 text-sm text-ink-muted">
-            <Link href="/home" className="inline-block py-1 text-ink tap-target">
-              Home
-            </Link>
-            <span aria-hidden>/</span>
-            <span>Search</span>
-          </div>
+          <Breadcrumb trail={[]} current="Search for Homes" />
           <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
             {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
           </h1>
