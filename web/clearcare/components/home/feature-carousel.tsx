@@ -5,7 +5,7 @@
 // design the same list is a grid with nothing hidden or moving, so the switch is CSS only.
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DraftLabel } from "@/components/guides/guide-header";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { getGuide, type Guide } from "@/lib/guides";
@@ -64,6 +64,8 @@ const arrowClass =
 export function FeatureCarousel() {
   const listRef = useRef<HTMLUListElement>(null);
   const [current, setCurrent] = useState(0);
+  const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(settleTimer.current), []);
 
   // The list is the offset parent of its items (it is relative), so offsetLeft is the scroll position.
   // Smooth scrolling comes from the list's CSS, which turns it off for reduced motion. The arrows
@@ -78,8 +80,15 @@ export function FeatureCarousel() {
     listRef.current!.scrollTo({ left: item.offsetLeft });
   }
 
-  // Swiping or scrolling moves the list directly, so the current slide is read back from it.
+  // Swiping or scrolling moves the list directly, so the current slide is read back from it, but
+  // only once the scroll settles. Read on every scroll event, the dots would flick through each
+  // slide passed on the way, and back to the old one first, after an arrow or dot sets the target.
   function onScroll() {
+    clearTimeout(settleTimer.current);
+    settleTimer.current = setTimeout(readCurrent, 100);
+  }
+
+  function readCurrent() {
     const list = listRef.current;
     if (!list) return;
     const items = Array.from(list.children) as HTMLElement[];

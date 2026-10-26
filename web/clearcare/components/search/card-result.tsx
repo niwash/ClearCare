@@ -5,7 +5,7 @@ import Link from "next/link";
 
 interface CardResultProps {
   centre: CentreSummary;
-  from: string; // the search this card is shown in, for the centre page's breadcrumb
+  from: string; // the search this card is shown in, for the centre page's "Back to your results" link
 }
 
 // The register's address usually starts with the centre's name, which the card already shows.
