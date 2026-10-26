@@ -31,7 +31,7 @@ Name branches `CCARE-<n>-short-name`, e.g. `CCARE-20-start-frontend`.
 GitHub Actions runs these checks on every pull request. Run them locally before opening one:
 
 - `pipeline/`: `uv sync && uv run pytest && uv run ruff check . && uv run ruff format --check . && uv run pyright`. The database tests need Docker. Without Docker, skip them with `uv run pytest -m "not database"`.
-- `web/clearcare/`: `npm ci && npm run lint && npm run build`
+- `web/clearcare/`: `npm ci && npm run lint && npm test && npm run build`
 - `api/`: `./mvnw verify`. The tests need Docker, like the pipeline's database tests.
 
 ## Local database
