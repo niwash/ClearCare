@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { actionLinkClass, comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
@@ -87,6 +88,7 @@ function ResourcesHero() {
   return (
     <section aria-labelledby="resources-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-10 md:px-8 md:py-16">
+        <Breadcrumb trail={[]} current="Resources" />
         <h1 id="resources-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
           Resources
         </h1>

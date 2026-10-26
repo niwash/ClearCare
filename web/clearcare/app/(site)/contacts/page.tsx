@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Breadcrumb } from "@/components/layout/breadcrumb";
 import type { ReactNode } from "react";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { fullWidthClass } from "@/components/ui/classes";
@@ -305,19 +305,7 @@ function ContactsHero() {
   return (
     <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-8 md:px-8 md:py-12">
-        <nav aria-label="Breadcrumb" className="text-sm text-ink-muted">
-          <ol className="flex flex-wrap gap-x-1.5">
-            <li>
-              <Link href="/home" className="inline-block py-1 tap-target">
-                Home
-              </Link>{" "}
-              <span aria-hidden>›</span>
-            </li>
-            <li aria-current="page" className="py-1 tap-target">
-              Contacts
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumb trail={[]} current="Contacts" />
         <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
           Need to talk to someone?
         </h1>
