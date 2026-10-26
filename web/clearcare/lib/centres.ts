@@ -4,9 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
-import { MOCK_CENTRE_PHONES, MOCK_CENTRE_PRICES, MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
-import { SAMPLE_REPORTS, SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
-import { apiUrl, mockDataEnabled, type CentreSummary, type RegisterSnapshot } from "./search";
+import { apiUrl, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
 
@@ -178,7 +176,6 @@ export type CentreLookup =
 // Cached so the page and its metadata make one request between them.
 export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   if (!/^\d+$/.test(id)) return { status: "not-found" }; // centre IDs are digits only
-  if (mockDataEnabled()) return mockCentre(id);
   const url = apiUrl();
   if (!url) return { status: "unavailable", httpStatus: 0 };
 
@@ -193,22 +190,6 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   const { centre, register_snapshot, contract_price, home_type }: CentreResult = await response.json();
   return { status: "found", centre: { ...centre, register_snapshot, contract_price, home_type } };
 });
-
-function mockCentre(id: string): CentreLookup {
-  const centre = MOCK_CENTRES.find((c) => c.centre_id === id);
-  if (!centre) return { status: "not-found" };
-  const price = MOCK_CENTRE_PRICES[id];
-  return {
-    status: "found",
-    centre: {
-      ...centre,
-      centre_phone: MOCK_CENTRE_PHONES[id] ?? null,
-      register_snapshot: MOCK_SNAPSHOT,
-      contract_price: price?.contract_price ?? null,
-      home_type: price?.home_type ?? null,
-    },
-  };
-}
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
 interface CentreReportsResult {
@@ -250,9 +231,8 @@ async function fetchJson<T>(url: string): Promise<T | null> {
 }
 
 // null when the home has no reports in ClearCare, or they can't be read right now; the page
-// then points to hiqa.ie. With USE_MOCK_DATA=true, Elm Hall (34) has the wireframe's sample reports.
+// then points to hiqa.ie.
 export const getCentreReports = cache(async (id: string): Promise<CentreReports | null> => {
-  if (mockDataEnabled()) return id === SAMPLE_REPORTS_CENTRE_ID ? SAMPLE_REPORTS : null;
   const url = apiUrl();
   if (!url) return null;
 
