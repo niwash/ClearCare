@@ -10,8 +10,6 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
       <SiteFooter />
-      {/* Room below the footer, so the floating menu button never covers its last line. */}
-      <div aria-hidden className="h-20 lg:hidden adult:hidden" />
     </>
   );
 }

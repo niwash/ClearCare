@@ -1,9 +1,6 @@
 // lib/search.ts
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
-// searchCentres calls the API at API_URL. For local work without the API, set USE_MOCK_DATA=true
-// (e.g. in .env.local) to answer from the invented mock register instead, using the same rules.
-// With neither, search reports that it isn't working rather than showing invented centres.
-import { MOCK_CENTRES, MOCK_SNAPSHOT } from "./mock-centres";
+// searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 
 export interface CentreSummary {
   centre_id: string;
@@ -30,7 +27,7 @@ export interface SearchResponse {
   register_snapshot: RegisterSnapshot;
 }
 
-// Straight from the URL, so the API (or the mock) does the validating.
+// Straight from the URL, so the API does the validating.
 export interface SearchQuery {
   name?: string;
   address?: string;
@@ -54,25 +51,20 @@ export const COUNTIES = [
   "Offaly", "Roscommon", "Sligo", "Tipperary", "Waterford", "Westmeath", "Wexford", "Wicklow",
 ];
 
-// Only an explicit switch, so production can never show the invented centres as if they were real.
-export function mockDataEnabled() {
-  return process.env.USE_MOCK_DATA === "true";
-}
-
 // The API's base URL, or null if it isn't set.
 export function apiUrl() {
   return process.env.API_URL?.replace(/\/$/, "") || null;
 }
 
 export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
-  if (mockDataEnabled()) return mockSearch(query);
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
   return fetchCentres(url, query);
 }
 
-// A centre page opened from the results gets the search as ?from=, so its breadcrumb can go back to it.
-// Only the search's own parameters are kept, so ?from= can't point the breadcrumb anywhere else.
+// A centre page opened from the results gets the search as ?from=, so its "Back to your results"
+// link can go back to it. Only the search's own parameters are kept, so ?from= can't point that
+// link anywhere else.
 export function searchHref(from: string) {
   const given = new URLSearchParams(from);
   const params = new URLSearchParams();
@@ -121,80 +113,4 @@ export function looksLikeEircode(text: string) {
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.
 export function formatEircode(eircode: string) {
   return eircode.length === 7 ? `${eircode.slice(0, 3)} ${eircode.slice(3)}` : eircode;
-}
-
-// --- Mock: follows the rules in the contract so the page can be tested before the API exists ---
-
-// Accents and apostrophes are ignored, so "aras" finds "Áras" and "josephs" finds "Joseph's".
-function words(text: string) {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .replace(/['’]/g, "")
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter(Boolean);
-}
-
-// Each typed word has to match the start of a word in the text, in any order.
-function matchesWords(typed: string, text: string) {
-  const target = words(text);
-  return words(typed).every((word) => target.some((candidate) => candidate.startsWith(word)));
-}
-
-// The API's order: folded name compared character by character (so a space comes before any
-// letter), then centre ID as a number.
-function byFoldedName(a: CentreSummary, b: CentreSummary) {
-  const keyA = words(a.centre_name).join(" ");
-  const keyB = words(b.centre_name).join(" ");
-  if (keyA !== keyB) return keyA < keyB ? -1 : 1;
-  return Number(a.centre_id) - Number(b.centre_id);
-}
-
-function wholeNumber(value: string | undefined, fallback: number) {
-  if (!value) return fallback;
-  return /^\d+$/.test(value) ? Number(value) : NaN;
-}
-
-function mockSearch(query: SearchQuery): SearchResult {
-  const badRequest = (detail: string): SearchResult => ({ ok: false, status: 400, detail });
-
-  const page = wholeNumber(query.page, 1);
-  if (!(page >= 1)) return badRequest("page must be a whole number of 1 or more");
-  const pageSize = wholeNumber(query.page_size, 20);
-  if (!(pageSize >= 1 && pageSize <= 50)) return badRequest("page_size must be between 1 and 50");
-
-  // Case-sensitive, like the API: "dublin" is refused.
-  for (const key of ["name", "address"] as const) {
-    if ((query[key]?.length ?? 0) > MAX_TEXT_LENGTH) return badRequest(`${key} must be at most ${MAX_TEXT_LENGTH} characters`);
-  }
-
-  const county = query.county;
-  if (county && !COUNTIES.includes(county)) return badRequest("county must be spelt as on the register, such as Dublin");
-
-  const eircode = query.eircode?.replace(/\s+/g, "").toUpperCase();
-  if (eircode && !looksLikeEircode(eircode)) {
-    return badRequest("eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX");
-  }
-
-  const matches = MOCK_CENTRES.filter(
-    (centre) =>
-      (!query.name || matchesWords(query.name, centre.centre_name)) &&
-      (!query.address || matchesWords(query.address, centre.address)) &&
-      (!county || centre.county === county) &&
-      (!eircode ||
-        (centre.eircode !== null &&
-          (eircode.length === 7 ? centre.eircode === eircode : centre.eircode.startsWith(eircode)))),
-  ).sort(byFoldedName);
-
-  return {
-    ok: true,
-    data: {
-      centres: matches.slice((page - 1) * pageSize, page * pageSize),
-      page,
-      page_size: pageSize,
-      total: matches.length,
-      register_snapshot: MOCK_SNAPSHOT,
-    },
-  };
 }

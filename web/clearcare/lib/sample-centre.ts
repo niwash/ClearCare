@@ -12,8 +12,7 @@ import {
   type Judgement,
   type Regulation,
 } from "./centres";
-import { SAMPLE_REPORTS_CENTRE_ID } from "./sample-reports";
-import { mockDataEnabled, searchCentres } from "./search";
+import { searchCentres } from "./search";
 
 // Homes tried before giving up, in case the first picks have no reports loaded yet.
 const ATTEMPTS = 5;
@@ -47,8 +46,6 @@ export async function getSampleCentre(total: number | null): Promise<SampleCentr
 }
 
 async function randomCentreId(total: number | null): Promise<string | null> {
-  // Elm Hall is the only invented home with sample reports.
-  if (mockDataEnabled()) return SAMPLE_REPORTS_CENTRE_ID;
   if (!total) return null;
   const page = 1 + Math.floor(Math.random() * total);
   const result = await searchCentres({ page: String(page), page_size: "1" });

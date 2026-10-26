@@ -9,6 +9,9 @@ export type Guide = {
   // are in components/home/feature-carousel.tsx, except navigate.jpg: Andrea Piacquadio,
   // https://www.pexels.com/photo/cheerful-senior-mother-and-adult-daughter-using-smartphone-together-3791664/
   photo: string;
+  // Set when the site header's menu links to the guide, making it one of the site's main pages:
+  // its breadcrumb goes straight to Home, though the resources page still lists it.
+  inMenu?: true;
 };
 
 // In the order a family needs them: the overview, what to ask, the reports, then paying.
@@ -39,6 +42,7 @@ export const GUIDES = [
     summary: "How the scheme works, who qualifies and how to apply.",
     photo: "/home/fair-deal.jpg",
     status: "draft",
+    inMenu: true,
   },
   {
     slug: "using-clearcare",
