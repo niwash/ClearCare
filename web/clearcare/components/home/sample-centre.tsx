@@ -87,8 +87,10 @@ export async function SampleCentre({ total }: { total: number | null }) {
 
       <div className="flex flex-col gap-2 border-t border-line-soft px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
         <Link href={`/centres/${centre.centre_id}`} className="tap-target">See full record<span className="sr-only"> for {centre.centre_name}</span> →</Link>
-        {/* A plain link, so the browser reloads the page and the server picks again. */}
-        <a href="/home" className="tap-target">Show another home</a>
+        {/* A plain link, so the browser reloads the page and the server picks again. <Link> would
+            reuse the page it already has. */}
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a href="/" className="tap-target">Show another home</a>
       </div>
     </section>
   );

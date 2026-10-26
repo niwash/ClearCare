@@ -2,7 +2,6 @@ import Link from "next/link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { comingSoonClass } from "@/components/ui/classes";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)".
 type NavEntry = { label: string; href: string | null };
@@ -42,7 +41,7 @@ export function SiteHeader() {
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
-          <Link href="/home" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
+          <Link href="/" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
             ClearCare
           </Link>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
@@ -50,14 +49,14 @@ export function SiteHeader() {
           <div className="flex flex-auto items-center justify-end gap-2">
             <DesignToggle />
             <ThemeToggle />
-            {/* Left out on phones, where the row has no room for it until log in exists. */}
-            <span
-              aria-disabled="true"
-              title="Coming soon"
-              className={`hidden h-11 items-center px-3 text-sm font-semibold sm:flex ${comingSoonClass}`}
+            {/* Filled, so it reads as a button beside the outlined toggles. Left out on phones, where
+                the row has no room for it; the menu has it instead. */}
+            <Link
+              href="/login"
+              className="hidden h-11 items-center rounded-md bg-primary px-4 text-sm font-semibold text-on-primary no-underline hover:bg-primary-hover hover:text-on-primary sm:flex"
             >
-              Log in (coming soon)
-            </span>
+              Log in
+            </Link>
           </div>
         </div>
       </div>
@@ -71,6 +70,9 @@ export function SiteHeader() {
               <NavItem item={item} className="flex min-h-11 items-center text-base" />
             </li>
           ))}
+          <li className="border-t border-line-soft">
+            <NavItem item={{ label: "Log in", href: "/login" }} className="flex min-h-11 items-center text-base" />
+          </li>
         </ul>
       </MobileMenu>
 
