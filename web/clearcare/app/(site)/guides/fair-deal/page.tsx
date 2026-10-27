@@ -5,6 +5,8 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { ContentsNav, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
+import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
+import { Icon } from "@/components/ui/icons";
 
 const guide = getGuide("fair-deal");
 
@@ -36,42 +38,49 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 
 const COVERED = ["Your room and bed", "All your meals", "Laundry", "The nursing and personal care you need"];
 
-const CONTACTS: { who: string; what: string; link?: { href: string; label: string }; phone?: string; note?: string }[] = [
+const CONTACTS: { who: string; kind: OrganisationKind; what: string; link?: { href: string; label: string }; phone?: string; note?: string }[] = [
   {
     who: "HSE Nursing Homes Support Scheme",
+    kind: "public-body",
     what: "Applications, financial assessments, the nursing home loan",
     link: { href: "https://www.hse.ie/nhss/", label: "hse.ie/nhss" },
   },
   {
     who: "Your local Nursing Homes Support Office",
+    kind: "public-body",
     what: "Starting your application, collecting forms",
     link: { href: HSE_OFFICES, label: "Find your local office on hse.ie" },
   },
   {
     who: "HSE Live",
+    kind: "public-body",
     what: "Help with the application form and general Fair Deal questions",
     phone: "1800 700 700",
     note: "Free. Monday to Friday 8am to 8pm, Saturday 9am to 5pm",
   },
   {
     who: "Citizens Information",
+    kind: "public-body",
     what: "Free, independent advice on Fair Deal",
     link: { href: "https://www.citizensinformation.ie", label: "citizensinformation.ie" },
     phone: "0818 07 4000",
   },
   {
     who: "ALONE",
+    kind: "charity",
     what: "Free support and advocacy for older people",
     link: { href: "https://alone.ie", label: "alone.ie" },
     phone: "0818 222 024",
   },
   {
     who: "Age Action Ireland",
+    kind: "charity",
     what: "Information and support for older people",
     link: { href: "https://www.ageaction.ie", label: "ageaction.ie" },
   },
   {
     who: "A solicitor",
+    kind: "legal",
     what: "Advice on the nursing home loan, Power of Attorney, and estate planning",
     link: { href: "https://www.lawsociety.ie", label: "lawsociety.ie" },
   },
@@ -535,13 +544,20 @@ export default function FairDealGuide() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {CONTACTS.map((contact) => (
             <li key={contact.who} className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-5">
-              <h3 className="font-semibold md:text-lg">{contact.who}</h3>
+              <h3 className="flex items-center gap-3 font-semibold md:text-lg">
+                <OrganisationIcon kind={contact.kind} size="large" />
+                {contact.who}
+              </h3>
               <p className="text-ink-muted">{contact.what}</p>
               <div className="mt-auto flex flex-col gap-1 pt-1">
                 {contact.link && <Source href={contact.link.href}>{contact.link.label}</Source>}
                 {/* A tap-to-call link, for phones. */}
                 {contact.phone && (
-                  <a href={`tel:${contact.phone.replaceAll(" ", "")}`} className="w-fit font-semibold tap-target">
+                  <a
+                    href={`tel:${contact.phone.replaceAll(" ", "")}`}
+                    className="inline-flex w-fit items-center gap-1.5 font-semibold tap-target"
+                  >
+                    <Icon name="phone" />
                     Call {contact.phone}
                   </a>
                 )}

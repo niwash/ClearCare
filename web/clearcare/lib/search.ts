@@ -66,19 +66,6 @@ export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
   return fetchCentres(url, query);
 }
 
-// A centre page opened from the results gets the search as ?from=, so its "Back to your results"
-// link can go back to it. Only the search's own parameters are kept, so ?from= can't point that
-// link anywhere else.
-export function searchHref(from: string) {
-  const given = new URLSearchParams(from);
-  const params = new URLSearchParams();
-  for (const key of ["name", "address", "county", "eircode", "page"]) {
-    const value = given.get(key)?.trim();
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `/search?${search}` : "/search";
-}
 
 // What to tell the user when the data can't be read: the same words on every page.
 export function unavailableMessage(status: number) {

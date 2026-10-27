@@ -3,12 +3,18 @@ import { Suspense } from "react";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
 import { NewsBanner } from "@/components/home/news-banner";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
+import { SiteFeatures } from "@/components/home/site-features";
+import { SiteFigures } from "@/components/home/site-figures";
 import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { IconCircle } from "@/components/ui/icon-circle";
+import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
+import { getReAssessmentStatistics } from "@/lib/statistics";
 
 export default async function StartPage() {
-  // No filters and one result per page: only total is needed.
-  const count = await searchCentres({ page_size: "1" });
+  // No filters and one result per page: only total and the register's date are needed. The
+  // statistics give the figures about reports; the two are read at the same time.
+  const [count, statistics] = await Promise.all([searchCentres({ page_size: "1" }), getReAssessmentStatistics()]);
   const total = count.ok ? count.data.total : null;
 
   return (
@@ -34,16 +40,24 @@ export default async function StartPage() {
 
           {/* Side by side from tablet width, stacked on phones. */}
           <div className="grid w-full gap-4 md:grid-cols-2 md:gap-6">
-            <StatementCard label="Our mission">
+            <StatementCard label="Our Mission" icon="mission">
               To help people make informed decisions, and give informed consent, about nursing home care.
             </StatementCard>
-            <StatementCard label="Our vision">
+            <StatementCard label="Our Vision" icon="vision">
               As Ireland&apos;s older population grows, more families will face this choice. We want every one of
               them to make it informed and prepared.
             </StatementCard>
           </div>
         </div>
       </section>
+
+      <SiteFeatures />
+
+      <SiteFigures
+        homes={total}
+        snapshot={count.ok ? count.data.register_snapshot : null}
+        statistics={statistics.status === "found" ? statistics.statistics : null}
+      />
 
       <NewsBanner />
 
@@ -52,13 +66,6 @@ export default async function StartPage() {
           <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
             Check a nursing home&apos;s record
           </h2>
-          {/* The count comes from the API; without it the sentence still reads. */}
-          <p className="text-ink-muted md:text-lg">
-            We put every publicly available HIQA inspection report for{" "}
-            {total !== null ? `${total} registered ${total === 1 ? "centre" : "centres"}` : "each registered centre"} on
-            one page per home, so you can see how each has done over time, with links to the original reports. Our
-            guides explain each step, from the first conversation to moving in.
-          </p>
 
           {/* Name or Eircode here; the search page works out which. It has address and county too. */}
           <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex gap-2">
@@ -84,7 +91,10 @@ export default async function StartPage() {
         </div>
         {/* self-start: as tall as its words, not stretched to the height of the search column. */}
         <aside className="self-start rounded-lg border border-line bg-surface p-3 text-sm">
-          <h2 className="font-semibold">What this site doesn&apos;t do</h2>
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Icon name="info" className="size-5 text-primary" />
+            What this site doesn&apos;t do
+          </h2>
           <p className="mt-1 text-ink-muted">
             It doesn&apos;t rate or recommend homes, or show free beds. For beds, ask the home or a hospital social
             worker.
@@ -102,9 +112,10 @@ export default async function StartPage() {
 
 // One of the mission and vision cards in the welcome band: the title as the card's heading, in the
 // accent colour, then the statement as plain body text under it. White cards on the tinted band.
-function StatementCard({ label, children }: { label: string; children: React.ReactNode }) {
+function StatementCard({ label, icon, children }: { label: string; icon: IconName; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-6 md:p-8">
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-line bg-surface p-6 md:p-8 adult:items-start">
+      <IconCircle path={ICON_PATHS[icon]} size="large" />
       <h2 className="font-heading text-2xl font-semibold text-primary md:text-3xl">{label}</h2>
       <p className="text-ink-muted md:text-lg">{children}</p>
     </div>

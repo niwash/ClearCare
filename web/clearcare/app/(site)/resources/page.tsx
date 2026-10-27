@@ -6,6 +6,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { actionLinkClass, comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
+import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -18,6 +19,14 @@ type OfficialLink = {
   publisher: string;
   summary: string;
   href: string;
+};
+
+// The kind of each publisher, for its generic icon (components/ui/organisation-icon.tsx).
+const PUBLISHER_KINDS: Record<string, OrganisationKind> = {
+  HSE: "public-body",
+  "Citizens Information": "public-body",
+  "Competition and Consumer Protection Commission": "public-body",
+  HIQA: "regulator",
 };
 
 // Checked 19 Oct 2026.
@@ -164,7 +173,10 @@ function OfficialInformation() {
                 key={link.href}
                 className="relative flex min-h-64 flex-col items-start gap-2 rounded-lg border border-line bg-surface p-5 hover:border-primary"
               >
-                <span className="rounded-md bg-band px-2.5 py-1 text-xs font-semibold text-ink">{link.publisher}</span>
+                <span className="flex items-center gap-2 text-xs font-semibold text-ink">
+                  <OrganisationIcon kind={PUBLISHER_KINDS[link.publisher] ?? "public-body"} />
+                  {link.publisher}
+                </span>
                 <h3 className="font-semibold md:text-lg">{link.title}</h3>
                 <p className="text-ink-muted">{link.summary}</p>
                 {/* mt-auto: the buttons line up along the bottom of each row of cards. */}

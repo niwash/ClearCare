@@ -10,6 +10,7 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
 import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
+import { Icon } from "@/components/ui/icons";
 import { formatDate, type Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import {
@@ -360,7 +361,10 @@ function AboutTheseFigures({ statistics }: { statistics: ReAssessmentStatistics 
           </p>
           <p>
             These figures include inspections up to {formatDate(dataDate)}.{" "}
-            <a href="/national/re-assessment.csv">Download the figures as a spreadsheet (CSV)</a>
+            <a href="/national/re-assessment.csv" className="inline-flex items-center gap-1.5">
+              <Icon name="download" />
+              Download the figures as a spreadsheet (CSV)
+            </a>
           </p>
           <p className="text-small leading-relaxed text-ink-muted">
             The information comes from HIQA inspection reports, reused under the Irish PSI licence (CC BY 4.0).
