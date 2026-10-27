@@ -21,13 +21,14 @@ export default function LoginPage() {
       <Link href="/" className={`${actionLinkClass} w-64 justify-center`}>
         Continue as guest
       </Link>
-      <span
-        aria-disabled="true"
-        title="Coming soon"
+      {/* A disabled button, so screen readers announce it as an unavailable control. */}
+      <button
+        type="button"
+        disabled
         className={`flex h-12 w-64 items-center justify-center font-semibold ${comingSoonClass}`}
       >
         Log in (coming soon)
-      </span>
+      </button>
     </main>
   );
 }

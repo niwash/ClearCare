@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { primaryButtonClass } from "@/components/ui/classes";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)".
 type NavEntry = { label: string; href: string | null };
@@ -50,10 +51,11 @@ export function SiteHeader() {
             <DesignToggle />
             <ThemeToggle />
             {/* Filled, so it reads as a button beside the outlined toggles. Left out on phones, where
-                the row has no room for it; the menu has it instead. */}
+                the row has no room for it; the menu (standard) or the navigation band
+                (adult-centred) has it instead. */}
             <Link
               href="/login"
-              className="hidden h-11 items-center rounded-md bg-primary px-4 text-sm font-semibold text-on-primary no-underline hover:bg-primary-hover hover:text-on-primary sm:flex"
+              className={`${primaryButtonClass} hidden items-center text-sm no-underline hover:text-on-primary sm:flex`}
             >
               Log in
             </Link>
@@ -84,6 +86,11 @@ export function SiteHeader() {
                 <NavItem item={item} className="inline-block py-3" />
               </li>
             ))}
+            {/* Only seen in the adult-centred design on phones, where the header button is hidden and
+                there is no menu. */}
+            <li className="sm:hidden">
+              <NavItem item={{ label: "Log in", href: "/login" }} className="inline-block py-3" />
+            </li>
           </ul>
         </nav>
       </div>

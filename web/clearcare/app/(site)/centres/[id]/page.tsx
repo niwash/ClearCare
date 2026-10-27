@@ -303,7 +303,7 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-sm text-ink-muted">
-        <Link href="/home" className="inline-block py-1 tap-target">
+        <Link href="/" className="inline-block py-1 tap-target">
           Home
         </Link>
       </div>
