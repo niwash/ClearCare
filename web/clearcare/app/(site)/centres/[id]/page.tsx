@@ -154,14 +154,8 @@ const outlineButtonClass = `${actionButtonClass} border border-line bg-surface t
 function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   return (
     <div className="flex flex-col gap-2.5 lg:min-w-60">
-      {/* TODO: Link to the assistant once that page exists. */}
-      <span
-        aria-disabled="true"
-        title="Coming soon"
-        className={`${actionButtonClass} ${comingSoonClass}`}
-      >
-        Ask about this home (coming soon)
-      </span>
+      {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
+          Taken out until then (CCARE-164). */}
       {reports && (
         <a
           href={`/centres/${centre.centre_id}/record.csv`}
