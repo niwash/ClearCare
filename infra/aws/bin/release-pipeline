@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+# Releases a pipeline revision: moves both pipeline schedules to it and
+# records it, with its image, for Terraform (infra/aws/live/release.tf). The
+# schedules' other settings and their state, enabled or not, stay as they are.
+#
+# The four writes succeed together or not at all. Each is tried three times.
+# If one still fails, or the script is stopped, it puts the earlier targets
+# and records back and checks that they are. If that fails too, it prints
+# what is now in place and the command that restores the earlier release.
+#
+# Usage: release-pipeline TASK_DEFINITION_ARN IMAGE
+#
+#   TASK_DEFINITION_ARN  a clearcare-pipeline revision
+#   IMAGE                the image that revision runs, <repository>@sha256:<digest>
+
+set -euo pipefail
+
+[[ $# -eq 2 && $1 == arn:aws:ecs:*:task-definition/clearcare-pipeline:* && $2 == *@sha256:* ]] || {
+  echo "Usage: release-pipeline TASK_DEFINITION_ARN IMAGE (a clearcare-pipeline revision and its image digest)" >&2
+  exit 2
+}
+arn=$1 image=$2
+schedules=(pipeline-daily pipeline-weekly)
+release_record=/clearcare/release/pipeline
+image_record=/clearcare/image/pipeline
+
+attempt() {
+  local try
+  for try in 1 2 3; do
+    "$@" && return 0
+    ((try < 3)) && sleep $((try * 2))
+  done
+  return 1
+}
+
+get_schedule() {
+  aws scheduler get-schedule --group-name clearcare --name "$1" --output json
+}
+
+# update-schedule replaces the whole schedule, so it gets back what
+# get-schedule returned, less the read-only fields, with only the target's
+# revision changed.
+set_schedule() {
+  local definition
+  definition=$(jq --arg arn "$2" 'del(.Arn, .CreationDate, .LastModificationDate)
+    | .Target.EcsParameters.TaskDefinitionArn = $arn' <<<"$1")
+  aws scheduler update-schedule --cli-input-json "$definition" >/dev/null
+}
+
+get_record() {
+  aws ssm get-parameter --name "$1" --query Parameter.Value --output text
+}
+
+set_record() {
+  aws ssm put-parameter --name "$1" --value "$2" --type String --overwrite >/dev/null
+}
+
+# What is in place now. Nothing has changed if any of this fails.
+declare -a before
+for i in "${!schedules[@]}"; do
+  before[i]=$(attempt get_schedule "${schedules[i]}")
+done
+previous_arn=$(attempt get_record "$release_record")
+previous_image=$(attempt get_record "$image_record")
+
+target_of() {
+  get_schedule "$1" | jq -er .Target.EcsParameters.TaskDefinitionArn
+}
+
+# Writes back whatever differs from what was in place before, then checks
+# that everything matches it again. A write that failed may still have been
+# applied, so every value is read rather than assumed.
+put_back() {
+  local i was
+  for i in "${!schedules[@]}"; do
+    was=$(jq -r .Target.EcsParameters.TaskDefinitionArn <<<"${before[i]}")
+    [[ $(attempt target_of "${schedules[i]}" || echo unknown) == "$was" ]] ||
+      attempt set_schedule "${before[i]}" "$was" || true
+  done
+  [[ $(attempt get_record "$release_record" || echo unknown) == "$previous_arn" ]] ||
+    attempt set_record "$release_record" "$previous_arn" || true
+  [[ $(attempt get_record "$image_record" || echo unknown) == "$previous_image" ]] ||
+    attempt set_record "$image_record" "$previous_image" || true
+
+  for i in "${!schedules[@]}"; do
+    was=$(jq -r .Target.EcsParameters.TaskDefinitionArn <<<"${before[i]}")
+    [[ $(attempt target_of "${schedules[i]}" || echo unknown) == "$was" ]] || return 1
+  done
+  [[ $(attempt get_record "$release_record" || echo unknown) == "$previous_arn" ]] || return 1
+  [[ $(attempt get_record "$image_record" || echo unknown) == "$previous_image" ]] || return 1
+}
+
+report() {
+  local name
+  for name in "${schedules[@]}"; do
+    echo "  $name runs $(target_of "$name" 2>/dev/null || echo unknown)" >&2
+  done
+  echo "  $release_record is $(get_record "$release_record" 2>/dev/null || echo unknown)" >&2
+  echo "  $image_record is $(get_record "$image_record" 2>/dev/null || echo unknown)" >&2
+}
+
+released=no
+undo_unless_released() {
+  local status=$?
+  trap '' INT TERM
+  if [[ $released != yes ]]; then
+    echo "release-pipeline: $arn was not released; putting $previous_arn back" >&2
+    if put_back; then
+      echo "release-pipeline: the schedules and records are back at $previous_arn" >&2
+    else
+      echo "release-pipeline: could not put everything back. Now:" >&2
+      report
+      echo "release-pipeline: to restore the earlier release, run:" >&2
+      echo "  infra/aws/bin/release-pipeline $previous_arn $previous_image" >&2
+    fi
+    ((status != 0)) || status=1
+  fi
+  exit "$status"
+}
+trap undo_unless_released EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+for i in "${!schedules[@]}"; do
+  attempt set_schedule "${before[i]}" "$arn"
+  echo "${schedules[i]}: runs $arn"
+done
+attempt set_record "$release_record" "$arn"
+attempt set_record "$image_record" "$image"
+released=yes

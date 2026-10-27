@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Deploys the images CI built for one commit: applies the migrations, moves
+# the API and then the site to the new images, checks both through the load
+# balancer, and only then moves the pipeline schedules to the new pipeline
+# image. Each step runs only if the one before it succeeded.
+#
+# Usage: deploy [--automatic] COMMIT
+#
+#   COMMIT       the full commit hash; CI tagged its images sha-<COMMIT>
+#   --automatic  for the deploy that follows a build: exits 0 without
+#                changing anything while deploys are off, or when main has
+#                moved past COMMIT, whose own build deploys it instead
+#
+# Runs only while deploys are enabled (infra/aws/live/release.tf), and not
+# while a pipeline task is running, which could write during a migration.
+
+set -euo pipefail
+
+automatic=no
+if [[ ${1:-} == --automatic ]]; then
+  automatic=yes
+  shift
+fi
+[[ $# -eq 1 && $1 =~ ^[0-9a-f]{40}$ ]] || { echo "Usage: deploy [--automatic] COMMIT (the full 40-character hash)" >&2; exit 2; }
+commit=$1
+bin=$(dirname "$0")
+
+# Leaves without a deploy: quietly for the automatic deploy, as a failure
+# when someone asked for this one.
+not_now() {
+  if [[ $automatic == yes ]]; then
+    echo "deploy: not deploying $commit: $*"
+    exit 0
+  fi
+  echo "deploy: $*" >&2
+  exit 1
+}
+
+gate=$(aws ssm get-parameter --name /clearcare/gate/deploy --query Parameter.Value --output text)
+[[ $gate == enabled ]] || not_now "deploys are off: /clearcare/gate/deploy is '$gate' (infra/aws/README.md)"
+
+if [[ $automatic == yes ]]; then
+  main=$(git ls-remote origin refs/heads/main | cut -f1)
+  [[ $main == "$commit" ]] || not_now "main is now at $main"
+fi
+
+running=$(aws ecs list-tasks --cluster clearcare --family clearcare-pipeline \
+  --desired-status RUNNING --query 'taskArns' --output text)
+[[ -z $running || $running == None ]] ||
+  { echo "deploy: a pipeline task is running ($running); deploy once it has stopped" >&2; exit 1; }
+
+region=${AWS_REGION:-$(aws configure get region)}
+registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$region.amazonaws.com"
+
+# Terraform builds its own revisions from these records (infra/aws/live/release.tf).
+record() {
+  aws ssm put-parameter --name "/clearcare/image/$1" --value "$2" \
+    --type String --overwrite >/dev/null
+}
+
+# Runs a step in the background and passes a cancellation on to it, so that
+# the step cleans up (run-task stops its task, release-pipeline puts the
+# schedules back) instead of being left half done.
+in_background() {
+  "$@" &
+  child=$!
+  trap 'kill -TERM "$child" 2>/dev/null; wait "$child"; exit 143' INT TERM
+  wait "$child"
+  trap - INT TERM
+}
+
+image() {
+  local digest
+  digest=$(aws ecr describe-images --repository-name "clearcare/$1" \
+    --image-ids "imageTag=sha-$commit" --query 'imageDetails[0].imageDigest' --output text)
+  [[ $digest == sha256:* ]] || { echo "deploy: no $1 image tagged sha-$commit" >&2; exit 1; }
+  echo "$registry/clearcare/$1@$digest"
+}
+
+# Every image first, so a missing one stops the deploy before anything changes.
+migrate_image=$(image migrate)
+api_image=$(image api)
+web_image=$(image web)
+pipeline_image=$(image pipeline)
+printf '%s\n' "$migrate_image" "$api_image" "$web_image" "$pipeline_image"
+
+previous=$(aws ecs describe-services --cluster clearcare --services api web \
+  --query 'services[].[serviceName, taskDefinition]' --output text)
+
+migrate=$("$bin/register-revision" migrate "$migrate_image")
+in_background "$bin/run-task" --timeout 20 "migrate:${migrate##*:}"
+record migrate "$migrate_image"
+
+api=$("$bin/register-revision" api "$api_image")
+"$bin/update-service" api "$api"
+web=$("$bin/register-revision" web "$web_image")
+"$bin/update-service" web "$web"
+
+if ! "$bin/smoke-check"; then
+  echo "deploy: the new revisions run but fail the smoke check. Before this deploy:" >&2
+  echo "$previous" >&2
+  echo "deploy: run AWS rollback with those revisions to go back." >&2
+  exit 1
+fi
+
+# release-pipeline records the pipeline image together with the revision.
+pipeline=$("$bin/register-revision" pipeline "$pipeline_image")
+in_background "$bin/release-pipeline" "$pipeline" "$pipeline_image"

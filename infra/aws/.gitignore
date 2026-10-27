@@ -1,0 +1,7 @@
+# Terraform's working files and state. State lives in the state bucket; the
+# bootstrap state is copied there as well (README.md).
+.terraform/
+*.tfstate
+*.tfstate.*
+# Real values, which name the account and people's email addresses.
+terraform.tfvars

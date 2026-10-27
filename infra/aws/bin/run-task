@@ -1,0 +1,148 @@
+#!/usr/bin/env bash
+# Runs one ClearCare one-off task and waits for it to stop. Prints the end of
+# each container's log and exits 0 only if every container exited with 0.
+# If this script is stopped or fails before the task has finished, it stops
+# the task as well.
+#
+# Usage: run-task [--container NAME] [--set NAME=VALUE]... [--timeout MINUTES]
+#                 FAMILY[:REVISION] [COMMAND...]
+#
+#   FAMILY     pipeline, migrate or restore. Without a revision, the newest
+#              one runs.
+#   COMMAND    replaces the container's command, for example
+#              clearcare_pipeline.load_register --data-dir /tmp
+#   --container  the container that COMMAND and --set apply to; FAMILY by
+#              default. Restore's dump key is set on its download container.
+#   --set      sets an environment variable in that container
+#   --timeout  stops the task and fails after this many minutes (default 60)
+#
+# migrate runs only while deploys are enabled, and pipeline only while the
+# pipeline is (infra/aws/live/release.tf).
+#
+# Needs the AWS CLI with credentials for the account, and jq.
+
+set -euo pipefail
+
+usage="Usage: run-task [--container NAME] [--set NAME=VALUE]... [--timeout MINUTES] FAMILY[:REVISION] [COMMAND...]"
+cluster=clearcare
+container=
+timeout_minutes=60
+environment='[]'
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --container) container=$2; shift 2 ;;
+    --set)
+      [[ $2 == *=* ]] || { echo "run-task: --set expects NAME=VALUE, got '$2'" >&2; exit 2; }
+      environment=$(jq -c --arg name "${2%%=*}" --arg value "${2#*=}" '. + [{name: $name, value: $value}]' <<<"$environment")
+      shift 2 ;;
+    --timeout) timeout_minutes=$2; shift 2 ;;
+    -*) echo "run-task: unknown option $1" >&2; exit 2 ;;
+    *) break ;;
+  esac
+done
+
+[[ $# -ge 1 ]] || { echo "$usage" >&2; exit 2; }
+task=$1; shift
+family=${task%%:*}
+case $family in
+  migrate) gate=deploy ;;
+  pipeline) gate=pipeline ;;
+  restore) gate= ;;
+  *) echo "run-task: FAMILY must be pipeline, migrate or restore, got '$family'" >&2; exit 2 ;;
+esac
+
+if [[ -n $gate ]]; then
+  state=$(aws ssm get-parameter --name "/clearcare/gate/$gate" --query Parameter.Value --output text)
+  if [[ $state != enabled ]]; then
+    echo "run-task: $family tasks are off: /clearcare/gate/$gate is '$state' (infra/aws/README.md)" >&2
+    exit 1
+  fi
+fi
+
+# No override at all unless one was asked for: ECS rejects an override for a
+# container the task does not have.
+overrides='{"containerOverrides": []}'
+if [[ $# -gt 0 || $environment != '[]' ]]; then
+  container=${container:-$family}
+  names=$(aws ecs describe-task-definition --task-definition "clearcare-$task" \
+    --query 'taskDefinition.containerDefinitions[].name' --output json)
+  if ! jq -e --arg name "$container" 'index($name) != null' <<<"$names" >/dev/null; then
+    echo "run-task: clearcare-$task has no container '$container'; it has $(jq -r 'join(", ")' <<<"$names")" >&2
+    exit 2
+  fi
+  override=$(jq -c -n --arg name "$container" --argjson environment "$environment" \
+    '{name: $name} + (if $environment == [] then {} else {environment: $environment} end)')
+  if [[ $# -gt 0 ]]; then
+    # NUL-separated on stdin, so that jq does not read the command's options.
+    command=$(printf '%s\0' "$@" | jq -c -R -s 'split("\u0000")[:-1]')
+    override=$(jq -c --argjson command "$command" '. + {command: $command}' <<<"$override")
+  fi
+  overrides="{\"containerOverrides\": [$override]}"
+fi
+
+# Terraform records each family's subnets and security group (ecs.tf).
+network=$(aws ssm get-parameter --name "/clearcare/network/$family" \
+  --query Parameter.Value --output text)
+
+task_arn=$(aws ecs run-task \
+  --cluster "$cluster" \
+  --task-definition "clearcare-$task" \
+  --launch-type FARGATE \
+  --platform-version 1.4.0 \
+  --network-configuration "$network" \
+  --overrides "$overrides" \
+  --enable-ecs-managed-tags \
+  --propagate-tags TASK_DEFINITION \
+  --started-by run-task \
+  --query 'tasks[0].taskArn' --output text)
+if [[ -z $task_arn || $task_arn == None ]]; then
+  echo "run-task: ECS did not start clearcare-$task" >&2
+  exit 1
+fi
+echo "Started $task_arn"
+
+# From here on, leaving early stops the task, keeping this script's status.
+finished=no
+stop_reason="run-task stopped before the task finished"
+stop_unfinished() {
+  local status=$?
+  if [[ $finished != yes ]]; then
+    echo "run-task: stopping $task_arn: $stop_reason" >&2
+    aws ecs stop-task --cluster "$cluster" --task "$task_arn" --reason "$stop_reason" >/dev/null ||
+      echo "run-task: could not stop $task_arn; stop it in the ECS console" >&2
+  fi
+  exit "$status"
+}
+trap stop_unfinished EXIT
+trap 'stop_reason="run-task was cancelled"; exit 130' INT
+trap 'stop_reason="run-task was cancelled"; exit 143' TERM
+
+deadline=$((SECONDS + timeout_minutes * 60))
+until [[ $(aws ecs describe-tasks --cluster "$cluster" --tasks "$task_arn" \
+  --query 'tasks[0].lastStatus' --output text) == STOPPED ]]; do
+  if ((SECONDS > deadline)); then
+    stop_reason="run-task timeout after $timeout_minutes minutes"
+    exit 1
+  fi
+  # In the background, so that a signal is handled at once, not after it.
+  sleep 15 &
+  wait $!
+done
+finished=yes
+
+description=$(aws ecs describe-tasks --cluster "$cluster" --tasks "$task_arn" --query 'tasks[0]' --output json)
+task_id=${task_arn##*/}
+for name in $(jq -r '.containers[].name' <<<"$description"); do
+  echo "--- $name: last 200 log lines"
+  # The stream name follows awslogs-stream-prefix in the task definition.
+  aws logs get-log-events --log-group-name "/clearcare/$family" \
+    --log-stream-name "$family/$name/$task_id" --limit 200 \
+    --query 'events[].message' --output json 2>/dev/null | jq -r '.[]' ||
+    echo "(no log)"
+done
+
+echo "--- Stopped: $(jq -r '.stoppedReason // "no reason given"' <<<"$description")"
+jq -r '.containers[] | "\(.name): exit code \(.exitCode // "none") \(.reason // "")"' <<<"$description"
+# A container that never ran has no exit code, which counts as a failure.
+jq -e 'all(.containers[]; .exitCode == 0)' <<<"$description" >/dev/null
