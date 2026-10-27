@@ -7,6 +7,7 @@ import { Alert } from "@/components/layout/alert";
 import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
@@ -18,14 +19,14 @@ import {
   type CentreReports,
 } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
-import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
+import { formatEircode, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface CentrePageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ regulations?: string; inspections?: string; from?: string }>;
+  searchParams: Promise<{ regulations?: string; inspections?: string }>;
 }
 
 export async function generateMetadata({ params }: CentrePageProps) {
@@ -37,7 +38,7 @@ export async function generateMetadata({ params }: CentrePageProps) {
 
 export default async function CentrePage({ params, searchParams }: CentrePageProps) {
   const { id } = await params;
-  const { regulations, inspections, from } = await searchParams;
+  const { regulations, inspections } = await searchParams;
   const lookup = await getCentre(id);
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
@@ -46,7 +47,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHero centre={centre} from={from} />
+      <CentreHero centre={centre} />
 
       <CentreFacts centre={centre} reports={reports} />
 
@@ -73,7 +74,6 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
             trails={reports.trails}
             showAll={regulations === "all"}
             showAllInspections={inspections === "all"}
-            from={from}
           />
 
           {reports.trails.map((trail) => (
@@ -125,29 +125,19 @@ const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosin
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
 // home's name on a band of brand colour (brand-band, globals.css).
-function CentreHero({ centre, from }: { centre: CentreDetail; from?: string }) {
+function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
         <div className="flex min-w-0 flex-col gap-2.5">
-          {/* The breadcrumb is where the home sits in the site, the same however the user got here.
-              The way back to the search they came from is a link of its own, only when there is one
-              (not from a shared link or the start page). On phones it has a line of its own, so it
-              isn't read as part of the breadcrumb's "‹ Co. …". */}
-          <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6">
-            <Breadcrumb
-              trail={[
-                SEARCH_CRUMB,
-                { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
-              ]}
-              current={centre.centre_name}
-            />
-            {from !== undefined && (
-              <Link href={searchHref(from)} className="inline-block py-1 text-sm tap-target">
-                ← Back to your results
-              </Link>
-            )}
-          </div>
+          {/* Where the home sits in the site, the same however the user got here. */}
+          <Breadcrumb
+            trail={[
+              SEARCH_CRUMB,
+              { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
+            ]}
+            current={centre.centre_name}
+          />
           <h1 id="centre-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
             {centre.centre_name}
           </h1>
@@ -178,18 +168,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
           download
           className={outlineButtonClass}
         >
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4 shrink-0"
-          >
-            <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-          </svg>
+          <Icon name="download" className="size-4" />
           Download this record as a spreadsheet
         </a>
       )}
@@ -218,20 +197,20 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
         {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
             background in the standard design; the adult-centred design adds a 3:1 edge. */}
         <dl className="w-full max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
-          <Fact label="HIQA centre ID">
+          <Fact label="HIQA centre ID" icon="id">
             <span className="font-mono">{centre.centre_id}</span>
           </Fact>
-          <Fact label="County">Co. {centre.county}</Fact>
+          <Fact label="County" icon="county">Co. {centre.county}</Fact>
           {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
-          <Fact label="Address">{centre.address}</Fact>
+          <Fact label="Address" icon="address">{centre.address}</Fact>
           {eircode && !addressHasEircode && (
-            <Fact label="Eircode">
+            <Fact label="Eircode" icon="email">
               <span className="font-mono">{eircode}</span>
             </Fact>
           )}
           {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
           {phone && (
-            <Fact label="Phone">
+            <Fact label="Phone" icon="phone">
               {phone.tel ? (
                 <a href={`tel:${phone.tel}`} className="tap-target">
                   {phone.text}
@@ -241,16 +220,16 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
               )}
             </Fact>
           )}
-          <Fact label="Registered for">
+          <Fact label="Registered for" icon="beds">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
             {/* The most residents HIQA allows, not free beds. */}
             <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
           </Fact>
           {/* From the HSE price list the price came from. No row when there's no list for the home. */}
-          {centre.home_type && <Fact label="Type of home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
+          {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
           {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
           {centre.contract_price !== undefined && (
-            <Fact label="Full weekly cost">
+            <Fact label="Full weekly cost" icon="cost">
               {centre.contract_price !== null ? (
                 <>
                   {formatWeeklyPrice(centre.contract_price)} per week
@@ -277,7 +256,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
             </Fact>
           )}
           {latest && first && (
-            <Fact label="Latest report">
+            <Fact label="Latest report" icon="report">
               Inspected {formatDate(latest.date)}
               <span className="block text-small text-ink-muted">
                 {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
@@ -312,10 +291,14 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   );
 }
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+// One row of the details. The icon helps the eye find a row; the label says the same in words.
+function Fact({ label, icon, children }: { label: string; icon: IconName; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="font-medium text-ink-muted">{label}</dt>
+    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="flex items-center gap-2 font-medium text-ink-muted">
+        <Icon name={icon} />
+        {label}
+      </dt>
       <dd>{children}</dd>
     </div>
   );

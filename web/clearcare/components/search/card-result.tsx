@@ -1,11 +1,11 @@
 // components/search/card-result.tsx
 import { comingSoonClass } from "@/components/ui/classes";
+import { Icon } from "@/components/ui/icons";
 import { formatEircode, type CentreSummary } from "@/lib/search";
 import Link from "next/link";
 
 interface CardResultProps {
   centre: CentreSummary;
-  from: string; // the search this card is shown in, for the centre page's "Back to your results" link
 }
 
 // The register's address usually starts with the centre's name, which the card already shows.
@@ -14,8 +14,8 @@ function addressWithoutName({ centre_name, address }: CentreSummary) {
   return address.toLowerCase().startsWith(prefix) ? address.slice(prefix.length).trim() : address;
 }
 
-export function CardResult({ centre, from }: CardResultProps) {
-  const href = `/centres/${centre.centre_id}?${new URLSearchParams({ from })}`;
+export function CardResult({ centre }: CardResultProps) {
+  const href = `/centres/${centre.centre_id}`;
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // The address often ends with the Eircode already.
   let address = addressWithoutName(centre);
@@ -33,14 +33,20 @@ export function CardResult({ centre, from }: CardResultProps) {
           </Link>
         </h3>
         {/* One part per line, as on an envelope: the street and town, the county, then the Eircode. */}
-        <p className="flex flex-col text-sm text-ink-muted">
-          <span>{address}</span>
-          <span>Co. {centre.county}</span>
-          {eircode && <span className="font-mono">{eircode}</span>}
-        </p>
+        <div className="flex gap-2 text-sm text-ink-muted">
+          <Icon name="address" className="mt-0.5 size-4" />
+          <p className="flex flex-col">
+            <span>{address}</span>
+            <span>Co. {centre.county}</span>
+            {eircode && <span className="font-mono">{eircode}</span>}
+          </p>
+        </div>
         {centre.maximum_occupancy !== null && (
           // The most residents HIQA allows, not free beds.
-          <p className="text-sm text-ink-muted">Registered for up to {centre.maximum_occupancy} residents</p>
+          <p className="flex items-center gap-2 text-sm text-ink-muted">
+            <Icon name="beds" />
+            Registered for up to {centre.maximum_occupancy} residents
+          </p>
         )}
       </div>
 

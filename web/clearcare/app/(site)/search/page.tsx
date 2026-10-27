@@ -297,7 +297,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
-              <CardResult key={centre.centre_id} centre={centre} from={pageQuery(query, page)} />
+              <CardResult key={centre.centre_id} centre={centre} />
             ))}
           </div>
         </>

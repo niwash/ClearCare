@@ -10,7 +10,7 @@ const ESRI_URL =
 
 export function NewsBanner() {
   return (
-    // -mt-8 and md:-mt-12 cancel the page's gap between sections, so it meets the welcome band.
+    // -mt-8 and md:-mt-12 cancel the page's gap between sections, so it meets the figures' band above.
     <section aria-labelledby="news-h" className={`${fullWidthClass} brand-band -mt-8 md:-mt-12`}>
       <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-[2fr_1fr] md:px-8 md:py-14">
         <div className="flex flex-col items-start gap-4">

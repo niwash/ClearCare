@@ -3,6 +3,7 @@ import { GuideHeader, guideMetadata } from "@/components/guides/guide-header";
 import { ImageViewer } from "@/components/guides/image-viewer";
 import { Section } from "@/components/layout/section";
 import { getGuide } from "@/lib/guides";
+import { Icon } from "@/components/ui/icons";
 
 const guide = getGuide("user-journey");
 
@@ -61,18 +62,7 @@ export default function UserJourneyGuide() {
         download="choosing-a-nursing-home-flowchart.png"
         className="flex min-h-12 w-fit items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-primary"
       >
-        <svg
-          aria-hidden
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="size-5 shrink-0"
-        >
-          <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-        </svg>
+        <Icon name="download" className="size-5" />
         Download guide as a picture
       </a>
 
