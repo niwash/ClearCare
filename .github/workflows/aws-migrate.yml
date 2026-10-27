@@ -1,0 +1,39 @@
+name: AWS migrate
+
+# Runs Flyway once more in the newest migrate task definition, for example
+# after a failed deploy was fixed by hand, or to see the schema history. It
+# runs only while deploys are enabled (infra/aws/README.md).
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: The Flyway command
+        type: choice
+        options: [migrate, info, validate]
+        default: info
+
+permissions:
+  contents: read
+  id-token: write
+
+# One change to production at a time. GitHub keeps at most one run waiting
+# in the group; a newer one replaces it.
+concurrency:
+  group: aws-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: vars.AWS_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-deploy
+          aws-region: eu-north-1
+      - env:
+          COMMAND: ${{ inputs.command }}
+        # exec, so that a cancelled run signals the script, which stops the task.
+        run: exec infra/aws/bin/run-task --timeout 20 migrate "$COMMAND"

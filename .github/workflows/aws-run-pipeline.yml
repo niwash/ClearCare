@@ -1,0 +1,67 @@
+name: AWS run pipeline
+
+# Runs one pipeline stage, or the scheduler once, as a task in AWS, and waits
+# for it. The stages and their options are in infra/deploy/README.md
+# ("Running a stage by hand"). It runs only while the pipeline is enabled,
+# which waits for the pipeline to run as a finite task (infra/aws/README.md).
+on:
+  workflow_dispatch:
+    inputs:
+      stage:
+        description: The stage; schedule runs every job that is due
+        type: choice
+        options:
+          - schedule
+          - snapshots
+          - upload
+          - load_register
+          - price_lists
+          - contract_prices
+          - reports
+          - load_report_files
+          - ingest_reports
+          - extract_text
+          - split_commitments
+      options:
+        description: More options for the stage, such as --allow-shrink or --county Kildare
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  id-token: write
+
+# In the same group as deploys and migrations, so the pipeline never writes
+# while a migration runs. GitHub keeps at most one run waiting in the group;
+# a newer one replaces it.
+concurrency:
+  group: aws-production
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: vars.AWS_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    # A national report crawl takes a few hours.
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-deploy
+          aws-region: eu-north-1
+          role-duration-seconds: 21600
+      - env:
+          STAGE: ${{ inputs.stage }}
+          OPTIONS: ${{ inputs.options }}
+        run: |
+          read -ra options <<< "$OPTIONS"
+          case $STAGE in
+            # It reads only stored text, so it takes no data directory.
+            split_commitments) data_dir=() ;;
+            schedule) data_dir=(--data-dir /tmp --once) ;;
+            *) data_dir=(--data-dir /tmp) ;;
+          esac
+          # exec, so that a cancelled run signals the script, which stops the task.
+          exec infra/aws/bin/run-task --timeout 300 pipeline \
+            "clearcare_pipeline.$STAGE" "${data_dir[@]}" "${options[@]}"
