@@ -3,7 +3,7 @@
 // has loaded. The figures come from GET /statistics/re-assessment; the page only draws them.
 import { JudgementIcon } from "@/components/centre/judgement-icon";
 import { GuidesBand } from "@/components/guides/guide-ending";
-import { ContentsNav, StepNumber } from "@/components/guides/step-number";
+import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
@@ -71,7 +71,7 @@ export default async function NationalPage() {
 const NATIONAL_GUIDES = [
   getGuide("reading-inspection-reports"),
   getGuide("choosing-a-nursing-home"),
-  getGuide("user-journey"),
+  getGuide("how-a-family-chooses"),
 ];
 
 // The top of the page, flush under the header as on the search page: the breadcrumb, the heading
@@ -79,10 +79,10 @@ const NATIONAL_GUIDES = [
 function NationalHero() {
   return (
     <section aria-labelledby="national-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
           <Breadcrumb trail={[]} current="National Figures" />
-          <h1 id="national-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          <h1 id="national-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             What happens at the next inspection?
           </h1>
         </div>
@@ -119,7 +119,7 @@ function NationalSection({ id, description, children }: { id: SectionId; descrip
     <section
       id={id}
       aria-labelledby={`${id}-h`}
-      className={`scroll-mt-6 ${tinted ? `${fullWidthClass} bg-band py-10 md:py-14` : ""}`}
+      className={`${sectionScrollMargin} ${tinted ? `${fullWidthClass} bg-band py-8 md:py-10` : ""}`}
     >
       <div className={`flex flex-col gap-4 ${tinted ? "mx-auto max-w-6xl px-4 md:px-8" : ""}`}>
         <div className="flex flex-col gap-2">
@@ -132,6 +132,7 @@ function NationalSection({ id, description, children }: { id: SectionId; descrip
           {description && <p className="max-w-3xl text-ink-muted">{description}</p>}
         </div>
         {children}
+        <SectionEnd />
       </div>
     </section>
   );
@@ -285,7 +286,7 @@ type Finding = { share: number; text: ReactNode };
 function FindingCard({ finding, className }: { finding: Finding; className: string }) {
   return (
     <li className={`flex flex-col gap-2 rounded-lg p-4 md:p-6 ${className}`}>
-      <span className="font-heading text-4xl font-semibold text-primary md:text-5xl">{inWords(finding.share)}</span>
+      <span className="font-heading text-4xl font-semibold text-primary md:text-4xl">{inWords(finding.share)}</span>
       <span>{finding.text}</span>
     </li>
   );

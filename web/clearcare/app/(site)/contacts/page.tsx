@@ -235,7 +235,7 @@ export default function ContactsPage() {
                 <details className="group/office">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-3 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
                     <h3 className="font-semibold">{office.area}</h3>
-                    <Chevron className="size-5 group-open/office:rotate-90" />
+                    <Chevron className="size-5 text-ink-muted group-open/office:rotate-90" />
                   </summary>
                   <div className="flex flex-col gap-2 px-3 pb-3 text-sm md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
                     <div className="flex flex-col gap-1">
@@ -315,16 +315,16 @@ export default function ContactsPage() {
 }
 
 // The guides that help most before a call, in the order a family needs them.
-const CONTACTS_GUIDES = [getGuide("user-journey"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
+const CONTACTS_GUIDES = [getGuide("how-a-family-chooses"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb, the
 // heading and a line of welcome on a band of brand colour (brand-band, globals.css).
 function ContactsHero() {
   return (
     <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Contacts" />
-        <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+        <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Need to talk to someone?
         </h1>
         <p className="max-w-2xl text-ink-muted md:text-lg">
@@ -341,22 +341,27 @@ function telHref(phone: string) {
 }
 
 // A section that starts closed, so the page opens as a short list of topics. The same
-// <details> pattern as the choosing-a-nursing-home guide: no script, and the browser's
-// find-in-page still opens it.
+// <details> pattern as the guides: no script, "Show" or "Hide" as well as the arrow so it is clear
+// it opens, and the browser's find-in-page still opens it.
 function ContactSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <details className="group rounded-lg border border-line bg-surface hover:border-primary">
+    <details className="group rounded-lg border border-line bg-surface hover:border-primary open:border-primary">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
         <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
-        <Chevron className="size-6 group-open:rotate-90" />
+        <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
+          <span className="group-open:hidden">Show</span>
+          <span className="hidden group-open:inline">Hide</span>
+          <Chevron className="size-5 group-open:rotate-90" />
+        </span>
       </summary>
       <div className="flex flex-col gap-3 border-t border-line px-4 py-4 md:px-6">{children}</div>
     </details>
   );
 }
 
-// Points right when closed and down when open. The caller sets the size and which group's
-// open state turns it, since office rows sit inside a section that is itself a <details>.
+// Points right when closed and down when open. The caller sets the size, the colour (it takes the
+// text's) and which group's open state turns it, since office rows sit inside a section that is
+// itself a <details>.
 function Chevron({ className }: { className: string }) {
   return (
     <svg
@@ -367,7 +372,7 @@ function Chevron({ className }: { className: string }) {
       strokeWidth={2.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={`shrink-0 text-ink-muted transition-transform ${className}`}
+      className={`shrink-0 transition-transform ${className}`}
     >
       <path d="m9 6 6 6-6 6" />
     </svg>

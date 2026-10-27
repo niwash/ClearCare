@@ -36,6 +36,8 @@ export const ICON_PATHS = {
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
   // An open book
   guides: "M12 6.5C10 5 7 4.5 4 5v14c3-.5 6 0 8 1.5 2-1.5 5-2 8-1.5V5c-3-.5-6 0-8 1.5zM12 6.5v14",
+  // Horizontal bars of different lengths, for a bar chart
+  chart: "M4 4v16M4 7h12M4 12h16M4 17h8",
   // An arrow down onto a line
   download: "M12 4v11M7 10l5 5 5-5M5 20h14",
   // An "i" in a circle

@@ -135,10 +135,10 @@ function SearchHero({ query }: { query: SearchQuery }) {
 
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
           <Breadcrumb trail={[]} current="Search for Homes" />
-          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
           </h1>
           {!searched && (
@@ -152,7 +152,7 @@ function SearchHero({ query }: { query: SearchQuery }) {
         {!searched && (
           <p className="text-sm text-ink-muted">
             Not sure where to start?{" "}
-            <Link href="/guides/user-journey" className="text-ink tap-target">
+            <Link href="/guides/how-a-family-chooses" className="text-ink tap-target">
               Read how a family chooses a nursing home →
             </Link>
           </p>

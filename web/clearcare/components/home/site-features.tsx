@@ -35,7 +35,7 @@ const FEATURES = [
 export function SiteFeatures() {
   return (
     <section aria-labelledby="help-h" className="flex flex-col gap-6">
-      <h2 id="help-h" className="text-center font-heading text-2xl font-semibold tracking-tight md:text-4xl adult:text-left">
+      <h2 id="help-h" className="text-center font-heading text-2xl font-semibold tracking-tight md:text-3xl adult:text-left">
         What ClearCare can help you with
       </h2>
       {/* A line between neighbours, like a row of columns; on phones they stack without one. */}

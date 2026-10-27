@@ -144,9 +144,16 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
       {/* Inside this section so it shares the key above and follows the same inspections toggle. */}
       <JudgementsPerInspection inspections={inspections} shown={shown} history={history} />
 
+      {/* Its own heading, so the table (or the cards on narrow screens) isn't read as part of the
+          chart above. */}
+      <div className="border-t border-line-soft px-4 pb-1 pt-5 md:px-7">
+        <h3 className="font-semibold">Judgments for each regulation</h3>
+        <p className="mt-1 text-sm text-ink-muted">What HIQA found for each regulation at each inspection.</p>
+      </div>
+
       {/* Phones and tablets, where the table's columns don't fit: one card per regulation,
           listing each inspection's result. */}
-      <div className="border-t border-line-soft lg:hidden">
+      <div className="lg:hidden">
         {shown
           .filter((inspection) => !inspection.regulationJudgements)
           .map((inspection) => (
