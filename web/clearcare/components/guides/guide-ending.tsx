@@ -1,10 +1,13 @@
 // components/guides/guide-ending.tsx
-// The end of a guide, so nobody finishes one with nowhere to go: the other guides as small photo
-// cards, then the contacts banner, flush with the footer. A guide that isn't written yet has no
+// The end of a guide, so nobody finishes one with nowhere to go: the way back to How to navigate
+// ClearCare when the guide was opened from it, the other guides as small photo cards, then the
+// contacts banner, flush with the footer. A guide that isn't written yet has no
 // link and the dashed coming-soon look, as on the resources page. The centre page uses the same
 // band of guide cards.
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
+import { ReturnLink } from "@/components/guides/return-link";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
 import { GUIDES, type Guide } from "@/lib/guides";
@@ -14,6 +17,10 @@ export function GuideEnding({ current }: { current: Guide }) {
 
   return (
     <>
+      <Suspense fallback={null}>
+        <ReturnLink />
+      </Suspense>
+
       <GuidesBand id="other-guides-h" title="Other guides" guides={others} />
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}

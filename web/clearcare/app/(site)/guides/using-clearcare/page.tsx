@@ -24,6 +24,7 @@ const FLOWCHART = "/guides/using-clearcare-flowchart.png";
 type Step = {
   title: string;
   detail: ReactNode;
+  // Says where it goes, never just "Read the guide": several steps link to different guides.
   link?: { href: string; label: string };
   question?: string;
 };
@@ -43,23 +44,23 @@ const STEPS: Step[] = [
   {
     title: "Read How a Family Chooses a Nursing Home",
     detail: "Start here. It shows every step, from the first conversation to moving in.",
-    link: { href: "/guides/how-a-family-chooses", label: "Read the guide" },
+    link: { href: "/guides/how-a-family-chooses", label: "Open How a Family Chooses a Nursing Home" },
   },
   {
     title: "Read Fair Deal Explained",
     detail: "How the scheme works, who qualifies and how to apply. It has its own link in the menu.",
-    link: { href: "/guides/fair-deal", label: "Read about Fair Deal" },
+    link: { href: "/guides/fair-deal", label: "Open Fair Deal Explained" },
   },
   {
     title: "Read Questions to Ask",
     detail: "What to ask before and during your search.",
-    link: { href: "/guides/choosing-a-nursing-home", label: "Read the guide" },
+    link: { href: "/guides/choosing-a-nursing-home", label: "Open Questions to Ask" },
   },
   {
     question: "Do you want to learn how to read inspection reports?",
     title: "Read How to Read a HIQA Inspection Report",
     detail: "What each part of a report means, and how ClearCare shows it.",
-    link: { href: "/guides/reading-inspection-reports", label: "Read the guide" },
+    link: { href: "/guides/reading-inspection-reports", label: "Open How to Read a HIQA Inspection Report" },
   },
   {
     title: "Search for the home",
@@ -86,12 +87,20 @@ const STEPS: Step[] = [
 // A step as a card. Numbered steps are for everyone; an optional one is tinted, labelled
 // "Optional" and opens with its question. Kept compact, one under another (CCARE-164: less
 // scrolling).
-function StepCard({ step, number }: { step: Step; number: number | null }) {
+// position counts every step, optional ones too: it names the card's id, step-1 to step-8, which a
+// guide opened from here links back to.
+function StepCard({ step, number, position }: { step: Step; number: number | null; position: number }) {
   const optional = number === null;
+  // A guide opened from a step offers a way back to that step (components/guides/return-link.tsx).
+  const href =
+    step.link && step.link.href.startsWith("/guides/")
+      ? `${step.link.href}?${new URLSearchParams({ from: "using-clearcare", step: String(position) })}`
+      : step.link?.href;
 
   return (
     <li
-      className={`flex gap-4 rounded-lg border p-4 md:p-5 ${
+      id={`step-${position}`}
+      className={`flex scroll-mt-6 gap-4 rounded-lg border p-4 md:p-5 ${
         optional ? "border-line border-l-4 border-l-primary bg-surface-muted" : "border-line bg-surface"
       }`}
     >
@@ -106,8 +115,8 @@ function StepCard({ step, number }: { step: Step; number: number | null }) {
           {step.title}
         </h3>
         <p className="max-w-3xl leading-relaxed">{step.detail}</p>
-        {step.link && (
-          <Link href={step.link.href} className="w-fit py-1 font-semibold tap-target">
+        {step.link && href && (
+          <Link href={href} className="w-fit py-1 font-semibold tap-target">
             {step.link.label} →
           </Link>
         )}
@@ -143,6 +152,7 @@ export default function UsingClearCareGuide() {
               key={step.title}
               step={step}
               number={step.question ? null : STEPS.slice(0, index).filter((s) => !s.question).length + 1}
+              position={index + 1}
             />
           ))}
         </ol>

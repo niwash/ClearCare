@@ -14,6 +14,7 @@ type Feature = {
   title: string;
   text: string;
   href: string;
+  action: string; // the button's words: what it opens, not just "See more"
   guide?: Guide; // for its draft or coming-soon status
   photo: string;
   // Which part of the photo to keep when it's cropped, written out in full for Tailwind. The default
@@ -32,6 +33,7 @@ const FEATURES: Feature[] = [
     title: "How choosing a home works",
     text: "From the first conversation to moving in.",
     href: "/guides/how-a-family-chooses",
+    action: "See the steps",
     guide: getGuide("how-a-family-chooses"),
     photo: "/home/family.jpg",
   },
@@ -39,6 +41,7 @@ const FEATURES: Feature[] = [
     title: "Fair Deal explained",
     text: "How the HSE helps pay for nursing home care.",
     href: "/guides/fair-deal",
+    action: "Learn about Fair Deal",
     guide: getGuide("fair-deal"),
     photo: "/home/fair-deal.jpg",
   },
@@ -46,6 +49,7 @@ const FEATURES: Feature[] = [
     title: "What to ask when you visit",
     text: "Questions to ask a home before you decide.",
     href: "/guides/choosing-a-nursing-home",
+    action: "See the questions",
     guide: getGuide("choosing-a-nursing-home"),
     photo: "/home/phone.jpg",
     // The woman taking notes is on the right and low down; this keeps her hand and the paper in view
@@ -57,6 +61,7 @@ const FEATURES: Feature[] = [
     title: "Check a nursing home's record",
     text: "Every HIQA inspection report, one page per home.",
     href: "/search",
+    action: "Search for a home",
     photo: "/home/report.jpg",
   },
 ];
@@ -189,7 +194,7 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
 // sits under the photo. In the grid the card keeps the page's colours, with the words under the
 // photo, as the adult-centred design keeps photos out from behind text.
 //
-// The whole slide is the link, through "See more" stretched over it. It is styled as a card, not as
+// The whole slide is the link, through its button stretched over it. It is styled as a card, not as
 // a link: a deliberate exception to the design guide's rule that links are underlined. The focus
 // outline (globals.css) still shows for keyboard users. A guide that isn't written yet has no link,
 // a "Coming soon" label in place of the button, and in the grid the dashed coming-soon look.
@@ -229,7 +234,7 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
             href={feature.href}
             className="mt-1 inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline after:absolute after:inset-0 hover:bg-primary-hover hover:text-on-primary"
           >
-            See more<span className="sr-only">: {feature.title}</span>
+            {feature.action}<span className="sr-only">: {feature.title}</span>
             <span aria-hidden>→</span>
           </Link>
         )}
