@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
       { source: "/guides", destination: "/resources", permanent: false },
     ];
   },
+  output: "standalone",
 };
 
 export default nextConfig;
