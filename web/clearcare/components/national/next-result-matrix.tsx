@@ -1,6 +1,8 @@
 // components/national/next-result-matrix.tsx
 // What each judgment became at the home's next report, as a shaded table: a row per starting
-// judgment, a column per result. The table is its own text alternative.
+// judgment, a column per result. The table is its own text alternative. Below md, where the table
+// would need to scroll sideways, each starting judgment is a closed section that opens to list its
+// results instead, shaded the same way.
 import { JudgementIcon } from "@/components/centre/judgement-icon";
 import type { Judgement } from "@/lib/centres";
 import { formatCount, formatPercent, STARTING_JUDGEMENTS, type NextResultCounts } from "@/lib/statistics";
@@ -21,10 +23,11 @@ function shade(share: number) {
 
 export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
   return (
-    <div className="overflow-x-auto [--shade-max:50%] adult:[--shade-max:30%]">
+    <div className="[--shade-max:50%] adult:[--shade-max:30%]">
+      <ResultCards matrix={matrix} />
       {/* Equal columns where they are wide enough for "Substantially"; below that, each column is as
           wide as its longest word, so the headings don't run into each other. */}
-      <table className="w-full min-w-[36rem] border-collapse text-left text-sm lg:table-fixed">
+      <table className="hidden w-full border-collapse text-left text-sm md:table lg:table-fixed">
         <caption className="sr-only">What each judgment became at the home&apos;s next report</caption>
         <colgroup>
           <col className="w-[8.5rem] md:w-[11rem]" />
@@ -76,5 +79,69 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
         </tbody>
       </table>
     </div>
+  );
+}
+
+// The phone layout: one closed section per starting judgment, opening to its results one under
+// another, so the three fit on a screen until one is opened. The same <details> pattern as the
+// contacts page: no script, and find-in-page still opens it.
+function ResultCards({ matrix }: { matrix: NextResultCounts[] }) {
+  return (
+    <ul className="flex flex-col gap-3 md:hidden">
+      {matrix.map((row) => (
+        <li key={row.judgment}>
+          <details className="group overflow-hidden rounded-md border border-line-soft open:border-primary">
+            <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
+              <h3 className="flex flex-1 flex-wrap items-center gap-x-2 gap-y-1 font-semibold">
+                <JudgementIcon judgement={STARTING_JUDGEMENTS[row.judgment]} />
+                {row.judgment}
+                <span className="text-sm font-normal text-ink-muted">
+                  · {formatCount(row.total)} results judged
+                </span>
+              </h3>
+              {/* Points right when closed and down when open. */}
+              <svg
+                aria-hidden
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2.5}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-5 shrink-0 text-ink-muted transition-transform group-open:rotate-90"
+              >
+                <path d="m9 6 6 6-6 6" />
+              </svg>
+            </summary>
+            <ul>
+              {COLUMNS.map((column) => {
+                const share = row.total > 0 ? row[column.key] / row.total : 0;
+                return (
+                  // The surface-coloured border keeps a gap between neighbouring shaded results.
+                  <li
+                    key={column.key}
+                    className="flex items-center justify-between gap-3 border-t-2 border-surface px-3 py-2.5 text-sm"
+                    style={{ backgroundColor: shade(share) }}
+                  >
+                    <span className="flex items-center gap-2">
+                      {column.judgement ? (
+                        <JudgementIcon judgement={column.judgement} size={12} />
+                      ) : (
+                        <span aria-hidden className="w-3" />
+                      )}
+                      {column.label}
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="font-medium">{row.total > 0 ? formatPercent(share) : "–"}</span>{" "}
+                      <span className="text-xs tabular-nums">({formatCount(row[column.key])})</span>
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        </li>
+      ))}
+    </ul>
   );
 }

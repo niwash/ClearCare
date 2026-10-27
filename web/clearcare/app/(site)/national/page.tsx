@@ -152,7 +152,7 @@ function NationalFigures({ statistics }: { statistics: ReAssessmentStatistics })
 
       <NationalSection
         id="next-result"
-        description="This graph shows what happened to each result at the home's next inspection. Start on the left with what one inspection found, then look across to see what the next inspection found for the same regulation. The darker the box, the more results ended up there."
+        description="This graph shows what happened to each result at the home's next inspection. Start with what one inspection found, then see what the next inspection found for the same regulation. The darker the box, the more results ended up there."
       >
         <Chart>
           <NextResultMatrix matrix={matrix} />
