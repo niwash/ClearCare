@@ -22,6 +22,7 @@ STARTUP = [
     "load_report_files",
     "ingest_reports",
     "extract_text",
+    "extract_about",
     "split_commitments",
 ]
 REGISTER_JOB = ["snapshots", "upload", "load_register"]
@@ -32,6 +33,7 @@ REPORTS_JOB = [
     "load_report_files",
     "ingest_reports",
     "extract_text",
+    "extract_about",
     "split_commitments",
 ]
 EVERY_STAGE_OF_EVERY_JOB = [*STARTUP, *REGISTER_JOB, *PRICES_JOB, *REPORTS_JOB]
