@@ -68,21 +68,24 @@ export default async function StartPage() {
           </h2>
 
           {/* Name or Eircode here; the search page works out which. It has address and county too. */}
-          <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex gap-2">
-            <label htmlFor="start-search" className="sr-only">
+          {/* A visible label, not a faded hint in the box: people read one as already filled in
+              (CCARE-164). */}
+          <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex flex-col gap-1">
+            <label htmlFor="start-search" className="text-sm font-medium">
               Nursing home name or Eircode
             </label>
-            <input
-              id="start-search"
-              name="q"
-              type="search"
-              maxLength={MAX_TEXT_LENGTH}
-              placeholder="Nursing home name"
-              className={`${textInputClass} flex-1`}
-            />
-            <button type="submit" className={primaryButtonClass}>
-              Search
-            </button>
+            <div className="flex gap-2">
+              <input
+                id="start-search"
+                name="q"
+                type="search"
+                maxLength={MAX_TEXT_LENGTH}
+                className={`${textInputClass} flex-1`}
+              />
+              <button type="submit" className={primaryButtonClass}>
+                Search
+              </button>
+            </div>
           </form>
 
           <p className="text-sm">
