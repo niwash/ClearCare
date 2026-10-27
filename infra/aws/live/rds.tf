@@ -11,7 +11,7 @@ resource "aws_db_instance" "main" {
   identifier     = local.name
   engine         = "postgres"
   engine_version = "18.6"
-  instance_class = "db.t4g.small"
+  instance_class = "db.t4g.micro"
   # infra/postgres/roles.sql expects this database name.
   db_name = "clearcare"
 
