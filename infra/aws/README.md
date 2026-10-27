@@ -105,7 +105,7 @@ The state is locked in the bucket while a command runs. An apply that changes a 
 
 ## Deploy
 
-Every push to `main` deploys itself once deploys are enabled. After the Checks workflow passes, AWS build pushes the four images, tagged `sha-<commit>`, and calls AWS deploy for the commit the checks ran on. If `main` has moved on by then, the deploy skips that commit, because the newer commit's own build deploys it. AWS deploy runs `infra/aws/bin/deploy`:
+Every push to `main` deploys itself once deploys are enabled. After the Checks workflow passes, AWS build pushes the four images, tagged `sha-<commit>`, and calls AWS deploy for the commit the checks ran on. If `main` has moved on by then, the deploy skips that commit, because the newer commit's own build deploys it. The VM deploy is a workflow of its own, so the AWS build no longer depends on it. AWS deploy runs `infra/aws/bin/deploy`:
 
 1. Stops, without changing anything, if an image is missing or a pipeline task is running.
 2. Registers a migrate revision with the new image, runs it and waits for exit code 0.
@@ -113,13 +113,13 @@ Every push to `main` deploys itself once deploys are enabled. After the Checks w
 4. Checks both hostnames through the load balancer: the API must return centres for Dublin, the site's search page must list the first of them, and `/actuator` must not be public. On a failure it prints the revisions that ran before, for the rollback.
 5. Registers a pipeline revision, moves both pipeline schedules to it and records it with its image (`infra/aws/bin/release-pipeline`). If one of those writes fails, or the deploy is cancelled, it puts the earlier release back; if it cannot, it prints the command that does.
 
-A failed step stops the deploy there. To deploy an earlier commit again, run AWS deploy by hand with its full hash.
+A failed step stops the deploy there. To deploy an earlier commit again, run AWS deploy by hand with its full hash. ECR keeps the images of the last 30 pushes; an older commit has to be built again first, by re-running its Checks run.
 
 A migration is not undone by a rollback. Write migrations that the running API can live with.
 
 ## Roll back
 
-Run the AWS rollback workflow with the service and the revision to go back to. `aws ecs list-task-definitions --family-prefix clearcare-api --sort DESC` lists the revisions, and the ECS console shows each one's image. The workflow records that revision's image, so the next apply keeps it.
+Run the AWS rollback workflow with the service and the revision to go back to. `aws ecs list-task-definitions --family-prefix clearcare-api --sort DESC` lists the revisions, and the ECS console shows each one's image. The workflow records that revision's image, so the next apply keeps it. A revision older than the last 30 pushes cannot start, because ECR has expired its image; deploy that commit again instead (Deploy, above).
 
 ## Read the logs
 
@@ -171,7 +171,7 @@ Alarms go by email to `alert_emails`:
 - A pipeline, migrate or restore task stopped with a non-zero exit code, or failed to start.
 - A schedule could not start its task.
 
-The budget emails `budget_emails` when the month's usage reaches $40 and $80, and when its forecast passes $80. They report usage. Credits are left out.
+The budget emails `budget_emails` when the month's usage reaches $40 and $80, and when its forecast passes $80. They report usage. Credits are left out. A second budget emails them when a month's bill after credits passes $1, which usually means the credits are used up; the credit balance in Billing confirms it.
 
 ## Team access
 

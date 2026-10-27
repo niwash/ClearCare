@@ -1,5 +1,5 @@
 #!/bin/sh
-# Updates the VM to a commit on main. The checks workflow runs this over SSH
+# Updates the VM to a commit on main. The VM deploy workflow runs this over SSH
 # with a key that can run nothing else, and passes the commit as the SSH
 # command (ADR-0012). It does what the "Install or update" section of
 # README.md describes. By hand: deploy.sh <commit>.

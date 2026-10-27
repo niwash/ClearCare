@@ -1,6 +1,7 @@
 // lib/search.ts
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
+import { connection } from "next/server";
 
 export interface CentreSummary {
   centre_id: string;
@@ -57,6 +58,9 @@ export function apiUrl() {
 }
 
 export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
+  // Read the API on each request. Otherwise a build without API_URL prerenders the pages that
+  // search, such as /, as "API_URL isn't set" until the next build.
+  await connection();
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
   return fetchCentres(url, query);

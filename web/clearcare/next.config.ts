@@ -11,7 +11,8 @@ const nextConfig: NextConfig = {
       { source: "/guides", destination: "/resources", permanent: false },
     ];
   },
-  output: "standalone",
+  // Only the Docker image needs it (Dockerfile); elsewhere it slows each build and npm start warns.
+  output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
 };
 
 export default nextConfig;
