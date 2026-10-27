@@ -36,6 +36,13 @@ export default async function StartPage() {
               together the information you need to choose a nursing home and explain it in a way that is easy to
               understand.
             </p>
+            {/* The guide to the site itself, where a newcomer starts reading (CCARE-164). */}
+            <Link
+              href="/guides/using-clearcare"
+              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-line bg-surface px-4 font-semibold text-ink no-underline hover:border-primary hover:text-ink"
+            >
+              New to ClearCare? See how to use it <span aria-hidden>→</span>
+            </Link>
           </div>
 
           {/* Side by side from tablet width, stacked on phones. */}
