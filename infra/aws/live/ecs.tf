@@ -90,6 +90,8 @@ resource "aws_ecs_task_definition" "web" {
       environment = [
         # The site's server code calls the API, as it does on Vercel.
         { name = "API_URL", value = "https://${var.api_hostname}" },
+        # The standalone server listens on HOSTNAME; the health check calls it on loopback.
+        { name = "HOSTNAME", value = "0.0.0.0" },
       ]
       # The image has node but no curl.
       healthCheck = {

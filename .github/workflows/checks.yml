@@ -56,22 +56,3 @@ jobs:
           java-version: 21
           cache: maven
       - run: ./mvnw verify
-
-  # Updates the VM once the checks pass on main (ADR-0012). The key can run
-  # only infra/deploy/deploy.sh on the VM; the SSH command names the commit.
-  deploy:
-    if: github.event_name == 'push'
-    needs: [pipeline, web, api]
-    runs-on: ubuntu-latest
-    concurrency: deploy
-    steps:
-      - env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-          HOST: ${{ secrets.DEPLOY_HOST }}
-        run: |
-          install -d -m 700 ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy
-          chmod 600 ~/.ssh/deploy
-          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes "$HOST" "$GITHUB_SHA"

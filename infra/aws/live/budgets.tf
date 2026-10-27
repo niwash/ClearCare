@@ -30,3 +30,28 @@ resource "aws_budgets_budget" "monthly" {
     }
   }
 }
+
+# While the $180 of credits cover the account, the month's bill after credits
+# stays at zero. This budget counts the credits and emails once that bill
+# passes $1, which usually means the credits are gone. Charges a credit does
+# not cover can also do it, so check the credit balance in Billing first.
+resource "aws_budgets_budget" "net_spend" {
+  name         = "${local.name}-net-spend"
+  budget_type  = "COST"
+  limit_amount = "1"
+  limit_unit   = "USD"
+  time_unit    = "MONTHLY"
+
+  cost_types {
+    include_credit = true
+    include_refund = false
+  }
+
+  notification {
+    comparison_operator        = "GREATER_THAN"
+    threshold                  = 100
+    threshold_type             = "PERCENTAGE"
+    notification_type          = "ACTUAL"
+    subscriber_email_addresses = var.budget_emails
+  }
+}

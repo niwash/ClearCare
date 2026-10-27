@@ -83,9 +83,11 @@ resource "aws_iam_role" "github_deploy" {
 }
 
 locals {
-  # The one-off tasks the workflows may start, and the families a deploy
-  # registers revisions of.
+  # The one-off tasks, the ones the workflows may start, and the families a
+  # deploy registers revisions of. A restore runs as the database administrator,
+  # so only an operator starts one, with bin/run-task.
   run_task_families          = ["pipeline", "migrate", "restore"]
+  github_run_task_families   = ["pipeline", "migrate"]
   deployed_families          = ["web", "api", "pipeline", "migrate"]
   task_definition_arn_prefix = "arn:aws:ecs:${var.region}:${var.account_id}:task-definition/${local.name}"
 }
@@ -117,7 +119,7 @@ resource "aws_iam_role_policy" "github_deploy" {
         Effect = "Allow"
         Action = "ecs:RunTask"
         Resource = flatten([
-          for family in local.run_task_families : [
+          for family in local.github_run_task_families : [
             "${local.task_definition_arn_prefix}-${family}",
             "${local.task_definition_arn_prefix}-${family}:*",
           ]
@@ -183,8 +185,8 @@ resource "aws_iam_role_policy" "github_deploy" {
         Effect = "Allow"
         Action = "iam:PassRole"
         Resource = concat(
-          [for role in aws_iam_role.execution : role.arn],
-          [for role in aws_iam_role.task : role.arn],
+          [for family, role in aws_iam_role.execution : role.arn if family != "restore"],
+          [for family, role in aws_iam_role.task : role.arn if family != "restore"],
         )
         Condition = {
           StringEquals = { "iam:PassedToService" = "ecs-tasks.amazonaws.com" }

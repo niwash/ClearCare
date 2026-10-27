@@ -16,9 +16,10 @@ resource "aws_ecr_repository" "image" {
   }
 }
 
-# Only untagged images expire. A tagged image may be what a service, a
-# schedule or a rollback runs, and a count or age rule cannot tell which, so
-# tagged images stay until a cleanup that knows the releases exists.
+# Untagged images expire after a day. A tagged image expires once 30 newer
+# ones exist, so a rollback further back than that needs a rebuild. The task
+# definitions name images by digest, so an old revision whose image has expired
+# fails to start; it never runs another image.
 resource "aws_ecr_lifecycle_policy" "image" {
   for_each = aws_ecr_repository.image
 
@@ -35,7 +36,18 @@ resource "aws_ecr_lifecycle_policy" "image" {
           countNumber = 1
         }
         action = { type = "expire" }
-      }
+      },
+      {
+        rulePriority = 2
+        description  = "Keep the last 30 images"
+        selection = {
+          tagStatus     = "tagged"
+          tagPrefixList = ["sha-"]
+          countType     = "imageCountMoreThan"
+          countNumber   = 30
+        }
+        action = { type = "expire" }
+      },
     ]
   })
 }
