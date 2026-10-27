@@ -1,0 +1,116 @@
+name: AWS build
+
+# Builds the four images for ARM64 once the checks pass on a push to main,
+# pushes each to ECR tagged sha-<commit>, then deploys that commit. The commit
+# is the one the checks ran on, passed on by name: this run's own commit is
+# whatever main pointed at when it started. infra/aws/README.md describes the
+# build and the deploy.
+on:
+  workflow_run:
+    workflows: [Checks]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    # AWS_ACCOUNT_ID is a repository variable, set once the account exists.
+    if: >-
+      vars.AWS_ACCOUNT_ID != '' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-24.04-arm
+    strategy:
+      matrix:
+        include:
+          - image: api
+            context: api
+            file: api/Dockerfile
+          - image: web
+            context: web/clearcare
+            file: web/clearcare/Dockerfile
+          - image: pipeline
+            context: pipeline
+            file: pipeline/Dockerfile
+          - image: migrate
+            context: db
+            file: infra/aws/migrate/Dockerfile
+    env:
+      COMMIT: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-build
+          aws-region: eu-north-1
+      - id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      # Tags cannot be overwritten, so a re-run keeps the image pushed first.
+      - id: existing
+        env:
+          IMAGE: ${{ matrix.image }}
+        run: |
+          if aws ecr describe-images --repository-name "clearcare/$IMAGE" \
+              --image-ids "imageTag=sha-$COMMIT" > /dev/null 2>&1; then
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.existing.outputs.pushed != 'true'
+        uses: docker/setup-buildx-action@v4
+      - if: steps.existing.outputs.pushed != 'true'
+        id: build
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.file }}
+          platforms: linux/arm64
+          push: true
+          # One image manifest, without an attestation beside it.
+          provenance: false
+          tags: ${{ steps.ecr.outputs.registry }}/clearcare/${{ matrix.image }}:sha-${{ env.COMMIT }}
+          # Stored with every row the pipeline loads; the other images ignore it.
+          build-args: CLEARCARE_PIPELINE_VERSION=${{ env.COMMIT }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+      - if: steps.existing.outputs.pushed != 'true'
+        env:
+          IMAGE: ${{ matrix.image }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: echo "$IMAGE sha-$COMMIT $DIGEST" >> "$GITHUB_STEP_SUMMARY"
+
+  # Whether deploys are enabled (infra/aws/live/release.tf). The build role can
+  # read that and nothing else of the deploy's.
+  gate:
+    needs: build
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.gate.outputs.deploy }}
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-build
+          aws-region: eu-north-1
+      # A failed read fails the job, rather than looking like deploys are off.
+      - id: gate
+        run: |
+          gate=$(aws ssm get-parameter --name /clearcare/gate/deploy \
+            --query Parameter.Value --output text)
+          case $gate in
+            enabled | disabled) echo "deploy=$gate" >> "$GITHUB_OUTPUT" ;;
+            *) echo "/clearcare/gate/deploy is '$gate', expected enabled or disabled" >&2; exit 1 ;;
+          esac
+
+  deploy:
+    needs: gate
+    if: needs.gate.outputs.deploy == 'enabled'
+    uses: ./.github/workflows/aws-deploy.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      commit: ${{ github.event.workflow_run.head_sha }}
+      automatic: true

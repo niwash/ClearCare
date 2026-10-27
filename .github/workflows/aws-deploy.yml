@@ -1,0 +1,54 @@
+name: AWS deploy
+
+# Deploys the images the AWS build pushed for a commit: the migrations first,
+# then the API and the site, a smoke check, then the pipeline
+# (infra/aws/bin/deploy). The AWS build calls it after each build. Run it by
+# hand to deploy an earlier commit of main again, for example to roll back
+# everything at once.
+on:
+  workflow_call:
+    inputs:
+      commit:
+        description: Full hash of the commit whose images to deploy
+        type: string
+        required: true
+      automatic:
+        description: Skip, without failing, when deploys are off or main has moved on
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: Full hash of the commit whose images to deploy
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    if: vars.AWS_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # One change to production at a time. GitHub keeps at most one run
+    # waiting in the group; a newer one replaces it.
+    concurrency:
+      group: aws-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-deploy
+          aws-region: eu-north-1
+      - env:
+          COMMIT: ${{ inputs.commit }}
+          AUTOMATIC: ${{ inputs.automatic }}
+        run: |
+          options=()
+          if [[ $AUTOMATIC == true ]]; then
+            options+=(--automatic)
+          fi
+          # exec, so that a cancelled run signals the script itself.
+          exec infra/aws/bin/deploy "${options[@]}" "$COMMIT"
