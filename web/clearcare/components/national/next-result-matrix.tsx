@@ -9,7 +9,7 @@ const COLUMNS: { key: keyof Omit<NextResultCounts, "judgment" | "total">; label:
   { key: "compliant", label: "Compliant", judgement: "compliant" },
   { key: "substantially_compliant", label: "Substantially compliant", judgement: "substantially-compliant" },
   { key: "not_compliant", label: "Not compliant", judgement: "not-compliant" },
-  { key: "not_re_assessed", label: "Not re-assessed", judgement: "not-assessed" },
+  { key: "not_re_assessed", label: "Not checked again", judgement: "not-assessed" },
   { key: "no_later_report", label: "No later report yet" },
 ];
 
@@ -45,7 +45,7 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
               </th>
             ))}
             <th scope="col" className="py-2 pl-2 text-right font-normal">
-              Total
+              Results judged
             </th>
           </tr>
         </thead>
