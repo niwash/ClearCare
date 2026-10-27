@@ -244,7 +244,7 @@ resource "aws_ecs_task_definition" "migrate" {
 }
 
 # Restores a dump from the dumps bucket into an empty clearcare database, as
-# the RDS administrator. The roles must exist first (infra/postgres/roles.sql).
+# the RDS administrator. The roles must exist first (infra/aws/bin/create-roles).
 # DUMP_KEY, the dump's key in the bucket, is set when the task is run
 # (README.md).
 resource "aws_ecs_task_definition" "restore" {
