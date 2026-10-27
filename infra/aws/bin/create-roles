@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Creates the ClearCare database roles on RDS, once, after their passwords are
+# set and before the restore (infra/aws/README.md): infra/postgres/roles.sql
+# adapted for RDS, run by the restore task's psql as the RDS administrator.
+#
+# The SQL holds the passwords. It reaches the task through the dumps bucket,
+# not RunTask's overrides, which stay in CloudTrail's event history, and every
+# version of it is deleted when this script ends.
+#
+# Usage: create-roles
+#
+# Needs the AWS CLI with credentials for the account, and jq.
+
+set -euo pipefail
+set +x # tracing would print the passwords
+
+[[ $# -eq 0 ]] || { echo "Usage: create-roles" >&2; exit 2; }
+key=restore/roles.sql
+fail() { echo "create-roles: $*" >&2; exit 1; }
+
+# Each password goes into a SQL literal as it is: 64 lowercase hex characters,
+# as the README sets them.
+password() {
+  local value
+  value=$(aws secretsmanager get-secret-value --secret-id "clearcare/database/$1" \
+    --query SecretString --output text) || fail "could not read clearcare/database/$1; if it has no value yet, set it first (infra/aws/README.md)"
+  [[ $value =~ ^[0-9a-f]{64}$ ]] || fail "clearcare/database/$1 is not 64 lowercase hex characters"
+  echo "$value"
+}
+migrator_password=$(password migrator)
+pipeline_password=$(password pipeline)
+api_password=$(password api)
+
+# The bucket is named after the account (live/s3.tf); deploy reads the id the same way.
+bucket=clearcare-dumps-$(aws sts get-caller-identity --query Account --output text)
+
+# The bucket keeps a deleted object's versions, so each one is deleted.
+delete_sql() {
+  local versions version
+  versions=$(aws s3api list-object-versions --bucket "$bucket" --prefix "$key" --output json |
+    jq -r --arg key "$key" '(.Versions // []) + (.DeleteMarkers // []) | .[] | select(.Key == $key) | .VersionId') || return 1
+  for version in $versions; do
+    aws s3api delete-object --bucket "$bucket" --key "$key" --version-id "$version" >/dev/null || return 1
+  done
+}
+
+clean_up() {
+  local status=$?
+  trap '' INT TERM
+  if delete_sql; then
+    echo "Deleted s3://$bucket/$key with all its versions"
+  else
+    echo "create-roles: s3://$bucket/$key may still hold the passwords; delete all its versions in the S3 console" >&2
+    ((status != 0)) || status=1
+  fi
+  exit "$status"
+}
+trap clean_up EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+aws s3 cp - "s3://$bucket/$key" --only-show-errors <<SQL
+-- infra/postgres/roles.sql for RDS: the administrator is not a superuser, so it joins
+-- clearcare_owner before giving it the database; passwords are literals, not \getenv.
+\set ON_ERROR_STOP on
+\set VERBOSITY terse
+BEGIN;
+CREATE ROLE clearcare_owner NOLOGIN;
+GRANT clearcare_owner TO clearcare_admin;
+ALTER DATABASE clearcare OWNER TO clearcare_owner;
+CREATE ROLE clearcare_migrator LOGIN PASSWORD '$migrator_password';
+GRANT clearcare_owner TO clearcare_migrator WITH INHERIT FALSE, SET TRUE;
+CREATE ROLE clearcare_pipeline LOGIN PASSWORD '$pipeline_password';
+CREATE ROLE clearcare_api LOGIN PASSWORD '$api_password';
+COMMIT;
+\du clearcare*
+SQL
+
+# The download container fetches the SQL to where the dump would go; psql runs it there.
+network=$(aws ssm get-parameter --name /clearcare/network/restore --query Parameter.Value --output text)
+overrides=$(jq -c -n --arg key "$key" '{containerOverrides: [
+  {name: "download", environment: [{name: "DUMP_KEY", value: $key}]},
+  {name: "pg_restore", command: ["psql", "-v", "ON_ERROR_STOP=1", "-d", "clearcare", "-f", "/dump/clearcare.dump"]}]}')
+task_arn=$(aws ecs run-task --cluster clearcare --task-definition clearcare-restore \
+  --launch-type FARGATE --platform-version 1.4.0 --network-configuration "$network" \
+  --overrides "$overrides" --enable-ecs-managed-tags --propagate-tags TASK_DEFINITION \
+  --started-by create-roles --query 'tasks[0].taskArn' --output text)
+[[ $task_arn == arn:* ]] || fail "ECS did not start clearcare-restore"
+echo "Started $task_arn; waiting up to ten minutes for it to stop"
+aws ecs wait tasks-stopped --cluster clearcare --tasks "$task_arn"
+
+description=$(aws ecs describe-tasks --cluster clearcare --tasks "$task_arn" --query 'tasks[0]' --output json)
+for name in download pg_restore; do
+  echo "--- $name: log"
+  aws logs get-log-events --log-group-name /clearcare/restore --log-stream-name "restore/$name/${task_arn##*/}" \
+    --query 'events[].message' --output json 2>/dev/null | jq -r '.[]' || echo "(no log)"
+done
+echo "--- Stopped: $(jq -r '.stoppedReason // "no reason given"' <<<"$description")"
+jq -r '.containers[] | "\(.name): exit code \(.exitCode // "none") \(.reason // "")"' <<<"$description"
+jq -e '.containers[] | select(.name == "pg_restore") | .exitCode == 0' <<<"$description" >/dev/null ||
+  fail "psql did not exit with 0; its log is above"

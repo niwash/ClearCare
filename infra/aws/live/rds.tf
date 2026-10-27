@@ -28,7 +28,7 @@ resource "aws_db_instance" "main" {
 
   # RDS creates the administrator's password and keeps it in Secrets Manager,
   # so it is never in the Terraform state. The application roles are created
-  # with infra/postgres/roles.sql, as on a new local database.
+  # with infra/aws/bin/create-roles, as roles.sql does on a new local database.
   username                    = "clearcare_admin"
   manage_master_user_password = true
 
