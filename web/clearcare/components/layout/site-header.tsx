@@ -48,8 +48,11 @@ export function SiteHeader() {
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
           <div className="flex flex-auto items-center justify-end gap-2">
-            <DesignToggle />
-            <ThemeToggle />
+            {/* Together, for the welcome tour's step about them. */}
+            <div data-tour="display" className="flex items-center gap-2">
+              <DesignToggle />
+              <ThemeToggle />
+            </div>
             {/* Filled, so it reads as a button beside the outlined toggles. Left out on phones, where
                 the row has no room for it; the menu (standard) or the navigation band
                 (adult-centred) has it instead. */}
@@ -79,7 +82,7 @@ export function SiteHeader() {
       </MobileMenu>
 
       <div className="hidden bg-surface-muted lg:block adult:block">
-        <nav aria-label="Main" className="mx-auto max-w-6xl overflow-x-auto px-4 md:px-8">
+        <nav aria-label="Main" data-tour="nav" className="mx-auto max-w-6xl overflow-x-auto px-4 md:px-8">
           <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>

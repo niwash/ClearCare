@@ -5,6 +5,7 @@ import { NewsBanner } from "@/components/home/news-banner";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
+import { WelcomeTour } from "@/components/home/welcome-tour";
 import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
@@ -36,13 +37,17 @@ export default async function StartPage() {
               together the information you need to choose a nursing home and explain it in a way that is easy to
               understand.
             </p>
-            {/* The guide to the site itself, where a newcomer starts reading (CCARE-164). */}
-            <Link
-              href="/guides/using-clearcare"
-              className="inline-flex min-h-11 items-center gap-2 rounded-md border border-line bg-surface px-4 font-semibold text-ink no-underline hover:border-primary hover:text-ink"
-            >
-              New to ClearCare? See how to use it <span aria-hidden>→</span>
-            </Link>
+            {/* The guide to the site itself, where a newcomer starts reading, and the tour that
+                follows it (CCARE-164). */}
+            <div data-tour="guide-links" className="flex scroll-mt-6 flex-wrap justify-center gap-3 adult:justify-start">
+              <Link
+                href="/guides/using-clearcare"
+                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-line bg-surface px-4 font-semibold text-ink no-underline hover:border-primary hover:text-ink"
+              >
+                New to ClearCare? See how to use it <span aria-hidden>→</span>
+              </Link>
+              <WelcomeTour />
+            </div>
           </div>
 
           {/* Side by side from tablet width, stacked on phones. */}
