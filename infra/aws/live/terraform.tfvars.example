@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars, which git ignores, and fill in the real values.
+
+account_id = "123456789012"
+
+# gh api repos/niwash/ClearCare/actions/oidc/customization/sub --jq .sub_claim_prefix
+github_oidc_subject_prefix = "repo:niwash@16553582/ClearCare@1375996481"
+
+site_hostname = "clearcare.example.com"
+api_hostname  = "api.clearcare.example.com"
+
+# The digests the first build pushed (README.md, "First apply"). Later
+# deploys do not change this file.
+image_digests = {
+  api      = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  web      = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  pipeline = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  migrate  = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}
+
+alert_emails = [
+  "first@example.com",
+  "second@example.com",
+  "third@example.com",
+]
+budget_emails = ["first@example.com"]
+
+# Both stay false until the database is ready (deploys) and the pipeline runs
+# as a finite task (pipeline). README.md, "First apply".
+deploys_enabled  = false
+pipeline_enabled = false
