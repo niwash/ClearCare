@@ -25,12 +25,12 @@ export default async function StartPage() {
           tinted band the full width of the window, set apart from the rest of the page, with the
           words centred. The adult-centred design keeps them left-aligned, which is easier to read
           (NIA/NLM: left-justify text). */}
-      {/* md:-mt-12 cancels the page's gap between sections, so on wider screens the band starts
+      {/* md:-mt-8 cancels the page's gap between sections, so on wider screens the band starts
           where the carousel ends. */}
-      <section className={`${fullWidthClass} bg-band px-4 py-10 md:-mt-12 md:px-8 md:py-16 adult:md:mt-0`}>
+      <section className={`${fullWidthClass} bg-band px-4 py-8 md:-mt-8 md:px-8 md:py-12 adult:md:mt-0`}>
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center adult:items-start adult:text-left">
           <div className="flex max-w-3xl flex-col items-center gap-4 adult:items-start">
-            <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">Welcome to ClearCare</h1>
+            <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">Welcome to ClearCare</h1>
             <p className="md:text-lg">
               Choosing a nursing home is a big decision, for the person moving in and for their family. We bring
               together the information you need to choose a nursing home and explain it in a way that is easy to
@@ -63,7 +63,7 @@ export default async function StartPage() {
 
       <div className="grid gap-6 md:grid-cols-[3fr_1fr] md:gap-10">
         <div className="flex min-w-0 flex-col gap-3">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Check a nursing home&apos;s record
           </h2>
 

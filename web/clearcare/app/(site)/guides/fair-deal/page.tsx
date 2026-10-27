@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
-import { ContentsNav, StepNumber } from "@/components/guides/step-number";
+import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
@@ -569,9 +569,9 @@ export default function FairDealGuide() {
       </GuideSection>
 
       {/* A tinted band the full width of the window, like the HIQA guide's checklist. */}
-      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-10 md:py-16`}>
+      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-8 md:py-12`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
-          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
+          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Key things to remember
           </h2>
           <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
@@ -622,12 +622,13 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
     <section
       id={id}
       aria-labelledby={`${id}-h`}
-      className={`scroll-mt-6 ${tinted ? `${fullWidthClass} bg-band py-10 md:py-14` : ""}`}
+      className={`${sectionScrollMargin} ${tinted ? `${fullWidthClass} bg-band py-8 md:py-10` : ""}`}
     >
       <div className={tinted ? "mx-auto max-w-6xl px-4 md:px-8" : ""}>
         <div className="flex max-w-4xl flex-col gap-4 leading-relaxed">
           <SectionHeading index={index} id={id} />
           {children}
+          <SectionEnd />
         </div>
       </div>
     </section>
@@ -659,7 +660,7 @@ function Source({ href, children }: { href: string; children: ReactNode }) {
 function Figure({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex shrink-0 flex-col gap-1 rounded-lg border border-line bg-surface px-5 py-4 sm:min-w-56">
-      <span className="font-heading text-4xl font-semibold text-primary md:text-5xl">{value}</span>
+      <span className="font-heading text-4xl font-semibold text-primary md:text-4xl">{value}</span>
       <span className="text-sm text-ink-muted">{label}</span>
     </div>
   );

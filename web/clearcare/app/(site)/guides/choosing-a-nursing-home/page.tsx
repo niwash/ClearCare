@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
-import { ContentsNav, StepNumber } from "@/components/guides/step-number";
+import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
@@ -89,7 +89,7 @@ export default function ChoosingANursingHomeGuide() {
       {/* The five stages at a glance, each a link down to its card. */}
       <ContentsNav label="Stages" items={STAGES.map((stage, index) => ({ id: `stage-${index + 1}`, title: stage.title }))} />
 
-      <ol className="flex max-w-4xl flex-col gap-4 md:gap-6">
+      <ol className="flex max-w-4xl flex-col gap-4">
         {STAGES.map((stage, index) => {
           // A guide that isn't written yet isn't linked, as on the resources page.
           const relatedGuide = stage.relatedGuide && getGuide(stage.relatedGuide);
@@ -99,7 +99,7 @@ export default function ChoosingANursingHomeGuide() {
             <li
               key={stage.title}
               id={`stage-${index + 1}`}
-              className="flex scroll-mt-6 flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-8"
+              className={`flex ${sectionScrollMargin} flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-6`}
             >
               <div className="flex items-center gap-4">
                 <StepNumber number={index + 1} />
@@ -139,6 +139,7 @@ export default function ChoosingANursingHomeGuide() {
                   <Link href={`/guides/${related.slug}`} className="tap-target">Read: {related.title} →</Link>
                 </p>
               )}
+              <SectionEnd />
             </li>
           );
         })}

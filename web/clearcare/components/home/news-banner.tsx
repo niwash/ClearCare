@@ -10,14 +10,14 @@ const ESRI_URL =
 
 export function NewsBanner() {
   return (
-    // -mt-8 and md:-mt-12 cancel the page's gap between sections, so it meets the figures' band above.
-    <section aria-labelledby="news-h" className={`${fullWidthClass} brand-band -mt-8 md:-mt-12`}>
-      <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-10 md:grid-cols-[2fr_1fr] md:px-8 md:py-14">
+    // -mt-6 and md:-mt-8 cancel the page's gap between sections, so it meets the figures' band above.
+    <section aria-labelledby="news-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-8`}>
+      <div className="mx-auto grid max-w-6xl items-center gap-8 px-4 py-8 md:grid-cols-[2fr_1fr] md:px-8 md:py-10">
         <div className="flex flex-col items-start gap-4">
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">
             In the news · ESRI, 30 June 2025
           </p>
-          <h2 id="news-h" className="font-heading text-2xl font-semibold text-ink md:text-4xl">
+          <h2 id="news-h" className="font-heading text-2xl font-semibold text-ink md:text-3xl">
             Long-term care needs in Ireland will grow by at least 60% by 2040
           </h2>
           <p className="max-w-2xl text-ink-muted md:text-lg">

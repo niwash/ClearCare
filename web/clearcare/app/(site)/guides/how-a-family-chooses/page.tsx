@@ -1,11 +1,13 @@
 import { GeneralGuideNote } from "@/components/guides/general-guide-note";
-import { GuideHeader, guideMetadata } from "@/components/guides/guide-header";
+import { GuideEnding } from "@/components/guides/guide-ending";
+import { guideMetadata } from "@/components/guides/guide-header";
+import { GuideHero } from "@/components/guides/guide-hero";
 import { ImageViewer } from "@/components/guides/image-viewer";
 import { Section } from "@/components/layout/section";
 import { getGuide } from "@/lib/guides";
 import { Icon } from "@/components/ui/icons";
 
-const guide = getGuide("user-journey");
+const guide = getGuide("how-a-family-chooses");
 
 export const metadata = guideMetadata(guide);
 
@@ -45,30 +47,11 @@ const STEPS: { title: string; detail: string; ifNo?: string }[] = [
 export default function UserJourneyGuide() {
   return (
     <>
-      <GuideHeader guide={guide} />
-
-      <figure className="flex flex-col gap-2">
-        <ImageViewer
-          src={FLOWCHART}
-          alt="Flowchart of how a family chooses a nursing home, from talking about what to do to moving in. The steps are written out below."
-          width={2916}
-          height={2060}
-        />
-        <figcaption className="text-sm text-ink-muted">Select the flowchart to open it full size.</figcaption>
-      </figure>
-
-      <a
-        href={FLOWCHART_DOWNLOAD}
-        download="choosing-a-nursing-home-flowchart.png"
-        className="flex min-h-12 w-fit items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-primary"
-      >
-        <Icon name="download" className="size-5" />
-        Download guide as a picture
-      </a>
+      <GuideHero guide={guide} />
 
       <GeneralGuideNote />
 
-      <Section title="The steps in words">
+      <Section title="Step by step">
         <ol className="max-w-3xl divide-y divide-line-soft rounded-lg border border-line bg-surface">
           {STEPS.map((step, index) => (
             <li key={step.title} className="flex gap-3 px-4 py-3">
@@ -89,6 +72,28 @@ export default function UserJourneyGuide() {
           </li>
         </ol>
       </Section>
+
+      {/* After the steps in words, which come first (CCARE-164). It opens full size when selected. */}
+      <figure className="flex flex-col gap-2">
+        <ImageViewer
+          src={FLOWCHART}
+          alt="Flowchart of how a family chooses a nursing home, from talking about what to do to moving in. The steps are written out above."
+          width={2916}
+          height={2060}
+        />
+        <figcaption className="text-ink-muted">Select the image to open it in full size.</figcaption>
+      </figure>
+
+      <a
+        href={FLOWCHART_DOWNLOAD}
+        download="choosing-a-nursing-home-flowchart.png"
+        className="flex min-h-12 w-fit items-center gap-3 rounded-md border border-line bg-surface px-4 py-3 font-semibold hover:border-primary"
+      >
+        <Icon name="download" className="size-5" />
+        Download guide as a picture
+      </a>
+
+      <GuideEnding current={guide} />
     </>
   );
 }

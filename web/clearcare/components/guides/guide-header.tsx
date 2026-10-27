@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Breadcrumb, RESOURCES_CRUMB } from "@/components/layout/breadcrumb";
+import { RESOURCES_CRUMB } from "@/components/layout/breadcrumb";
 import type { Guide } from "@/lib/guides";
 
 export function guideMetadata(guide: Guide): Metadata {
@@ -20,16 +20,4 @@ export function DraftLabel() {
 // is a main page, a step down from Home like the other pages in the menu.
 export function guideTrail(guide: Guide) {
   return guide.inMenu ? [] : [RESOURCES_CRUMB];
-}
-
-// Shared top of every guide; the rest of each guide page sets its own layout.
-export function GuideHeader({ guide }: { guide: Guide }) {
-  return (
-    <header className="flex max-w-3xl flex-col gap-3">
-      <Breadcrumb trail={guideTrail(guide)} current={guide.title} />
-      <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-5xl">{guide.title}</h1>
-      {guide.status === "draft" && <DraftLabel />}
-      <p className="text-ink-muted md:text-lg">{guide.summary}</p>
-    </header>
-  );
 }

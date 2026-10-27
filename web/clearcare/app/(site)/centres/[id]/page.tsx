@@ -128,7 +128,7 @@ const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosin
 function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex min-w-0 flex-col gap-2.5">
           {/* Where the home sits in the site, the same however the user got here. */}
           <Breadcrumb
@@ -138,7 +138,7 @@ function CentreHero({ centre }: { centre: CentreDetail }) {
             ]}
             current={centre.centre_name}
           />
-          <h1 id="centre-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          <h1 id="centre-h" className="font-heading text-[2rem] leading-tight font-semibold tracking-tight text-ink md:text-[2.5rem]">
             {centre.centre_name}
           </h1>
         </div>

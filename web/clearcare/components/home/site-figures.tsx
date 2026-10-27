@@ -5,7 +5,7 @@
 // the window, so it reads as a section of its own; the news banner after it meets it.
 import { fullWidthClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
-import { ICON_PATHS } from "@/components/ui/icons";
+import { ICON_PATHS, Icon } from "@/components/ui/icons";
 import { formatDate } from "@/lib/centres";
 import type { RegisterSnapshot } from "@/lib/search";
 import { formatCount, type ReAssessmentStatistics } from "@/lib/statistics";
@@ -33,33 +33,43 @@ export function SiteFigures({
       { value: formatCount(results), label: "Inspection results read", icon: ICON_PATHS.results },
     );
   }
-  if (snapshot) {
-    figures.push({ value: formatDate(snapshot.fetched_at), label: "Nursing home list last updated", icon: ICON_PATHS.calendar });
-  }
-  if (statistics) {
-    figures.push({ value: formatDate(statistics.data_date), label: "Latest inspection included", icon: ICON_PATHS.inspection });
-  }
-  if (figures.length === 0) return null;
+  // How current the figures are, as one line under the cards rather than two more cards.
+  const dates = [
+    snapshot && `Nursing home list updated ${formatDate(snapshot.fetched_at)}`,
+    statistics && `latest inspection included ${formatDate(statistics.data_date)}`,
+  ].filter(Boolean);
+  if (figures.length === 0 && dates.length === 0) return null;
 
   return (
-    <section aria-labelledby="figures-h" className={`${fullWidthClass} bg-band py-10 md:py-14`}>
+    <section aria-labelledby="figures-h" className={`${fullWidthClass} bg-band py-8 md:py-10`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
-        <h2 id="figures-h" className="text-center font-heading text-2xl font-semibold tracking-tight md:text-4xl adult:text-left">
+        <h2 id="figures-h" className="text-center font-heading text-2xl font-semibold tracking-tight md:text-3xl adult:text-left">
           What ClearCare currently has
         </h2>
-        <ul className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-5">
+        {/* One row of cards from tablet width; on phones each card is a short row of its own, the icon
+            beside the figure, so the three take less height. */}
+        <ul className="grid gap-3 sm:grid-cols-3 md:gap-4">
           {figures.map((figure) => (
             <li
               key={figure.label}
-              className="flex flex-col items-center gap-2 rounded-lg border border-line bg-surface p-4 text-center md:p-5"
+              className="flex items-center gap-4 rounded-lg border border-line bg-surface p-4 sm:flex-col sm:gap-2 sm:text-center md:p-5"
             >
               <IconCircle path={figure.icon} size="large" />
-              <span className="font-heading text-2xl font-semibold text-primary md:text-3xl">{figure.value}</span>
-              <span className="text-sm text-ink-muted">{figure.label}</span>
+              <span className="flex flex-col sm:items-center">
+                <span className="font-heading text-2xl font-semibold text-primary md:text-3xl">{figure.value}</span>
+                <span className="text-sm text-ink-muted">{figure.label}</span>
+              </span>
             </li>
           ))}
         </ul>
+        {dates.length > 0 && (
+          <p className="flex items-center justify-center gap-2 text-sm text-ink-muted adult:justify-start">
+            <Icon name="calendar" />
+            {/* Capitalised here, as either part can come first. */}
+            <span className="block first-letter:uppercase">{dates.join(", ")}.</span>
+          </p>
+        )}
       </div>
     </section>
   );
