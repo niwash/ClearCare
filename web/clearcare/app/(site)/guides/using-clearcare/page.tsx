@@ -13,7 +13,7 @@ export const metadata = guideMetadata(guide);
 
 // The site is still changing, so the guide says when it was last checked against it. Update this
 // whenever the steps change.
-const LAST_UPDATED = { iso: "2026-10-21", label: "21 October 2026" };
+const LAST_UPDATED = { iso: "2026-10-27", label: "27 October 2026" };
 
 // The "How to use the ClearCare website" flowchart in the adult-centred design reference, rendered
 // to PNG at 2.5x. 3120 x 2925.
@@ -145,6 +145,13 @@ export default function UsingClearCareGuide() {
         <h2 id="steps-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
           Recommended steps
         </h2>
+        {/* Starts the welcome tour on arrival (components/home/welcome-tour.tsx). */}
+        <p className="max-w-3xl">
+          Prefer to be shown around?{" "}
+          <Link href="/?tour" className="font-semibold tap-target">
+            Take the tour on the home page →
+          </Link>
+        </p>
         <ol className="flex max-w-4xl flex-col gap-3">
           {/* An optional step has no number, so the numbers run 1 to 5 past the optional steps. */}
           {STEPS.map((step, index) => (
