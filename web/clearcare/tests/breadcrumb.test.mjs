@@ -8,7 +8,8 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 const SITE = join(import.meta.dirname, "..", "app", "(site)");
-const WITHOUT_BREADCRUMB = new Set(["home"]);
+// The home page is app/(site)/page.tsx, so its route is "".
+const WITHOUT_BREADCRUMB = new Set([""]);
 const RENDERS_BREADCRUMB = /<(Breadcrumb|GuideHero|GuideHeader)\b/g;
 
 const pages = readdirSync(SITE, { recursive: true })
