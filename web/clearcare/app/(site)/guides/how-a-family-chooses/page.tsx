@@ -14,9 +14,10 @@ export const metadata = guideMetadata(guide);
 // The simplified flowchart (CCARE-97): the steps part of the SVG in the adult-centred design
 // reference, rendered to PNG. The question and document cards below it there aren't shown here.
 // The page shows it without the general guide note (GeneralGuideNote gives it as text); the
-// download has the note drawn in. Both are 2916 x 2060.
-const FLOWCHART = "/guides/nursing-home-flowchart-steps.png";
-const FLOWCHART_DOWNLOAD = "/guides/nursing-home-flowchart-with-guide.png";
+// download has the note drawn in. Both are 2916 x 2060, without the HSE and HIQA logos the
+// reference once had (CCARE-164). A redrawn PNG gets a new file name, so no cache keeps the old one.
+const FLOWCHART = "/guides/how-a-family-chooses-flowchart.png";
+const FLOWCHART_DOWNLOAD = "/guides/how-a-family-chooses-flowchart-with-note.png";
 
 // The same steps as the flowchart, for screen readers and small screens.
 const STEPS: { title: string; detail: string; ifNo?: string }[] = [
