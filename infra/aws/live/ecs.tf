@@ -137,7 +137,7 @@ resource "aws_ecs_task_definition" "api" {
         { name = "SPRING_DATASOURCE_URL", value = local.jdbc_url },
         # Half the task's memory for the heap; the rest is for the JVM itself.
         { name = "JAVA_TOOL_OPTIONS", value = "-Xms128m -Xmx512m" },
-        # db.t4g.small allows about 200 connections, shared with the pipeline
+        # db.t4g.micro allows about 110 connections, shared with the pipeline
         # and the one-off tasks.
         { name = "SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE", value = "5" },
         { name = "SPRING_DATASOURCE_HIKARI_MINIMUMIDLE", value = "1" },
