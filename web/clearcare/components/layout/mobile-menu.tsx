@@ -39,6 +39,8 @@ export function MobileMenu({ children }: { children: ReactNode }) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls="mobile-menu"
+        // The welcome tour points here on its steps about the links, on phones and tablets.
+        data-tour="menu"
         aria-label={open ? "Close menu" : "Menu"}
         className="fixed bottom-6 right-4 z-50 flex size-14 items-center justify-center rounded-full border-2 border-ink bg-primary text-on-primary shadow-lg hover:bg-primary-hover"
       >
