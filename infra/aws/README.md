@@ -7,6 +7,7 @@ ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the 
 | `bootstrap/` | The S3 bucket for the Terraform state, created once |
 | `live/` | Everything else, one file per concern |
 | `live/rds-ca/` | The RDS certificate bundle the database clients check the server against |
+| `cognito/` | The account pool for public sign-up and sign-in, one folder per environment |
 | `migrate/Dockerfile` | Flyway with the migrations in `db/` |
 | `bin/` | The scripts the workflows and the operator run |
 
@@ -77,6 +78,37 @@ The task definitions need images, and the images need the repositories and the b
 Each address in `alert_emails` gets an email from AWS and must confirm the subscription before any alarm reaches it.
 
 A database for trying things out is different: it can start empty, with `deploys_enabled = true` from the start, and the first deploy applies every migration.
+
+## Accounts (Cognito)
+
+Public accounts live in a Cognito user pool, one root per environment: `cognito/development` and `cognito/production` both call `modules/cognito`. The development root creates the pool, its sign-in domain and one confidential app client for the site to sign in with. `domain_prefix` comes from `terraform.tfvars` because Cognito requires the name to be globally unique.
+
+| Output | Web variable |
+| --- | --- |
+| `issuer` | `AUTH_COGNITO_ISSUER` |
+| `client_id` | `AUTH_COGNITO_ID` |
+| `client_secret` | `AUTH_COGNITO_SECRET` |
+| `domain` | `COGNITO_DOMAIN` |
+
+```sh
+cd infra/aws/cognito/development
+terraform init -backend-config="bucket=clearcare-terraform-state-$ACCOUNT_ID"
+terraform apply
+terraform output -raw client_secret
+```
+
+The sign-in domain runs the classic hosted UI, managed login version 1. The branded version 2 needs a branding style per app client, which would be a change of its own.
+
+Cognito serves the discovery document on the pool's issuer, not on the login domain, so ask it there:
+
+```sh
+curl -s -o /dev/null -w '%{http_code}\n' \
+    "$(terraform output -raw issuer)/.well-known/openid-configuration"
+```
+
+Callback and logout URLs are matched exactly, so a Vercel preview address has to be registered in `web_origin` before that preview can sign anyone in.
+
+No pool exists in the project account yet. Until one does, development runs against a pool in a personal test account, with its state kept in this folder rather than in the bucket; `account_id` names that account in the operator's own `terraform.tfvars`. Creating the pool in the project account is a one-off apply from this folder once the bucket exists.
 
 ## Database passwords and roles
 

@@ -6,6 +6,9 @@
 # It is global across all AWS accounts and cannot be renamed after the pool is created
 # without replacing the domain, so choose it once.
 
+# The account that owns the pool. The provider refuses to create anything anywhere else.
+account_id = "123456789012"
+
 domain_prefix = "clearcare-dev-example"
 
 web_origin = "http://localhost:3000"

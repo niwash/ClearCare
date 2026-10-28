@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "eu-north-1"
 }
 
+variable "account_id" {
+  description = "AWS account the development pool belongs to. The provider refuses to run anywhere else."
+  type        = string
+}
+
 variable "domain_prefix" {
   description = "Managed login domain prefix, set in terraform.tfvars so the name is not committed."
   type        = string

@@ -28,5 +28,3 @@ output "callback_urls" {
   description = "Callback URLs registered on the app client."
   value       = aws_cognito_user_pool_client.web.callback_urls
 }
-
-data "aws_region" "current" {}
