@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
-import { TOUR_MENU_EVENT } from "@/components/layout/mobile-menu";
 import { primaryButtonClass } from "@/components/ui/classes";
 
 // The welcome tour (CCARE-164): a short walk around the site from the home page, pointing at one
@@ -19,17 +18,16 @@ const TOUR_STORAGE_KEY = "tour";
 
 // Where a step points, found by its data-tour attribute. A step lists the places in order and
 // shows the first one on screen: the navigation bar, or the Menu button where the bar is hidden
-// (phones and tablets in the standard design). body replaces the step's words for that place.
-// link is set on the Menu button's places: the menu is opened, highlighted with the button, and
-// the link the step is about is ringed (CCARE-164: show that on a phone the links are there).
-type Place = { selector: string; body?: ReactNode; link?: string };
+// (phones and tablets in the standard design). body replaces the step's words for that place: on
+// the Menu button, they say which link to choose in it. The menu stays closed, so the highlight is
+// never bigger than the button and the card always has room beside it (PR #108 review).
+type Place = { selector: string; body?: ReactNode };
 
-export type TourStep = { title: string; body: ReactNode; places?: Place[] };
+type TourStep = { title: string; body: ReactNode; places?: Place[] };
 
 const MENU = '[data-tour="menu"]';
-const MENU_LINKS = '[data-tour="menu-links"]';
 
-export const TOUR_STEPS: TourStep[] = [
+const TOUR_STEPS: TourStep[] = [
   {
     title: "Welcome to ClearCare",
     body: "This short tour shows where things are on the site, in the order of our guide How to navigate ClearCare. You can skip it at any time.",
@@ -56,11 +54,10 @@ export const TOUR_STEPS: TourStep[] = [
       { selector: '[data-tour="nav"] a[href="/resources"]' },
       {
         selector: MENU,
-        link: "/resources",
         body: (
           <>
-            On phones and tablets, the links are in this menu. Our guides are under <strong>Resources</strong>,
-            starting with How a Family Chooses a Nursing Home.
+            On phones and tablets, the links are in this menu. Open it and choose <strong>Resources</strong> for our
+            guides, starting with How a Family Chooses a Nursing Home.
           </>
         ),
       },
@@ -78,7 +75,6 @@ export const TOUR_STEPS: TourStep[] = [
       { selector: '[data-tour="nav"] a[href="/guides/fair-deal"]' },
       {
         selector: MENU,
-        link: "/guides/fair-deal",
         body: (
           <>
             <strong>Fair Deal</strong>, in this menu, explains the scheme that helps pay for nursing home care: who
@@ -102,10 +98,8 @@ export const TOUR_STEPS: TourStep[] = [
       { selector: '[data-tour="nav"] a[href="/search"]' },
       {
         selector: MENU,
-        link: "/search",
         body: (
           <>
-            {/* Shorter than on a computer: the menu leaves little room for the card on small phones. */}
             <strong>Search for Homes</strong>, in this menu, finds a home by name, Eircode, address or county. Each
             home’s page has its inspection record and phone number.
           </>
@@ -125,7 +119,6 @@ export const TOUR_STEPS: TourStep[] = [
       { selector: '[data-tour="nav"] a[href="/contacts"]' },
       {
         selector: MENU,
-        link: "/contacts",
         body: (
           <>
             <strong>Contacts</strong>, in this menu, lists HIQA, the Fair Deal offices, dementia services, and support
@@ -178,57 +171,51 @@ function markSeen() {
   listeners.forEach((listener) => listener());
 }
 
-type Target = { element: HTMLElement; body?: ReactNode; link?: string };
+type Target = { element: HTMLElement; body?: ReactNode };
 
 // The first of a step's places that is on screen; a hidden element has no boxes.
 function findTarget(step: TourStep): Target | null {
   for (const place of step.places ?? []) {
     const element = document.querySelector<HTMLElement>(place.selector);
-    if (element && element.getClientRects().length > 0) return { element, body: place.body, link: place.link };
+    if (element && element.getClientRects().length > 0) return { element, body: place.body };
   }
   return null;
-}
-
-// The box around all the given elements that are on screen, such as the Menu button and its open
-// menu.
-function boundsOf(elements: (HTMLElement | null)[]): DOMRect | null {
-  const rects = elements
-    .filter((element): element is HTMLElement => !!element && element.getClientRects().length > 0)
-    .map((element) => element.getBoundingClientRect());
-  if (rects.length === 0) return null;
-  const top = Math.min(...rects.map((rect) => rect.top));
-  const left = Math.min(...rects.map((rect) => rect.left));
-  const right = Math.max(...rects.map((rect) => rect.right));
-  const bottom = Math.max(...rects.map((rect) => rect.bottom));
-  return new DOMRect(left, top, right - left, bottom - top);
 }
 
 // Space between the part and the highlight around it, and between the highlight and the card.
 const PAD = 8;
 const GAP = 12;
 const EDGE = 16;
+// The least height the card needs for its words and buttons (12rem).
+const MIN_CARD_HEIGHT = 192;
 
 // The card goes below a part in the top half of the window and above one in the bottom half. On
 // phones it fills the width at the bottom or top edge instead, away from the part. A step with
-// nothing to point at sits in the middle.
+// nothing to point at sits in the middle, as does one with too little room above or below, such
+// as a tall part in a short window, so the card's buttons are never off screen.
 function cardPosition(rect: DOMRect | null): CSSProperties {
   const width = window.innerWidth;
   const height = window.innerHeight;
-  if (!rect) {
-    return { left: "50%", top: "50%", transform: "translate(-50%, -50%)", width: Math.min(448, width - 2 * EDGE) };
-  }
+  const centred: CSSProperties = {
+    left: "50%",
+    top: "50%",
+    transform: "translate(-50%, -50%)",
+    width: Math.min(448, width - 2 * EDGE),
+    maxHeight: height - 2 * EDGE,
+  };
+  if (!rect) return centred;
   const below = rect.top + rect.height / 2 < height / 2;
+  const space = below ? height - rect.bottom - PAD - GAP - EDGE : rect.top - PAD - GAP - EDGE;
+  if (space < MIN_CARD_HEIGHT) return centred;
   if (width < 640) {
-    // No taller than the space beside the highlight, so it never covers the part (such as the
-    // open menu on a small phone); 12rem at least, so a big part can't squeeze it away.
-    const space = below ? height - rect.bottom - PAD - GAP - EDGE : rect.top - PAD - GAP - EDGE;
-    return { left: EDGE, right: EDGE, maxHeight: Math.max(space, 192), ...(below ? { bottom: EDGE } : { top: EDGE }) };
+    // No taller than the space beside the highlight, so it never covers the part.
+    return { left: EDGE, right: EDGE, maxHeight: space, ...(below ? { bottom: EDGE } : { top: EDGE }) };
   }
   const cardWidth = Math.min(384, width - 2 * EDGE);
   const left = Math.min(Math.max(rect.left - PAD, EDGE), width - cardWidth - EDGE);
   return below
-    ? { left, width: cardWidth, top: rect.bottom + PAD + GAP, maxHeight: height - rect.bottom - PAD - GAP - EDGE }
-    : { left, width: cardWidth, bottom: height - rect.top + PAD + GAP, maxHeight: rect.top - PAD - GAP - EDGE };
+    ? { left, width: cardWidth, top: rect.bottom + PAD + GAP, maxHeight: space }
+    : { left, width: cardWidth, bottom: height - rect.top + PAD + GAP, maxHeight: space };
 }
 
 // The highlight around the part, kept inside the window, so a part at the edge (such as the last
@@ -246,12 +233,12 @@ function holePath({ top, left, width, height }: Box) {
   );
 }
 
-function highlightPosition(rect: DOMRect, pad = PAD): Box {
+function highlightPosition(rect: DOMRect): Box {
   const inset = 4;
-  const top = Math.max(rect.top - pad, inset);
-  const left = Math.max(rect.left - pad, inset);
-  const right = Math.min(rect.right + pad, window.innerWidth - inset);
-  const bottom = Math.min(rect.bottom + pad, window.innerHeight - inset);
+  const top = Math.max(rect.top - PAD, inset);
+  const left = Math.max(rect.left - PAD, inset);
+  const right = Math.min(rect.right + PAD, window.innerWidth - inset);
+  const bottom = Math.min(rect.bottom + PAD, window.innerHeight - inset);
   return { top, left, width: right - left, height: bottom - top };
 }
 
@@ -266,7 +253,6 @@ export function WelcomeTour() {
   const [step, setStep] = useState<number | null>(null);
   const [target, setTarget] = useState<Target | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
-  const [linkRect, setLinkRect] = useState<DOMRect | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const title = useRef<HTMLHeadingElement>(null);
   const button = useRef<HTMLButtonElement>(null);
@@ -284,16 +270,17 @@ export function WelcomeTour() {
     setStep(null);
     setTarget(null);
     setRect(null);
-    setLinkRect(null);
   }
 
-  // From the guide's "Take the tour" link, /?tour. The address is put back to / so a reload
-  // doesn't start it again. Not cancelled on cleanup: in development React runs the effect twice,
-  // and by the second run the address has no ?tour.
+  // From the guide's "Take the tour" link, /?tour. tour is taken out of the address, keeping the
+  // rest, so a reload doesn't start it again. Not cancelled on cleanup: in development React runs
+  // the effect twice, and by the second run the address has no ?tour.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (!params.has("tour")) return;
-    window.history.replaceState(null, "", window.location.pathname);
+    params.delete("tour");
+    const query = params.toString();
+    window.history.replaceState(null, "", `${window.location.pathname}${query ? `?${query}` : ""}${window.location.hash}`);
     requestAnimationFrame(() => go(0));
   }, []);
 
@@ -323,10 +310,6 @@ export function WelcomeTour() {
     // Smooth or instant, following the page's scroll-behavior (globals.css: reduced motion).
     // On phones, to the top (less its scroll-margin), leaving the rest of the screen for the card.
     element?.scrollIntoView({ block: window.innerWidth < 640 ? "start" : "center", inline: "nearest" });
-    // On the Menu button, open the menu; the highlight takes it in once it shows (the observer).
-    const menu = target?.link ? document.querySelector<HTMLElement>(MENU_LINKS) : null;
-    const link = menu?.querySelector<HTMLElement>(`a[href="${target!.link}"]`) ?? null;
-    if (menu) window.dispatchEvent(new CustomEvent(TOUR_MENU_EVENT, { detail: true }));
     let frame = 0;
     function measure() {
       cancelAnimationFrame(frame);
@@ -336,22 +319,16 @@ export function WelcomeTour() {
           setTarget(findTarget(TOUR_STEPS[step!]));
           return;
         }
-        setRect(element ? boundsOf([element, menu]) : null);
-        setLinkRect(boundsOf([link]));
+        setRect(element ? element.getBoundingClientRect() : null);
       });
     }
     measure();
-    const observer = new ResizeObserver(measure);
-    if (menu) observer.observe(menu);
     window.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure);
     return () => {
       cancelAnimationFrame(frame);
-      observer.disconnect();
       window.removeEventListener("scroll", measure);
       window.removeEventListener("resize", measure);
-      // The next step opens it again if it needs it, in the same render, so it doesn't flicker.
-      if (menu) window.dispatchEvent(new CustomEvent(TOUR_MENU_EVENT, { detail: false }));
     };
   }, [step, target]);
 
@@ -410,14 +387,6 @@ export function WelcomeTour() {
                 aria-hidden
                 className="pointer-events-none fixed rounded-lg shadow-[0_0_0_3px_white,0_0_0_7px_var(--color-primary)]"
                 style={highlightPosition(rect)}
-              />
-            )}
-            {/* The link the step is about, inside the open menu. */}
-            {linkRect && (
-              <div
-                aria-hidden
-                className="pointer-events-none fixed rounded-md shadow-[0_0_0_3px_var(--color-primary)]"
-                style={highlightPosition(linkRect, 4)}
               />
             )}
 

@@ -1,10 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
-
-// The welcome tour opens the menu on its steps about the links, to show where they are on phones
-// and tablets, and closes it again. The event's detail is true to open, false to close.
-export const TOUR_MENU_EVENT = "clearcare:tour-menu";
+import { useRef, useState, type FocusEvent, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 
 // The standard design's navigation on phones and tablets: a round "Menu" button fixed to the
 // bottom-right corner, within thumb reach, that opens the links in a panel above it. Hidden on
@@ -13,14 +9,6 @@ export const TOUR_MENU_EVENT = "clearcare:tour-menu";
 export function MobileMenu({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    function onTour(event: Event) {
-      setOpen((event as CustomEvent<boolean>).detail);
-    }
-    window.addEventListener(TOUR_MENU_EVENT, onTour);
-    return () => window.removeEventListener(TOUR_MENU_EVENT, onTour);
-  }, []);
 
   // Close once a link is followed, so the next page doesn't open with the menu over it.
   function closeOnLink(event: MouseEvent<HTMLElement>) {
@@ -51,6 +39,7 @@ export function MobileMenu({ children }: { children: ReactNode }) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-controls="mobile-menu"
+        // The welcome tour points here on its steps about the links, on phones and tablets.
         data-tour="menu"
         aria-label={open ? "Close menu" : "Menu"}
         className="fixed bottom-6 right-4 z-50 flex size-14 items-center justify-center rounded-full border-2 border-ink bg-primary text-on-primary shadow-lg hover:bg-primary-hover"
@@ -61,7 +50,6 @@ export function MobileMenu({ children }: { children: ReactNode }) {
       </button>
       <nav
         id="mobile-menu"
-        data-tour="menu-links"
         aria-label="Main"
         onClick={closeOnLink}
         className={`fixed bottom-24 right-4 z-50 w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-line bg-surface px-4 py-2 shadow-xl ${open ? "block" : "hidden"}`}

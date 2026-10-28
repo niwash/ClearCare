@@ -20,8 +20,9 @@ const sources = ["app", "components"]
 
 const named = [...new Set([...tour.matchAll(/\[data-tour="([^"]+)"\]/g)].map((match) => match[1]))];
 
+// display, nav, menu and guide-links.
 test("the tour names the parts it points at", () => {
-  assert.ok(named.length >= 5, `only found ${named.join(", ")}`);
+  assert.ok(named.length >= 4, `only found ${named.join(", ")}`);
 });
 
 for (const name of named) {
