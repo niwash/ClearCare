@@ -1,5 +1,5 @@
 // components/search/card-result.tsx
-import { comingSoonClass } from "@/components/ui/classes";
+import { CompareButton } from "@/components/compare/compare-button";
 import { Icon } from "@/components/ui/icons";
 import { formatEircode, type CentreSummary } from "@/lib/search";
 import Link from "next/link";
@@ -50,19 +50,15 @@ export function CardResult({ centre }: CardResultProps) {
         )}
       </div>
 
-      {/* Add to list on the left, View record on the right. In the adult-centred design the larger
+      {/* Add to shortlist on the left, View record on the right. In the adult-centred design the larger
           text doesn't fit on one line, so the link wraps under the button rather than either label
           breaking mid-way. */}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-line/50 pt-3 text-xs text-ink-muted adult:border-line-soft">
-        {/* TODO: Add the centre to the user's list (CCARE-46). Does nothing yet. */}
-        <button
-          type="button"
-          aria-disabled="true"
-          title="Coming soon"
-          className={`h-8 px-3 font-medium adult:h-11 adult:whitespace-nowrap ${comingSoonClass}`}
-        >
-          Add to list<span className="sr-only"> ({centre.centre_name})</span> (coming soon)
-        </button>
+        {/* Replaces the "Add to list (coming soon)" placeholder for CCARE-46 (CCARE-127). */}
+        <CompareButton
+          home={{ id: centre.centre_id, name: centre.centre_name }}
+          className="min-h-11 px-3 text-sm adult:whitespace-nowrap"
+        />
         <Link
           href={href}
           className="inline-block py-1 font-medium text-primary hover:underline tap-target adult:whitespace-nowrap"

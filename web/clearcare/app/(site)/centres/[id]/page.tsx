@@ -1,5 +1,6 @@
 // app/centres/[id]/page.tsx
 import { CentreHighlights } from "@/components/centre/centre-highlights";
+import { CompareButton } from "@/components/compare/compare-button";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { GuidesBand } from "@/components/guides/guide-ending";
@@ -156,6 +157,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
     <div className="flex flex-col gap-2.5 lg:min-w-60">
       {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
           Taken out until then (CCARE-164). */}
+      <CompareButton home={{ id: centre.centre_id, name: centre.centre_name }} className={`${actionButtonClass} w-full`} />
       {reports && (
         <a
           href={`/centres/${centre.centre_id}/record.csv`}

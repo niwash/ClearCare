@@ -1,0 +1,56 @@
+"use client";
+
+// "Your shortlist" on the search page (CCARE-127), under the filters: the homes saved to compare,
+// each with a ✕, an empty slot for each one still free, and a link to Compare Homes. With nothing
+// saved it says how to add a home, in the left column only; on phones it waits until a home is
+// saved, so it doesn't push the results further down.
+import Link from "next/link";
+import { actionLinkClass } from "@/components/ui/classes";
+import { compareHref, MAX_COMPARED } from "@/lib/compare";
+import { CompareButton } from "./compare-button";
+import { useComparedHomes } from "./compare-store";
+
+export function ShortlistBox({ className = "" }: { className?: string }) {
+  const homes = useComparedHomes() ?? [];
+  const room = MAX_COMPARED - homes.length;
+
+  return (
+    <section
+      aria-labelledby="shortlist-h"
+      className={`${className} flex-col gap-3 rounded-lg border-2 border-primary bg-surface p-4 md:p-5 ${homes.length > 0 ? "flex" : "hidden lg:flex"}`}
+    >
+      <h2 id="shortlist-h" className="font-heading text-lg font-semibold md:text-xl">
+        Your shortlist{" "}
+        <span className="font-sans text-base font-normal text-ink-muted">
+          · {homes.length} of {MAX_COMPARED}
+        </span>
+      </h2>
+      {homes.length === 0 && (
+        <p className="text-sm text-ink-muted">
+          Choose <strong className="text-ink">Add to shortlist</strong> on a home to save it here, then see up to{" "}
+          {MAX_COMPARED} side by side.
+        </p>
+      )}
+      <ul className="flex flex-col gap-2">
+        {homes.map((home) => (
+          <li key={home.id} className="flex items-center justify-between gap-1 rounded-md border border-line bg-surface-muted py-0.5 pl-3 pr-0.5">
+            <Link href={`/centres/${home.id}`} className="min-w-0 py-2 text-sm font-semibold leading-snug text-ink">
+              {home.name}
+            </Link>
+            <CompareButton home={home} variant="remove" iconOnly bare className="size-10 shrink-0" />
+          </li>
+        ))}
+        {Array.from({ length: room }, (_, i) => (
+          <li key={`slot-${i}`} className="rounded-md border-2 border-dashed border-field px-3 py-2 text-sm text-ink-muted">
+            Space for another home
+          </li>
+        ))}
+      </ul>
+      {homes.length > 0 && (
+        <Link href={compareHref(homes.map((home) => home.id))} className={`${actionLinkClass} h-11 justify-center text-sm`}>
+          Compare {homes.length === 1 ? "this home" : `these ${homes.length} homes`} <span aria-hidden>→</span>
+        </Link>
+      )}
+    </section>
+  );
+}
