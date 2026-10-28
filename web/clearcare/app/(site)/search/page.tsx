@@ -2,6 +2,7 @@
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
+import { ShortlistBox } from "@/components/compare/shortlist-box";
 import { CardResult } from "@/components/search/card-result";
 import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
@@ -29,8 +30,9 @@ const FILTERS = ["name", "address", "county", "eircode"] as const;
 // TODO: Make these real filters once the API has the data.
 const COMING_SOON_FILTERS = ["Care types", "Services", "Amenities"] as const;
 
-// The results grid has 1, 2 or 3 columns depending on screen width. 24 divides by all three, so
-// every full page fills its last row. The API's default of 20 would leave gaps.
+// The results grid has 1 or 2 columns depending on screen width (2 beside the left column from lg
+// up). 24 divides by both, and by 3 should a wider layout come back, so every full page fills its
+// last row. The API's default of 20 would leave gaps.
 const RESULTS_PER_PAGE = "24";
 
 // The county list's "Any county": its own value, so the blank the list starts on is the only
@@ -112,15 +114,26 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <>
       <SearchHero query={query} />
 
-      <SearchForm query={query} />
+      {/* From lg up, the filters and the shortlist in a column on the left and the results on the
+          right; stacked in that order below it. The column stretches to the results' height, so the
+          shortlist can stay in view while they scroll. */}
+      <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
+        <aside aria-label="Search filters and shortlist" className="flex flex-col gap-6">
+          <SearchForm query={query} />
+          {/* The homes saved to compare (CCARE-127), in view while the results scroll. */}
+          <ShortlistBox className="lg:sticky lg:top-4" />
+        </aside>
 
-      {result === null ? (
-        <SearchPrompt empty={await sentEmpty(searchParams)} />
-      ) : result.ok ? (
-        <Results query={query} data={result.data} />
-      ) : (
-        <SearchError status={result.status} detail={result.detail} />
-      )}
+        <div className="flex min-w-0 flex-col gap-4">
+          {result === null ? (
+            <SearchPrompt empty={await sentEmpty(searchParams)} />
+          ) : result.ok ? (
+            <Results query={query} data={result.data} />
+          ) : (
+            <SearchError status={result.status} detail={result.detail} />
+          )}
+        </div>
+      </div>
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
       <ContactsBanner className="-mb-6 md:-mb-10" />
@@ -167,8 +180,18 @@ const inputClass = `${textInputClass} w-full`;
 
 function SearchForm({ query }: { query: SearchQuery }) {
   return (
-    <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex flex-col gap-3">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_2fr_1fr_1fr]">
+    // Two fields to a row on tablets; one under another in the left column from lg up.
+    <form
+      action="/search"
+      method="GET"
+      role="search"
+      aria-labelledby="filters-h"
+      className="flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 md:p-5"
+    >
+      <h2 id="filters-h" className="font-heading text-lg font-semibold md:text-xl">
+        Find a nursing home
+      </h2>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
         <Field id="search-name" label="Nursing home name">
           {/* No faded example in any field: people read one as already filled in (CCARE-164). */}
           <input
@@ -224,7 +247,7 @@ function SearchForm({ query }: { query: SearchQuery }) {
         </button>
         {hasFilters(query) && (
           <Link href="/search" className="inline-block py-1 text-sm tap-target">
-            Clear search
+            Clear filters
           </Link>
         )}
       </div>
@@ -236,7 +259,7 @@ function SearchForm({ query }: { query: SearchQuery }) {
 // nothing, and aren't form fields, so they never reach the search.
 function ComingSoonFilters() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
       {COMING_SOON_FILTERS.map((label) => (
         <div key={label} className="flex flex-col gap-1">
           <span className="text-sm font-medium text-ink-muted">{label}</span>
@@ -328,7 +351,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
               : `Showing ${first}–${last} of ${total} registered centres`}
             .
           </p>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             {centres.map((centre) => (
               <CardResult key={centre.centre_id} centre={centre} />
             ))}

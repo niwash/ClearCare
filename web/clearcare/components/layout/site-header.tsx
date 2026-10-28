@@ -1,15 +1,18 @@
 import Link from "next/link";
+import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { primaryButtonClass } from "@/components/ui/classes";
 
-// An unfinished page has no href and shows as plain text, "(coming soon)".
-type NavEntry = { label: string; href: string | null };
+// An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
+// Compare Homes link, which shows how many homes are saved (CCARE-127).
+type NavEntry = { label: string; href: string | null; compare?: true };
 
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
+  { label: "Compare Homes", href: "/compare", compare: true },
   { label: "National Figures", href: "/national" },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
@@ -19,11 +22,10 @@ export const NAV_ITEMS: NavEntry[] = [
 ];
 
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
+  const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
+  if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
   return item.href ? (
-    <Link
-      href={item.href}
-      className={`${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`}
-    >
+    <Link href={item.href} className={linkClass}>
       {item.label}
     </Link>
   ) : (
