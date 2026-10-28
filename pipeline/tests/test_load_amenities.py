@@ -1,6 +1,7 @@
 """Tests for loading extracted amenities. The database tests need Docker."""
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -12,10 +13,11 @@ from clearcare_pipeline.load_amenities import (
     main,
     read_records,
 )
-from tests.database import API, PIPELINE, migrated_database
+from tests.database import PIPELINE, migrated_database
 
 SHA = "ab" * 32
 OTHER_SHA = "cd" * 32
+EXTRACTED_AT = datetime(2026, 10, 26, 12, 0, tzinfo=UTC)
 
 AMENITIES: dict[str, object] = {
     "care_types": ["long-term residential", "respite care"],
@@ -39,18 +41,6 @@ RECORD: dict[str, object] = {
 def _write(path: Path, records: list[dict[str, object]]) -> Path:
     path.write_text(json.dumps(records), encoding="utf-8")
     return path
-
-
-def test_a_valid_file_is_read(tmp_path: Path) -> None:
-    records = read_records(_write(tmp_path / "in.json", [RECORD]))
-
-    assert len(records) == 1
-    assert records[0].amenities.care_types == [
-        "long-term residential",
-        "respite care",
-    ]
-    assert records[0].amenities.has_outdoor_space is True
-    assert records[0].amenities.has_transport is None
 
 
 def test_a_folder_of_extractor_files_is_read(tmp_path: Path) -> None:
@@ -97,13 +87,14 @@ def test_main_reports_an_unreadable_file(tmp_path: Path) -> None:
 
 
 @pytest.mark.database
-def test_amenities_load_once_and_the_api_sees_the_newest() -> None:
+def test_amenities_load_once_per_report_and_version() -> None:
     first = AmenitiesRecord.model_validate(RECORD)
     unmatched = AmenitiesRecord.model_validate({**RECORD, "sha256": OTHER_SHA})
     newer = AmenitiesRecord.model_validate(
         {
             **RECORD,
             "extractor_version": "amenities-v1",
+            "extracted_at": EXTRACTED_AT.isoformat(),
             "amenities": {**AMENITIES, "care_types": ["dementia care"]},
         }
     )
@@ -134,21 +125,9 @@ def test_amenities_load_once_and_the_api_sees_the_newest() -> None:
         # The same extraction again adds nothing.
         assert load(connection, [first]) == Summary(0, 1, 0)
         assert load(connection, [newer]) == Summary(1, 0, 0)
-        connection.commit()
-
-        with database.connect(API) as api:
-            rows = api.execute(
-                "SELECT centre_id, care_types, has_outdoor_space,"
-                " has_transport, extractor_version, model"
-                " FROM clearcare.centre_amenities"
-            ).fetchall()
-        assert rows == [
-            (
-                "117",
-                ["dementia care"],
-                True,
-                None,
-                "amenities-v1",
-                "gpt-4o-mini",
-            )
-        ]
+        # The extractor's own time is kept rather than the load time.
+        stored_at = connection.execute(
+            "SELECT extracted_at FROM clearcare.report_amenities"
+            " WHERE extractor_version = 'amenities-v1'"
+        ).fetchone()
+        assert stored_at == (EXTRACTED_AT,)

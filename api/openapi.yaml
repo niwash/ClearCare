@@ -269,16 +269,15 @@ paths:
       description: |
         Returns the amenities read from the centre's newest inspection report
         that has them: the types of care and room, activities, special units,
-        and whether the report mentions outdoor space, transport or a chapel or
-        religious services. They are read by a language model from the
-        provider's own description of the centre, so they are what the report
-        says and not an inspection finding. `inspection_date` and `report_id`
-        say which report they come from, and `GET /reports/{report_id}`
-        returns it.
+        and whether there is outdoor space, transport or a chapel or religious
+        services. They are values a model (gpt-4o-mini) read from the whole
+        report text, with the report they came from. Provider text and
+        inspector observations are not separated yet. `inspection_date` and
+        `report_id` say which report they come from, and
+        `GET /reports/{report_id}` returns it.
 
-        A flag is `true` when the report mentions the amenity and `null` when
-        it does not. `null` does not mean the centre has none. The lists hold
-        the report's own wording.
+        A flag is `true` or `false` when the report says so and `null` when
+        it is silent. `null` does not mean the centre has none.
 
         The centre must be in the register snapshot ClearCare currently serves.
         Any value that is not the ID of such a centre gives 404, including one
@@ -322,22 +321,12 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-              example:
-                title: Not Found
-                status: 404
-                detail: The register has no centre with this centre_id.
-                instance: /centres/999/amenities
         "503":
           description: No register snapshot has been loaded yet.
           content:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-              example:
-                title: Service Unavailable
-                status: 503
-                detail: The register has not been loaded yet.
-                instance: /centres/34/amenities
 
   /reports/{report_id}:
     get:
@@ -739,24 +728,28 @@ components:
         care_types:
           type: array
           items: {type: string}
-          description: Types of care, in the report's own wording.
         room_types:
           type: array
           items: {type: string}
-          description: Types of room, in the report's own wording.
         has_outdoor_space:
           type: [boolean, "null"]
-          description: True if the report mentions a garden or outdoor space, else null.
+          description: >
+            A garden or outdoor space. True or false when the report says so,
+            null when it is silent.
         activities:
           type: array
           items: {type: string}
-          description: Activities, therapies and programmes the report mentions.
         has_transport:
           type: [boolean, "null"]
-          description: True if the report mentions transport for residents, else null.
+          description: >
+            Transport the centre itself provides for residents. Public
+            transport nearby does not count. True or false when the report
+            says so, null when it is silent.
         has_chapel_or_religious_services:
           type: [boolean, "null"]
-          description: True if the report mentions a chapel or religious services, else null.
+          description: >
+            A chapel or religious services. True or false when the report says
+            so, null when it is silent.
         special_units:
           type: array
           items: {type: string}
@@ -772,7 +765,6 @@ components:
           description: Which extraction wrote these, for example amenities-v1.
         model:
           type: string
-          description: The language model behind that extraction.
 
     ReportResult:
       type: object

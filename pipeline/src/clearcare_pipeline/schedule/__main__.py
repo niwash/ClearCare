@@ -17,7 +17,6 @@ from pathlib import Path
 from clearcare_pipeline.contract_prices.__main__ import (
     main as load_contract_prices,
 )
-from clearcare_pipeline.extract_about import main as extract_about
 from clearcare_pipeline.extract_text import main as extract_text
 from clearcare_pipeline.ingest_reports.__main__ import main as ingest_reports
 from clearcare_pipeline.load_register.__main__ import main as load_register
@@ -43,7 +42,6 @@ STAGES: Mapping[str, Stage] = {
     "load_report_files": load_report_files,
     "ingest_reports": ingest_reports,
     "extract_text": extract_text,
-    "extract_about": extract_about,
     # It reads only stored text, so it takes no data directory.
     "split_commitments": lambda _: split_commitments([]),
 }
@@ -127,7 +125,6 @@ def main(
         "load_report_files",
         "ingest_reports",
         "extract_text",
-        "extract_about",
         "split_commitments",
     ):
         _run_stage(stages, (name,), data_dir)
@@ -179,7 +176,6 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
                 "load_report_files",
                 "ingest_reports",
                 "extract_text",
-                "extract_about",
                 "split_commitments",
             ),
             wait_after_success=timedelta(days=7),

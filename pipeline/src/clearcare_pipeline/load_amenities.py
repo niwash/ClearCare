@@ -8,8 +8,10 @@ on which report was read, and carries the model and extractor version:
 
     {"sha256": "...", "model": "gpt-4o-mini",
      "extractor_version": "amenities-v1",
+     "extracted_at": "2026-10-26T12:00:00+00:00",
      "amenities": {"care_types": [...], ...}}
 
+extracted_at is optional; a record without it is stamped with the load time.
 Other keys in a record, such as centre_id or inspection_date, are ignored.
 """
 
@@ -18,10 +20,11 @@ import logging
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import psycopg
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
 
 from clearcare_pipeline.ingest_reports.database import Connection
 
@@ -57,13 +60,13 @@ class AmenitiesRecord(BaseModel):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     model: str = Field(min_length=1)
     extractor_version: str = Field(min_length=1)
+    # When the extractor ran. Older results may not have it.
+    extracted_at: datetime | None = None
     amenities: Amenities
 
 
-class AmenitiesFile(BaseModel):
-    """The input file: a list of records."""
-
-    records: list[AmenitiesRecord]
+# Reads a list file in one step, without wrapping it in another object.
+_RECORDS = TypeAdapter(list[AmenitiesRecord])
 
 
 @dataclass(frozen=True)
@@ -85,8 +88,10 @@ _INSERT = (
     "INSERT INTO clearcare.report_amenities (report_id, care_types,"
     " room_types, has_outdoor_space, activities, has_transport,"
     " has_chapel_or_religious_services, special_units, dining_notes,"
-    " other_notes, extractor_version, model)"
-    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+    " other_notes, extractor_version, model, extracted_at)"
+    " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
+    # A record without extracted_at gets the load time, as the column default.
+    " COALESCE(%s, now()))"
     " ON CONFLICT (report_id, extractor_version) DO NOTHING"
 )
 
@@ -113,9 +118,7 @@ def _read_file(path: Path, *, single: bool) -> list[AmenitiesRecord]:
     try:
         if single:
             return [AmenitiesRecord.model_validate_json(text)]
-        return AmenitiesFile.model_validate_json(
-            '{"records":' + text + "}"
-        ).records
+        return _RECORDS.validate_json(text)
     except ValidationError as error:
         raise ValueError(f"{path}: {error}") from error
 
@@ -151,6 +154,7 @@ def load(connection: Connection, records: Sequence[AmenitiesRecord]) -> Summary:
                     amenities.other_notes,
                     record.extractor_version,
                     record.model,
+                    record.extracted_at,
                 ),
             )
             if cursor.rowcount:

@@ -4,9 +4,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * What a centre offers residents, as read from one of its inspection reports. The lists hold the
- * report's own wording. A flag is true when the report mentions the amenity and null when it does
- * not, which is not the same as the centre having none. inspection_date is null if the report
+ * What a centre offers residents: values a model (gpt-4o-mini) read from the whole text of one of
+ * its inspection reports, with the report they came from. Provider text and inspector observations
+ * are not separated yet. A flag is true or false when the report says so and null when it is
+ * silent, which is not the same as the centre having none. inspection_date is null if the report
  * printed none.
  */
 record CentreAmenities(

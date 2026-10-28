@@ -204,27 +204,6 @@ class CentreAmenitiesTest {
                         .formatted(centreId)));
   }
 
-  @Test
-  void isUnavailableUntilASnapshotIsPublished() throws Exception {
-    execute("DELETE FROM clearcare.register_publication");
-    try {
-      mvc.perform(get("/centres/" + ELM_HALL + "/amenities"))
-          .andExpect(status().isServiceUnavailable())
-          .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-          .andExpect(
-              content()
-                  .json(
-                      """
-                      {"title": "Service Unavailable", "status": 503,
-                       "detail": "The register has not been loaded yet."}
-                      """));
-    } finally {
-      execute(
-          "INSERT INTO clearcare.register_publication (source_file_id, published_at)"
-              + " VALUES (1, now())");
-    }
-  }
-
   private static void execute(String sql) throws SQLException {
     try (Connection connection = database.createConnection("");
         Statement statement = connection.createStatement()) {

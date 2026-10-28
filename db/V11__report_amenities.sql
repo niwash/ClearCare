@@ -1,37 +1,18 @@
 -- Amenities read from inspection reports (CCARE-85). Flyway runs this as
 -- clearcare_owner (ADR-0010).
 
--- The "About the designated centre" section is kept as report text, beside the
--- other kinds (db/V5). It is the provider's own description of the centre, and
--- the main source of care types, room types and special units. It has no
--- regulation, as with the introduction and the section summaries.
---
--- Its rows carry their own extractor_version (about-v1), so the text-v1 rows
--- that the commitments split and the outcome pilot read are left as they are.
-ALTER TABLE clearcare.inspection_report_text
-    DROP CONSTRAINT inspection_report_text_kind_check,
-    DROP CONSTRAINT inspection_report_text_check3;
-ALTER TABLE clearcare.inspection_report_text
-    ADD CONSTRAINT inspection_report_text_kind_check CHECK (kind IN (
-        'about', 'intro', 'capacity_summary', 'narrative', 'quality_summary',
-        'response'
-    )),
-    ADD CONSTRAINT inspection_report_text_regulation_check CHECK (
-        (kind IN ('about', 'intro', 'capacity_summary', 'quality_summary'))
-        = (regulation IS NULL)
-    );
-
 -- What a centre offers residents, as read from one report by one extraction.
 -- Extractions are kept, not replaced: a re-run with a new model or prompt is a
 -- new row, and the view below serves the newest.
 CREATE TABLE clearcare.report_amenities (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     report_id bigint NOT NULL REFERENCES clearcare.inspection_report,
-    -- Lists hold the report's own wording, not yet normalised.
+    -- Lists hold what the model read from the whole report text, not yet
+    -- normalised.
     care_types text[] NOT NULL,
     room_types text[] NOT NULL,
-    -- TRUE when the report mentions it, NULL when it does not. A report that
-    -- is silent about a garden does not show that the centre has none.
+    -- True or false when the report says so, NULL when it is silent. A report
+    -- that is silent about a garden does not show that the centre has none.
     has_outdoor_space boolean,
     activities text[] NOT NULL,
     has_transport boolean,
@@ -75,7 +56,8 @@ INNER JOIN clearcare.inspection_report AS report
 ORDER BY
     report.centre_id,
     report.inspection_date DESC NULLS LAST,
-    report.id DESC,
+    -- Ties on date go to the lower report id, as in the API's report list.
+    report.id,
     amenities.id DESC;
 
 -- The API reads this view and nothing behind it, as with the views in db/V3.
