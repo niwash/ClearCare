@@ -84,12 +84,13 @@ function pageHref(query: SearchQuery, page: number) {
 }
 
 // The home page box sends q. The API has no combined search, so send it on as an Eircode
-// if it looks like one, otherwise as a name.
+// if it looks like one, otherwise as a name. An empty box goes on as an empty name, so it gets
+// the same "Please enter something" as an empty search here.
 async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
   const value = (await searchParams).q;
   if (value === undefined) return;
   const q = (Array.isArray(value) ? value[0] : value)?.trim();
-  if (!q) redirect("/search");
+  if (!q) redirect("/search?name=");
   redirect(`/search?${new URLSearchParams({ [looksLikeEircode(q) ? "eircode" : "name"]: q })}`);
 }
 

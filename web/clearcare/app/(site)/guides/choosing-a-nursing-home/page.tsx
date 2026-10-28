@@ -5,6 +5,7 @@ import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
 import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
+import { Chevron } from "@/components/ui/chevron";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
 const guide = getGuide("choosing-a-nursing-home");
@@ -114,18 +115,7 @@ export default function ChoosingANursingHomeGuide() {
                     <details className="group">
                       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
                         {question}
-                        <svg
-                          aria-hidden
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="mt-0.5 size-5 shrink-0 text-ink-muted transition-transform group-open:rotate-90"
-                        >
-                          <path d="m9 6 6 6-6 6" />
-                        </svg>
+                        <Chevron className="mt-0.5 size-5 text-ink-muted group-open:rotate-90" />
                       </summary>
                       <div className="px-4 pb-3 text-sm text-ink-muted">
                         {answer ?? <Placeholder>Answer coming soon</Placeholder>}

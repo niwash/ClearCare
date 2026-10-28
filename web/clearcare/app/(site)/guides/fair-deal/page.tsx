@@ -7,6 +7,7 @@ import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { Icon } from "@/components/ui/icons";
+import { ShowHide } from "@/components/ui/chevron";
 
 const guide = getGuide("fair-deal");
 
@@ -751,23 +752,7 @@ function Example({
           {title}
         </h3>
         <span className="col-start-1 text-ink-muted">{description}</span>
-        <span className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-          {/* Words as well as the arrow, so it is clear the card opens. */}
-          <span className="group-open:hidden">Show</span>
-          <span className="hidden group-open:inline">Hide</span>
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5 transition-transform group-open:rotate-90 motion-reduce:transition-none"
-          >
-            <path d="m9 6 6 6-6 6" />
-          </svg>
-        </span>
+        <ShowHide className="col-start-2 row-span-2 row-start-1" />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line-soft px-5 pb-5 pt-4 md:px-6 md:pb-6">{children}</div>
     </details>

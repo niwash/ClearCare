@@ -198,7 +198,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
           {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
           <Fact label="Address" icon="address">{centre.address}</Fact>
           {eircode && !addressHasEircode && (
-            <Fact label="Eircode" icon="email">
+            <Fact label="Eircode" icon="eircode">
               <span className="font-mono">{eircode}</span>
             </Fact>
           )}

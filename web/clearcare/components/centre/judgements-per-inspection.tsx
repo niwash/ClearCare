@@ -2,6 +2,7 @@
 import type { ReactNode } from "react";
 import { formatDate, type Inspection, type Judgement, type RegulationHistory } from "@/lib/centres";
 import { Icon } from "@/components/ui/icons";
+import { ShowHide } from "@/components/ui/chevron";
 import { JudgementIcon } from "./judgement-icon";
 
 type AssessedJudgement = Exclude<Judgement, "not-assessed">;
@@ -73,22 +74,7 @@ export function JudgementsPerInspection({ inspections, shown, history }: Judgeme
             <p className="hidden text-sm text-ink-muted group-open:block">Number of judgments HIQA made at each inspection.</p>
           </div>
         </div>
-        <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-          <span className="group-open:hidden">Show</span>
-          <span className="hidden group-open:inline">Hide</span>
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5 transition-transform group-open:rotate-90"
-          >
-            <path d="m9 6 6 6-6 6" />
-          </svg>
-        </span>
+        <ShowHide />
       </summary>
       <ul className="flex flex-col gap-4 px-4 pb-5 md:px-7">
         {shown.map((inspection) => {

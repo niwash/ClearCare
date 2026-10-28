@@ -7,6 +7,7 @@ import { StepNumber } from "@/components/guides/step-number";
 import type { Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
+import { ShowHide } from "@/components/ui/chevron";
 
 const guide = getGuide("reading-inspection-reports");
 
@@ -58,22 +59,7 @@ function Step({ number, title, children }: { number: number; title: string; chil
             <span className="sr-only">Step {number}: </span>
             {title}
           </h2>
-          <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-            <span className="group-open:hidden">Show</span>
-            <span className="hidden group-open:inline">Hide</span>
-            <svg
-              aria-hidden
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.5}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-5 transition-transform group-open:rotate-90"
-            >
-              <path d="m9 6 6 6-6 6" />
-            </svg>
-          </span>
+          <ShowHide />
         </summary>
         {/* Lined up with the title, past the number. */}
         <div className="px-4 pb-4 sm:pl-[4.5rem] md:px-5 md:pb-5 md:pl-[5.25rem]">{children}</div>
