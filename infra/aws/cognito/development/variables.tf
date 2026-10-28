@@ -1,7 +1,7 @@
 variable "aws_region" {
-  description = "Region the development pool is created in."
+  description = "Region the development pool is created in. The rest of ClearCare runs in eu-north-1."
   type        = string
-  default     = "eu-west-1"
+  default     = "eu-north-1"
 }
 
 variable "domain_prefix" {
