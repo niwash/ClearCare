@@ -90,7 +90,8 @@ function ResultCards({ matrix }: { matrix: NextResultCounts[] }) {
     <ul className="flex flex-col gap-3 md:hidden">
       {matrix.map((row) => (
         <li key={row.judgment}>
-          <details className="group overflow-hidden rounded-md border border-line-soft open:border-primary">
+          {/* The clipping sits on the inner list, not here, so the summary's focus outline isn't cut off. */}
+          <details className="group rounded-md border border-line-soft open:border-primary">
             <summary className="flex min-h-11 cursor-pointer list-none items-center gap-3 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
               <h3 className="flex flex-1 flex-wrap items-center gap-x-2 gap-y-1 font-semibold">
                 <JudgementIcon judgement={STARTING_JUDGEMENTS[row.judgment]} />
@@ -113,7 +114,7 @@ function ResultCards({ matrix }: { matrix: NextResultCounts[] }) {
                 <path d="m9 6 6 6-6 6" />
               </svg>
             </summary>
-            <ul>
+            <ul className="overflow-hidden rounded-b-md">
               {COLUMNS.map((column) => {
                 const share = row.total > 0 ? row[column.key] / row.total : 0;
                 return (
