@@ -1,2 +1,11 @@
 .env
 /data
+
+# Terraform: the state holds the Cognito client secret, so it never enters git.
+# infra/aws has the same rules locally; these cover the Cognito tree at the root.
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfplan.*
+crash.log

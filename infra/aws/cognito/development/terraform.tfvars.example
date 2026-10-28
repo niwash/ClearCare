@@ -1,0 +1,11 @@
+# Copy to terraform.tfvars and replace the placeholders. The real file is ignored by
+# git through infra/aws/.gitignore, because the prefix names this account's login host.
+#
+# The prefix is the first label of the managed login domain:
+#   https://<domain_prefix>.auth.<region>.amazoncognito.com
+# It is global across all AWS accounts and cannot be renamed after the pool is created
+# without replacing the domain, so choose it once.
+
+domain_prefix = "clearcare-dev-example"
+
+web_origin = "http://localhost:3000"
