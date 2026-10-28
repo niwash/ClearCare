@@ -1,6 +1,6 @@
 # ClearCare on AWS
 
-ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the account. The site and the API are ECS services on Fargate behind one load balancer. The pipeline, the migrations and restores run as one-off Fargate tasks. The database is RDS PostgreSQL 18.6. DNS stays at Cloudflare.
+ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the account. The site and the API are ECS services on Fargate behind one load balancer. The pipeline, the migrations and restores run as one-off Fargate tasks. The database is RDS PostgreSQL 18.6. DNS stays at Cloudflare. Vercel keeps building the site for pull-request previews and for `main` (clear-care-nine.vercel.app); both read the production API, so they are previews of the site, not a separate environment.
 
 | Path | Contents |
 | --- | --- |
@@ -8,7 +8,7 @@ ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the 
 | `live/` | Everything else, one file per concern |
 | `live/rds-ca/` | The RDS certificate bundle the database clients check the server against |
 | `migrate/Dockerfile` | Flyway with the migrations in `db/` |
-| `bin/` | The scripts the workflows run |
+| `bin/` | The scripts the workflows and the operator run |
 
 The images are built from `api/Dockerfile`, `web/clearcare/Dockerfile`, `pipeline/Dockerfile` and `migrate/Dockerfile`. The workflows are `.github/workflows/aws-*.yml`.
 
@@ -39,6 +39,8 @@ The last command keeps a copy of this folder's state in the bucket it describes.
 
 ## First apply
 
+Terraform and the scripts in `bin/` use the AWS CLI's credentials, so select this account's profile first, for example `export AWS_PROFILE=clearcare`; rejected credentials usually mean another profile was picked up.
+
 The task definitions need images, and the images need the repositories and the build role. The database needs its roles and its data before anything migrates it. So the first apply comes in steps.
 
 1. Copy `infra/aws/live/terraform.tfvars.example` to `infra/aws/live/terraform.tfvars` and fill it in. Leave the zero digests and both switches `false` for now.
@@ -64,7 +66,7 @@ The task definitions need images, and the images need the repositories and the b
    ```
 
 6. Put the digests in `terraform.tfvars` and apply everything from `infra/aws/live`: `terraform apply`. It waits until ACM has issued the certificate. Until step 10 the API's tasks cannot start, and its no-healthy-target alarm is on.
-7. Set the database passwords (below) and create the database roles.
+7. Set the database passwords and create the roles with `infra/aws/bin/create-roles` (Database passwords and roles, below).
 8. Restore the production dump (Dumps and restore, below). It brings the schema and its Flyway history, so no migration runs before it.
 9. Check the restored data. Then set `deploys_enabled = true` and apply.
 10. Run the AWS deploy workflow for the commit. Flyway applies only the migrations the dump lacks, and the smoke check tests both hostnames through the load balancer.
@@ -89,7 +91,13 @@ done
 
 RDS keeps the administrator's password in a secret of its own (`terraform output database_secret_arns`).
 
-The roles are created once, before the restore, with `infra/postgres/roles.sql`. On RDS the file needs changes, because the administrator is not a superuser. That step is not scripted yet.
+Create the roles once, after the passwords are set and before the restore:
+
+```sh
+infra/aws/bin/create-roles
+```
+
+It adapts `infra/postgres/roles.sql` for RDS, where the administrator is not a superuser, and runs it with the restore task's psql as the administrator. The SQL holds the passwords, so it goes through the dumps bucket and is deleted, with all its versions, when the script ends. A `CREATE ROLE` that fails leaves its statement, password included, in the database's PostgreSQL log; set that password again before retrying.
 
 A task reads its secret when it starts. After changing a password, change it in the database too, then start new tasks: run the deploy workflow again for the running commit.
 
@@ -152,7 +160,7 @@ It prints the end of each container's log and exits 0 only if every container ex
 
 ## Dumps and restore
 
-The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first. Upload the dump, then run the restore:
+The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first (Database passwords and roles). Upload the dump, then run the restore:
 
 ```sh
 aws s3 cp clearcare.dump "s3://clearcare-dumps-$ACCOUNT_ID/restore/clearcare.dump"
