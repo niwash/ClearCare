@@ -3,8 +3,9 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
-import { ContentsNav, StepNumber } from "@/components/guides/step-number";
+import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
+import { Chevron } from "@/components/ui/chevron";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
 const guide = getGuide("choosing-a-nursing-home");
@@ -89,7 +90,7 @@ export default function ChoosingANursingHomeGuide() {
       {/* The five stages at a glance, each a link down to its card. */}
       <ContentsNav label="Stages" items={STAGES.map((stage, index) => ({ id: `stage-${index + 1}`, title: stage.title }))} />
 
-      <ol className="flex max-w-4xl flex-col gap-4 md:gap-6">
+      <ol className="flex max-w-4xl flex-col gap-4">
         {STAGES.map((stage, index) => {
           // A guide that isn't written yet isn't linked, as on the resources page.
           const relatedGuide = stage.relatedGuide && getGuide(stage.relatedGuide);
@@ -99,7 +100,7 @@ export default function ChoosingANursingHomeGuide() {
             <li
               key={stage.title}
               id={`stage-${index + 1}`}
-              className="flex scroll-mt-6 flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-8"
+              className={`flex ${sectionScrollMargin} flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-6`}
             >
               <div className="flex items-center gap-4">
                 <StepNumber number={index + 1} />
@@ -114,18 +115,7 @@ export default function ChoosingANursingHomeGuide() {
                     <details className="group">
                       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
                         {question}
-                        <svg
-                          aria-hidden
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth={2.5}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="mt-0.5 size-5 shrink-0 text-ink-muted transition-transform group-open:rotate-90"
-                        >
-                          <path d="m9 6 6 6-6 6" />
-                        </svg>
+                        <Chevron className="mt-0.5 size-5 text-ink-muted group-open:rotate-90" />
                       </summary>
                       <div className="px-4 pb-3 text-sm text-ink-muted">
                         {answer ?? <Placeholder>Answer coming soon</Placeholder>}
@@ -139,6 +129,7 @@ export default function ChoosingANursingHomeGuide() {
                   <Link href={`/guides/${related.slug}`} className="tap-target">Read: {related.title} →</Link>
                 </p>
               )}
+              <SectionEnd />
             </li>
           );
         })}

@@ -14,8 +14,12 @@ type Feature = {
   title: string;
   text: string;
   href: string;
+  action: string; // the button's words: what it opens, not just "See more"
   guide?: Guide; // for its draft or coming-soon status
   photo: string;
+  // Which part of the photo to keep when it's cropped, written out in full for Tailwind. The default
+  // keeps faces, about a third of the way down.
+  focus?: string;
 };
 
 // Photos are free to use without credit (Unsplash and Pexels licences), downloaded at 1600px wide:
@@ -28,14 +32,16 @@ const FEATURES: Feature[] = [
   {
     title: "How choosing a home works",
     text: "From the first conversation to moving in.",
-    href: "/guides/user-journey",
-    guide: getGuide("user-journey"),
+    href: "/guides/how-a-family-chooses",
+    action: "See the steps",
+    guide: getGuide("how-a-family-chooses"),
     photo: "/home/family.jpg",
   },
   {
     title: "Fair Deal explained",
     text: "How the HSE helps pay for nursing home care.",
     href: "/guides/fair-deal",
+    action: "Learn about Fair Deal",
     guide: getGuide("fair-deal"),
     photo: "/home/fair-deal.jpg",
   },
@@ -43,14 +49,19 @@ const FEATURES: Feature[] = [
     title: "What to ask when you visit",
     text: "Questions to ask a home before you decide.",
     href: "/guides/choosing-a-nursing-home",
+    action: "See the questions",
     guide: getGuide("choosing-a-nursing-home"),
     photo: "/home/phone.jpg",
+    // The woman taking notes is on the right and low down; this keeps her hand and the paper in view
+    // and leaves the computer on the left, with its logo, mostly under the text panel.
+    focus: "object-[70%_75%]",
   },
   // Last, so the carousel opens on the guides; the search box is also further down the page.
   {
     title: "Check a nursing home's record",
     text: "Every HIQA inspection report, one page per home.",
     href: "/search",
+    action: "Search for a home",
     photo: "/home/report.jpg",
   },
 ];
@@ -183,7 +194,7 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
 // sits under the photo. In the grid the card keeps the page's colours, with the words under the
 // photo, as the adult-centred design keeps photos out from behind text.
 //
-// The whole slide is the link, through "See more" stretched over it. It is styled as a card, not as
+// The whole slide is the link, through its button stretched over it. It is styled as a card, not as
 // a link: a deliberate exception to the design guide's rule that links are underlined. The focus
 // outline (globals.css) still shows for keyboard users. A guide that isn't written yet has no link,
 // a "Coming soon" label in place of the button, and in the grid the dashed coming-soon look.
@@ -192,25 +203,26 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
 
   return (
     <article
-      className={`relative flex h-full flex-col overflow-hidden rounded-lg md:block md:h-[30rem] md:rounded-none lg:h-[34rem] adult:flex adult:h-full adult:rounded-lg ${
+      className={`relative flex h-full flex-col overflow-hidden rounded-lg md:block md:h-[24rem] md:rounded-none lg:h-[26rem] adult:flex adult:h-full adult:rounded-lg ${
         comingSoon
           ? "adult:cursor-not-allowed adult:border-2 adult:border-dashed adult:border-field adult:bg-surface-muted"
           : "adult:border adult:border-line adult:bg-surface"
       }`}
     >
-      <div className="relative aspect-[3/2] shrink-0 md:absolute md:inset-y-0 md:right-0 md:aspect-auto md:w-[60%] adult:relative adult:aspect-[3/2] adult:w-auto">
+      {/* Half the slide each, text and photo. The text panel's slanted edge overlaps the photo by 7rem. */}
+      <div className="relative aspect-[3/2] shrink-0 md:absolute md:inset-y-0 md:right-0 md:aspect-auto md:w-1/2 adult:relative adult:aspect-[3/2] adult:w-auto">
         <Image
           src={feature.photo}
           alt=""
           fill
           priority={priority}
           sizes="(min-width: 768px) 60vw, 90vw"
-          className="object-cover object-[50%_30%]"
+          className={`object-cover ${feature.focus ?? "object-[50%_30%]"}`}
         />
       </div>
 
-      <div className="feature-panel flex flex-1 flex-col items-start gap-3 p-5 md:absolute md:inset-y-0 md:left-0 md:w-[48%] md:justify-center md:py-10 md:pl-[max(6rem,calc((100vw-72rem)/2+2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)] adult:static adult:w-auto adult:justify-start adult:p-5 adult:[clip-path:none]">
-        <h3 className="font-heading text-xl font-semibold text-ink md:text-3xl lg:text-4xl adult:text-lg">
+      <div className="feature-panel flex flex-1 flex-col items-start gap-3 p-5 md:absolute md:inset-y-0 md:left-0 md:right-[calc(50%-7rem)] md:justify-center md:py-10 md:pl-[max(6rem,calc((100vw-72rem)/2+2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)] adult:static adult:w-auto adult:justify-start adult:p-5 adult:[clip-path:none]">
+        <h3 className="font-heading text-xl font-semibold text-ink md:text-2xl lg:text-3xl adult:text-lg">
           {feature.title}
         </h3>
         {feature.guide?.status === "draft" && <DraftLabel />}
@@ -222,7 +234,7 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
             href={feature.href}
             className="mt-1 inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline after:absolute after:inset-0 hover:bg-primary-hover hover:text-on-primary"
           >
-            See more<span className="sr-only">: {feature.title}</span>
+            {feature.action}<span className="sr-only">: {feature.title}</span>
             <span aria-hidden>→</span>
           </Link>
         )}

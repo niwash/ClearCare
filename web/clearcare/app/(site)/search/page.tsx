@@ -4,6 +4,7 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { CardResult } from "@/components/search/card-result";
 import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { Icon } from "@/components/ui/icons";
 import { formatDate } from "@/lib/centres";
 import {
   COUNTIES,
@@ -32,20 +33,30 @@ const COMING_SOON_FILTERS = ["Care types", "Services", "Amenities"] as const;
 // every full page fills its last row. The API's default of 20 would leave gaps.
 const RESULTS_PER_PAGE = "24";
 
-// Empty form fields arrive as "", which means "not set".
+// The county list's "Any county": its own value, so the blank the list starts on is the only
+// option chosen when the page opens. It means no county, like the blank.
+const ANY_COUNTY = "any";
+
+// Empty form fields arrive as "", which means "not set"; so does "Any county".
 async function readQuery(searchParams: SearchPageProps["searchParams"]): Promise<SearchQuery> {
   const params = await searchParams;
   const query: SearchQuery = {};
   for (const key of [...FILTERS, "page", "page_size"] as const) {
     const value = params[key];
     const text = (Array.isArray(value) ? value[0] : value)?.trim();
-    if (text) query[key] = text;
+    if (text && !(key === "county" && text === ANY_COUNTY)) query[key] = text;
   }
   return query;
 }
 
 function hasFilters(query: SearchQuery) {
   return FILTERS.some((key) => query[key]);
+}
+
+// The form was sent with every field empty: its fields arrive as "", so the keys are there.
+async function sentEmpty(searchParams: SearchPageProps["searchParams"]) {
+  const params = await searchParams;
+  return FILTERS.some((key) => key in params);
 }
 
 // "“aras” in Co. Mayo", for the heading and the empty state.
@@ -73,12 +84,13 @@ function pageHref(query: SearchQuery, page: number) {
 }
 
 // The home page box sends q. The API has no combined search, so send it on as an Eircode
-// if it looks like one, otherwise as a name.
+// if it looks like one, otherwise as a name. An empty box goes on as an empty name, so it gets
+// the same "Please enter something" as an empty search here.
 async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
   const value = (await searchParams).q;
   if (value === undefined) return;
   const q = (Array.isArray(value) ? value[0] : value)?.trim();
-  if (!q) redirect("/search");
+  if (!q) redirect("/search?name=");
   redirect(`/search?${new URLSearchParams({ [looksLikeEircode(q) ? "eircode" : "name"]: q })}`);
 }
 
@@ -90,8 +102,11 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const query = await readQuery(searchParams);
+  // Nothing is listed until something is searched for (CCARE-164): a full list of every home
+  // read as if the search had been done for them.
+  const searched = hasFilters(query);
   // Not added to query itself, so it stays out of the page links.
-  const result = await searchCentres({ ...query, page_size: query.page_size ?? RESULTS_PER_PAGE });
+  const result = searched ? await searchCentres({ ...query, page_size: query.page_size ?? RESULTS_PER_PAGE }) : null;
 
   return (
     <>
@@ -99,7 +114,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       <SearchForm query={query} />
 
-      {result.ok ? (
+      {result === null ? (
+        <SearchPrompt empty={await sentEmpty(searchParams)} />
+      ) : result.ok ? (
         <Results query={query} data={result.data} />
       ) : (
         <SearchError status={result.status} detail={result.detail} />
@@ -119,10 +136,10 @@ function SearchHero({ query }: { query: SearchQuery }) {
 
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
           <Breadcrumb trail={[]} current="Search for Homes" />
-          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
           </h1>
           {!searched && (
@@ -136,7 +153,7 @@ function SearchHero({ query }: { query: SearchQuery }) {
         {!searched && (
           <p className="text-sm text-ink-muted">
             Not sure where to start?{" "}
-            <Link href="/guides/user-journey" className="text-ink tap-target">
+            <Link href="/guides/how-a-family-chooses" className="text-ink tap-target">
               Read how a family chooses a nursing home →
             </Link>
           </p>
@@ -153,13 +170,12 @@ function SearchForm({ query }: { query: SearchQuery }) {
     <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex flex-col gap-3">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[2fr_2fr_1fr_1fr]">
         <Field id="search-name" label="Nursing home name">
-          {/* Faded examples, like the Eircode field's. Elm Hall is the home the no-results tips use. */}
+          {/* No faded example in any field: people read one as already filled in (CCARE-164). */}
           <input
             id="search-name"
             name="name"
             type="search"
             defaultValue={query.name}
-            placeholder="Elm Hall"
             maxLength={MAX_TEXT_LENGTH}
             className={inputClass}
           />
@@ -170,14 +186,16 @@ function SearchForm({ query }: { query: SearchQuery }) {
             name="address"
             type="search"
             defaultValue={query.address}
-            placeholder="Celbridge or Main Street"
             maxLength={MAX_TEXT_LENGTH}
             className={inputClass}
           />
         </Field>
         <Field id="search-county" label="County">
           <select id="search-county" name="county" defaultValue={query.county ?? ""} className={inputClass}>
-            <option value="">Any county</option>
+            {/* The box starts blank, so nothing looks chosen (CCARE-164). The blank is hidden from the
+                list, so "Any county" is the one to pick; both search every county (readQuery). */}
+            <option value="" hidden></option>
+            <option value={ANY_COUNTY}>Any county</option>
             {COUNTIES.map((county) => (
               <option key={county} value={county}>
                 {county}
@@ -191,9 +209,8 @@ function SearchForm({ query }: { query: SearchQuery }) {
             name="eircode"
             type="search"
             defaultValue={query.eircode}
-            placeholder="D06 or W23 P6EX"
             autoComplete="postal-code"
-            className={`${inputClass} uppercase placeholder:normal-case`}
+            className={`${inputClass} uppercase`}
           />
         </Field>
       </div>
@@ -251,6 +268,22 @@ function Field({ id, label, children }: { id: string; label: string; children: R
   );
 }
 
+// In place of results before anything is searched for: what to enter, in a tinted panel like the
+// no-results one. If the form was sent empty, it says so first.
+function SearchPrompt({ empty }: { empty: boolean }) {
+  return (
+    <section aria-labelledby="prompt-h" className="flex flex-col items-start gap-3 rounded-lg bg-band p-6 md:p-8">
+      <h2 id="prompt-h" className="flex items-center gap-3 font-heading text-xl font-semibold text-ink md:text-2xl">
+        <Icon name="search" className="size-6 text-primary" />
+        {empty ? "Please enter something to search for" : "Find a nursing home"}
+      </h2>
+      <p className="max-w-2xl text-ink-muted">
+        Search by name, address or town, county or Eircode.
+      </p>
+    </section>
+  );
+}
+
 function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) {
   const { centres, page, page_size, total, register_snapshot } = data;
   const first = (page - 1) * page_size + 1;
@@ -277,7 +310,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
             <li>Many Dublin addresses don&apos;t include &ldquo;Dublin&rdquo;. Use the County filter instead.</li>
           </ul>
           <Link href="/search" className={`${actionLinkClass} mt-2`}>
-            See every home <span aria-hidden>→</span>
+            Start a new search <span aria-hidden>→</span>
           </Link>
         </div>
       ) : centres.length === 0 ? (
@@ -297,7 +330,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
           </p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
-              <CardResult key={centre.centre_id} centre={centre} from={pageQuery(query, page)} />
+              <CardResult key={centre.centre_id} centre={centre} />
             ))}
           </div>
         </>

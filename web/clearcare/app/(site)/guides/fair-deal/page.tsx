@@ -2,9 +2,12 @@ import type { ReactNode } from "react";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
-import { ContentsNav, StepNumber } from "@/components/guides/step-number";
+import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
+import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
+import { Icon } from "@/components/ui/icons";
+import { ShowHide } from "@/components/ui/chevron";
 
 const guide = getGuide("fair-deal");
 
@@ -36,42 +39,49 @@ type SectionId = (typeof SECTIONS)[number]["id"];
 
 const COVERED = ["Your room and bed", "All your meals", "Laundry", "The nursing and personal care you need"];
 
-const CONTACTS: { who: string; what: string; link?: { href: string; label: string }; phone?: string; note?: string }[] = [
+const CONTACTS: { who: string; kind: OrganisationKind; what: string; link?: { href: string; label: string }; phone?: string; note?: string }[] = [
   {
     who: "HSE Nursing Homes Support Scheme",
+    kind: "public-body",
     what: "Applications, financial assessments, the nursing home loan",
     link: { href: "https://www.hse.ie/nhss/", label: "hse.ie/nhss" },
   },
   {
     who: "Your local Nursing Homes Support Office",
+    kind: "public-body",
     what: "Starting your application, collecting forms",
     link: { href: HSE_OFFICES, label: "Find your local office on hse.ie" },
   },
   {
     who: "HSE Live",
+    kind: "public-body",
     what: "Help with the application form and general Fair Deal questions",
     phone: "1800 700 700",
     note: "Free. Monday to Friday 8am to 8pm, Saturday 9am to 5pm",
   },
   {
     who: "Citizens Information",
+    kind: "public-body",
     what: "Free, independent advice on Fair Deal",
     link: { href: "https://www.citizensinformation.ie", label: "citizensinformation.ie" },
     phone: "0818 07 4000",
   },
   {
     who: "ALONE",
+    kind: "charity",
     what: "Free support and advocacy for older people",
     link: { href: "https://alone.ie", label: "alone.ie" },
     phone: "0818 222 024",
   },
   {
     who: "Age Action Ireland",
+    kind: "charity",
     what: "Information and support for older people",
     link: { href: "https://www.ageaction.ie", label: "ageaction.ie" },
   },
   {
     who: "A solicitor",
+    kind: "legal",
     what: "Advice on the nursing home loan, Power of Attorney, and estate planning",
     link: { href: "https://www.lawsociety.ie", label: "lawsociety.ie" },
   },
@@ -535,13 +545,20 @@ export default function FairDealGuide() {
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {CONTACTS.map((contact) => (
             <li key={contact.who} className="flex flex-col gap-2 rounded-lg border border-line bg-surface p-5">
-              <h3 className="font-semibold md:text-lg">{contact.who}</h3>
+              <h3 className="flex items-center gap-3 font-semibold md:text-lg">
+                <OrganisationIcon kind={contact.kind} size="large" />
+                {contact.who}
+              </h3>
               <p className="text-ink-muted">{contact.what}</p>
               <div className="mt-auto flex flex-col gap-1 pt-1">
                 {contact.link && <Source href={contact.link.href}>{contact.link.label}</Source>}
                 {/* A tap-to-call link, for phones. */}
                 {contact.phone && (
-                  <a href={`tel:${contact.phone.replaceAll(" ", "")}`} className="w-fit font-semibold tap-target">
+                  <a
+                    href={`tel:${contact.phone.replaceAll(" ", "")}`}
+                    className="inline-flex w-fit items-center gap-1.5 font-semibold tap-target"
+                  >
+                    <Icon name="phone" />
                     Call {contact.phone}
                   </a>
                 )}
@@ -553,9 +570,9 @@ export default function FairDealGuide() {
       </GuideSection>
 
       {/* A tinted band the full width of the window, like the HIQA guide's checklist. */}
-      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-10 md:py-16`}>
+      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-8 md:py-12`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
-          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
+          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Key things to remember
           </h2>
           <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
@@ -606,12 +623,13 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
     <section
       id={id}
       aria-labelledby={`${id}-h`}
-      className={`scroll-mt-6 ${tinted ? `${fullWidthClass} bg-band py-10 md:py-14` : ""}`}
+      className={`${sectionScrollMargin} ${tinted ? `${fullWidthClass} bg-band py-8 md:py-10` : ""}`}
     >
       <div className={tinted ? "mx-auto max-w-6xl px-4 md:px-8" : ""}>
         <div className="flex max-w-4xl flex-col gap-4 leading-relaxed">
           <SectionHeading index={index} id={id} />
           {children}
+          <SectionEnd />
         </div>
       </div>
     </section>
@@ -643,7 +661,7 @@ function Source({ href, children }: { href: string; children: ReactNode }) {
 function Figure({ value, label }: { value: string; label: string }) {
   return (
     <div className="flex shrink-0 flex-col gap-1 rounded-lg border border-line bg-surface px-5 py-4 sm:min-w-56">
-      <span className="font-heading text-4xl font-semibold text-primary md:text-5xl">{value}</span>
+      <span className="font-heading text-4xl font-semibold text-primary md:text-4xl">{value}</span>
       <span className="text-sm text-ink-muted">{label}</span>
     </div>
   );
@@ -734,23 +752,7 @@ function Example({
           {title}
         </h3>
         <span className="col-start-1 text-ink-muted">{description}</span>
-        <span className="col-start-2 row-span-2 row-start-1 flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-          {/* Words as well as the arrow, so it is clear the card opens. */}
-          <span className="group-open:hidden">Show</span>
-          <span className="hidden group-open:inline">Hide</span>
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-5 transition-transform group-open:rotate-90 motion-reduce:transition-none"
-          >
-            <path d="m9 6 6 6-6 6" />
-          </svg>
-        </span>
+        <ShowHide className="col-start-2 row-span-2 row-start-1" />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line-soft px-5 pb-5 pt-4 md:px-6 md:pb-6">{children}</div>
     </details>

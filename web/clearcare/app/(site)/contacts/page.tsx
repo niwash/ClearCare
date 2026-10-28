@@ -3,6 +3,9 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import type { ReactNode } from "react";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { fullWidthClass } from "@/components/ui/classes";
+import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
+import { Icon } from "@/components/ui/icons";
+import { Chevron, ShowHide } from "@/components/ui/chevron";
 import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -12,6 +15,7 @@ export const metadata: Metadata = {
 
 type Contact = {
   name: string;
+  kind: OrganisationKind;
   purpose: string;
   website: string;
   // Only set if there is one
@@ -125,6 +129,7 @@ const FAIR_DEAL_OFFICES: FairDealOffice[] = [
 const FAIR_DEAL_CONTACTS: Contact[] = [
   {
     name: "HSE Live",
+    kind: "public-body",
     purpose: "General questions about Fair Deal and help with the form.",
     website: "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/",
     phone: "1800 700 700",
@@ -132,6 +137,7 @@ const FAIR_DEAL_CONTACTS: Contact[] = [
   },
   {
     name: "Citizens Information",
+    kind: "public-body",
     purpose: "Free information on entitlements, including Fair Deal.",
     website: "https://www.citizensinformation.ie",
     phone: "0818 07 4000",
@@ -141,6 +147,7 @@ const FAIR_DEAL_CONTACTS: Contact[] = [
 const INSPECTION_CONTACTS: Contact[] = [
   {
     name: "HIQA (Health Information and Quality Authority)",
+    kind: "regulator",
     purpose: "Registers and inspects nursing homes. Takes concerns, but can't resolve complaints.",
     website: "https://www.hiqa.ie",
     phone: "021 240 9646",
@@ -155,6 +162,7 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
     contacts: [
       {
         name: "The Alzheimer Society of Ireland",
+        kind: "charity",
         purpose: "Dementia helpline, day care, carer training and support groups.",
         website: "https://alzheimer.ie",
         phone: "1800 341 341",
@@ -162,12 +170,14 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
       },
       {
         name: "Dementia: Understand Together",
+        kind: "public-body",
         purpose: "HSE dementia information and a directory of local services.",
         website: "https://www.understandtogether.ie",
         email: "understandtogether@hse.ie",
       },
       {
         name: "Dementia Ireland",
+        kind: "charity",
         purpose: "Campaigns for better dementia care. Runs training and conferences.",
         website: "https://dementiaireland.com",
         phone: "086 361 2907",
@@ -180,12 +190,14 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
     contacts: [
       {
         name: "Family Carers Ireland",
+        kind: "charity",
         purpose: "Support and a careline for family carers, including during a move into a nursing home.",
         website: "https://familycarers.ie",
         phone: "1800 24 07 24",
       },
       {
         name: "Sage Advocacy",
+        kind: "charity",
         purpose: "Advocacy for older people and adults in residential care.",
         website: "https://www.sageadvocacy.ie",
         phone: "01 536 7330",
@@ -193,6 +205,7 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
       },
       {
         name: "ALONE",
+        kind: "charity",
         purpose: "Support and befriending services for older people.",
         website: "https://alone.ie",
         phone: "0818 222 024",
@@ -223,7 +236,7 @@ export default function ContactsPage() {
                 <details className="group/office">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-3 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
                     <h3 className="font-semibold">{office.area}</h3>
-                    <Chevron className="size-5 group-open/office:rotate-90" />
+                    <Chevron className="size-5 text-ink-muted group-open/office:rotate-90" />
                   </summary>
                   <div className="flex flex-col gap-2 px-3 pb-3 text-sm md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
                     <div className="flex flex-col gap-1">
@@ -238,8 +251,11 @@ export default function ContactsPage() {
                       )}
                       {office.hours && <p className="text-ink-muted">{office.hours}</p>}
                     </div>
-                    <dl className="grid grid-cols-[4rem_1fr] content-start gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
-                      <dt>Phone</dt>
+                    <dl className="grid grid-cols-[5.5rem_1fr] content-start gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
+                      <dt className="flex items-center gap-1.5">
+                        <Icon name="phone" />
+                        Phone
+                      </dt>
                       <dd className="flex flex-col">
                         {office.phones.map((phone) => (
                           <a key={phone} className={contactLinkClass} href={telHref(phone)}>
@@ -249,7 +265,10 @@ export default function ContactsPage() {
                       </dd>
                       {office.email && (
                         <>
-                          <dt>Email</dt>
+                          <dt className="flex items-center gap-1.5">
+                            <Icon name="email" />
+                            Email
+                          </dt>
                           <dd className="min-w-0 truncate">
                             <a className={contactLinkClass} href={`mailto:${office.email}`}>
                               {office.email}
@@ -297,16 +316,16 @@ export default function ContactsPage() {
 }
 
 // The guides that help most before a call, in the order a family needs them.
-const CONTACTS_GUIDES = [getGuide("user-journey"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
+const CONTACTS_GUIDES = [getGuide("how-a-family-chooses"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb, the
 // heading and a line of welcome on a band of brand colour (brand-band, globals.css).
 function ContactsHero() {
   return (
     <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-8 md:px-8 md:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Contacts" />
-        <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+        <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Need to talk to someone?
         </h1>
         <p className="max-w-2xl text-ink-muted md:text-lg">
@@ -323,36 +342,17 @@ function telHref(phone: string) {
 }
 
 // A section that starts closed, so the page opens as a short list of topics. The same
-// <details> pattern as the choosing-a-nursing-home guide: no script, and the browser's
-// find-in-page still opens it.
+// <details> pattern as the guides: no script, "Show" or "Hide" as well as the arrow so it is clear
+// it opens, and the browser's find-in-page still opens it.
 function ContactSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <details className="group rounded-lg border border-line bg-surface hover:border-primary">
+    <details className="group rounded-lg border border-line bg-surface hover:border-primary open:border-primary">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
         <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
-        <Chevron className="size-6 group-open:rotate-90" />
+        <ShowHide />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line px-4 py-4 md:px-6">{children}</div>
     </details>
-  );
-}
-
-// Points right when closed and down when open. The caller sets the size and which group's
-// open state turns it, since office rows sit inside a section that is itself a <details>.
-function Chevron({ className }: { className: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`shrink-0 text-ink-muted transition-transform ${className}`}
-    >
-      <path d="m9 6 6 6-6 6" />
-    </svg>
   );
 }
 
@@ -363,14 +363,20 @@ function ContactList({ contacts }: { contacts: Contact[] }) {
       {contacts.map((contact) => (
         <li key={contact.name} className="flex flex-col gap-1 py-3 text-sm first:pt-0 md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
           <div className="flex flex-col gap-1">
-            <h3 className="font-semibold">{contact.name}</h3>
+            <h3 className="flex items-center gap-2 font-semibold">
+              <OrganisationIcon kind={contact.kind} />
+              {contact.name}
+            </h3>
             <p className="text-ink-muted">{contact.purpose}</p>
             {contact.hours && <p className="text-ink-muted">{contact.hours}</p>}
           </div>
-          <dl className="grid grid-cols-[4rem_1fr] gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
+          <dl className="grid grid-cols-[5.5rem_1fr] gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
             {contact.phone && (
               <>
-                <dt>Phone</dt>
+                <dt className="flex items-center gap-1.5">
+                  <Icon name="phone" />
+                  Phone
+                </dt>
                 <dd>
                   <a className={contactLinkClass} href={telHref(contact.phone)}>{contact.phone}</a>
                 </dd>
@@ -378,13 +384,19 @@ function ContactList({ contacts }: { contacts: Contact[] }) {
             )}
             {contact.email && (
               <>
-                <dt>Email</dt>
+                <dt className="flex items-center gap-1.5">
+                  <Icon name="email" />
+                  Email
+                </dt>
                 <dd className="min-w-0 truncate">
                   <a className={contactLinkClass} href={`mailto:${contact.email}`}>{contact.email}</a>
                 </dd>
               </>
             )}
-            <dt>Website</dt>
+            <dt className="flex items-center gap-1.5">
+              <Icon name="website" />
+              Website
+            </dt>
             <dd className="min-w-0 truncate">
               <a href={contact.website} className={contactLinkClass} target="_blank" rel="noopener noreferrer">
                 {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
