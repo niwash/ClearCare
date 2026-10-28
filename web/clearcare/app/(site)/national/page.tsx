@@ -200,8 +200,9 @@ function NationalFigures({ statistics }: { statistics: ReAssessmentStatistics })
   );
 }
 
-// The answer first, in words: three shares worked out from the figures below. Each counts only
-// results the next inspection judged again, so "Not checked again" doesn't water them down.
+// The answer first, in words: three shares worked out from the figures below. The first two count
+// only results the next inspection judged again, so "Not checked again" doesn't water them down;
+// the third counts every result from homes that have had a later inspection.
 function KeyFindings({ statistics }: { statistics: ReAssessmentStatistics }) {
   const row = (judgment: StartingJudgment) => statistics.matrix.find((r) => r.judgment === judgment);
   const notCompliant = row("Not compliant");
@@ -251,7 +252,7 @@ function KeyFindings({ statistics }: { statistics: ReAssessmentStatistics }) {
   return (
     <NationalSection id="results-change">
       {/* Grouped by what each share is out of, so cards with different bases aren't read as one set.
-          The last card is out of every regulation, so a line sets it apart. */}
+          The last card is out of every result from homes inspected again, so a line sets it apart. */}
       <div className="grid gap-6 md:grid-cols-3 md:gap-4">
         {checkedAgainFindings.length > 0 && (
           <div className="flex flex-col gap-2 md:col-span-2">
@@ -265,7 +266,7 @@ function KeyFindings({ statistics }: { statistics: ReAssessmentStatistics }) {
         )}
         {allRulesFinding && (
           <div className="flex flex-col gap-2 border-t border-line pt-6 md:border-l md:border-t-0 md:pl-4 md:pt-0">
-            <h3 className="text-sm font-semibold text-ink-muted">Out of all regulations</h3>
+            <h3 className="text-sm font-semibold text-ink-muted">Out of results from homes inspected again</h3>
             <ul className="grid">
               <FindingCard finding={allRulesFinding} className="border border-line bg-surface" />
             </ul>
