@@ -1,3 +1,5 @@
+data "aws_region" "current" {}
+
 resource "aws_cognito_user_pool" "this" {
   name           = var.pool_name
   user_pool_tier = "ESSENTIALS"
@@ -36,13 +38,14 @@ resource "aws_cognito_user_pool" "this" {
   }
 
   deletion_protection = var.deletion_protection
-
-  tags = var.tags
 }
 
 resource "aws_cognito_user_pool_domain" "this" {
-  domain                = var.domain_prefix
-  user_pool_id          = aws_cognito_user_pool.this.id
+  domain       = var.domain_prefix
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  # Version 1 is the classic hosted UI. The branded managed login is version 2,
+  # which also needs a branding style per app client.
   managed_login_version = 1
 }
 

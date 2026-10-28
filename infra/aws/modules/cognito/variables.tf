@@ -28,9 +28,3 @@ variable "deletion_protection" {
     error_message = "deletion_protection must be ACTIVE or INACTIVE."
   }
 }
-
-variable "tags" {
-  description = "Tags applied to every resource in the module."
-  type        = map(string)
-  default     = {}
-}

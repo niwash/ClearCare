@@ -1,12 +1,12 @@
 provider "aws" {
   region = var.aws_region
 
+  allowed_account_ids = [var.account_id]
+
   default_tags {
     tags = {
-      project     = "clearcare"
-      managed_by  = "terraform"
-      jira        = "CCARE-161"
-      environment = "development"
+      project = "clearcare"
+      env     = "dev"
     }
   }
 }
@@ -18,8 +18,4 @@ module "cognito" {
   domain_prefix = var.domain_prefix
   callback_urls = ["${var.web_origin}/api/auth/callback/cognito"]
   logout_urls   = ["${var.web_origin}/"]
-
-  tags = {
-    purpose = "cognito-development"
-  }
 }
