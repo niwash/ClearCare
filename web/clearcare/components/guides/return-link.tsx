@@ -3,19 +3,17 @@
 // "← Back to How to navigate ClearCare": shown on a guide opened from one of that guide's steps,
 // which sends ?from=using-clearcare&step=N (CCARE-164), under the guide's banner and before its
 // "Other guides". It goes back to the same step. Read in the browser, so the guides stay
-// prerendered (wrap it in <Suspense>); only the guides listed in RETURNS can be "from", so the
+// prerendered (wrap it in <Suspense>); only "using-clearcare" is accepted as "from", so the
 // address can't point the link anywhere else.
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
-const RETURNS: Record<string, { href: string; label: string }> = {
-  "using-clearcare": { href: "/guides/using-clearcare", label: "Back to How to navigate ClearCare" },
-};
+const back = { href: "/guides/using-clearcare", label: "Back to How to navigate ClearCare" };
 
 export function ReturnLink() {
   const params = useSearchParams();
-  const back = RETURNS[params.get("from") ?? ""];
-  if (!back) return null;
+  // A plain comparison, not a lookup in an object: "?from=constructor" would match an inherited key.
+  if (params.get("from") !== "using-clearcare") return null;
   const step = params.get("step");
   const href = step && /^\d{1,2}$/.test(step) ? `${back.href}#step-${step}` : back.href;
 

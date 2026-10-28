@@ -5,7 +5,7 @@
 export function GeneralGuideNote() {
   return (
     <aside className="max-w-4xl rounded-lg border border-line border-l-4 border-l-primary bg-surface px-5 py-4 md:text-lg">
-      <span className="font-semibold">A general guide by ClearCare.</span> It shows the ideal way to choose a nursing
+      <span className="font-semibold">A general guide by ClearCare.</span> It shows the typical way to choose a nursing
       home, but every case is different. After a fall or a hospital stay, things may move faster, with less choice of
       home. This is not advice: check your own case with the HSE, a GP or a social worker.
     </aside>

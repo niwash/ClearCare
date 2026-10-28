@@ -132,7 +132,8 @@ function NationalSection({ id, description, children }: { id: SectionId; descrip
           {description && <p className="max-w-3xl text-ink-muted">{description}</p>}
         </div>
         {children}
-        <SectionEnd />
+        {/* Section 1 starts right under the contents, so a way back up would just repeat them. */}
+        {index > 0 && <SectionEnd />}
       </div>
     </section>
   );

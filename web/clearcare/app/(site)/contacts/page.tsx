@@ -5,6 +5,7 @@ import { GuidesBand } from "@/components/guides/guide-ending";
 import { fullWidthClass } from "@/components/ui/classes";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { Icon } from "@/components/ui/icons";
+import { Chevron, ShowHide } from "@/components/ui/chevron";
 import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -348,34 +349,10 @@ function ContactSection({ title, children }: { title: string; children: ReactNod
     <details className="group rounded-lg border border-line bg-surface hover:border-primary open:border-primary">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
         <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
-        <span className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary">
-          <span className="group-open:hidden">Show</span>
-          <span className="hidden group-open:inline">Hide</span>
-          <Chevron className="size-5 group-open:rotate-90" />
-        </span>
+        <ShowHide />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line px-4 py-4 md:px-6">{children}</div>
     </details>
-  );
-}
-
-// Points right when closed and down when open. The caller sets the size, the colour (it takes the
-// text's) and which group's open state turns it, since office rows sit inside a section that is
-// itself a <details>.
-function Chevron({ className }: { className: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2.5}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={`shrink-0 transition-transform ${className}`}
-    >
-      <path d="m9 6 6 6-6 6" />
-    </svg>
   );
 }
 

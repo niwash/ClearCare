@@ -8,7 +8,7 @@ import { ICON_PATHS } from "@/components/ui/icons";
 const FEATURES = [
   {
     title: "Nursing home records",
-    text: "Every HIQA inspection report for each registered home, over time.",
+    text: "Each home's HIQA inspection reports, over time.",
     href: "/search",
     icon: ICON_PATHS.search,
   },

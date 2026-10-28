@@ -11,6 +11,8 @@ export const ICON_PATHS = {
   county: "M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20",
   // An envelope
   email: "M3 6h18v12H3zM3 7l9 6 9-6",
+  // A letterbox on a post, for a postcode
+  eircode: "M7 6h10a4 4 0 0 1 4 4v7H3v-7a4 4 0 0 1 4-4zM7 6a4 4 0 0 1 4 4v7M14 11h3M12 17v4",
   // A hash sign, for an ID
   id: "M5 9h14M5 15h14M10 4 8 20M16 4l-2 16",
   // A telephone handset
@@ -30,8 +32,6 @@ export const ICON_PATHS = {
   results: "M10 6h10M10 12h10M10 18h10M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2",
   // A calendar
   calendar: "M4 6h16v14H4zM4 10h16M8 3v4M16 3v4",
-  // A clipboard
-  inspection: "M9 4h6v3H9zM9 5.5H6V21h12V5.5h-3M9 12h6M9 16h4",
   // A magnifying glass
   search: "M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4",
   // An open book
