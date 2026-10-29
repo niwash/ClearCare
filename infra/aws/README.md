@@ -133,6 +133,15 @@ It adapts `infra/postgres/roles.sql` for RDS, where the administrator is not a s
 
 A task reads its secret when it starts. After changing a password, change it in the database too, then start new tasks: run the deploy workflow again for the running commit.
 
+The pipeline also reads an OpenAI API key from `clearcare/openai`, whose value Terraform leaves out too. Paste the key at the prompt, which keeps it out of the shell history:
+
+```sh
+read -rs key
+aws secretsmanager put-secret-value --secret-id clearcare/openai --secret-string "$key"
+```
+
+A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`.
+
 ## Plan and apply
 
 ```sh
