@@ -5,6 +5,7 @@ import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
 import { ImageViewer } from "@/components/guides/image-viewer";
 import { StepNumber } from "@/components/guides/step-number";
+import { MAX_COMPARED } from "@/lib/compare";
 import { getGuide } from "@/lib/guides";
 
 const guide = getGuide("using-clearcare");
@@ -13,11 +14,13 @@ export const metadata = guideMetadata(guide);
 
 // The site is still changing, so the guide says when it was last checked against it. Update this
 // whenever the steps change.
-const LAST_UPDATED = { iso: "2026-10-27", label: "27 October 2026" };
+const LAST_UPDATED = { iso: "2026-10-29", label: "29 October 2026" };
 
 // The "How to use the ClearCare website" flowchart in the adult-centred design reference, rendered
-// to PNG at 2.5x. 3120 x 2925.
-const FLOWCHART = "/guides/using-clearcare-flowchart.png";
+// to PNG at 2.5x. 3120 x 2925. Its third row has Compare homes as step 5 (CCARE-179), drawn to
+// match the rest.
+// A new name when the drawing changes, so no cached copy of the old one is shown.
+const FLOWCHART = "/guides/using-clearcare-flowchart-compare.png";
 
 // One route through the site, in the flowchart's order. An optional step has a question instead of
 // a number: the reader decides whether they need it.
@@ -68,6 +71,17 @@ const STEPS: Step[] = [
     link: { href: "/search", label: "Search for a home" },
   },
   {
+    title: "Compare homes",
+    detail: (
+      <>
+        Choose <strong>Add to shortlist</strong> on a home’s page or in the search results to save up to{" "}
+        {MAX_COMPARED}. <strong>Compare Homes</strong> shows them side by side: the cost, the home and what HIQA
+        found.
+      </>
+    ),
+    link: { href: "/compare", label: "Open Compare Homes" },
+  },
+  {
     title: "Call the home",
     detail: (
       <>
@@ -87,7 +101,7 @@ const STEPS: Step[] = [
 // A step as a card. Numbered steps are for everyone; an optional one is tinted, labelled
 // "Optional" and opens with its question. Kept compact, one under another (CCARE-164: less
 // scrolling).
-// position counts every step, optional ones too: it names the card's id, step-1 to step-8, which a
+// position counts every step, optional ones too: it names the card's id, step-1 to step-9, which a
 // guide opened from here links back to.
 function StepCard({ step, number, position }: { step: Step; number: number | null; position: number }) {
   const optional = number === null;
@@ -153,7 +167,7 @@ export default function UsingClearCareGuide() {
           </Link>
         </p>
         <ol className="flex max-w-4xl flex-col gap-3">
-          {/* An optional step has no number, so the numbers run 1 to 5 past the optional steps. */}
+          {/* An optional step has no number, so the numbers run 1 to 6 past the optional steps. */}
           {STEPS.map((step, index) => (
             <StepCard
               key={step.title}
