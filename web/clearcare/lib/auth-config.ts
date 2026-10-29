@@ -58,6 +58,26 @@ export function projectSession(
   };
 }
 
+/**
+ * The account id a page keys on. Without an adapter next-auth gives every
+ * sign-in a fresh random user id, so the token's own subject would change for
+ * the same person; Cognito's profile carries the stable one. Only a sign-in
+ * passes an account, so later reads keep whatever the token already holds.
+ */
+export function pinSubject(
+  token: Record<string, unknown>,
+  account: { providerAccountId?: string } | null | undefined,
+  profile: { sub?: unknown } | null | undefined,
+): Record<string, unknown> {
+  if (!account) return token;
+
+  const claimed = typeof profile?.sub === "string" ? profile.sub.trim() : "";
+  const subject = claimed || account.providerAccountId?.trim();
+  if (subject) token.sub = subject;
+
+  return token;
+}
+
 /** The answer an account route gives when the environment is incomplete. */
 export function authUnavailable(): Response {
   return Response.json(
