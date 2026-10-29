@@ -22,7 +22,7 @@ Terraform owns the infrastructure and every task-definition setting. The deploy 
 Two switches in `terraform.tfvars` say what may change the database. Both start as `false`:
 
 - `deploys_enabled`: the deploy and migrate workflows. Turn it on once the database has its roles and its data (First apply, step 9).
-- `pipeline_enabled`: the pipeline's schedules and the run-pipeline workflow. Turn it on once the pipeline can run as a finite task: it restores its data directory from the raw bucket, exits non-zero when a stage fails, and holds a database lock that keeps two runs apart and that every migration also takes, so no pipeline task writes while Flyway runs. None of that exists yet.
+- `pipeline_enabled`: the pipeline's schedule and the run-pipeline workflow. Turn it on as the last step in Pipeline state, below.
 
 ## Create the state bucket
 
@@ -183,7 +183,7 @@ Every push to `main` deploys itself once deploys are enabled. After the Checks w
 2. Registers a migrate revision with the new image, runs it and waits for exit code 0.
 3. Moves the API, then the site, to revisions with the new images. It waits until each is stable and fails if ECS rolled it back.
 4. Checks both hostnames through the load balancer: the API must return centres for Dublin, the site's search page must list the first of them, and `/actuator` must not be public. On a failure it prints the revisions that ran before, for the rollback.
-5. Registers a pipeline revision, moves both pipeline schedules to it and records it with its image (`infra/aws/bin/release-pipeline`). If one of those writes fails, or the deploy is cancelled, it puts the earlier release back; if it cannot, it prints the command that does.
+5. Registers a pipeline revision, moves the pipeline schedule to it and records it with its image (`infra/aws/bin/release-pipeline`). If one of those writes fails, or the deploy is cancelled, it puts the earlier release back; if it cannot, it prints the command that does.
 
 A failed step stops the deploy there. To deploy an earlier commit again, run AWS deploy by hand with its full hash. ECR keeps the images of the last 30 pushes; an older commit has to be built again first, by re-running its Checks run.
 
@@ -208,19 +208,64 @@ The ECS console shows the same logs under each task.
 
 These workflows run tasks with their own AWS role:
 
-- AWS run pipeline runs one stage, or the scheduler once, and waits for it. It runs only while the pipeline is enabled.
+- AWS run pipeline runs the scheduler once, as the schedule does, and waits for it. It runs only while the pipeline is enabled.
 - AWS migrate runs Flyway's `migrate`, `info` or `validate`. It runs only while deploys are enabled.
 
-Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run could still start during a migration; the database lock that prevents it comes before `pipeline_enabled` (Who owns what). Cancelling the workflow stops the task.
+Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run could still start during a migration; nothing keeps the two apart yet. Cancelling the workflow stops the task.
 
 With credentials, `infra/aws/bin/run-task` does the same from a terminal:
 
 ```sh
 infra/aws/bin/run-task migrate info
-infra/aws/bin/run-task --timeout 300 pipeline clearcare_pipeline.load_register --data-dir /tmp --allow-shrink
+infra/aws/bin/run-task --timeout 300 pipeline
 ```
 
 It prints the end of each container's log and exits 0 only if every container exited with 0. Stopping it with Ctrl-C stops the task.
+
+## Pipeline state
+
+A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A failure of any other stage shows only in the log.
+
+To turn the pipeline on, with `pipeline_enabled = false` until the last step:
+
+1. Run AWS deploy for the commit to release.
+2. Apply from `infra/aws/live`. This registers a pipeline revision with `--bucket-state` and the bucket settings, but the schedule still runs the released one.
+3. Run AWS deploy for the same commit again, which releases a revision with the new settings. Check that its command ends in `--bucket-state`:
+
+   ```sh
+   aws ecs describe-task-definition \
+       --task-definition "$(aws ssm get-parameter --name /clearcare/release/pipeline --query Parameter.Value --output text)" \
+       --query 'taskDefinition.containerDefinitions[?name==`pipeline`].command'
+   ```
+
+4. If Terraform has created the secret `clearcare/openai`, set its value; a pipeline task does not start without it.
+5. Seed the state from the VM, below.
+6. Set `pipeline_enabled = true` and apply.
+
+A task cannot delete, and writes a checkpoint only after a successful upload, so the seed is the only way a checkpoint can name a raw file the bucket lacks. Check the copy before the checkpoint goes up:
+
+1. Stop the pipeline on the VM with `docker compose stop pipeline` (`infra/deploy/README.md`), so that its data directory stops changing. Any push to `main` redeploys the VM (`vm-deploy.yml`) and restarts its pipeline, so seed straight after stopping it, with no merge in between.
+2. Copy the VM's `/opt/clearcare/data` to a new folder on your machine. Upload its raw files, leaving out unfinished `.tmp-` files, then run the same sync with `--dryrun`; it must print nothing. The OCI bucket's `share/` is not copied.
+
+   ```sh
+   SEED=/path/to/the/copy
+   aws s3 sync --exclude '*/.tmp-*' "$SEED/raw/" "s3://clearcare-raw-$ACCOUNT_ID/raw/"
+   aws s3 sync --dryrun --exclude '*/.tmp-*' "$SEED/raw/" "s3://clearcare-raw-$ACCOUNT_ID/raw/"
+   ```
+
+3. Build the checkpoint into a file, and upload it only if that succeeded:
+
+   ```sh
+   jq -n --slurpfile schedule "$SEED/schedule-state.json" \
+       --rawfile register "$SEED/manifests/register-snapshots.jsonl" \
+       --rawfile reports "$SEED/manifests/inspection-reports.jsonl" \
+       --rawfile prices "$SEED/manifests/price-lists.jsonl" \
+       '{version: 1, schedule: $schedule[0], manifests: {
+         "register-snapshots.jsonl": $register,
+         "inspection-reports.jsonl": $reports,
+         "price-lists.jsonl": $prices}}' > "$SEED/pipeline.json" &&
+     aws s3 cp "$SEED/pipeline.json" "s3://clearcare-raw-$ACCOUNT_ID/state/pipeline.json"
+   ```
 
 ## Dumps and restore
 

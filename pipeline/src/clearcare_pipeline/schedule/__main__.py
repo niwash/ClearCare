@@ -23,9 +23,19 @@ from clearcare_pipeline.load_register.__main__ import main as load_register
 from clearcare_pipeline.load_report_files.__main__ import (
     main as load_report_files,
 )
+from clearcare_pipeline.object_store import (
+    ObjectStore,
+    ObjectStoreError,
+    S3ObjectStore,
+)
 from clearcare_pipeline.price_lists.__main__ import main as price_lists
 from clearcare_pipeline.reports.__main__ import main as reports
-from clearcare_pipeline.s3_settings import S3Settings, SettingsError
+from clearcare_pipeline.s3_settings import (
+    S3Settings,
+    SettingsError,
+    make_s3_client,
+)
+from clearcare_pipeline.schedule import bucket_state
 from clearcare_pipeline.snapshots.__main__ import main as snapshots
 from clearcare_pipeline.split_commitments import main as split_commitments
 from clearcare_pipeline.upload.__main__ import main as upload
@@ -83,6 +93,7 @@ def main(
     stages: Mapping[str, Stage] = STAGES,
     now: Callable[[], datetime] = _now,
     sleep: Callable[[float], None] = time.sleep,
+    store: ObjectStore | None = None,
 ) -> int:
     """Runs what is due now, and again every hour unless --once is given."""
     parser = argparse.ArgumentParser(
@@ -97,16 +108,28 @@ def main(
     parser.add_argument(
         "--once", action="store_true", help="run what is due, then exit"
     )
+    parser.add_argument(
+        "--bucket-state",
+        action="store_true",
+        help="restore the data directory from the bucket first, and keep the"
+        " schedule state and the manifests there",
+    )
     args = parser.parse_args(argv)
     data_dir: Path = args.data_dir
     env = os.environ if env is None else env
     state_path = data_dir / STATE_NAME
     try:
         bucket = _bucket_is_set(env)
+        checkpoints = (store or _store_from(env)) if args.bucket_state else None
+        if checkpoints is not None:
+            bucket_state.restore(checkpoints, data_dir, state_path)
         state = _read_state(state_path)
     except SettingsError as error:
         logger.error("%s", error)
         return EXIT_SETTINGS_ERROR
+    except (bucket_state.BucketStateError, ObjectStoreError) as error:
+        logger.error("cannot restore the data directory: %s", error)
+        return 1
     except (ValueError, KeyError, TypeError, AttributeError) as error:
         logger.error("%s is not a schedule state file: %s", state_path, error)
         return 1
@@ -128,11 +151,18 @@ def main(
         "split_commitments",
     ):
         _run_stage(stages, (name,), data_dir)
-    jobs = _jobs(crawl, bucket)
+    jobs = _jobs(crawl)
     while True:
         for job in jobs:
-            if _due(job, state.get(job.name), now()):
-                state = _run_job(job, state, data_dir, stages, now)
+            if not _due(job, state.get(job.name), now()):
+                continue
+            try:
+                state = _run_job(
+                    job, state, data_dir, stages, now, bucket, checkpoints
+                )
+            except (bucket_state.BucketStateError, ObjectStoreError) as error:
+                logger.error("%s job: %s", job.name, error)
+                return 1
         if args.once:
             return 0
         sleep(CHECK_SECONDS)
@@ -146,17 +176,21 @@ def _bucket_is_set(env: Mapping[str, str]) -> bool:
     return True
 
 
-def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
+def _store_from(env: Mapping[str, str]) -> ObjectStore:
+    settings = S3Settings.from_env(env)
+    return S3ObjectStore(make_s3_client(settings), settings.bucket)
+
+
+def _jobs(crawl: str) -> tuple[Job, ...]:
     if crawl == "off":
         return ()
-    upload_stages = ("upload",) if bucket else ()
     county = () if crawl == "all" else ("--county", crawl)
     return (
         Job(
             name="register",
             scope="all",
             download=("snapshots",),
-            then=(*upload_stages, "load_register"),
+            then=("load_register",),
             wait_after_success=timedelta(days=1),
         ),
         # HSE republishes the lists about once a month.
@@ -164,7 +198,7 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
             name="prices",
             scope="all",
             download=("price_lists",),
-            then=(*upload_stages, "load_contract_prices"),
+            then=("load_contract_prices",),
             wait_after_success=timedelta(days=7),
         ),
         Job(
@@ -172,7 +206,6 @@ def _jobs(crawl: str, bucket: bool) -> tuple[Job, ...]:
             scope=crawl,
             download=("reports", *county),
             then=(
-                *upload_stages,
                 "load_report_files",
                 "ingest_reports",
                 "extract_text",
@@ -195,7 +228,15 @@ def _run_job(
     data_dir: Path,
     stages: Mapping[str, Stage],
     now: Callable[[], datetime],
+    bucket: bool,
+    checkpoints: ObjectStore | None,
 ) -> dict[str, JobState]:
+    """Runs a job's download, the upload and the stages after it.
+
+    Raises:
+        BucketStateError: If the upload failed with --bucket-state.
+        ObjectStoreError: If the checkpoint was not written.
+    """
     started = now()
     previous = state.get(job.name)
     attempt = JobState(
@@ -211,6 +252,10 @@ def _run_job(
     )
     new_state = {**state, job.name: attempt}
     _write_state(data_dir / STATE_NAME, new_state)
+    if checkpoints is not None:
+        # Before HIQA is contacted, so a new task cannot bring a crawl
+        # forward either (ADR-0014).
+        bucket_state.save(checkpoints, data_dir, data_dir / STATE_NAME)
     logger.info("%s job (%s) started", job.name, job.scope)
     if _run_stage(stages, job.download, data_dir):
         attempt = replace(
@@ -229,6 +274,15 @@ def _run_job(
         attempt.last_outcome,
         attempt.next_attempt.isoformat(timespec="seconds"),
     )
+    uploaded = bucket and _run_stage(stages, ("upload",), data_dir)
+    if checkpoints is not None:
+        # The checkpoint may list only files the bucket holds, so a failed
+        # upload leaves the one written before the download.
+        if not uploaded:
+            raise bucket_state.BucketStateError(
+                "upload failed; the checkpoint is kept"
+            )
+        bucket_state.save(checkpoints, data_dir, data_dir / STATE_NAME)
     for name in job.then:
         _run_stage(stages, (name,), data_dir)
     return new_state

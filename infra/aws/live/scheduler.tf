@@ -1,23 +1,20 @@
-# EventBridge Scheduler starts the pipeline's daily and weekly runs. Both
-# run the approved pipeline revision (release.tf), which a deploy moves on
-# only after the services pass their checks. A schedule that cannot start its
-# task retries, then leaves the event in the dead-letter queue
-# (observability.tf has the alarm). A task that starts and then fails is
-# reported by the stopped-task rule instead.
+# EventBridge Scheduler starts the pipeline once a day. It runs the approved
+# pipeline revision (release.tf), which a deploy moves on only after the
+# services pass their checks. A schedule that cannot start its task retries,
+# then leaves the event in the dead-letter queue (observability.tf has the
+# alarm). A task that starts and then fails is reported by the stopped-task
+# rule instead.
 #
-# The schedules stay off (var.pipeline_enabled) until the pipeline runs as a
-# finite task. It has to restore its data directory from the raw bucket when
-# it starts, keep its run state in the database, exit non-zero when a stage
-# fails, and choose which job to run; none of that exists yet. Until then
-# both schedules run the task definition's own command, which runs every job
-# that is due.
+# The schedule starts the task once a day. The task runs its own command: it
+# restores its data directory from the raw bucket and runs every job that is
+# due. The schedule stays off (var.pipeline_enabled) until the bucket holds the
+# pipeline's state (infra/aws/README.md).
 
 locals {
   # Times are UTC, after the database's backup window (rds.tf). The daily run
   # is at the time the VM's timer used.
   schedules = {
-    pipeline-daily  = "cron(0 6 * * ? *)"
-    pipeline-weekly = "cron(30 6 ? * SAT *)"
+    pipeline-daily = "cron(0 6 * * ? *)"
   }
 }
 

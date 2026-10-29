@@ -186,11 +186,16 @@ resource "aws_ecs_task_definition" "pipeline" {
       mountPoints = [local.rds_ca_mount]
       # The image's entrypoint is python -m. /tmp is the one directory its
       # user can write to; it is on the task's own storage and is gone when the
-      # task ends. The run-pipeline workflow replaces this command.
-      command = ["clearcare_pipeline.schedule", "--data-dir", "/tmp", "--once"]
+      # task ends, so each run first restores it from the raw bucket and keeps
+      # its state there (infra/aws/README.md).
+      command = ["clearcare_pipeline.schedule", "--data-dir", "/tmp", "--once", "--bucket-state"]
       environment = concat(local.libpq_environment, [
         { name = "PGUSER", value = local.database_logins.pipeline },
         { name = "CLEARCARE_CRAWL", value = "all" },
+        # The task role's credentials, not keys (iam.tf).
+        { name = "CLEARCARE_S3_AUTH", value = "default" },
+        { name = "CLEARCARE_S3_BUCKET", value = aws_s3_bucket.bucket["raw"].id },
+        { name = "CLEARCARE_S3_REGION", value = var.region },
       ])
       secrets = [
         { name = "PGPASSWORD", valueFrom = aws_secretsmanager_secret.database["pipeline"].arn },

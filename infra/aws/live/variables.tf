@@ -99,7 +99,7 @@ variable "deploys_enabled" {
 }
 
 variable "pipeline_enabled" {
-  description = "Whether the pipeline may run, on its schedules or from the run-pipeline workflow (release.tf). Off until the pipeline can run as a finite task (scheduler.tf)."
+  description = "Whether the pipeline may run, on its schedule or from the run-pipeline workflow (release.tf). Off until its state in the bucket has been seeded (scheduler.tf)."
   type        = bool
   default     = false
 }
