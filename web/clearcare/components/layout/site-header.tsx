@@ -7,7 +7,8 @@ import { primaryButtonClass } from "@/components/ui/classes";
 // An unfinished page has no href and shows as plain text, "(coming soon)".
 type NavEntry = { label: string; href: string | null };
 
-const NAV_ITEMS: NavEntry[] = [
+// The footer lists these too, so a page added here shows in both.
+export const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
   { label: "National Figures", href: "/national" },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
