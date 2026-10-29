@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { endSession, startSignIn, startSignUp } from "@/lib/auth-actions";
+import { startSignIn, startSignUp } from "@/lib/auth-actions";
 
 // The signed-in or signed-out controls.
 //
@@ -85,12 +85,15 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
           >
             {state.email}
           </span>
-          {/* A form action, because signing out clears the server-side session before it redirects. */}
-          <form action={endSession}>
-            <button type="submit" className={inMenu ? `${menuRow} text-left` : secondaryClass}>
-              Log out
-            </button>
-          </form>
+          {/* A link, not a prefetched route: /sign-out destroys this session and leaves for
+              Cognito, so Next must not follow it just because it scrolled into view. */}
+          <Link
+            href="/sign-out"
+            prefetch={false}
+            className={inMenu ? menuRow : `${secondaryClass} no-underline`}
+          >
+            Log out
+          </Link>
         </div>
       </div>
     );

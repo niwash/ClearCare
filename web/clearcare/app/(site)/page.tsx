@@ -12,7 +12,12 @@ import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 import { getReAssessmentStatistics } from "@/lib/statistics";
 
-export default async function StartPage() {
+export default async function StartPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ logout?: string }>;
+}) {
+  const { logout } = await searchParams;
   // No filters and one result per page: only total and the register's date are needed. The
   // statistics give the figures about reports; the two are read at the same time.
   const [count, statistics] = await Promise.all([searchCentres({ page_size: "1" }), getReAssessmentStatistics()]);
@@ -20,6 +25,18 @@ export default async function StartPage() {
 
   return (
     <>
+      {/* First, before the carousel: a visitor who just signed out has to be able to read this,
+          and it must not sit under anything fixed to the bottom of the screen. */}
+      {logout === "unavailable" && (
+        <p
+          role="status"
+          className="mx-auto mt-6 mb-2 w-full max-w-6xl rounded-md border border-line bg-surface-muted p-4 text-ink md:px-8"
+        >
+          You are signed out of ClearCare. The identity provider could not be reached to end its
+          own session, so this browser may still remember you there.
+        </p>
+      )}
+
       <FeatureCarousel />
 
       {/* The page's h1: who the site is for, what it does and what it is for, before any task. A
@@ -46,7 +63,9 @@ export default async function StartPage() {
               >
                 New to ClearCare? See how to use it <span aria-hidden>→</span>
               </Link>
-              <WelcomeTour />
+              {/* Not while the sign-out notice is showing: the tour panel is fixed to the bottom of
+                  a phone screen, and it covered that notice when both appeared. */}
+              {logout !== "unavailable" && <WelcomeTour />}
             </div>
           </div>
 

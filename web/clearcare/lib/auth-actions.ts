@@ -38,10 +38,3 @@ export async function startSignIn(): Promise<void> {
 export async function startSignUp(): Promise<void> {
   await start("cognito-signup");
 }
-
-// Clears the ClearCare session. Ending Cognito's hosted session as well is a later ticket.
-export async function endSession(): Promise<void> {
-  if (!authConfigured()) redirect("/");
-
-  await authRuntime().signOut({ redirectTo: "/" });
-}
