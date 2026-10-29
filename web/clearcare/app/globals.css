@@ -13,27 +13,40 @@
 /* Utility classes that only apply in the adult-centred design, e.g. adult:py-1. */
 @custom-variant adult (&:where([data-design="adult-centred"], [data-design="adult-centred"] *));
 
-/* Standard colours, from the September wireframes. */
+/* Standard colours, from the September wireframes, softened and warmed (CCARE-179): cream rather
+   than grey-white, a less saturated blue and warm-grey lines. Text keeps 4.5:1 or more on every
+   background here, and links and buttons 6.8:1 or more. */
 :root {
   color-scheme: light dark;
-  --page: light-dark(#f4f5f2, #0f151c);
-  --surface: light-dark(#ffffff, #16202b);
-  --surface-muted: light-dark(#f7f8f6, #1b2632);
+  --page: light-dark(#f8f5ef, #11171e);
+  --surface: light-dark(#fffdf9, #18212b);
+  --surface-muted: light-dark(#faf7f2, #1d2731);
   /* A full-width section set apart from the page, such as the home page's welcome. */
-  --band: light-dark(#e7eae4, #1b2632);
-  --ink: light-dark(#16202b, #e8ecef);
-  --ink-muted: light-dark(#4a5563, #a9b2bc);
-  --ink-faint: light-dark(#66707b, #8a94a0);
+  --band: light-dark(#efeee6, #1d2731);
+  --ink: light-dark(#1d2a36, #e9ebec);
+  --ink-muted: light-dark(#4d5560, #aab2ba);
+  --ink-faint: light-dark(#646b74, #8a94a0);
   /* Card edges and dividers: decorative, so no contrast minimum. */
-  --line: light-dark(#d5d9de, #2b3642);
-  --line-soft: light-dark(#e3e6ea, #233040);
+  --line: light-dark(#e2ddd3, #2d3843);
+  --line-soft: light-dark(#ece8df, #25313c);
   /* Form field borders: 3:1 or more (WCAG 1.4.11). */
-  --field: light-dark(#7d8691, #66737f);
-  --focus: light-dark(#16202b, #e8ecef);
+  --field: light-dark(#857f76, #66737f);
+  --focus: light-dark(#1d2a36, #e9ebec);
   /* Headings are serif in the standard design. */
   --heading-font: var(--font-source-serif);
-  --primary: light-dark(#1f4e79, #8db8e0);
-  --primary-hover: light-dark(#123b5e, #b5d2ee);
+  --primary: light-dark(#2a5478, #93bad9);
+  --primary-hover: light-dark(#1d4061, #b9d3e8);
+  /* Soft backgrounds for icon circles, each with the colour its icon takes (4.5:1 or more), so a
+     row of cards can tell its items apart without loud colour. Decorative: words always say the
+     same. */
+  --tint-blue: light-dark(#e2eaf2, #1f2c3a);
+  --on-tint-blue: light-dark(#2a5478, #93bad9);
+  --tint-gold: light-dark(#f5ead3, #33291a);
+  --on-tint-gold: light-dark(#7a5a1e, #e3c58a);
+  --tint-sage: light-dark(#e6ece0, #25302a);
+  --on-tint-sage: light-dark(#4f6e4b, #a9c4a3);
+  --tint-rose: light-dark(#f4e2df, #352424);
+  --on-tint-rose: light-dark(#8a4a45, #e2aaa4);
   --on-primary: var(--surface);
   --info: light-dark(#1e3a8a, #93c5fd);
   --on-info: light-dark(#ffffff, #0f151c);
@@ -91,6 +104,15 @@
   /* Judgement markers. Compliant uses --ink so colour only marks problems. */
   --not-compliant: var(--danger);
   --substantially: var(--warning);
+  /* One plain circle for every icon, so colour never has to be told apart. */
+  --tint-blue: var(--band);
+  --on-tint-blue: var(--primary);
+  --tint-gold: var(--band);
+  --on-tint-gold: var(--primary);
+  --tint-sage: var(--band);
+  --on-tint-sage: var(--primary);
+  --tint-rose: var(--band);
+  --on-tint-rose: var(--primary);
 }
 
 :root[data-theme="light"] {
@@ -108,7 +130,7 @@
    on every --brand here (WCAG 1.4.6). */
 .brand-band,
 :root:not([data-design="adult-centred"]) .feature-panel {
-  --brand: light-dark(#1f4e79, #163754);
+  --brand: light-dark(#2b4d6b, #1c3550);
   --surface: var(--brand);
   --surface-muted: rgb(255 255 255 / 0.08);
   --ink: #ffffff;
@@ -130,7 +152,7 @@
 /* The header's band: a deeper shade of the same colour, so it frames the page rather than
    matching the brand-colour bands in the content below it. */
 .brand-band.brand-band-deep {
-  --brand: light-dark(#14324f, #0d2236);
+  --brand: light-dark(#21405c, #132a40);
 }
 
 :root[data-design="adult-centred"] .brand-band.brand-band-deep {
@@ -162,6 +184,14 @@
   --color-on-danger: var(--on-danger);
   --color-not-compliant: var(--not-compliant);
   --color-substantially: var(--substantially);
+  --color-tint-blue: var(--tint-blue);
+  --color-on-tint-blue: var(--on-tint-blue);
+  --color-tint-gold: var(--tint-gold);
+  --color-on-tint-gold: var(--on-tint-gold);
+  --color-tint-sage: var(--tint-sage);
+  --color-on-tint-sage: var(--on-tint-sage);
+  --color-tint-rose: var(--tint-rose);
+  --color-on-tint-rose: var(--on-tint-rose);
   --font-heading: var(--heading-font);
   --font-sans: var(--font-public-sans);
   --font-mono: var(--font-plex-mono);
