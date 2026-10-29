@@ -3,21 +3,10 @@ import Cognito from "next-auth/providers/cognito";
 
 import {
   SESSION_MAX_AGE_SECONDS,
-  authConfigured,
-  authUnavailable,
-  missingAuthVariables,
+  pinSubject,
   projectSession,
   type AuthEnvironment,
 } from "@/lib/auth-config";
-
-// Re-exported so a page asks one module whether sign-in is available.
-export {
-  SESSION_MAX_AGE_SECONDS,
-  authConfigured,
-  authUnavailable,
-  missingAuthVariables,
-  projectSession,
-};
 
 /** The configuration for the Cognito provider and the ClearCare session. */
 export function createAuthConfig(
@@ -39,6 +28,11 @@ export function createAuthConfig(
       }),
     ],
     callbacks: {
+      // Sign-in mints the id a page will see for this account; later reads leave it alone.
+      jwt({ token, account, profile }) {
+        pinSubject(token as Record<string, unknown>, account, profile);
+        return token;
+      },
       session({ session, token }) {
         return projectSession(
           {
