@@ -16,9 +16,8 @@ export const metadata = guideMetadata(guide);
 // whenever the steps change.
 const LAST_UPDATED = { iso: "2026-10-29", label: "29 October 2026" };
 
-// The "How to use the ClearCare website" flowchart in the adult-centred design reference, rendered
-// to PNG at 2.5x. 3120 x 2925. Its third row has Compare homes as step 5 (CCARE-179), drawn to
-// match the rest.
+// The "How to use the ClearCare website" flowchart, rendered to PNG at 2.5x. 3120 x 2925. Its third
+// row has Compare homes as step 5 (CCARE-179).
 // A new name when the drawing changes, so no cached copy of the old one is shown.
 const FLOWCHART = "/guides/using-clearcare-flowchart-compare.png";
 
