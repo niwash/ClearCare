@@ -4,13 +4,15 @@
  */
 export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
-// COGNITO_DOMAIN is absent on purpose: only the sign-out route reads it, so it
-// becomes required when that route arrives.
+// COGNITO_DOMAIN is read by the sign-up provider: without it there is no
+// hosted sign-up page to send "Create account" to, so the site would offer a
+// button that only reaches an error page.
 const REQUIRED_VARIABLES = [
   "AUTH_SECRET",
   "AUTH_COGNITO_ID",
   "AUTH_COGNITO_SECRET",
   "AUTH_COGNITO_ISSUER",
+  "COGNITO_DOMAIN",
 ] as const;
 
 /** The environment the authentication helpers read. */

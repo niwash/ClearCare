@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { Suspense } from "react";
+
+import { AccountControls } from "@/components/auth/account-controls";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { primaryButtonClass } from "@/components/ui/classes";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
 // Compare Homes link, which shows how many homes are saved (CCARE-127).
@@ -59,15 +61,12 @@ export function SiteHeader() {
               <DesignToggle />
               <ThemeToggle />
             </div>
-            {/* Filled, so it reads as a button beside the outlined toggles. Left out on phones, where
-                the row has no room for it; the menu (standard) or the navigation band
-                (adult-centred) has it instead. */}
-            <Link
-              href="/login"
-              className={`${primaryButtonClass} hidden items-center text-sm no-underline hover:text-on-primary sm:flex`}
-            >
-              Log in
-            </Link>
+            {/* Account controls read the session on the server and know the current page, so signing
+                in returns the visitor to it. Suspense lets a static page prerender without the query
+                string. Left out on phones, where the menu carries them. */}
+            <Suspense fallback={null}>
+              <AccountControls variant="header" />
+            </Suspense>
           </div>
         </div>
       </div>
@@ -81,8 +80,10 @@ export function SiteHeader() {
               <NavItem item={item} className="flex min-h-11 items-center text-base" />
             </li>
           ))}
-          <li className="border-t border-line-soft">
-            <NavItem item={{ label: "Log in", href: "/login" }} className="flex min-h-11 items-center text-base" />
+          <li className="border-t border-line pt-2">
+            <Suspense fallback={null}>
+              <AccountControls variant="menu" />
+            </Suspense>
           </li>
         </ul>
       </MobileMenu>
@@ -98,7 +99,9 @@ export function SiteHeader() {
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and
                 there is no menu. */}
             <li className="sm:hidden">
-              <NavItem item={{ label: "Log in", href: "/login" }} className="inline-block py-3" />
+              <Suspense fallback={null}>
+                <AccountControls variant="nav" />
+              </Suspense>
             </li>
           </ul>
         </nav>

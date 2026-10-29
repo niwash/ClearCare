@@ -20,6 +20,8 @@ const completeEnv = {
   AUTH_COGNITO_SECRET: "test-client-secret",
   AUTH_COGNITO_ISSUER:
     "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_test",
+  COGNITO_DOMAIN:
+    "https://clearcare-dev-test.auth.eu-north-1.amazoncognito.com",
 };
 
 const session = {
@@ -34,6 +36,7 @@ describe("auth environment", () => {
       "AUTH_COGNITO_ID",
       "AUTH_COGNITO_SECRET",
       "AUTH_COGNITO_ISSUER",
+      "COGNITO_DOMAIN",
     ]);
   });
 
