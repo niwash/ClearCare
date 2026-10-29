@@ -199,7 +199,20 @@ aws s3 cp clearcare.dump "s3://clearcare-dumps-$ACCOUNT_ID/restore/clearcare.dum
 infra/aws/bin/run-task --timeout 60 --container download --set DUMP_KEY=restore/clearcare.dump restore
 ```
 
-If it fails, nothing is restored, and the log names the statement that failed. Dumps stay in the bucket until someone deletes them. There is no scheduled dump yet. RDS keeps seven days of point-in-time recovery, which restores into a new instance.
+If it fails, nothing is restored, and the log names the statement that failed. Dumps stay in the bucket until someone deletes them. There is no scheduled dump yet. RDS keeps seven days of point-in-time recovery, which restores into a new instance:
+
+```sh
+group=$(aws rds describe-db-instances --db-instance-identifier clearcare \
+  --query 'DBInstances[0].VpcSecurityGroups[0].VpcSecurityGroupId' --output text)
+aws rds restore-db-instance-to-point-in-time --source-db-instance-identifier clearcare \
+  --target-db-instance-identifier clearcare-restored --use-latest-restorable-time \
+  --db-instance-class db.t4g.micro --db-subnet-group-name clearcare \
+  --vpc-security-group-ids "$group" --no-publicly-accessible
+```
+
+`--restore-time` instead of `--use-latest-restorable-time` picks an earlier moment. The new instance keeps the administrator's password, so the restore task can look inside it: start it with `aws ecs run-task` overrides that set the `download` container's command to `true`, and `pg_restore`'s to `psql` with `PGHOST` set to the new instance's address (`bin/run-task` overrides only one container). The network configuration is in the SSM parameter `/clearcare/network/restore`. Delete the instance afterwards with `aws rds delete-db-instance --db-instance-identifier clearcare-restored --skip-final-snapshot --delete-automated-backups`.
+
+Tried on 29 October 2026: the new instance answered 12 minutes after the request, held the database as it was three minutes before the request, and every table had the same row count as the live one. Moving the services onto a restored instance has not been tried.
 
 ## Alarms
 
