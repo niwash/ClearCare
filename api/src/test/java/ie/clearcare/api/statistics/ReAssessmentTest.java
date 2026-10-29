@@ -88,6 +88,25 @@ class ReAssessmentTest {
           (4, 'Regulation 9', 'Residents'' rights', 'Not compliant');
       """;
 
+  // A later report of centre 99, loaded after SEED as the pipeline loads one: report 4 is now
+  // paired with it.
+  //
+  //   report 5: Regulation 9 Compliant
+  private static final String LATER_REPORT =
+      """
+      INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
+      VALUES ('inspection-reports', 'https://www.hiqa.ie/test/report-5.pdf', repeat('5', 64),
+              '2026-07-01 09:15:00+00');
+
+      INSERT INTO clearcare.inspection_report (
+          source_file_id, centre_id, centre_code, centre_name, address, inspection_date,
+          fieldwork_id)
+      VALUES (5, '99', 'OSV-0000099', 'Oak Lodge', 'Cork', '2026-06-20', 'MON-5');
+
+      INSERT INTO clearcare.inspection_regulation (report_id, regulation, title, judgment)
+      VALUES (5, 'Regulation 9', 'Residents'' rights', 'Compliant');
+      """;
+
   // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
   static final PostgreSQLContainer database =
@@ -188,6 +207,33 @@ class ReAssessmentTest {
                     }
                     """,
                     JsonCompareMode.STRICT));
+  }
+
+  @Test
+  void countsAReportLoadedSinceTheLastCall() throws Exception {
+    mvc.perform(get("/statistics/re-assessment")).andExpect(status().isOk());
+    execute(LATER_REPORT);
+    try {
+      mvc.perform(get("/statistics/re-assessment"))
+          .andExpect(status().isOk())
+          .andExpect(
+              content()
+                  .json(
+                      """
+                      {
+                        "coverage": {
+                          "reports_loaded": 5,
+                          "centres_with_two_or_more_reports": 2,
+                          "reports_paired": 3,
+                          "judgments_paired": 9
+                        },
+                        "data_date": "2026-06-20"
+                      }
+                      """));
+    } finally {
+      execute("TRUNCATE clearcare.source_file, clearcare.centre RESTART IDENTITY CASCADE");
+      execute(SEED);
+    }
   }
 
   @Test
