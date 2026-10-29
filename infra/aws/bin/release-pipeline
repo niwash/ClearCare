@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Releases a pipeline revision: moves both pipeline schedules to it and
+# Releases a pipeline revision: moves the pipeline schedule to it and
 # records it, with its image, for Terraform (infra/aws/live/release.tf). The
 # schedules' other settings and their state, enabled or not, stay as they are.
 #
-# The four writes succeed together or not at all. Each is tried three times.
+# The three writes succeed together or not at all. Each is tried three times.
 # If one still fails, or the script is stopped, it puts the earlier targets
 # and records back and checks that they are. If that fails too, it prints
 # what is now in place and the command that restores the earlier release.
@@ -20,7 +20,7 @@ set -euo pipefail
   exit 2
 }
 arn=$1 image=$2
-schedules=(pipeline-daily pipeline-weekly)
+schedules=(pipeline-daily)
 release_record=/clearcare/release/pipeline
 image_record=/clearcare/image/pipeline
 

@@ -87,8 +87,8 @@ class _Candidate:
 def upload_data_dir(data_dir: Path, store: ObjectStore) -> UploadReport:
     """Uploads every raw file and manifest record the bucket lacks.
 
-    Objects are only ever added: the bucket's policy allows neither
-    overwriting nor deleting, so anything already present is left alone.
+    Objects are only ever added: a key the bucket already has is left
+    alone, so nothing is overwritten or deleted.
 
     Raises:
         ObjectStoreError: If the bucket cannot be listed.
