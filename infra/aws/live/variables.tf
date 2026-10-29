@@ -45,6 +45,17 @@ variable "api_hostname" {
   type        = string
 }
 
+variable "redirect_hostnames" {
+  description = "Hostnames that only redirect, each to \"site\" or \"api\": a request gets a 301 to the same path and query on site_hostname or api_hostname."
+  type        = map(string)
+  default     = {}
+
+  validation {
+    condition     = alltrue([for target in values(var.redirect_hostnames) : contains(["site", "api"], target)])
+    error_message = "Each value in redirect_hostnames must be \"site\" or \"api\"."
+  }
+}
+
 variable "image_digests" {
   description = "The image each task definition starts from, by image, as sha256:<64 hex>. Used only when the task definitions are first created; after that the deploy workflow records what runs (ecs.tf)."
   type        = map(string)

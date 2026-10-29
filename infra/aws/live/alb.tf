@@ -1,10 +1,10 @@
-# One load balancer for both hostnames. DNS stays at Cloudflare: the
+# One load balancer for every hostname. DNS stays at Cloudflare: the
 # certificate is validated with CNAME records added there by hand, and the
 # hostnames point at the load balancer's DNS name (README.md).
 
 resource "aws_acm_certificate" "public" {
   domain_name               = var.site_hostname
-  subject_alternative_names = [var.api_hostname]
+  subject_alternative_names = concat([var.api_hostname], keys(var.redirect_hostnames))
   validation_method         = "DNS"
 
   lifecycle {
@@ -76,7 +76,10 @@ resource "aws_lb_listener" "http" {
   }
 }
 
-# A request for any other hostname gets 404.
+# A request for any other hostname gets 404. A change of names replaces the
+# certificate. Its ARN comes through the validation, so the listener, and the
+# rules that depend on it, move to the new certificate only once ACM has
+# issued it. The old one is deleted after that (create_before_destroy).
 resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = 443
@@ -153,5 +156,29 @@ resource "aws_lb_listener_rule" "web" {
   action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web.arn
+  }
+}
+
+# The redirect keeps the path and query. Each rule matches a hostname no other
+# rule matches, so its priority does not matter, and AWS gives it the next
+# free one.
+resource "aws_lb_listener_rule" "redirect" {
+  for_each = var.redirect_hostnames
+
+  listener_arn = aws_lb_listener.https.arn
+
+  condition {
+    host_header {
+      values = [each.key]
+    }
+  }
+
+  action {
+    type = "redirect"
+
+    redirect {
+      host        = each.value == "site" ? var.site_hostname : var.api_hostname
+      status_code = "HTTP_301"
+    }
   }
 }
