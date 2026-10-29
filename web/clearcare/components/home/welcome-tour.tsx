@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
 import { primaryButtonClass, secondaryLinkClass } from "@/components/ui/classes";
+import { MAX_COMPARED } from "@/lib/compare";
 
 // The welcome tour (CCARE-164): a short walk around the site from the home page, pointing at one
 // part at a time, in the order of the How to navigate ClearCare guide (/guides/using-clearcare).
@@ -102,6 +103,28 @@ const TOUR_STEPS: TourStep[] = [
           <>
             <strong>Search for Homes</strong>, in this menu, finds a home by name, Eircode, address or county. Each
             home’s page has its inspection record and phone number.
+          </>
+        ),
+      },
+    ],
+  },
+  {
+    title: "Compare homes",
+    body: (
+      <>
+        Choose <strong>Add to shortlist</strong> on a home&apos;s page or in the search results to save up to{" "}
+        {MAX_COMPARED}. <strong>Compare Homes</strong> shows them side by side: the cost, the home and what HIQA found.
+      </>
+    ),
+    // The link's address carries the saved homes (/compare?homes=…), so match its start.
+    places: [
+      { selector: '[data-tour="nav"] a[href^="/compare"]' },
+      {
+        selector: MENU,
+        body: (
+          <>
+            <strong>Compare Homes</strong>, in this menu, shows the homes on your shortlist side by side. Choose{" "}
+            <strong>Add to shortlist</strong> on a home to save it, up to {MAX_COMPARED}.
           </>
         ),
       },
