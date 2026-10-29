@@ -26,6 +26,21 @@ export function createAuthConfig(
         checks: ["pkce", "state", "nonce"],
         authorization: { params: { scope: "openid email profile" } },
       }),
+      // Cognito's authorize endpoint always lands on /login, so "Create account" names the
+      // hosted /signup page directly. Auth.js adds the state, nonce, PKCE and its own
+      // redirect_uri, so this is the same flow with a different entry page.
+      ...(env.COGNITO_DOMAIN?.trim()
+        ? [
+            Cognito({
+              id: "cognito-signup",
+              clientId: env.AUTH_COGNITO_ID,
+              clientSecret: env.AUTH_COGNITO_SECRET,
+              issuer: env.AUTH_COGNITO_ISSUER,
+              checks: ["pkce", "state", "nonce"],
+              authorization: { url: `${env.COGNITO_DOMAIN.trim()}/signup` },
+            }),
+          ]
+        : []),
     ],
     callbacks: {
       // Sign-in mints the id a page will see for this account; later reads leave it alone.
