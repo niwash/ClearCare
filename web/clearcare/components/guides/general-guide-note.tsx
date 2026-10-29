@@ -1,7 +1,6 @@
 // The "A general guide by ClearCare" note for the family guide's flowchart. The flowchart on the
 // page leaves it out so this can sit beside it as text; the downloadable PNG has it drawn in, so
-// it stays with the chart when shared. Keep the wording the same as in that PNG, which is built
-// by svg3.py in the "Adult-centred User Design" artifact.
+// it stays with the chart when shared. Keep the wording the same as in that PNG.
 export function GeneralGuideNote() {
   return (
     <aside className="max-w-4xl rounded-lg border border-line border-l-4 border-l-primary bg-surface px-5 py-4 md:text-lg">
