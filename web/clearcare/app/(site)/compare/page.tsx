@@ -51,6 +51,11 @@ interface ComparePageProps {
 type FoundColumn = { id: string; status: "found"; centre: CentreDetail; reports: CentreReports | null };
 type Column = FoundColumn | { id: string; status: "not-found" | "unavailable" };
 
+// The register's name, or a stand-in for a home that didn't load.
+function columnName(column: Column) {
+  return column.status === "found" ? column.centre.centre_name : `Centre ID ${column.id}`;
+}
+
 async function loadColumn(id: string): Promise<Column> {
   const lookup = await getCentre(id);
   if (lookup.status !== "found") return { id, status: lookup.status };
@@ -61,14 +66,19 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
   const { homes, regulations } = await searchParams;
   const ids = parseHomesParam(homes);
   const columns = await Promise.all(ids.map(loadColumn));
+  // What a shared address saves: the homes that loaded, and the ones that couldn't be loaded just now,
+  // so the link isn't lost. A home off the register is left out.
   const shownHomes = columns.flatMap((column) =>
-    column.status === "found" ? [{ id: column.id, name: column.centre.centre_name }] : [],
+    column.status === "not-found" ? [] : [{ id: column.id, name: columnName(column) }],
+  );
+  const loadedNames = Object.fromEntries(
+    columns.flatMap((column) => (column.status === "found" ? [[column.id, column.centre.centre_name]] : [])),
   );
 
   return (
     <>
       <CompareHero />
-      <CompareSync shownIds={ids} shownHomes={shownHomes} />
+      <CompareSync shownIds={ids} shownHomes={shownHomes} loadedNames={loadedNames} />
       {columns.length === 0 ? (
         <NothingSaved />
       ) : columns.every((column) => column.status === "unavailable") ? (
@@ -88,14 +98,15 @@ function CompareHero() {
     <section aria-labelledby="compare-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Compare Homes" />
-        <h1 id="compare-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+        {/* tabIndex -1: focus comes here when a Remove button, or Clear the list, goes. */}
+        <h1 id="compare-h" tabIndex={-1} className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Compare Homes
         </h1>
         <div className="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <p className="max-w-2xl text-ink-muted md:text-lg">
             Search for homes and add up to {MAX_COMPARED} to your shortlist.
           </p>
-          <ClearCompareButton className="min-h-11 rounded-md border border-line bg-surface px-4 text-sm font-semibold text-ink hover:border-primary" />
+          <ClearCompareButton focusAfter="compare-h" className="min-h-11 rounded-md border border-line bg-surface px-4 text-sm font-semibold text-ink hover:border-primary" />
         </div>
       </div>
     </section>
@@ -291,8 +302,9 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         },
         {
           key: "repeated",
-          label: "Repeated issues",
-          hint: "Not compliant at the last 2 inspections that checked it",
+          // Worded as the centre page's highlights word the same rule.
+          label: "Not compliant at 2 inspections in a row",
+          hint: "The last 2 inspections that checked the regulation",
           cells: eachJudged((reports) => <RegulationCount regulations={repeatedNotCompliant(reports)} />),
         },
       ],
@@ -316,7 +328,19 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       ),
       rows: [
         ...(rows.length === 0
-          ? [{ key: "none", label: "No results yet", span: <Muted>None of these homes&apos; reports are in ClearCare yet.</Muted> }]
+          ? [
+              {
+                key: "none",
+                label: "No results yet",
+                span: (
+                  <Muted>
+                    {columns.some((column) => column.status === "found" && column.reports)
+                      ? "None of these homes' inspections in ClearCare checked regulations."
+                      : "None of these homes' reports are in ClearCare yet."}
+                  </Muted>
+                ),
+              },
+            ]
           : []),
         ...shortfalls.map(regulationRow),
         // The regulations where no home fell short, folded behind a link as in the centre page's
@@ -421,8 +445,10 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
   );
 }
 
+// A home's name and county, or why it didn't load, with its Remove button: atop its column in the
+// grid, and in the list of homes on phones.
 function HomeHeading({ column }: { column: Column }) {
-  const name = column.status === "found" ? column.centre.centre_name : `centre ${column.id}`;
+  const name = columnName(column);
   return (
     <div className="flex flex-col items-start gap-1.5">
       {column.status === "found" ? (
@@ -440,7 +466,7 @@ function HomeHeading({ column }: { column: Column }) {
           <span className="text-sm text-ink-muted">Centre ID {column.id}</span>
         </>
       )}
-      <CompareButton home={{ id: column.id, name }} variant="remove" className="mt-1 min-h-11 px-3 text-sm" />
+      <CompareButton home={{ id: column.id, name }} variant="remove" focusAfter="compare-h" className="mt-1 min-h-11 px-3 text-sm" />
     </div>
   );
 }
@@ -488,7 +514,7 @@ function AddMore({ room, county }: { room: number; county?: string }) {
   );
 }
 
-// Phones: the saved homes as a list, each with its ✕, before the cards.
+// Phones: the saved homes as a list, headed as in the grid, before the cards.
 function PhoneHomes({ columns }: { columns: Column[] }) {
   return (
     <div className="flex flex-col gap-2">
@@ -496,21 +522,11 @@ function PhoneHomes({ columns }: { columns: Column[] }) {
         Your {columns.length === 1 ? "home" : `${columns.length} homes`}
       </h3>
       <ol className="flex flex-col gap-2">
-        {columns.map((column) => {
-          const name = column.status === "found" ? column.centre.centre_name : `Centre ID ${column.id}`;
-          return (
-            <li key={column.id} className="flex items-center justify-between gap-2 rounded-lg border border-line bg-surface py-1.5 pl-4 pr-1.5">
-              {column.status === "found" ? (
-                <Link href={`/centres/${column.id}`} className="font-semibold leading-snug text-ink">
-                  {name}
-                </Link>
-              ) : (
-                <span className="font-semibold">{name}</span>
-              )}
-              <CompareButton home={{ id: column.id, name }} variant="remove" iconOnly className="size-11 shrink-0" />
-            </li>
-          );
-        })}
+        {columns.map((column) => (
+          <li key={column.id} className="rounded-lg border border-line bg-surface p-4">
+            <HomeHeading column={column} />
+          </li>
+        ))}
       </ol>
     </div>
   );
@@ -518,7 +534,7 @@ function PhoneHomes({ columns }: { columns: Column[] }) {
 
 // Phones: a card per row, each home's value under its name.
 function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group[] }) {
-  const names = columns.map((column) => (column.status === "found" ? column.centre.centre_name : `Centre ID ${column.id}`));
+  const names = columns.map(columnName);
   return (
     <div className="flex flex-col gap-6">
       {groups.map((group) => (

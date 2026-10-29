@@ -6,6 +6,10 @@ import type { CentreReports, ISODate, Judgement, Regulation } from "./centres";
 
 export const MAX_COMPARED = 3;
 export const COMPARE_STORAGE_KEY = "compare-homes";
+// The note in Your shortlist that says the list is full. The search results' buttons point to it,
+// so it's said once rather than on every card. Here, not in the "use client" shortlist file: a
+// server component would get a client reference from there, not the string.
+export const SHORTLIST_FULL_ID = "shortlist-full";
 
 // The name is saved with the ID so the buttons and the navigation can show the list without
 // asking the API.

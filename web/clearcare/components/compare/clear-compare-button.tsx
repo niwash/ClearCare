@@ -1,31 +1,24 @@
 "use client";
 
 // "Clear the list" on Compare Homes (CCARE-127): takes every saved home off. Shown only while
-// there are homes to clear.
-import { useState } from "react";
-import { clearCompared, useComparedHomes } from "./compare-store";
+// there are homes to clear; focus then moves to the page's heading, as the button goes.
+import { announce, clearCompared, useComparedHomes } from "./compare-store";
 
-export function ClearCompareButton({ className }: { className: string }) {
+export function ClearCompareButton({ className, focusAfter }: { className: string; focusAfter: string }) {
   const homes = useComparedHomes();
-  const [status, setStatus] = useState("");
 
+  if (!homes || homes.length === 0) return null;
   return (
-    <>
-      {homes && homes.length > 0 && (
-        <button
-          type="button"
-          onClick={() => {
-            clearCompared();
-            setStatus("Your list is cleared.");
-          }}
-          className={className}
-        >
-          Clear the list
-        </button>
-      )}
-      <span role="status" className="sr-only">
-        {status}
-      </span>
-    </>
+    <button
+      type="button"
+      onClick={() => {
+        clearCompared();
+        announce("Your list is cleared.");
+        document.getElementById(focusAfter)?.focus();
+      }}
+      className={className}
+    >
+      Clear the list
+    </button>
   );
 }
