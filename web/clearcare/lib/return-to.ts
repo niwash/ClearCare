@@ -3,31 +3,31 @@
 // survives, and anything else falls back to the home page.
 export const DEFAULT_RETURN_TO = "/";
 
-// Control characters hide a second value from a reader but not from the redirect, and a backslash
-// is read as a forward slash by some browsers, so both are refused outright.
+// Parsed against a placeholder origin. Anything that keeps another origin, or that normalises into
+// a protocol-relative path, was not a path on this site; a backslash or a control character lands
+// in one of those two cases, so neither needs a check of its own.
+const PLACEHOLDER_ORIGIN = "https://clearcare.invalid";
+
+// A control character changes what the browser reads at the redirect without changing what a
+// reader sees, so the value is refused rather than quietly rewritten.
 const CONTROL_CHARACTERS = /[\u0000-\u001F\u007F]/;
 
 export function safeReturnPath(value: string | null | undefined): string {
-  if (typeof value !== "string") return DEFAULT_RETURN_TO;
-
-  const candidate = value.trim();
-  if (candidate === "") return DEFAULT_RETURN_TO;
-
-  // "/page" is internal; "//host" is another site, and "https://host" is absolute.
+  const candidate = typeof value === "string" ? value.trim() : "";
   if (!candidate.startsWith("/")) return DEFAULT_RETURN_TO;
-  if (candidate.startsWith("//")) return DEFAULT_RETURN_TO;
-  if (candidate.includes("\\")) return DEFAULT_RETURN_TO;
   if (CONTROL_CHARACTERS.test(candidate)) return DEFAULT_RETURN_TO;
 
   let parsed: URL;
   try {
-    parsed = new URL(candidate, "https://clearcare.invalid");
+    parsed = new URL(candidate, PLACEHOLDER_ORIGIN);
   } catch {
     return DEFAULT_RETURN_TO;
   }
 
-  // Anything that resolved away from the placeholder origin was not a path.
-  if (parsed.origin !== "https://clearcare.invalid") return DEFAULT_RETURN_TO;
+  if (parsed.origin !== PLACEHOLDER_ORIGIN) return DEFAULT_RETURN_TO;
+
+  // "/a/..//evil.example" resolves to "//evil.example", which a browser reads as another host.
+  if (parsed.pathname.startsWith("//")) return DEFAULT_RETURN_TO;
 
   // Returning into the authentication routes would re-enter the callback loop.
   if (parsed.pathname.startsWith("/api/auth")) return DEFAULT_RETURN_TO;
