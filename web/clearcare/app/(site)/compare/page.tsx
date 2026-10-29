@@ -229,7 +229,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         {
           // TODO: A row each once the API has them.
           key: "coming-soon",
-          label: "Care types, services and amenities",
+          label: "Care types and amenities",
           span: <span className={`inline-block px-3 py-1.5 text-sm ${comingSoonClass}`}>Coming soon</span>,
         },
         { key: "address", label: "Address", cells: each(({ centre }) => <Value main={shortAddress(centre)} />) },
