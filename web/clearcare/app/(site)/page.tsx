@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
+import { HomeHero } from "@/components/home/home-hero";
+import { NewHere } from "@/components/home/new-here";
 import { NewsBanner } from "@/components/home/news-banner";
+import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
-import { WelcomeTour } from "@/components/home/welcome-tour";
 import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
-import { IconCircle } from "@/components/ui/icon-circle";
+import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
 import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
 import { getReAssessmentStatistics } from "@/lib/statistics";
@@ -18,52 +20,20 @@ export default async function StartPage() {
   const [count, statistics] = await Promise.all([searchCentres({ page_size: "1" }), getReAssessmentStatistics()]);
   const total = count.ok ? count.data.total : null;
 
+  // The carousel first, then the order of the reference design of CCARE-179: who the site is for,
+  // what it can help with, reassurance and where to start, what it holds and why it matters, what
+  // ClearCare is, then a search and an example.
   return (
     <>
       <FeatureCarousel />
 
-      {/* The page's h1: who the site is for, what it does and what it is for, before any task. A
-          tinted band the full width of the window, set apart from the rest of the page, with the
-          words centred. The adult-centred design keeps them left-aligned, which is easier to read
-          (NIA/NLM: left-justify text). */}
-      {/* md:-mt-8 cancels the page's gap between sections, so on wider screens the band starts
-          where the carousel ends. */}
-      <section className={`${fullWidthClass} bg-band px-4 py-8 md:-mt-8 md:px-8 md:py-12 adult:md:mt-0`}>
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-8 text-center adult:items-start adult:text-left">
-          <div className="flex max-w-3xl flex-col items-center gap-4 adult:items-start">
-            <h1 className="font-heading text-3xl font-semibold tracking-tight md:text-4xl">Welcome to ClearCare</h1>
-            <p className="md:text-lg">
-              Choosing a nursing home is a big decision, for the person moving in and for their family. We bring
-              together the information you need to choose a nursing home and explain it in a way that is easy to
-              understand.
-            </p>
-            {/* The guide to the site itself, where a newcomer starts reading, and the tour that
-                follows it (CCARE-164). */}
-            <div data-tour="guide-links" className="flex scroll-mt-6 flex-wrap justify-center gap-3 adult:justify-start">
-              <Link
-                href="/guides/using-clearcare"
-                className="inline-flex min-h-11 items-center gap-2 rounded-md border border-line bg-surface px-4 font-semibold text-ink no-underline hover:border-primary hover:text-ink"
-              >
-                New to ClearCare? See how to use it <span aria-hidden>→</span>
-              </Link>
-              <WelcomeTour />
-            </div>
-          </div>
-
-          {/* Side by side from tablet width, stacked on phones. */}
-          <div className="grid w-full gap-4 md:grid-cols-2 md:gap-6">
-            <StatementCard label="Our Mission" icon="mission">
-              To help people make informed decisions, and give informed consent, about nursing home care.
-            </StatementCard>
-            <StatementCard label="Our Vision" icon="vision">
-              As Ireland&apos;s older population grows, more families will face this choice. We want every one of
-              them to make it informed and prepared.
-            </StatementCard>
-          </div>
-        </div>
-      </section>
+      <HomeHero />
 
       <SiteFeatures />
+
+      <NewHere />
+
+      <NotAlone />
 
       <SiteFigures
         homes={total}
@@ -72,6 +42,36 @@ export default async function StartPage() {
       />
 
       <NewsBanner />
+
+      {/* What ClearCare is and why it exists, after the news of why the choice matters more each year.
+          A band of its own, the full width of the window, meeting the news band above (-mt cancels
+          the page's gap). The adult-centred design turns the tints to its band colour. */}
+      <section
+        aria-labelledby="about-h"
+        className={`${fullWidthClass} -mt-6 bg-tint-blue px-4 py-10 md:-mt-8 md:px-8 md:py-14`}
+      >
+        <div className="mx-auto flex max-w-6xl flex-col gap-6">
+          <div className="flex max-w-3xl flex-col gap-2">
+            <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+              About ClearCare
+            </h2>
+            <p className="text-ink-muted md:text-lg">
+              ClearCare is free and independent. It doesn&apos;t rate or recommend homes: it helps you read what HIQA
+              has found and understand your options.
+            </p>
+          </div>
+          {/* Side by side from tablet width, stacked on phones. */}
+          <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+            <StatementCard label="Our Mission" icon="mission" tint="sage">
+              To help people make informed decisions, and give informed consent, about nursing home care.
+            </StatementCard>
+            <StatementCard label="Our Vision" icon="vision" tint="gold">
+              As Ireland&apos;s older population grows, more families will face this choice. We want every one of them
+              to make it informed and prepared.
+            </StatementCard>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-6 md:grid-cols-[3fr_1fr] md:gap-10">
         <div className="flex min-w-0 flex-col gap-3">
@@ -125,13 +125,23 @@ export default async function StartPage() {
   );
 }
 
-// One of the mission and vision cards in the welcome band: the title as the card's heading, in the
-// accent colour, then the statement as plain body text under it. White cards on the tinted band.
-function StatementCard({ label, icon, children }: { label: string; icon: IconName; children: React.ReactNode }) {
+// One of the mission and vision cards in About ClearCare: an icon, the title as the card's heading
+// and the statement as plain body text under it.
+function StatementCard({
+  label,
+  icon,
+  tint,
+  children,
+}: {
+  label: string;
+  icon: IconName;
+  tint: Tint;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-line bg-surface p-6 md:p-8 adult:items-start">
-      <IconCircle path={ICON_PATHS[icon]} size="large" />
-      <h2 className="font-heading text-2xl font-semibold text-primary md:text-3xl">{label}</h2>
+    <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-6 md:p-8">
+      <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
+      <h3 className="font-heading text-xl font-semibold md:text-2xl">{label}</h3>
       <p className="text-ink-muted md:text-lg">{children}</p>
     </div>
   );

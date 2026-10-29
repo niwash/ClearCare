@@ -48,9 +48,14 @@ export function SiteHeader() {
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
-          <Link href="/" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
-            ClearCare
-          </Link>
+          {/* The name, and under it the motto: what the site is, in one line, on every page (CCARE-179).
+              Only the name is the link home. */}
+          <div className="flex flex-col">
+            <Link href="/" className="w-fit font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
+              ClearCare
+            </Link>
+            <p className="text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
+          </div>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
           <div className="flex flex-auto items-center justify-end gap-2">
