@@ -152,6 +152,29 @@ terraform apply
 
 The state is locked in the bucket while a command runs. An apply that changes a task definition registers a new revision; run the deploy workflow for the running commit to put it into service.
 
+## Hostnames
+
+`site_hostname` and `api_hostname` in `terraform.tfvars` name the site and the API. `redirect_hostnames` maps each hostname that only redirects, such as a `www.` name, to `site` or `api`; a request there gets a 301 to the same path and query on that hostname. One certificate covers them all.
+
+Each hostname has a CNAME record in Cloudflare, DNS only, to `terraform output -raw load_balancer_dns_name`. Cloudflare flattens the one at the zone apex.
+
+Changing a hostname replaces the certificate. To change them from `infra/aws/live`:
+
+1. Set the new names in `terraform.tfvars`, with the old ones in `redirect_hostnames` if links to them should keep working. Apply the certificate and the listener alone: `terraform apply -target=aws_lb_listener.https`. It requests the new certificate and waits up to two hours for ACM to issue it, while the listener keeps the old one. Targeting the certificate alone would also delete the old one, which ACM refuses while the listener uses it.
+2. While it waits, add the new certificate's validation records in Cloudflare as CNAMEs, DNS only, and keep them for renewals. Names that the old certificate had already have theirs. `terraform output certificate_validation_records` lists them only after the apply, so ask ACM:
+
+   ```sh
+   arn=$(aws acm list-certificates --certificate-statuses PENDING_VALIDATION \
+       --query 'CertificateSummaryList[0].CertificateArn' --output text)
+   aws acm describe-certificate --certificate-arn "$arn" \
+       --query 'Certificate.DomainValidationOptions[].ResourceRecord' --output table
+   ```
+
+3. Add the CNAME records for the new hostnames.
+4. Apply everything: `terraform apply`. The listener rules move to the new hostnames.
+5. Run the AWS deploy workflow for the running commit, so the site's tasks get the new `API_URL`.
+6. Set `API_URL` for the Vercel previews to the new API hostname, then redeploy the preview of `main`: a changed variable reaches only new deployments.
+
 ## Deploy
 
 Every push to `main` deploys itself once deploys are enabled. After the Checks workflow passes, AWS build pushes the four images, tagged `sha-<commit>`, and calls AWS deploy for the commit the checks ran on. If `main` has moved on by then, the deploy skips that commit, because the newer commit's own build deploys it. The VM deploy is a workflow of its own, so the AWS build no longer depends on it. AWS deploy runs `infra/aws/bin/deploy`:

@@ -10,7 +10,7 @@ output "certificate_validation_records" {
 }
 
 output "load_balancer_dns_name" {
-  description = "Point both hostnames here with CNAME records in Cloudflare."
+  description = "Point every hostname here with CNAME records in Cloudflare."
   value       = aws_lb.main.dns_name
 }
 
