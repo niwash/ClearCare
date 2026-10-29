@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Suspense } from "react";
 
 import { AccountControls } from "@/components/auth/account-controls";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
@@ -61,12 +60,9 @@ export function SiteHeader() {
               <DesignToggle />
               <ThemeToggle />
             </div>
-            {/* Account controls read the session on the server and know the current page, so signing
-                in returns the visitor to it. Suspense lets a static page prerender without the query
-                string. Left out on phones, where the menu carries them. */}
-            <Suspense fallback={null}>
-              <AccountControls variant="header" />
-            </Suspense>
+            {/* Read the session in the browser and return the visitor to this page. Left out on
+                phones, where the menu carries them. */}
+            <AccountControls variant="header" />
           </div>
         </div>
       </div>
@@ -81,9 +77,7 @@ export function SiteHeader() {
             </li>
           ))}
           <li className="border-t border-line pt-2">
-            <Suspense fallback={null}>
-              <AccountControls variant="menu" />
-            </Suspense>
+            <AccountControls variant="menu" />
           </li>
         </ul>
       </MobileMenu>
@@ -99,9 +93,7 @@ export function SiteHeader() {
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and
                 there is no menu. */}
             <li className="sm:hidden">
-              <Suspense fallback={null}>
-                <AccountControls variant="nav" />
-              </Suspense>
+              <AccountControls variant="nav" />
             </li>
           </ul>
         </nav>
