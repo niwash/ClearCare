@@ -109,8 +109,9 @@ export function compliantWhereverJudged(row: ComparisonRow) {
   return row.results.every((result) => result === null || result.judgement === "compliant");
 }
 
-// The latest inspection that judged regulations. Thematic inspections judge none, so they are skipped.
-function latestJudged(reports: CentreReports) {
+// The latest inspection that judged regulations. Thematic inspections judge none, so they are skipped;
+// a home whose reports in ClearCare are all thematic has none.
+export function latestJudged(reports: CentreReports) {
   return reports.inspections.findLast((inspection) => inspection.regulationJudgements);
 }
 

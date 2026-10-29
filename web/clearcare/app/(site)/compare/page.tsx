@@ -30,6 +30,7 @@ import {
 import {
   compareHref,
   compliantWhereverJudged,
+  latestJudged,
   MAX_COMPARED,
   notCompliantAtLatest,
   parseHomesParam,
@@ -118,6 +119,9 @@ function NothingSaved() {
   );
 }
 
+// For a home whose reports in ClearCare are all thematic inspections, which judge no regulations.
+const NONE_JUDGED = "No inspection in ClearCare checked regulations";
+
 // A row of the comparison: a value per home, or one thing across them all (span).
 type Row = { key: string; label: ReactNode; hint?: ReactNode; cells?: ReactNode[]; span?: ReactNode };
 type Group = { title: string; intro?: ReactNode; rows: Row[] };
@@ -174,6 +178,10 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
   // A value for each home with reports in ClearCare.
   const eachReported = (cell: (reports: CentreReports) => ReactNode) =>
     each(({ reports }) => (reports ? cell(reports) : <Muted>No reports in ClearCare yet</Muted>));
+  // A value for each home with an inspection that judged regulations, so a home with only thematic
+  // inspections doesn't read as "None".
+  const eachJudged = (cell: (reports: CentreReports) => ReactNode) =>
+    eachReported((reports) => (latestJudged(reports) ? cell(reports) : <Muted>{NONE_JUDGED}</Muted>));
 
   const rows = regulationRows(columns.map((column) => (column.status === "found" ? column.reports : null)));
   const shortfalls = rows.filter((row) => !compliantWhereverJudged(row));
@@ -279,13 +287,13 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
           key: "not-compliant",
           label: "Not compliant at the latest inspection",
           hint: "Regulations HIQA judged not compliant. The home's record says what it promised to do.",
-          cells: eachReported((reports) => <RegulationCount regulations={notCompliantAtLatest(reports)} />),
+          cells: eachJudged((reports) => <RegulationCount regulations={notCompliantAtLatest(reports)} />),
         },
         {
           key: "repeated",
           label: "Repeated issues",
           hint: "Not compliant at the last 2 inspections that checked it",
-          cells: eachReported((reports) => <RegulationCount regulations={repeatedNotCompliant(reports)} />),
+          cells: eachJudged((reports) => <RegulationCount regulations={repeatedNotCompliant(reports)} />),
         },
       ],
     },
@@ -599,7 +607,11 @@ function ResultCell({ result, column }: { result: LatestResult | null; column: C
         <span>
           {JUDGEMENT_LABELS["not-assessed"]}
           <span className="block text-sm text-ink-muted">
-            {inspected === 1 ? "At its one inspection" : `At any of its ${inspected} inspections`}
+            {inspected === 0
+              ? NONE_JUDGED
+              : inspected === 1
+                ? "At its one inspection"
+                : `At any of its ${inspected} inspections`}
           </span>
         </span>
       </span>
