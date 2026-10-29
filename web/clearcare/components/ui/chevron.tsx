@@ -21,14 +21,28 @@ export function Chevron({ className }: { className: string }) {
   );
 }
 
+// The open-state classes for each kind of group. Written out in full so Tailwind finds them. A
+// <details> holding others takes "group/section", so the ones inside, with plain "group", don't
+// turn its arrow, and it doesn't turn theirs.
+const SHOW_HIDE_CLASSES = {
+  default: { show: "group-open:hidden", hide: "hidden group-open:inline", chevron: "size-5 group-open:rotate-90" },
+  section: {
+    show: "group-open/section:hidden",
+    hide: "hidden group-open/section:inline",
+    chevron: "size-5 group-open/section:rotate-90",
+  },
+} as const;
+
 // "Show" while closed, "Hide" while open, then the arrow: the right-hand end of a summary whose
-// <details> has the "group" class. className places it, e.g. in a grid.
-export function ShowHide({ className = "" }: { className?: string }) {
+// <details> has the "group" class ("group/section" with group="section"). className places it,
+// e.g. in a grid.
+export function ShowHide({ className = "", group = "default" }: { className?: string; group?: keyof typeof SHOW_HIDE_CLASSES }) {
+  const classes = SHOW_HIDE_CLASSES[group];
   return (
     <span className={`flex shrink-0 items-center gap-1 text-sm font-semibold text-primary ${className}`}>
-      <span className="group-open:hidden">Show</span>
-      <span className="hidden group-open:inline">Hide</span>
-      <Chevron className="size-5 group-open:rotate-90" />
+      <span className={classes.show}>Show</span>
+      <span className={classes.hide}>Hide</span>
+      <Chevron className={classes.chevron} />
     </span>
   );
 }
