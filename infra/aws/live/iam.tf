@@ -1,16 +1,16 @@
 # Roles for the tasks. Each family has its own execution role, which ECS uses
-# to pull the image, write the log and read the family's one secret. A task
+# to pull the image, write the log and read the family's secrets. A task
 # role is what the code inside the container may do in AWS; the site, the API
 # and the migrations need none.
 
 locals {
   task_families = toset(["web", "api", "pipeline", "migrate", "restore"])
-  # Family => the one secret its execution role may read. The site has none.
+  # Family => the secrets its execution role may read. The site has none.
   execution_secrets = {
-    api      = aws_secretsmanager_secret.database["api"].arn
-    pipeline = aws_secretsmanager_secret.database["pipeline"].arn
-    migrate  = aws_secretsmanager_secret.database["migrator"].arn
-    restore  = local.admin_secret_arn
+    api      = [aws_secretsmanager_secret.database["api"].arn]
+    pipeline = [aws_secretsmanager_secret.database["pipeline"].arn, aws_secretsmanager_secret.openai.arn]
+    migrate  = [aws_secretsmanager_secret.database["migrator"].arn]
+    restore  = [local.admin_secret_arn]
   }
 }
 

@@ -23,3 +23,10 @@ resource "aws_secretsmanager_secret" "database" {
 locals {
   admin_secret_arn = aws_db_instance.main.master_user_secret[0].secret_arn
 }
+
+# The pipeline's OpenAI API key, for the amenities extraction (CCARE-171).
+resource "aws_secretsmanager_secret" "openai" {
+  name                    = "${local.name}/openai"
+  description             = "OpenAI API key of the pipeline, as plain text"
+  recovery_window_in_days = 7
+}
