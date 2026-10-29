@@ -28,7 +28,7 @@ const FILTERS = ["name", "address", "county", "eircode"] as const;
 
 // Filters the API can't apply yet, shown so people know they're on the way.
 // TODO: Make these real filters once the API has the data.
-const COMING_SOON_FILTERS = ["Care types", "Services", "Amenities"] as const;
+const COMING_SOON_FILTERS = ["Care Types", "Amenities"] as const;
 
 // The results grid has 1 or 2 columns depending on screen width (2 beside the left column from lg
 // up). 24 divides by both, and by 3 should a wider layout come back, so every full page fills its

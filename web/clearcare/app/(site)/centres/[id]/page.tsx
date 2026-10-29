@@ -267,7 +267,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       {/* TODO: Show these with the details once the API has them. */}
       <div className={`flex w-full max-w-2xl flex-col gap-1 px-4 py-3 ${comingSoonClass}`}>
         <h3 className="font-semibold text-ink">Coming soon</h3>
-        <p>The home&apos;s care types, services and amenities, so you can see what it offers.</p>
+        <p>The home&apos;s care types and amenities, so you can see what it offers.</p>
       </div>
     </section>
   );
