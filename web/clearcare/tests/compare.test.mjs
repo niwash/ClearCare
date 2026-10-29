@@ -7,6 +7,7 @@ import {
   addHome,
   compareHref,
   compliantWhereverJudged,
+  latestJudged,
   MAX_COMPARED,
   notCompliantAtLatest,
   parseCompared,
@@ -91,6 +92,15 @@ test("names the regulations not compliant at the latest inspection that judged a
   // Home A's latest inspection is thematic, so its June 2025 inspection counts.
   assert.deepEqual(notCompliantAtLatest(homeA).map((r) => r.number), [23]);
   assert.deepEqual(notCompliantAtLatest(homeB), []);
+});
+
+test("finds no judged inspection for a home with only thematic inspections", () => {
+  const thematic = {
+    inspections: [{ id: "t1", date: "2025-04-01", regulationJudgements: false }],
+    history: [],
+  };
+  assert.equal(latestJudged(thematic), undefined);
+  assert.equal(latestJudged(homeA).id, "a2");
 });
 
 test("finds issues not compliant at the last two inspections that judged them", () => {

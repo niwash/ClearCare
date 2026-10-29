@@ -43,9 +43,10 @@ export default function PrivacyPage() {
           </p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>
-              Some choices you make are saved in your own browser, such as the colour theme, the easier-to-read
-              design and whether you&apos;ve seen the welcome tour. They never leave your device, and clearing your
-              browser&apos;s site data removes them.
+              Some choices you make are saved in your own browser: the colour theme, the easier-to-read design,
+              whether you&apos;ve seen the welcome tour, and the homes on your Compare Homes shortlist. Clearing your
+              browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
+              the page address, like any other page you visit, so they appear in the technical logs below.
             </li>
             <li>
               Like any website, our servers keep short technical logs of requests. Finding faults and keeping the site
