@@ -8,12 +8,14 @@ const FOOTER_LINKS = [
 ];
 
 // Three parts: what ClearCare is, the site's pages, and where the inspection information comes from.
+// On the header's deep brand colour (brand-band, globals.css), so the two frame every page in the
+// site's steady, official colour while the pages between them stay soft (CCARE-179).
 // Where the floating menu button shows (phones and tablets, standard design), the last row keeps
 // clear of the bottom-right corner it sits in, rather than the page leaving room for it below.
 export function SiteFooter() {
   return (
-    <footer className="border-t border-line bg-surface text-sm">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8">
+    <footer className="brand-band brand-band-deep text-sm">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-8">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
             <Link href="/" className="w-fit font-heading text-xl font-semibold text-ink no-underline hover:text-ink tap-target">

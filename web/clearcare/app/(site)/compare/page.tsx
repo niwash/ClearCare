@@ -4,7 +4,9 @@
 // next step for each home. A grid from md up; on phones, one card per row. With room for more
 // homes, a panel says how to add them. The homes are saved in this browser (components/compare);
 // their IDs come in the address, ?homes=101,34, so the page is drawn on the server like a centre
-// page, and CompareSync keeps the address in step with the saved list.
+// page, and CompareSync keeps the address in step with the saved list. Framed for a family deciding
+// together (CCARE-179): the steps to a shortlist when it's empty, a soft icon by each group, and
+// the guides and contacts that help with the rest of the choice at the end, as on a centre page.
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { CSSProperties, ReactNode } from "react";
@@ -12,9 +14,13 @@ import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-i
 import { ClearCompareButton } from "@/components/compare/clear-compare-button";
 import { CompareButton } from "@/components/compare/compare-button";
 import { CompareSync } from "@/components/compare/compare-sync";
+import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
-import { actionLinkClass, comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { ContactsBanner } from "@/components/layout/contacts-banner";
+import { actionLinkClass, comingSoonClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { IconCircle, type Tint } from "@/components/ui/icon-circle";
+import { ICON_PATHS } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
@@ -38,6 +44,7 @@ import {
   repeatedNotCompliant,
   type LatestResult,
 } from "@/lib/compare";
+import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
 export const metadata: Metadata = { title: "Compare Homes" };
@@ -86,16 +93,30 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       ) : (
         <Comparison columns={columns} showAllRegulations={regulations === "all"} />
       )}
+
+      {/* Comparing records is one part of the choice; these help with the rest. */}
+      <GuidesBand
+        id="deciding-h"
+        title="Deciding together"
+        intro="Comparing records is one part of the choice. Our guides help your family with the rest."
+        guides={DECIDING_GUIDES}
+      />
+
+      {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
+      <ContactsBanner className="-mb-6 md:-mb-10" />
     </>
   );
 }
 
+// The guides a family needs most while weighing up homes, in the order they need them.
+const DECIDING_GUIDES = [getGuide("how-a-family-chooses"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
+
 // The top of the page, flush under the header, as on the contacts and resources pages: the
-// breadcrumb, the heading and a line of welcome on a band of brand colour (brand-band, globals.css),
+// breadcrumb, the heading and a line of welcome on the soft welcome band (welcome-band, globals.css),
 // with "Clear the list" beside the line once homes are saved.
 function CompareHero() {
   return (
-    <section aria-labelledby="compare-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="compare-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Compare Homes" />
         {/* tabIndex -1: focus comes here when a Remove button, or Clear the list, goes. */}
@@ -104,28 +125,70 @@ function CompareHero() {
         </h1>
         <div className="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <p className="max-w-2xl text-ink-muted md:text-lg">
-            Search for homes and add up to {MAX_COMPARED} to your shortlist.
+            Search for homes and add up to {MAX_COMPARED} to your shortlist. See them side by side, so your family can
+            talk the choice through together.
           </p>
-          <ClearCompareButton focusAfter="compare-h" className="min-h-11 rounded-md border border-line bg-surface px-4 text-sm font-semibold text-ink hover:border-primary" />
+          <ClearCompareButton
+            focusAfter="compare-h"
+            className="min-h-11 rounded-full border border-line bg-surface px-5 text-sm font-semibold text-ink hover:border-primary adult:rounded-md adult:px-4"
+          />
         </div>
       </div>
     </section>
   );
 }
 
+// Before anything is saved: the three steps to a comparison, each with an icon in its own soft
+// colour, then the way to start and the questions to take on a visit.
+const STEPS: { title: string; text: ReactNode; icon: string; tint: Tint }[] = [
+  { title: "Find a home", text: "Search by name, address or town, county or Eircode.", icon: ICON_PATHS.search, tint: "blue" },
+  {
+    title: "Add it to your shortlist",
+    text: (
+      <>
+        Choose &ldquo;Add to shortlist&rdquo; on its page or in the search results. You can save up to {MAX_COMPARED}.
+      </>
+    ),
+    icon: ICON_PATHS.home,
+    tint: "sage",
+  },
+  {
+    title: "See them side by side",
+    text: "Cost, the home and what HIQA found, in one place to talk through together.",
+    icon: ICON_PATHS.results,
+    tint: "gold",
+  },
+];
+
 function NothingSaved() {
   return (
-    <section aria-labelledby="empty-h" className="flex flex-col items-start gap-3 rounded-lg bg-band p-6 md:p-8">
+    <section aria-labelledby="empty-h" className="flex flex-col gap-6 rounded-2xl bg-band p-6 md:p-8 adult:rounded-lg">
       <h2 id="empty-h" className="font-heading text-xl font-semibold md:text-2xl">
         No homes saved yet
       </h2>
-      <p className="max-w-2xl">
-        Find a home, then choose &ldquo;Add to shortlist&rdquo; on its page or in the search results. You can save up to{" "}
-        {MAX_COMPARED}.
-      </p>
-      <Link href="/search" className={actionLinkClass}>
-        Search for Homes
-      </Link>
+      <ol className="grid gap-4 md:grid-cols-3">
+        {STEPS.map((step, i) => (
+          <li
+            key={step.title}
+            className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-5 shadow-sm adult:rounded-lg adult:shadow-none"
+          >
+            <div className="flex items-center gap-3">
+              <IconCircle path={step.icon} size="large" tint={step.tint} />
+              <span className="text-sm font-semibold text-ink-muted">Step {i + 1}</span>
+            </div>
+            <h3 className="font-heading text-lg font-semibold">{step.title}</h3>
+            <p className="text-ink-muted">{step.text}</p>
+          </li>
+        ))}
+      </ol>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/search" className={actionLinkClass}>
+          Search for Homes <span aria-hidden>→</span>
+        </Link>
+        <Link href="/guides/choosing-a-nursing-home" className={secondaryLinkClass}>
+          What to ask when you visit
+        </Link>
+      </div>
     </section>
   );
 }
@@ -135,7 +198,8 @@ const NONE_JUDGED = "No inspection in ClearCare checked regulations";
 
 // A row of the comparison: a value per home, or one thing across them all (span).
 type Row = { key: string; label: ReactNode; hint?: ReactNode; cells?: ReactNode[]; span?: ReactNode };
-type Group = { title: string; intro?: ReactNode; rows: Row[] };
+// Each group has an icon in its own soft colour beside its heading, so the eye can find it.
+type Group = { title: string; icon: string; tint: Tint; intro?: ReactNode; rows: Row[] };
 
 function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAllRegulations: boolean }) {
   const groups = buildGroups(columns, showAllRegulations);
@@ -208,6 +272,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
   return [
     {
       title: "Cost",
+      icon: ICON_PATHS.cost,
+      tint: "gold",
       rows: [
         {
           key: "cost",
@@ -232,6 +298,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
     },
     {
       title: "The home",
+      icon: ICON_PATHS.home,
+      tint: "sage",
       rows: [
         {
           key: "beds",
@@ -279,6 +347,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
     },
     {
       title: "Inspections",
+      icon: ICON_PATHS.report,
+      tint: "blue",
       rows: [
         {
           key: "latest",
@@ -311,20 +381,15 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
     },
     {
       title: "Results by regulation",
+      icon: ICON_PATHS.results,
+      tint: "rose",
+      // No key to the icons: every result says its judgment in words beside its icon.
       intro: (
-        <span className="flex flex-col gap-1.5">
+        <>
           Each home&apos;s latest judgment, and when. Where a home fell short comes first. Homes are inspected at different
           times, so check the dates. HIQA checks only some regulations at each inspection: &ldquo;Not assessed&rdquo;
           means none of the home&apos;s inspections in ClearCare checked it.
-          <span aria-label="Key" className="flex flex-wrap gap-x-4 gap-y-1">
-            {(["compliant", "substantially-compliant", "not-compliant", "not-assessed"] as const).map((judgement) => (
-              <span key={judgement} className="flex items-center gap-1.5">
-                <JudgementIcon judgement={judgement} size={12} />
-                {JUDGEMENT_LABELS[judgement]}
-              </span>
-            ))}
-          </span>
-        </span>
+        </>
       ),
       rows: [
         ...(rows.length === 0
@@ -376,7 +441,7 @@ const homeCellClass = "border-l border-line-soft p-4 align-top";
 
 function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group[] }) {
   return (
-    <div className="h-full overflow-x-auto rounded-lg border border-line bg-surface">
+    <div className="h-full overflow-x-auto rounded-2xl border border-line bg-surface shadow-sm adult:rounded-lg adult:shadow-none">
       <table className="w-full min-w-[30rem] table-fixed border-collapse">
         <caption className="sr-only">The {columns.length} homes on your list, side by side</caption>
         <colgroup>
@@ -401,7 +466,10 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
           <tbody key={group.title}>
             <tr className="border-t border-line bg-surface-muted">
               <th scope="colgroup" className={`${labelCellClass} bg-surface-muted pb-2 font-heading text-lg font-semibold text-ink`}>
-                {group.title}
+                <span className="flex items-center gap-2.5">
+                  <IconCircle path={group.icon} tint={group.tint} />
+                  {group.title}
+                </span>
               </th>
               <td colSpan={columns.length} className="px-4 pb-2 pt-4 align-top text-sm text-ink-muted">
                 {group.intro}
@@ -471,7 +539,8 @@ function HomeHeading({ column }: { column: Column }) {
   );
 }
 
-const nextStepClass = "flex min-h-11 items-center justify-center rounded-md px-3 text-center text-sm font-semibold no-underline";
+const nextStepClass =
+  "flex min-h-11 items-center justify-center rounded-full px-4 text-center text-sm font-semibold no-underline adult:rounded-md adult:px-3";
 
 function NextStep({ centre }: { centre: CentreDetail }) {
   return (
@@ -489,7 +558,10 @@ function NextStep({ centre }: { centre: CentreDetail }) {
 // The space for more homes: beside the grid, or above the cards on phones.
 function AddMore({ room, county }: { room: number; county?: string }) {
   return (
-    <div className="flex w-full flex-col items-center gap-3 rounded-lg border-2 border-dashed border-field bg-surface-muted p-6 text-center md:justify-start md:pt-16">
+    // A dashed outline marks the free place on the list, in the soft blue; the adult-centred design
+    // keeps its 3:1 field colour and plain fill.
+    <div className="flex w-full flex-col items-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-tint-blue p-6 text-center md:justify-start md:pt-16 adult:rounded-lg adult:border-field adult:bg-surface-muted">
+      <IconCircle path={ICON_PATHS.home} size="large" tint="band" />
       <h3 className="font-heading text-xl font-semibold md:text-2xl">
         Add {room === 1 ? "1 more home" : "1 or 2 more homes"}
       </h3>
@@ -503,10 +575,7 @@ function AddMore({ room, county }: { room: number; county?: string }) {
             Search in Co. {county}
           </Link>
         )}
-        <Link
-          href="/search"
-          className="inline-flex h-12 items-center rounded-md border border-line bg-surface px-5 font-semibold text-ink no-underline hover:border-primary hover:text-ink"
-        >
+        <Link href="/search" className={secondaryLinkClass}>
           Search all homes
         </Link>
       </div>
@@ -523,7 +592,7 @@ function PhoneHomes({ columns }: { columns: Column[] }) {
       </h3>
       <ol className="flex flex-col gap-2">
         {columns.map((column) => (
-          <li key={column.id} className="rounded-lg border border-line bg-surface p-4">
+          <li key={column.id} className="rounded-2xl border border-line bg-surface p-4 shadow-sm adult:rounded-lg adult:shadow-none">
             <HomeHeading column={column} />
           </li>
         ))}
@@ -539,10 +608,13 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
     <div className="flex flex-col gap-6">
       {groups.map((group) => (
         <section key={group.title} aria-label={group.title} className="flex flex-col gap-2">
-          <h3 className="font-heading text-xl font-semibold">{group.title}</h3>
+          <h3 className="flex items-center gap-2.5 font-heading text-xl font-semibold">
+            <IconCircle path={group.icon} tint={group.tint} />
+            {group.title}
+          </h3>
           {group.intro && <div className="text-sm text-ink-muted">{group.intro}</div>}
           {group.rows.map((row) => (
-            <div key={row.key} className="overflow-hidden rounded-lg border border-line bg-surface">
+            <div key={row.key} className="overflow-hidden rounded-2xl border border-line bg-surface adult:rounded-lg">
               <div className="px-4 pb-1 pt-3">
                 <h4 className="font-semibold">{row.label}</h4>
                 {row.hint && <p className="text-sm leading-snug text-ink-muted">{row.hint}</p>}

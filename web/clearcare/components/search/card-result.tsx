@@ -23,7 +23,7 @@ export function CardResult({ centre }: CardResultProps) {
   if (eircode && address.endsWith(eircode)) address = address.slice(0, -eircode.length).replace(/,\s*$/, "");
 
   return (
-    <article className="flex flex-col justify-between rounded-lg border border-line bg-surface p-5 shadow-sm transition-shadow hover:shadow-md">
+    <article className="flex flex-col justify-between rounded-2xl border border-line bg-surface p-5 shadow-sm transition hover:border-primary hover:shadow-md adult:rounded-lg adult:transition-none">
       <div className="flex flex-col gap-2">
         <h3 className="font-heading text-xl font-semibold tracking-tight text-ink">
           <Link

@@ -34,7 +34,6 @@ export const GUIDES = [
     photo: "/home/phone.jpg",
     // The woman is low on the right: keep her face, hand and notes.
     photoFocus: "object-[70%_75%]",
-    status: "draft",
   },
   {
     slug: "reading-inspection-reports",
@@ -43,7 +42,6 @@ export const GUIDES = [
     photo: "/home/report.jpg",
     // Keep her glasses and the documents she is holding.
     photoFocus: "object-[50%_45%]",
-    status: "draft",
   },
   {
     slug: "fair-deal",
@@ -52,7 +50,6 @@ export const GUIDES = [
     photo: "/home/fair-deal.jpg",
     // Keep both faces and the paperwork under their hands.
     photoFocus: "object-[50%_35%]",
-    status: "draft",
     inMenu: true,
   },
   {

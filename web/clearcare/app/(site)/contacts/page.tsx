@@ -319,10 +319,10 @@ export default function ContactsPage() {
 const CONTACTS_GUIDES = [getGuide("how-a-family-chooses"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb, the
-// heading and a line of welcome on a band of brand colour (brand-band, globals.css).
+// heading and a line of welcome on the soft welcome band (welcome-band, globals.css).
 function ContactsHero() {
   return (
-    <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Contacts" />
         <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
