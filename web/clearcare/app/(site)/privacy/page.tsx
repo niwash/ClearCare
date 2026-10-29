@@ -8,11 +8,10 @@ export const metadata: Metadata = {
   description: "What personal data ClearCare handles, why, who processes it and your rights.",
 };
 
-// TODO(CCARE-174): The contact address is still to be agreed; until then the page says it's coming
-// soon. GDPR Arts. 13(1)(a) and 14(1)(a) ask for a way to contact us, and every right below is
-// exercised by email, so fill this in as soon as it's agreed (PR #112 review).
 const RUN_BY = "master's students at Technological University Dublin";
-const CONTACT_EMAIL: string | null = null;
+// GDPR Arts. 13(1)(a) and 14(1)(a) ask for a way to contact us, and every right below is exercised
+// by email.
+const CONTACT_EMAIL = "hello@clearcare.ie";
 // The outcome pilot's raw/ answers.
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
@@ -32,15 +31,8 @@ export default function PrivacyPage() {
             public clear information to help them choose a nursing home. ClearCare is not run for profit.
           </p>
           <p>
-            We&apos;re responsible for the personal data described here.{" "}
-            {CONTACT_EMAIL ? (
-              <>
-                For any question about this notice or your data, email{" "}
-                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
-              </>
-            ) : (
-              "Our contact email address for questions about this notice or your data is coming soon."
-            )}
+            We&apos;re responsible for the personal data described here. For any question about this notice or your
+            data, email <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
           </p>
         </PrivacySection>
 
