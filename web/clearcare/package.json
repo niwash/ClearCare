@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "node --test \"tests/**/*.test.{mjs,ts}\""
   },
   "dependencies": {
     "next": "16.3.7",
@@ -17,15 +17,12 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "@testing-library/react": "^16",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.7",
-    "jsdom": "^26",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "vitest": "^3"
+    "typescript": "^5"
   }
 }
