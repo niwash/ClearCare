@@ -74,3 +74,25 @@ export function replaceCompared(homes: ComparedHome[]) {
 export function clearCompared() {
   write([]);
 }
+
+// What the last change to the list was, for the one status message on the page (CompareStatus).
+// Kept here, not in the button that made the change: a Remove button can go with its home in the
+// same update, and a message inside it would go too.
+const announcementListeners = new Set<() => void>();
+let announcement = "";
+
+export function announce(message: string) {
+  announcement = message;
+  announcementListeners.forEach((listener) => listener());
+}
+
+function subscribeToAnnouncements(listener: () => void) {
+  announcementListeners.add(listener);
+  return () => {
+    announcementListeners.delete(listener);
+  };
+}
+
+export function useAnnouncement() {
+  return useSyncExternalStore(subscribeToAnnouncements, () => announcement, () => "");
+}

@@ -1,6 +1,7 @@
 // components/search/card-result.tsx
 import { CompareButton } from "@/components/compare/compare-button";
 import { Icon } from "@/components/ui/icons";
+import { SHORTLIST_FULL_ID } from "@/lib/compare";
 import { formatEircode, type CentreSummary } from "@/lib/search";
 import Link from "next/link";
 
@@ -57,6 +58,8 @@ export function CardResult({ centre }: CardResultProps) {
         {/* Replaces the "Add to list (coming soon)" placeholder for CCARE-46 (CCARE-127). */}
         <CompareButton
           home={{ id: centre.centre_id, name: centre.centre_name }}
+          // Once the list is full, Your shortlist says so once, beside the results.
+          fullNoteId={SHORTLIST_FULL_ID}
           className="min-h-11 px-3 text-sm adult:whitespace-nowrap"
         />
         <Link

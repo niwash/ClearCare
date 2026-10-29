@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
+import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
@@ -42,6 +43,8 @@ function NavItem({ item, className }: { item: NavEntry; className: string }) {
 export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
+      {/* Says when a home is added to or removed from the shortlist, on every page (CCARE-127). */}
+      <CompareStatus />
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
