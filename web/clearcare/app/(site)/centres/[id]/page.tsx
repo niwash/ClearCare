@@ -1,6 +1,7 @@
 // app/centres/[id]/page.tsx
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { CompareButton } from "@/components/compare/compare-button";
+import { ShortlistBox } from "@/components/compare/shortlist-box";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { GuidesBand } from "@/components/guides/guide-ending";
@@ -19,6 +20,7 @@ import {
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
+import { SHORTLIST_FULL_ID } from "@/lib/compare";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
@@ -57,8 +59,16 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
 
           {reports.visitQuestions.length > 0 && (
-            <section aria-labelledby="visit-h" className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:px-7">
-              <h2 id="visit-h" className="font-heading text-xl font-semibold">
+            // On the warm band colour, as the part of the record that turns what HIQA found into what
+            // the family can do next (CCARE-179).
+            <section
+              aria-labelledby="visit-h"
+              className="grid gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line"
+            >
+              <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
+                <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
+                  <Icon name="talk" className="size-4" />
+                </span>
                 Worth asking on a visit
               </h2>
               <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
@@ -82,7 +92,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           ))}
         </>
       ) : (
-        <section aria-labelledby="reports-h" className="rounded-lg border border-line bg-surface p-6">
+        <section aria-labelledby="reports-h" className="rounded-2xl border border-line bg-surface p-6 adult:rounded-lg">
           <h2 id="reports-h" className="font-heading text-xl font-semibold">
             Inspection reports
           </h2>
@@ -125,10 +135,10 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
-// home's name on a band of brand colour (brand-band, globals.css).
+// home's name on the soft welcome band (welcome-band, globals.css).
 function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
-    <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex min-w-0 flex-col gap-2.5">
           {/* Where the home sits in the site, the same however the user got here. */}
@@ -154,10 +164,15 @@ const outlineButtonClass = `${actionButtonClass} border border-line bg-surface t
 
 function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   return (
-    <div className="flex flex-col gap-2.5 lg:min-w-60">
+    <div className="flex flex-col gap-2.5 lg:w-80 lg:shrink-0">
       {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
           Taken out until then (CCARE-164). */}
-      <CompareButton home={{ id: centre.centre_id, name: centre.centre_name }} className={`${actionButtonClass} w-full`} />
+      {/* Once the list is full, the shortlist below says so once. */}
+      <CompareButton
+        home={{ id: centre.centre_id, name: centre.centre_name }}
+        fullNoteId={SHORTLIST_FULL_ID}
+        className={`${actionButtonClass} w-full`}
+      />
       {reports && (
         <a
           href={`/centres/${centre.centre_id}/record.csv`}
@@ -171,6 +186,9 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
       <a href={centre.hiqa_url} className={outlineButtonClass}>
         View on the HIQA website
       </a>
+      {/* The homes saved so far, so the family can see where this one fits and go on to compare
+          them. As on the search page, phones only show it once a home is saved. */}
+      <ShortlistBox currentId={centre.centre_id} className="mt-2" />
     </div>
   );
 }
@@ -192,7 +210,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
             background in the standard design; the adult-centred design adds a 3:1 edge. */}
-        <dl className="w-full max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
+        <dl className="w-full max-w-2xl rounded-2xl border border-line-soft bg-surface py-2 shadow-sm adult:rounded-lg adult:border-line adult:shadow-none">
           <Fact label="HIQA centre ID" icon="id">
             <span className="font-mono">{centre.centre_id}</span>
           </Fact>
@@ -218,8 +236,24 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
           )}
           <Fact label="Registered for" icon="beds">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
-            {/* The most residents HIQA allows, not free beds. */}
-            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
+            {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
+                the question comes up, rather than on the search page (CCARE-179). */}
+            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds.</span>
+            <span className="block text-small text-ink-muted">
+              To ask about a free bed, contact the home
+              {phone?.tel ? (
+                <>
+                  {" "}
+                  on{" "}
+                  <a href={`tel:${phone.tel}`} className="tap-target">
+                    {phone.text}
+                  </a>
+                </>
+              ) : (
+                " directly"
+              )}
+              .
+            </span>
           </Fact>
           {/* From the HSE price list the price came from. No row when there's no list for the home. */}
           {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}

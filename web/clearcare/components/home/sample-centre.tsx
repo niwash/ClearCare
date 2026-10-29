@@ -1,8 +1,10 @@
 // components/home/sample-centre.tsx
-// The start page's example home. Rendered on the server inside <Suspense>, so the rest of the
-// page arrives first and this streams in when the home has been picked.
+// The start page's example home, under the page's "Here's an example of how we sum up reports"
+// heading, so its own headings are a level down. Rendered on the server inside <Suspense>, so the
+// rest of the page arrives first and this streams in when the home has been picked.
 import Link from "next/link";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
+import { ShowAnotherHome } from "@/components/home/show-another-home";
 import { formatDate } from "@/lib/centres";
 import { getSampleCentre } from "@/lib/sample-centre";
 
@@ -21,14 +23,14 @@ export async function SampleCentre({ total }: { total: number | null }) {
   const shown = findings.slice(0, SHORT_LIST);
 
   return (
-    <section aria-labelledby="sample-h" className="rounded-lg border border-line bg-surface">
+    <article aria-labelledby="sample-h" className="reveal rounded-2xl border border-line bg-surface shadow-sm adult:rounded-lg adult:shadow-none">
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
         <p className="text-xs uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">Randomly picked centre</p>
-        <h2 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
+        <h3 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
           <Link href={`/centres/${centre.centre_id}`} className="text-ink tap-target">
             {centre.centre_name}
           </Link>
-        </h2>
+        </h3>
         <p className="text-sm text-ink-muted">
           Co. {centre.county} · {reportCount} {reportCount === 1 ? "report" : "reports"} since {firstYear}
         </p>
@@ -58,7 +60,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
           <p className="text-sm text-ink-muted">All assessed regulations were compliant.</p>
         ) : (
           <div className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold">Not fully compliant</h3>
+            <h4 className="text-sm font-semibold">Not fully compliant</h4>
             <ul className="divide-y divide-line-soft rounded-md border border-line-soft">
               {shown.map(({ regulation, judgement, change }) => (
                 <li key={regulation.number} className="flex items-start gap-3 px-3 py-2.5 text-sm">
@@ -87,12 +89,10 @@ export async function SampleCentre({ total }: { total: number | null }) {
 
       <div className="flex flex-col gap-2 border-t border-line-soft px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
         <Link href={`/centres/${centre.centre_id}`} className="tap-target">See full record<span className="sr-only"> for {centre.centre_name}</span> →</Link>
-        {/* A plain link, so the browser reloads the page and the server picks again. <Link> would
-            reuse the page it already has. */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a href="/" className="tap-target">Show another home</a>
+        {/* Picks again on the server without reloading the page, so the reader keeps their place. */}
+        <ShowAnotherHome currentName={centre.centre_name} />
       </div>
-    </section>
+    </article>
   );
 }
 
@@ -102,7 +102,7 @@ export function SampleCentreFallback() {
     <section
       aria-busy="true"
       aria-label="Randomly picked centre"
-      className="flex min-h-64 items-center justify-center rounded-lg border border-line bg-surface p-6 text-sm text-ink-muted"
+      className="flex min-h-64 items-center justify-center rounded-2xl border border-line bg-surface p-6 text-sm text-ink-muted"
     >
       Picking a home at random…
     </section>

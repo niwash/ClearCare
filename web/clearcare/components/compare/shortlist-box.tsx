@@ -4,14 +4,15 @@
 // each with a ✕, an empty slot for each one still free, and a link to Compare Homes. With nothing
 // saved it says how to add a home, in the left column only; on phones it waits until a home is
 // saved, so it doesn't push the results further down. Once the list is full, the note saying so is
-// here, once, and the results' buttons point to it.
+// here, once, and the results' buttons point to it. A centre page shows it too, beside the home's
+// own actions, with that home marked as "This home" (currentId) (CCARE-179).
 import Link from "next/link";
 import { actionLinkClass } from "@/components/ui/classes";
 import { compareHref, MAX_COMPARED, SHORTLIST_FULL_ID } from "@/lib/compare";
 import { CompareButton } from "./compare-button";
 import { useComparedHomes } from "./compare-store";
 
-export function ShortlistBox({ className = "" }: { className?: string }) {
+export function ShortlistBox({ className = "", currentId }: { className?: string; currentId?: string }) {
   const homes = useComparedHomes() ?? [];
   const room = MAX_COMPARED - homes.length;
 
@@ -36,9 +37,17 @@ export function ShortlistBox({ className = "" }: { className?: string }) {
       <ul className="flex flex-col gap-2">
         {homes.map((home) => (
           <li key={home.id} className="flex items-center justify-between gap-1 rounded-md border border-line bg-surface-muted py-0.5 pl-3 pr-0.5">
-            <Link href={`/centres/${home.id}`} className="min-w-0 py-2 text-sm font-semibold leading-snug text-ink">
-              {home.name}
-            </Link>
+            {/* "This home" sits outside the link, so it doesn't take the link's underline. */}
+            <div className="flex min-w-0 flex-col py-2">
+              <Link
+                href={`/centres/${home.id}`}
+                aria-current={home.id === currentId ? "page" : undefined}
+                className="text-sm font-semibold leading-snug text-ink"
+              >
+                {home.name}
+              </Link>
+              {home.id === currentId && <span className="text-xs text-ink-muted">This home</span>}
+            </div>
             <CompareButton home={home} variant="remove" iconOnly bare focusAfter="shortlist-h" className="size-10 shrink-0" />
           </li>
         ))}

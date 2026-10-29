@@ -8,10 +8,10 @@ import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
-import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
-import { MAX_TEXT_LENGTH, searchCentres } from "@/lib/search";
+import { searchCentres } from "@/lib/search";
 import { getReAssessmentStatistics } from "@/lib/statistics";
 
 export default async function StartPage() {
@@ -20,9 +20,9 @@ export default async function StartPage() {
   const [count, statistics] = await Promise.all([searchCentres({ page_size: "1" }), getReAssessmentStatistics()]);
   const total = count.ok ? count.data.total : null;
 
-  // The carousel first, then the order of the reference design of CCARE-179: who the site is for,
-  // what it can help with, reassurance and where to start, what it holds and why it matters, what
-  // ClearCare is, then a search and an example.
+  // The carousel first, then ordered by what a family needs (CCARE-179): who the site is for, with
+  // the search, then what it can help with, where a newcomer starts, reassurance, what it holds and
+  // why it matters, what ClearCare is, an example record, and a last invitation to start.
   return (
     <>
       <FeatureCarousel />
@@ -61,7 +61,7 @@ export default async function StartPage() {
             </p>
           </div>
           {/* Side by side from tablet width, stacked on phones. */}
-          <div className="grid gap-4 md:grid-cols-2 md:gap-6">
+          <div className="reveal grid gap-4 md:grid-cols-2 md:gap-6">
             <StatementCard label="Our Mission" icon="mission" tint="sage">
               To help people make informed decisions, and give informed consent, about nursing home care.
             </StatementCard>
@@ -73,55 +73,51 @@ export default async function StartPage() {
         </div>
       </section>
 
-      <div className="grid gap-6 md:grid-cols-[3fr_1fr] md:gap-10">
-        <div className="flex min-w-0 flex-col gap-3">
-          <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-            Check a nursing home&apos;s record
+      {/* What a record looks like, under a heading that says so (CCARE-179). A new home on every
+          load. The page above arrives first; the example streams in. */}
+      <section aria-labelledby="example-h" className="flex flex-col gap-5">
+        <div className="flex flex-col items-start gap-2">
+          <h2 id="example-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            Here&apos;s an example of how we sum up reports
           </h2>
-
-          {/* Name or Eircode here; the search page works out which. It has address and county too. */}
-          {/* A visible label, not a faded hint in the box: people read one as already filled in
-              (CCARE-164). */}
-          <form action="/search" method="GET" role="search" aria-label="Find a nursing home" className="flex flex-col gap-1">
-            <label htmlFor="start-search" className="text-sm font-medium">
-              Nursing home name or Eircode
-            </label>
-            <div className="flex gap-2">
-              <input
-                id="start-search"
-                name="q"
-                type="search"
-                maxLength={MAX_TEXT_LENGTH}
-                className={`${textInputClass} flex-1`}
-              />
-              <button type="submit" className={primaryButtonClass}>
-                Search
-              </button>
-            </div>
-          </form>
-
-          <p className="text-sm">
-            <Link href="/search" className="tap-target">Search by address or county instead →</Link>
-          </p>
+          <span aria-hidden className="h-1 w-12 rounded-full bg-accent adult:hidden" />
+          <p className="text-ink-muted md:text-lg">A home picked at random, and what its latest inspection found.</p>
         </div>
-        {/* self-start: as tall as its words, not stretched to the height of the search column. */}
-        <aside className="self-start rounded-lg border border-line bg-surface p-3 text-sm">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Icon name="info" className="size-5 text-primary" />
-            What this site doesn&apos;t do
-          </h2>
-          <p className="mt-1 text-ink-muted">
-            It doesn&apos;t rate or recommend homes, or show free beds. For beds, ask the home or a hospital social
-            worker.
-          </p>
-        </aside>
-      </div>
+        <Suspense fallback={<SampleCentreFallback />}>
+          <SampleCentre total={total} />
+        </Suspense>
+      </section>
 
-      {/* A new home on every load. The page above arrives first; the example streams in. */}
-      <Suspense fallback={<SampleCentreFallback />}>
-        <SampleCentre total={total} />
-      </Suspense>
+      <StartBand />
     </>
+  );
+}
+
+// The page's last word: an invitation to start, now that the reader knows what ClearCare is,
+// meeting the footer (the negative bottom margin cancels the page's padding). The search itself is
+// in the hero at the top; this sends the reader to the full search, or to the first guide.
+function StartBand() {
+  return (
+    <section
+      aria-labelledby="start-h"
+      className={`${fullWidthClass} welcome-band -mb-6 px-4 py-12 md:-mb-10 md:px-8 md:py-16`}
+    >
+      <div className="reveal mx-auto flex max-w-3xl flex-col items-center gap-4 text-center adult:items-start adult:text-left">
+        <h2 id="start-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+          Check a nursing home&apos;s record
+        </h2>
+        <p className="text-ink-muted md:text-lg">Every HIQA inspection report, one page per home.</p>
+        <div className="mt-2 flex flex-wrap justify-center gap-3 adult:justify-start">
+          <Link href="/search" className={actionLinkClass}>
+            <Icon name="search" />
+            Search for a home <span aria-hidden>→</span>
+          </Link>
+          <Link href="/guides/how-a-family-chooses" className={secondaryLinkClass}>
+            See the steps
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -139,7 +135,7 @@ function StatementCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line bg-surface p-6 md:p-8">
+    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm md:p-8 adult:rounded-lg adult:shadow-none">
       <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
       <h3 className="font-heading text-xl font-semibold md:text-2xl">{label}</h3>
       <p className="text-ink-muted md:text-lg">{children}</p>

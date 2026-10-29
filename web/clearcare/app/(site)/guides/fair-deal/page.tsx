@@ -72,7 +72,15 @@ const SECTIONS = [
 
 type SectionId = (typeof SECTIONS)[number]["id"];
 
-const COVERED = ["Your room and bed", "All your meals", "Laundry", "The nursing and personal care you need"];
+// As the scheme defines care: bed and board, nursing and personal care, laundry, and basic aids and
+// appliances for daily living.
+const COVERED = [
+  "Your room and bed",
+  "All your meals",
+  "Laundry",
+  "The nursing and personal care you need",
+  "Basic aids and appliances for everyday living",
+];
 
 const CONTACTS: { who: string; kind: OrganisationKind; what: string; link?: { href: string; label: string }; phone?: string; note?: string }[] = [
   {
@@ -453,7 +461,8 @@ export default function FairDealGuide() {
             The 3-year cap follows the money. If you sell your home while in a nursing home, the sale proceeds also
             qualify for the cap, but the three years still run from when you went into care, not from the date of the sale
             (<Source href="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/3-year-cap/">HSE, 3-year cap</Source>
-            ). You must contact your local Nursing Homes Support Office within 10 working days of selling the property.
+            ). Tell your local Nursing Homes Support Office if you sell. If you have the nursing home loan, you must
+            tell them within 10 working days of the sale (see the next section).
           </p>
         </GuideSection>
 
@@ -606,10 +615,21 @@ export default function FairDealGuide() {
             ))}
           </ul>
         </GuideSection>
+
+        {/* Right under the last section, where a reader finishing the guide will see it. */}
+        <p className="text-sm text-ink-muted italic">
+          Fair Deal rules can change. Check <Source href="https://www.hse.ie/nhss/">hse.ie/nhss</Source> or call
+          Citizens Information on{" "}
+          <a href="tel:0818074000" className="tap-target">
+            0818 07 4000
+          </a>{" "}
+          before making any decisions.
+        </p>
       </div>
 
-      {/* A tinted band the full width of the window, like the HIQA guide's checklist. */}
-      <section aria-labelledby="remember-h" className={`${fullWidthClass} bg-band py-8 md:py-12`}>
+      {/* A tinted band the full width of the window, like the HIQA guide's checklist. The negative
+          bottom margin cancels the page's gap, so it meets the band of other guides below. */}
+      <section aria-labelledby="remember-h" className={`${fullWidthClass} -mb-6 bg-band py-8 md:-mb-8 md:py-12`}>
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
           <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Key things to remember
@@ -635,15 +655,6 @@ export default function FairDealGuide() {
           </ul>
         </div>
       </section>
-
-      <p className="max-w-4xl text-sm text-ink-muted italic">
-        Fair Deal rules can change. Check <Source href="https://www.hse.ie/nhss/">hse.ie/nhss</Source> or call Citizens
-        Information on{" "}
-        <a href="tel:0818074000" className="tap-target">
-          0818 07 4000
-        </a>{" "}
-        before making any decisions.
-      </p>
 
       <GuideEnding current={guide} />
     </>

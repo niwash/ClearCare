@@ -4,7 +4,7 @@ import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { actionLinkClass, comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { comingSoonClass, fullWidthClass, linkCardClass, stretchedActionClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { GUIDES, type Guide } from "@/lib/guides";
@@ -91,17 +91,17 @@ export default function ResourcesPage() {
   );
 }
 
-// The top of the page, flush under the header like the home page's carousel: the heading and a
-// line of welcome on a band of brand colour (brand-band, globals.css).
+// The top of the page, flush under the header like the home page's hero: the heading and a
+// line of welcome on the soft welcome band (welcome-band, globals.css).
 function ResourcesHero() {
   return (
-    <section aria-labelledby="resources-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="resources-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Resources" />
         <h1 id="resources-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Resources
         </h1>
-        <p className="max-w-2xl text-ink-muted md:text-lg">
+        <p className="max-w-3xl text-ink-muted md:text-lg">
           Help at every step, from the first conversation to moving in. Start with our guides.
         </p>
       </div>
@@ -119,9 +119,7 @@ function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boole
 
   return (
     <li
-      className={`relative flex overflow-hidden rounded-lg sm:flex-col ${
-        comingSoon ? comingSoonClass : "border border-line bg-surface hover:border-primary"
-      }`}
+      className={`relative flex overflow-hidden sm:flex-col ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
     >
       <div className="relative w-28 shrink-0 sm:aspect-[2/1] sm:w-auto">
         <Image
@@ -130,7 +128,9 @@ function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boole
           fill
           priority={priority}
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 7rem"
-          className={`object-cover ${guide.photoFocus ?? "object-[50%_30%]"}`}
+          // A slow, slight zoom as the card lifts (linkCardClass); not for reduced motion or the
+          // adult-centred design.
+          className={`object-cover transition-transform duration-700 motion-safe:group-hover:scale-105 adult:transition-none adult:group-hover:scale-100 ${guide.photoFocus ?? "object-[50%_30%]"}`}
         />
       </div>
       <div className="flex flex-1 flex-col items-start gap-1.5 p-4 md:p-5">
@@ -183,7 +183,7 @@ function OfficialInformation() {
             return (
               <li
                 key={link.href}
-                className="relative flex flex-col items-start gap-2 rounded-lg border border-line bg-surface p-5 hover:border-primary"
+                className={`${linkCardClass} relative flex flex-col items-start gap-2 p-5`}
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-ink">
                   <OrganisationIcon kind={PUBLISHER_KINDS[link.publisher] ?? "public-body"} />
@@ -196,7 +196,7 @@ function OfficialInformation() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`${actionLinkClass} mt-auto after:absolute after:inset-0 after:rounded-lg`}
+                  className={`${stretchedActionClass} mt-auto`}
                 >
                   {isPdf ? "See Document" : "See Website"}
                   <span className="sr-only">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
-import { primaryButtonClass } from "@/components/ui/classes";
+import { primaryButtonClass, secondaryLinkClass } from "@/components/ui/classes";
 
 // The welcome tour (CCARE-164): a short walk around the site from the home page, pointing at one
 // part at a time, in the order of the How to navigate ClearCare guide (/guides/using-clearcare).
@@ -243,7 +243,7 @@ function highlightPosition(rect: DOMRect): Box {
 }
 
 const outlineButtonClass =
-  "inline-flex min-h-11 items-center gap-2 rounded-md border border-line bg-surface px-4 font-semibold text-ink no-underline hover:border-primary hover:text-ink";
+  "inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-5 font-semibold text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:px-4";
 
 // "Take a quick tour", for the welcome band, with the first-visit offer and the tour itself.
 export function WelcomeTour() {
@@ -337,7 +337,7 @@ export function WelcomeTour() {
 
   return (
     <>
-      <button ref={button} type="button" onClick={() => go(0)} disabled={!hydrated} className={outlineButtonClass}>
+      <button ref={button} type="button" onClick={() => go(0)} disabled={!hydrated} className={secondaryLinkClass}>
         Take a quick tour
       </button>
 

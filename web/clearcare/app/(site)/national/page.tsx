@@ -75,10 +75,10 @@ const NATIONAL_GUIDES = [
 ];
 
 // The top of the page, flush under the header as on the search page: the breadcrumb, the heading
-// and a line of welcome on a band of brand colour (brand-band, globals.css).
+// and a line of welcome on the soft welcome band (welcome-band, globals.css).
 function NationalHero() {
   return (
-    <section aria-labelledby="national-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="national-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
           <Breadcrumb trail={[]} current="National Figures" />

@@ -7,7 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { DraftLabel } from "@/components/guides/guide-header";
-import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { comingSoonClass, fullWidthClass, stretchedActionClass } from "@/components/ui/classes";
 import { getGuide, type Guide } from "@/lib/guides";
 
 type Feature = {
@@ -56,7 +56,7 @@ const FEATURES: Feature[] = [
     // and leaves the computer on the left, with its logo, mostly under the text panel.
     focus: "object-[70%_75%]",
   },
-  // Last, so the carousel opens on the guides; the search box is also further down the page.
+  // Last, so the carousel opens on the guides; the search box is right under the carousel.
   {
     title: "Check a nursing home's record",
     text: "Every HIQA inspection report, one page per home.",
@@ -188,8 +188,8 @@ function Chevron({ direction }: { direction: "left" | "right" }) {
   );
 }
 
-// In the carousel, on tablets and up, each slide is split: the words on a panel of brand colour
-// on the left, whose slanted edge cuts into the photo on the right. The photo fills only about
+// In the carousel, on tablets and up, each slide is split: the words on a panel of the soft
+// welcome colours (feature-panel, globals.css) on the left, whose slanted edge cuts into the photo on the right. The photo fills only about
 // 60% of the band, close to its own 3:2 shape, so little of it is cropped. On phones the panel
 // sits under the photo. In the grid the card keeps the page's colours, with the words under the
 // photo, as the adult-centred design keeps photos out from behind text.
@@ -203,7 +203,7 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
 
   return (
     <article
-      className={`relative flex h-full flex-col overflow-hidden rounded-lg md:block md:h-[24rem] md:rounded-none lg:h-[26rem] adult:flex adult:h-full adult:rounded-lg ${
+      className={`group/slide relative flex h-full flex-col overflow-hidden rounded-2xl md:block md:h-[24rem] md:rounded-none lg:h-[26rem] adult:flex adult:h-full adult:rounded-lg ${
         comingSoon
           ? "adult:cursor-not-allowed adult:border-2 adult:border-dashed adult:border-field adult:bg-surface-muted"
           : "adult:border adult:border-line adult:bg-surface"
@@ -217,7 +217,9 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
           fill
           priority={priority}
           sizes="(min-width: 768px) 60vw, 90vw"
-          className={`object-cover ${feature.focus ?? "object-[50%_30%]"}`}
+          // A slow, slight zoom on hover, so the slide answers the pointer. Not for reduced motion,
+          // nor in the adult-centred design.
+          className={`object-cover transition-transform duration-700 motion-safe:group-hover/slide:scale-105 adult:transition-none adult:group-hover/slide:scale-100 ${feature.focus ?? "object-[50%_30%]"}`}
         />
       </div>
 
@@ -232,10 +234,10 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
         ) : (
           <Link
             href={feature.href}
-            className="mt-1 inline-flex h-12 items-center gap-2 rounded-md bg-primary px-5 font-semibold text-on-primary no-underline after:absolute after:inset-0 hover:bg-primary-hover hover:text-on-primary"
+            className={`${stretchedActionClass} mt-1`}
           >
             {feature.action}<span className="sr-only">: {feature.title}</span>
-            <span aria-hidden>→</span>
+            <span aria-hidden className="transition-transform group-hover/slide:translate-x-1 motion-reduce:transition-none adult:transition-none adult:group-hover/slide:translate-x-0">→</span>
           </Link>
         )}
       </div>

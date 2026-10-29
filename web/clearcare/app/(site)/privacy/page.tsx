@@ -179,10 +179,10 @@ export default function PrivacyPage() {
   );
 }
 
-// The top of the page, on a band of brand colour like the resources and contacts pages.
+// The top of the page, on the soft welcome band like the resources and contacts pages.
 function PrivacyHero() {
   return (
-    <section aria-labelledby="privacy-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
+    <section aria-labelledby="privacy-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Privacy notice" />
         <h1 id="privacy-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">

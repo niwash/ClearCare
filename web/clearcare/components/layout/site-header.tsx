@@ -14,12 +14,13 @@ type NavEntry = { label: string; href: string | null; compare?: true };
 export const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
   { label: "Compare Homes", href: "/compare", compare: true },
-  { label: "National Figures", href: "/national" },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
   { label: "Fair Deal", href: "/guides/fair-deal" },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
+  // Last: the figures across every home are background, not a step in choosing one (CCARE-179).
+  { label: "National Figures", href: "/national" },
 ];
 
 function NavItem({ item, className }: { item: NavEntry; className: string }) {

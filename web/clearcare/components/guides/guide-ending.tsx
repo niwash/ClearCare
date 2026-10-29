@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { ReturnLink } from "@/components/guides/return-link";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { comingSoonClass, fullWidthClass, linkCardClass } from "@/components/ui/classes";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export function GuideEnding({ current }: { current: Guide }) {
@@ -67,9 +67,7 @@ function OtherGuideCard({ guide }: { guide: Guide }) {
 
   return (
     <li
-      className={`relative flex overflow-hidden rounded-lg sm:flex-col ${
-        comingSoon ? comingSoonClass : "border border-line bg-surface hover:border-primary"
-      }`}
+      className={`relative flex overflow-hidden sm:flex-col ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
     >
       {/* A small square beside the words on phones, a shallow photo above them from sm up, so the
           band stays short (CCARE-164). */}
@@ -79,7 +77,9 @@ function OtherGuideCard({ guide }: { guide: Guide }) {
           alt=""
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 6rem"
-          className={`object-cover ${guide.photoFocus ?? "object-[50%_30%]"}`}
+          // A slow, slight zoom as the card lifts (linkCardClass); not for reduced motion or the
+          // adult-centred design.
+          className={`object-cover transition-transform duration-700 motion-safe:group-hover:scale-105 adult:transition-none adult:group-hover:scale-100 ${guide.photoFocus ?? "object-[50%_30%]"}`}
         />
       </div>
       <div className="flex flex-col gap-1 p-4">
@@ -88,7 +88,7 @@ function OtherGuideCard({ guide }: { guide: Guide }) {
             `${guide.title} (coming soon)`
           ) : (
             // The whole card is the link (WCAG 2.5.5): the title's link stretches over it.
-            <Link href={`/guides/${guide.slug}`} className="text-ink after:absolute after:inset-0 after:rounded-lg">
+            <Link href={`/guides/${guide.slug}`} className="text-ink after:absolute after:inset-0">
               {guide.title}
             </Link>
           )}

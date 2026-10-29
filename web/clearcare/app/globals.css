@@ -25,7 +25,8 @@
   --band: light-dark(#efeee6, #1d2731);
   --ink: light-dark(#1d2a36, #e9ebec);
   --ink-muted: light-dark(#4d5560, #aab2ba);
-  --ink-faint: light-dark(#646b74, #8a94a0);
+  /* 4.5:1 or more on every background and tint below, in both modes (CCARE-179). */
+  --ink-faint: light-dark(#585e67, #8f99a5);
   /* Card edges and dividers: decorative, so no contrast minimum. */
   --line: light-dark(#e2ddd3, #2d3843);
   --line-soft: light-dark(#ece8df, #25313c);
@@ -34,6 +35,10 @@
   --focus: light-dark(#1d2a36, #e9ebec);
   /* Headings are serif in the standard design. */
   --heading-font: var(--font-source-serif);
+  /* Softer corners than Tailwind's defaults on every rounded-md control and rounded-lg box in the
+     site, so pages feel modern and gentle without each one being restyled (CCARE-179). */
+  --radius-control: 0.5rem;
+  --radius-card: 0.875rem;
   --primary: light-dark(#2a5478, #93bad9);
   --primary-hover: light-dark(#1d4061, #b9d3e8);
   /* Soft backgrounds for icon circles, each with the colour its icon takes (4.5:1 or more), so a
@@ -47,6 +52,19 @@
   --on-tint-sage: light-dark(#4f6e4b, #a9c4a3);
   --tint-rose: light-dark(#f4e2df, #352424);
   --on-tint-rose: light-dark(#8a4a45, #e2aaa4);
+  /* A warm accent for the small touches that say a person is behind the site: eyebrows over
+     headings, the mark under a heading, a highlighted step (CCARE-179). 4.6:1 or more on every
+     light background and tint here, the warm band included, and 8:1 or more on the dark ones, so
+     it can carry text. */
+  --accent: light-dark(#9c4326, #f2a585);
+  --on-accent: light-dark(#ffffff, #11171e);
+  /* A warm band for the sections that offer help, such as "Need to talk to someone?". Muted text
+     keeps 5.4:1 on it, and links 5.7:1. */
+  --warm: light-dark(#ecd6ca, #2c2324);
+  /* The top of each page: a soft wash from blue to cream, so a page opens calmly rather than on a
+     block of navy (welcome-band, below). Muted text keeps 5.9:1 or more across it, and links 6.2:1. */
+  --welcome-from: light-dark(#dbe5ee, #17222e);
+  --welcome-to: light-dark(#efe3cf, #1d2028);
   --on-primary: var(--surface);
   --info: light-dark(#1e3a8a, #93c5fd);
   --on-info: light-dark(#ffffff, #0f151c);
@@ -80,6 +98,9 @@
   /* Sans serif headings, like the body text. NIA/NLM: "Use a sans serif typeface… that is
      not condensed". */
   --heading-font: var(--font-public-sans);
+  /* Tailwind's own corners, as before CCARE-179: plain shapes, nothing to get used to. */
+  --radius-control: 0.375rem;
+  --radius-card: 0.5rem;
   /* Larger text: the root size is 18px (13.5pt), and small text is no smaller
      than about 16px (NIA/NLM: 12 or 14 point body text). Line spacing of 1.5
      (WCAG 1.4.8). Sizes in rem grow with the root. */
@@ -113,6 +134,12 @@
   --on-tint-sage: var(--primary);
   --tint-rose: var(--band);
   --on-tint-rose: var(--primary);
+  /* One colour for links and touches alike, and plain bands, so nothing has to be told apart. */
+  --accent: var(--primary);
+  --on-accent: var(--on-primary);
+  --warm: var(--band);
+  --welcome-from: var(--band);
+  --welcome-to: var(--band);
 }
 
 :root[data-theme="light"] {
@@ -123,13 +150,12 @@
   color-scheme: dark;
 }
 
-/* The header's top band: a block of brand colour, as on nhi.ie, in light and dark mode alike.
-   It redefines the colour tokens inside it, so the controls there (the display toggles and the
-   log in placeholder) turn light-on-dark without styles of their own. The home page carousel's
-   text panels (feature-panel) use the same colours, in the standard design only. White text is 7:1 or more
-   on every --brand here (WCAG 1.4.6). */
-.brand-band,
-:root:not([data-design="adult-centred"]) .feature-panel {
+/* The header's top band and the footer: a block of brand colour, as on nhi.ie, in light and dark
+   mode alike. They frame every page in the site's steady, official colour, while the pages between
+   them open on softer bands (welcome-band) (CCARE-179). It redefines the colour tokens inside it,
+   so the controls there (the display toggles and the log in placeholder) turn light-on-dark
+   without styles of their own. White text is 7:1 or more on every --brand here (WCAG 1.4.6). */
+.brand-band {
   --brand: light-dark(#2b4d6b, #1c3550);
   --surface: var(--brand);
   --surface-muted: rgb(255 255 255 / 0.08);
@@ -157,6 +183,25 @@
 
 :root[data-design="adult-centred"] .brand-band.brand-band-deep {
   --brand: light-dark(#5e1f0a, #3d170a);
+}
+
+/* The top of a page, and the home page carousel's text panels: the soft wash of --welcome-from
+   and --welcome-to, with the page's own text colours. Plain --band in the adult-centred design. */
+.welcome-band,
+:root:not([data-design="adult-centred"]) .feature-panel {
+  background: linear-gradient(120deg, var(--welcome-from), var(--welcome-to));
+}
+
+/* A short mark in the warm accent under each page's main heading, the same on every page. Left
+   out of the adult-centred design, which keeps decoration to a minimum. */
+:root:not([data-design="adult-centred"]) .welcome-band h1::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 0.25rem;
+  margin-top: 0.75rem;
+  border-radius: 9999px;
+  background: var(--accent);
 }
 
 @theme inline {
@@ -192,6 +237,11 @@
   --color-on-tint-sage: var(--on-tint-sage);
   --color-tint-rose: var(--tint-rose);
   --color-on-tint-rose: var(--on-tint-rose);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --color-warm: var(--warm);
+  --radius-md: var(--radius-control);
+  --radius-lg: var(--radius-card);
   --font-heading: var(--heading-font);
   --font-sans: var(--font-public-sans);
   --font-mono: var(--font-plex-mono);
@@ -215,6 +265,18 @@
   body {
     background: var(--page);
     color: var(--ink);
+  }
+
+  /* No paragraph ends on a word alone, such as "guides." under the resources page's intro, and
+     headings break into lines of even length (CCARE-179). Browsers without it wrap as before. */
+  p {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
 
   a {
@@ -270,6 +332,27 @@
 
 :root[data-design="adult-centred"] .tap-target-top {
   align-items: flex-start;
+}
+
+/* Sections fade and rise into place as they scroll into view, so the page feels alive without
+   anything moving on its own (CCARE-179). Only where the browser ties the animation to scrolling,
+   only for people who haven't asked their device for less motion (WCAG 2.3.3), and never in the
+   adult-centred design. Without support the section simply shows. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    translate: 0 1.5rem;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root:not([data-design="adult-centred"]) .reveal {
+      animation: rise-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
 }
 
 /* A guide whose sections are one-at-a-time <details> (they share a name) prints whole, with the
