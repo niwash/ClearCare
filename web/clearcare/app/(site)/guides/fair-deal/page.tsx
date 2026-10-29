@@ -663,9 +663,6 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
     <details
       id={id}
       name="fair-deal-sections"
-      // SectionAccordion finds the sections by this. Written out: a constant from a "use client"
-      // file reaches a server component as a client reference, not as its value.
-      data-guide-section=""
       className={`${sectionScrollMargin} group/section rounded-lg border border-line bg-surface open:border-primary`}
     >
       {/* A summary may hold a heading but no wrapping block, so its parts are its own grid items:
@@ -676,7 +673,7 @@ function GuideSection({ id, children }: { id: SectionId; children: ReactNode }) 
         </span>
         <h2 className="col-start-2 font-heading text-xl font-semibold tracking-tight md:text-2xl">{title}</h2>
         <span className="col-start-2 text-ink-muted">{description}</span>
-        <ShowHide group="section" className="col-start-3 row-span-2 row-start-1" />
+        <ShowHide group="section" className="col-start-3 row-span-2 row-start-1 print:hidden" />
       </summary>
       <div className="flex flex-col gap-4 border-t border-line-soft px-4 pb-6 pt-4 leading-relaxed md:px-6">
         {children}
@@ -790,7 +787,7 @@ function Example({
           {title}
         </h3>
         <span className="col-start-1 text-ink-muted">{description}</span>
-        <ShowHide className="col-start-2 row-span-2 row-start-1" />
+        <ShowHide className="col-start-2 row-span-2 row-start-1 print:hidden" />
       </summary>
       <div className="flex flex-col gap-3 border-t border-line-soft px-5 pb-5 pt-4 md:px-6 md:pb-6">{children}</div>
     </details>

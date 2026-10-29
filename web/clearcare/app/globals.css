@@ -242,6 +242,16 @@
   align-items: flex-start;
 }
 
+/* A guide whose sections are one-at-a-time <details> (they share a name) prints whole, with the
+   worked examples inside them, not just the section that happens to be open. */
+@media print {
+  details[name]::details-content,
+  details[name] details::details-content {
+    content-visibility: visible;
+    display: block;
+  }
+}
+
 /* Small print: 13px in the standard design, and text-xs (about 16px) in the adult-centred one. */
 @utility text-small {
   font-size: 0.8125rem;
