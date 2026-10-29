@@ -8,9 +8,11 @@ export const metadata: Metadata = {
   description: "What personal data ClearCare handles, why, who processes it and your rights.",
 };
 
+// TODO(CCARE-174): The contact address is still to be agreed; until then the page says it's coming
+// soon. GDPR Arts. 13(1)(a) and 14(1)(a) ask for a way to contact us, and every right below is
+// exercised by email, so fill this in as soon as it's agreed (PR #112 review).
 const RUN_BY = "master's students at Technological University Dublin";
-// TODO(CCARE-174): The team still has to agree a contact address before the notice is published.
-const CONTACT_EMAIL = "[contact email]";
+const CONTACT_EMAIL: string | null = null;
 // The outcome pilot's raw/ answers.
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
@@ -30,9 +32,15 @@ export default function PrivacyPage() {
             public clear information to help them choose a nursing home. ClearCare is not run for profit.
           </p>
           <p>
-            We&apos;re responsible for the personal data described here. For any question about this notice or your
-            data, email{" "}
-            <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+            We&apos;re responsible for the personal data described here.{" "}
+            {CONTACT_EMAIL ? (
+              <>
+                For any question about this notice or your data, email{" "}
+                <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+              </>
+            ) : (
+              "Our contact email address for questions about this notice or your data is coming soon."
+            )}
           </p>
         </PrivacySection>
 
@@ -48,8 +56,8 @@ export default function PrivacyPage() {
               browser&apos;s site data removes them.
             </li>
             <li>
-              Like any website, our servers keep short technical logs of requests so we can find faults and keep the
-              site secure. These are deleted after 14 days.
+              Like any website, our servers keep short technical logs of requests. Finding faults and keeping the site
+              secure is our legitimate interest in keeping them, and they&apos;re deleted after 14 days.
             </li>
           </ul>
         </PrivacySection>
@@ -63,10 +71,13 @@ export default function PrivacyPage() {
               Your email address, and your name if you give it, held by Amazon Cognito in the EU. We use them to sign
               you in and to contact you about your account. The legal basis is providing the service you asked for.
             </li>
+            {/* Auth.js (PR #107) sets the session cookie, and short-lived state, PKCE and CSRF cookies
+                while you sign in. */}
             <li>
-              One cookie that keeps you signed in. It&apos;s encrypted, page scripts can&apos;t read it, and it
-              expires after 7 days without a visit. It&apos;s needed for signing in, so it doesn&apos;t ask for
-              consent.
+              The cookies needed for signing in. One keeps you signed in: it&apos;s encrypted, page scripts can&apos;t
+              read it, and it expires after 7 days without a visit. A few others last only while you sign in, to
+              keep the sign-in itself secure. None of them needs your consent, because signing in can&apos;t work
+              without them.
             </li>
             <li>We keep your account until you delete it, or ask us to by email.</li>
           </ul>
@@ -87,6 +98,8 @@ export default function PrivacyPage() {
               The names and roles of people who run each home, such as the person in charge and the registered
               provider, as HIQA prints them.
             </li>
+            {/* GET /reports/{report_id} returns them (api/openapi.yaml, "inspectors"). */}
+            <li>The names and roles of the HIQA inspectors who carried out each inspection.</li>
             <li>
               Descriptions of residents&apos; care, which HIQA writes without naming anyone. We don&apos;t try to
               work out who any resident is, and we don&apos;t add anything about residents to what HIQA has
@@ -100,9 +113,16 @@ export default function PrivacyPage() {
               the API. Everything else the site shows from reports is worked out by rules (ADR-0015, -0017). */}
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>To show each home&apos;s inspection history and what its reports say.</li>
+            {/* What the extractor does today: free-text dining_notes and other_notes, which aren't quotes,
+                and a prompt that accepts what is "clearly implied" (extractor.py:120, 127, 193). Once it
+                only keeps values it can quote from the report, this can say it extracts and doesn't write.
+                Nothing it finds is shown on the site yet: the care types and amenities filters, the centre
+                page and Compare Homes all say "Coming soon". Change this when they show it. */}
             <li>
-              To find details the reports state, such as care types and amenities. An AI service reads each report
-              and extracts what it says; it doesn&apos;t write content about homes.
+              To find details such as care types and amenities. An AI service reads each report and records what it
+              finds, including short notes that summarise what the report says. This tool is still being developed:
+              its results haven&apos;t yet been checked against the reports, and none of them are shown on ClearCare
+              yet. We&apos;ll update this notice before they are.
             </li>
             <li>
               For research on how findings change from one inspection to the next. An AI service reads the reports
@@ -111,9 +131,9 @@ export default function PrivacyPage() {
           </ul>
           <p>
             The legal basis is legitimate interests: ours and the public&apos;s, in making published inspection
-            findings easier to find and compare, on a free website that isn&apos;t run for profit. People who run homes are named in their professional role, in
-            reports HIQA has already published, so we believe this use doesn&apos;t override their interests. You
-            can ask us for our assessment.
+            findings easier to find and compare, on a free website that isn&apos;t run for profit. The people named
+            in the reports are named in their professional roles, in reports HIQA has already published, so we
+            believe this use doesn&apos;t override their interests.
           </p>
 
           <PrivacySubheading>Objecting</PrivacySubheading>
@@ -129,10 +149,11 @@ export default function PrivacyPage() {
           </p>
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
-              the EU with its safeguards. Checked against the code on 29 Oct 2026: AWS in eu-north-1
-              (infra/aws), Vercel for previews of the site, OpenAI (Research/Data Extraction/extractor.py)
-              and Anthropic (pipeline/src/clearcare_pipeline/outcome_pilot.py), the last three in the US.
-              Cloudflare only holds DNS records, so it sees no visits. Update this when a service changes. */}
+              the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
+              code on 29 Oct 2026: AWS in eu-north-1 (infra/aws), Vercel for previews of the site, OpenAI
+              (Research/Data Extraction/extractor.py) and Anthropic
+              (pipeline/src/clearcare_pipeline/outcome_pilot.py), the last three in the US. Cloudflare
+              only holds DNS records, so it sees no visits. Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
             Service providers handle data for us: hosting providers run the site and store its data in the EU, and

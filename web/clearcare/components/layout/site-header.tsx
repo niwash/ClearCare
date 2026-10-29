@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { primaryButtonClass } from "@/components/ui/classes";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)".
-export type NavEntry = { label: string; href: string | null };
+type NavEntry = { label: string; href: string | null };
 
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
