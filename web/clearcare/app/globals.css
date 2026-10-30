@@ -356,12 +356,19 @@
 }
 
 /* A guide whose sections are one-at-a-time <details> (they share a name) prints whole, with the
-   worked examples inside them, not just the section that happens to be open. */
+   worked examples inside them, not just the section that happens to be open. Sections still
+   waiting to rise in would print blank, so print drops the animation; the selector matches the
+   one above so it wins. */
 @media print {
   details[name]::details-content,
   details[name] details::details-content {
     content-visibility: visible;
     display: block;
+  }
+
+  :root:not([data-design="adult-centred"]) .reveal {
+    animation: none;
+    opacity: 1;
   }
 }
 
