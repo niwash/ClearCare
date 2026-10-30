@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
       // The family guide's old address (CCARE-164); old links and bookmarks still reach it. Not
       // permanent, like the others, so browsers don't hold on to it.
       { source: "/guides/user-journey", destination: "/guides/how-a-family-chooses", permanent: false },
+      // The log-in page is gone: the controls post straight to Cognito now, so old bookmarks of
+      // /login land on the start page instead of a 404. Not permanent, so the address is free later.
+      { source: "/login", destination: "/", permanent: false },
       // There is no guides index; the guides are listed on the resources page, which the guides'
       // breadcrumb points to. Not permanent, so a guides page can take the address later.
       { source: "/guides", destination: "/resources", permanent: false },
