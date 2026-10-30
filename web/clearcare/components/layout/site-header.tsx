@@ -13,6 +13,8 @@ type NavEntry = { label: string; href: string | null; compare?: true };
 
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
+  // First, as well as the ClearCare name, which not everyone knows leads home (CCARE-186).
+  { label: "Home", href: "/" },
   { label: "Search for Homes", href: "/search" },
   { label: "Compare Homes", href: "/compare", compare: true },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
