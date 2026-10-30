@@ -262,6 +262,72 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres/34/reports
 
+  /centres/{centre_id}/amenities:
+    get:
+      operationId: getCentreAmenities
+      summary: Get what a centre offers its residents
+      description: |
+        Returns the amenities read from the centre's newest inspection report
+        that has them: the types of care and room, activities, special units,
+        and whether there is outdoor space, transport or a chapel or religious
+        services. They are values a model (gpt-4o-mini) read from the whole
+        report text, with the report they came from. Provider text and
+        inspector observations are not separated yet. `inspection_date` and
+        `report_id` say which report they come from, and
+        `GET /reports/{report_id}` returns it.
+
+        A flag is `true` or `false` when the report says so and `null` when
+        it is silent. `null` does not mean the centre has none.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no amenities yet gives
+        `"amenities": null`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's amenities, or null if there are none yet.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreAmenitiesResult"
+              example:
+                centre_id: "34"
+                amenities:
+                  report_id: 1
+                  inspection_date: "2026-05-13"
+                  care_types: [long-term residential, dementia care]
+                  room_types: [single room, en-suite]
+                  has_outdoor_space: true
+                  activities: [physiotherapy, music therapy]
+                  has_transport: null
+                  has_chapel_or_religious_services: true
+                  special_units: [memory care unit]
+                  dining_notes: Meals are served in the dining room.
+                  other_notes: Views over the garden.
+                  extractor_version: amenities-v1
+                  model: gpt-4o-mini
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
   /reports/{report_id}:
     get:
       operationId: getReport
@@ -619,6 +685,86 @@ components:
           type: integer
         compliance_item_count:
           type: integer
+
+    CentreAmenitiesResult:
+      type: object
+      required: [centre_id, amenities]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        amenities:
+          description: The centre's amenities, or null if none have been read yet.
+          oneOf:
+            - $ref: "#/components/schemas/CentreAmenities"
+            - type: "null"
+
+    CentreAmenities:
+      type: object
+      required:
+        - report_id
+        - inspection_date
+        - care_types
+        - room_types
+        - has_outdoor_space
+        - activities
+        - has_transport
+        - has_chapel_or_religious_services
+        - special_units
+        - dining_notes
+        - other_notes
+        - extractor_version
+        - model
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: The report the amenities were read from.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+          description: The date of that report's inspection, if it printed one.
+        care_types:
+          type: array
+          items: {type: string}
+        room_types:
+          type: array
+          items: {type: string}
+        has_outdoor_space:
+          type: [boolean, "null"]
+          description: >
+            A garden or outdoor space. True or false when the report says so,
+            null when it is silent.
+        activities:
+          type: array
+          items: {type: string}
+        has_transport:
+          type: [boolean, "null"]
+          description: >
+            Transport the centre itself provides for residents. Public
+            transport nearby does not count. True or false when the report
+            says so, null when it is silent.
+        has_chapel_or_religious_services:
+          type: [boolean, "null"]
+          description: >
+            A chapel or religious services. True or false when the report says
+            so, null when it is silent.
+        special_units:
+          type: array
+          items: {type: string}
+          description: Specialist units or areas, such as a memory care unit.
+        dining_notes:
+          type: string
+          description: What the report says about dining. Empty if nothing.
+        other_notes:
+          type: string
+          description: Other notable facilities. Empty if nothing.
+        extractor_version:
+          type: string
+          description: Which extraction wrote these, for example amenities-v1.
+        model:
+          type: string
 
     ReportResult:
       type: object

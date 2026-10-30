@@ -189,6 +189,8 @@ def test_api_reads_where_the_published_snapshot_came_from(
         (PIPELINE, "DELETE FROM clearcare.register_entry"),
         (PIPELINE, "DELETE FROM clearcare.source_file"),
         (PIPELINE, "DELETE FROM clearcare.register_publication"),
+        (PIPELINE, "UPDATE clearcare.report_amenities SET other_notes = 'x'"),
+        (PIPELINE, "DELETE FROM clearcare.report_amenities"),
         # The API reads the views, never the tables behind them.
         (API, "SELECT * FROM clearcare.source_file"),
         (API, "SELECT * FROM clearcare.centre"),
@@ -196,6 +198,7 @@ def test_api_reads_where_the_published_snapshot_came_from(
         (API, "SELECT * FROM clearcare.register_publication"),
         (API, "SELECT * FROM clearcare.contract_price_list"),
         (API, "SELECT * FROM clearcare.contract_price"),
+        (API, "SELECT * FROM clearcare.report_amenities"),
     ],
 )
 def test_role_is_refused(
