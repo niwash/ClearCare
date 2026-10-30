@@ -34,3 +34,10 @@ budget_emails = ["first@example.com"]
 # as a finite task (pipeline). README.md, "First apply".
 deploys_enabled  = false
 pipeline_enabled = false
+
+# Public accounts. Empty and off until the cognito/production pool exists; README.md, "Switching
+# public accounts on".
+cognito_issuer    = ""
+cognito_client_id = ""
+cognito_domain    = ""
+accounts_enabled  = false

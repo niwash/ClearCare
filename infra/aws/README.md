@@ -110,6 +110,51 @@ Callback and logout URLs are matched exactly, so a Vercel preview address has to
 
 No pool exists in the project account yet. Until one does, development runs against a pool in a personal test account, with its state kept in this folder rather than in the bucket; `account_id` names that account in the operator's own `terraform.tfvars`. Creating the pool in the project account is a one-off apply from this folder once the bucket exists.
 
+### Production pool
+
+`cognito/production` is the same module with four differences: the state key is `cognito-prod/terraform.tfstate`, the URLs come from the public origin, `deletion_protection` is `ACTIVE` so an apply cannot remove the accounts, and account mail goes through SES rather than Cognito's own sender, which AWS caps at 50 emails a day.
+
+| Input | What it is | Who supplies it |
+| --- | --- | --- |
+| `account_id` | Account that owns the pool; the provider refuses to run anywhere else | The project account, once it exists |
+| `web_origin` | The address visitors use, no trailing slash | The deployment |
+| `domain_prefix` | First label of the login domain, global and permanent | Chosen once, kept in `terraform.tfvars` |
+| `ses_domain`, `from_email_address` | Sending domain and the From line | The domain's owner |
+
+Before sign-up works in public, three things have to be true: the DKIM records from `terraform output ses_dkim_tokens` are published and verified in SES, the account is out of the SES sandbox, and `web_origin` matches the address in the browser exactly — Cognito matches callback and logout URLs character for character.
+
+Sign-up abuse is watched by hand for now; `documentations/operations/account_deletion.md` says which signals and how to stop sign-ups without taking sign-in away. The go-live check and the rollback are in `documentations/operations/`.
+
+### Switching public accounts on
+
+The site reaches the pool through its environment, and the web task in `live` owns that. Nothing about the site changes at build time, so the image can ship months before the pool exists: with the variables missing the account controls are hidden and `/api/auth/*` answers 503.
+
+When the pool does exist:
+
+```sh
+cd infra/aws/cognito/production
+terraform output issuer client_id domain        # into live/terraform.tfvars
+terraform output -raw client_secret             # into the secret below, from the operator's own shell
+```
+
+```hcl
+# infra/aws/live/terraform.tfvars
+cognito_issuer     = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_..."
+cognito_client_id  = "..."
+cognito_domain     = "https://clearcare-prod....auth.eu-north-1.amazoncognito.com"
+accounts_enabled   = true
+```
+
+```sh
+# Both secrets exist from the first apply, with no value. Set them, then deploy.
+aws secretsmanager put-secret-value --secret-id clearcare/auth/session-secret \
+    --secret-string "$(openssl rand -base64 33)"
+aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-secret \
+    --secret-string "<client_secret from the pool>"
+```
+
+`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+
 ## Database passwords and roles
 
 Terraform creates one secret per login role but leaves the values out, so no password is in the state. Set each one once, as plain text, with a long random value:

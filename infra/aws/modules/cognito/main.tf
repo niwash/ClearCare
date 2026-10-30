@@ -13,12 +13,17 @@ resource "aws_cognito_user_pool" "this" {
     allow_admin_create_user_only = false
   }
 
+  # Sign-up has to work for older adults, so the policy asks for length and a number and nothing
+  # else: no capitals to hunt for and no symbols that are awkward on a phone keyboard. Length is
+  # what stops guessing, and 8 with a number is the floor rather than the target.
+  # Passwords never expire, and the rules only apply when a password is set, so nobody has to
+  # change an existing one.
   password_policy {
-    minimum_length                   = 12
-    require_lowercase                = true
-    require_uppercase                = true
+    minimum_length                   = 8
+    require_lowercase                = false
+    require_uppercase                = false
     require_numbers                  = true
-    require_symbols                  = true
+    require_symbols                  = false
     temporary_password_validity_days = 7
   }
 
@@ -33,8 +38,13 @@ resource "aws_cognito_user_pool" "this" {
     case_sensitive = false
   }
 
+  # Cognito's own sender needs no setup and allows 50 emails a day, which is enough to try the pool
+  # and not enough for the public. Sending through SES needs the verified identity's ARN and an
+  # address on that identity; both are left out, so the new attributes stay unset.
   email_configuration {
-    email_sending_account = "COGNITO_DEFAULT"
+    email_sending_account = var.ses_source_arn == "" ? "COGNITO_DEFAULT" : "DEVELOPER"
+    source_arn            = var.ses_source_arn == "" ? null : var.ses_source_arn
+    from_email_address    = var.from_email_address == "" ? null : var.from_email_address
   }
 
   deletion_protection = var.deletion_protection
