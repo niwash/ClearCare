@@ -1,9 +1,9 @@
 # Phase 1 (Pre-public-launch) user evaluation
 
 **Created:** 26 October 2026\
-**Modified:** 28 October 2026
+**Modified:** 30 October 2026
 
-Informal feedback from participants before ClearCare's public launch. Each was asked what they liked, what they disliked, and what they would add. The site was changing quickly, so each participant's commit is listed to show which version they reviewed.
+Informal feedback from participants before ClearCare's public launch. Each was asked what they liked, what they disliked, and what they would add. The site was changing quickly, so each participant's commit is listed to show which version they potentially reviewed.
 
 Some reviewers gave a general review rather than answering the three questions. These were also accepted.
 
@@ -14,6 +14,8 @@ Some reviewers gave a general review rather than answering the three questions. 
 | General User 3 | `7678b0c` | ~30 | Has worked on hospital wards and in nursing homes | 28/10/2026 |
 | General User 4 | `7678b0c` | ~60 | Has worked on hospital wards and in nursing homes | 28/10/2026 |
 | General User 5 | `7678b0c` | ~55 | Has worked on hospital wards | 28/10/2026 |
+| General User 6 | `f1ee3d0` | ~40 | Has worked on hospital wards and in nursing homes | 29/10/2026 |
+| General User 7 | `f1ee3d0` | ~40 | Has worked on hospital wards and in nursing homes | 29/10/2026 |
 
 ## General User 1
 
@@ -45,7 +47,7 @@ Some reviewers gave a general review rather than answering the three questions. 
 
 ### Suggestions
 
-- "Add a way to check the staff at a nursing home: whether nurses and carers are qualified and able to care for older people. For example, by pulling in reviews or qualifications. Nothing like this currently exists in Ireland, so families have no way to be sure their relative is in good hands. This would give them that reassurance."
+- Add a way to check the staff at a nursing home: whether nurses and carers are qualified and able to care for older people. For example, by pulling in reviews or qualifications. Nothing like this currently exists in Ireland, so families have no way to be sure their relative is in good hands. This would give them that reassurance.
 
 # General User 3
 
@@ -64,11 +66,27 @@ Some reviewers gave a general review rather than answering the three questions. 
 - Search engine and contact info.
 
 ### Suggestions
-- "Maybe add 'Frequently Asked Questions' that are asked that can be easily read aside from the fact that they can inquire them from the contacts provided."
-
+- Maybe add 'Frequently Asked Questions' that are asked that can be easily read aside from the fact that they can inquire them from the contacts provided.
 
 # General User 5
 
 ### Dislikes
 - The steps where HSE checks your money seems scary to see/hear.
   - Dev Note: this is from /how-a-family-chooses in step 4.
+
+# General User 6
+
+### Likes
+- Website has great potential.
+
+### Suggestions
+- Services where families could come and celebrate (e.g., Important dates).
+- Comparison of nursing homes side by side with clear summaries of their HIQA inspection reports and links to the original documents.
+- Transparency when the information was last updated is important.
+- Add a practical checklist for families visiting a nursing home.
+
+# General User 7
+
+### Likes
+- Very helpful and informative, can get mostly everything about a nursing home all over Ireland.
+- Easy to navigate.
