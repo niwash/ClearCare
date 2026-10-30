@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Deploys the images CI built for one commit: applies the migrations, moves
 # the API and then the site to the new images, checks both through the load
-# balancer, and only then moves the pipeline schedules to the new pipeline
+# balancer, and only then moves the pipeline schedule to the new pipeline
 # image. Each step runs only if the one before it succeeded.
 #
 # Usage: deploy [--automatic] COMMIT
@@ -60,7 +60,7 @@ record() {
 
 # Runs a step in the background and passes a cancellation on to it, so that
 # the step cleans up (run-task stops its task, release-pipeline puts the
-# schedules back) instead of being left half done.
+# schedule back) instead of being left half done.
 in_background() {
   "$@" &
   child=$!
