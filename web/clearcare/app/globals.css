@@ -334,31 +334,83 @@
   align-items: flex-start;
 }
 
-/* Sections fade and rise into place as they scroll into view, so the page feels alive without
-   anything moving on its own (CCARE-179). Only where the browser ties the animation to scrolling,
-   only for people who haven't asked their device for less motion (WCAG 2.3.3), and never in the
-   adult-centred design. Without support the section simply shows. */
-@keyframes rise-in {
-  from {
+/* The home page's cards and blocks of text slide up into place as they come into view (CCARE-179,
+   CCARE-186). components/home/slide-up.tsx marks the page with data-slide-up and each block with
+   data-shown once it is in view; without it (no JavaScript) nothing is hidden. Only for people who
+   haven't asked their device for less motion (WCAG 2.3.3), and never in the adult-centred design.
+   - reveal: a block that slides up.
+   - reveal-stagger: a row of cards that slide up one after another, where they sit side by side.
+     Stacked on phones, they already arrive one at a time.
+   - reveal-pop: an icon that grows into place as its card arrives.
+   - reveal-bar: a heading's accent bar, drawn out from its start (origin-left, or origin-center
+     under a centred heading) as its block arrives. */
+@media (prefers-reduced-motion: no-preference) {
+  :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *) {
+    transition:
+      opacity 0.7s ease-out var(--slide-delay, 0s),
+      translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--slide-delay, 0s);
+  }
+
+  :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) {
     opacity: 0;
-    translate: 0 1.5rem;
+    translate: 0 2.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    .reveal-stagger > :nth-child(2) {
+      --slide-delay: 0.12s;
+    }
+
+    .reveal-stagger > :nth-child(3) {
+      --slide-delay: 0.24s;
+    }
+
+    .reveal-stagger > :nth-child(4) {
+      --slide-delay: 0.36s;
+    }
+  }
+
+  :root[data-slide-up]:not([data-design="adult-centred"]) .reveal-pop {
+    transition:
+      opacity 0.5s ease-out calc(var(--slide-delay, 0s) + 0.25s),
+      scale 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--slide-delay, 0s) + 0.25s);
+  }
+
+  :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) .reveal-pop {
+    opacity: 0;
+    scale: 0.6;
+  }
+
+  :root[data-slide-up]:not([data-design="adult-centred"]) .reveal-bar {
+    transition: scale 0.6s ease-out calc(var(--slide-delay, 0s) + 0.3s);
+  }
+
+  :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) .reveal-bar {
+    scale: 0 1;
+  }
+}
+
+/* The support photo eases from slightly enlarged to its full view as it scrolls past (CCARE-186),
+   following the scroll position where the browser can. Its box clips the enlarged edges. */
+@keyframes zoom-out {
+  from {
+    scale: 1.12;
   }
 }
 
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
-    :root:not([data-design="adult-centred"]) .reveal {
-      animation: rise-in linear both;
+    :root:not([data-design="adult-centred"]) .scroll-zoom {
+      animation: zoom-out linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 40%;
+      animation-range: cover 0% cover 55%;
     }
   }
 }
 
 /* A guide whose sections are one-at-a-time <details> (they share a name) prints whole, with the
-   worked examples inside them, not just the section that happens to be open. Sections still
-   waiting to rise in would print blank, so print drops the animation; the selector matches the
-   one above so it wins. */
+   worked examples inside them, not just the section that happens to be open. Blocks still
+   waiting to slide up would print blank, so print shows them all. */
 @media print {
   details[name]::details-content,
   details[name] details::details-content {
@@ -366,9 +418,11 @@
     display: block;
   }
 
-  :root:not([data-design="adult-centred"]) .reveal {
-    animation: none;
-    opacity: 1;
+  :root:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *, .reveal-pop, .reveal-bar, .scroll-zoom) {
+    animation: none !important;
+    opacity: 1 !important;
+    translate: none !important;
+    scale: none !important;
   }
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
 import { LeavingSiteDialog } from "@/components/layout/leaving-site-dialog";
+import { SLIDE_UP_SCRIPT } from "@/components/home/slide-up-script";
 import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
 import "./globals.css";
 
@@ -30,10 +31,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className={`${sourceSerif.variable} ${publicSans.variable} ${plexMono.variable} h-full antialiased`}
-      suppressHydrationWarning // the theme script sets data-theme and data-design before React hydrates
+      suppressHydrationWarning // the head's scripts set data-theme, data-design and data-slide-up before React hydrates
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: APPLY_SAVED_THEME_SCRIPT }} />
+        {/* After the theme script, which it reads for the design. */}
+        <script dangerouslySetInnerHTML={{ __html: SLIDE_UP_SCRIPT }} />
       </head>
       {/* overflow-x-clip: a full-width band (100vw) includes the scrollbar on Windows, which would
           otherwise let the page scroll sideways. Clip, not hidden, so sticky positioning still works. */}

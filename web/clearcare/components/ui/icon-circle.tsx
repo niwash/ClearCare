@@ -15,11 +15,22 @@ const TINT_CLASSES = {
 export type Tint = keyof typeof TINT_CLASSES;
 
 // "small" sits beside a name in a list; "large" heads a card.
-export function IconCircle({ path, size = "small", tint = "band" }: { path: string; size?: "small" | "large"; tint?: Tint }) {
+// className adds to the circle, such as reveal-pop (globals.css) on the home page's cards.
+export function IconCircle({
+  path,
+  size = "small",
+  tint = "band",
+  className = "",
+}: {
+  path: string;
+  size?: "small" | "large";
+  tint?: Tint;
+  className?: string;
+}) {
   return (
     <span
       aria-hidden
-      className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${size === "large" ? "size-12" : "size-8"}`}
+      className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${size === "large" ? "size-12" : "size-8"} ${className}`}
     >
       {/* A 24-unit grid, like the site's other icons. */}
       <svg

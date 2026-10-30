@@ -3,7 +3,8 @@
 // search right there as the first thing they can do, beside a card of why they can rely on it
 // (CCARE-179). The page's h1 is here. No photo of its own, as the carousel above has them. The
 // search was at the foot of the page before; a family arriving with a home in mind shouldn't have
-// to scroll past everything else to reach it.
+// to scroll past everything else to reach it. Both columns slide up as the page opens, the card a
+// moment after the words (CCARE-186).
 import Link from "next/link";
 import { eyebrowClass, primaryButtonClass, secondaryLinkClass, textInputClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
@@ -20,13 +21,13 @@ export function HomeHero() {
   return (
     <section aria-labelledby="home-h" className="py-2 md:py-6">
       <div className="grid items-center gap-8 md:grid-cols-[3fr_2fr] md:gap-12">
-        <div className="flex min-w-0 flex-col items-start gap-5">
+        <div className="reveal flex min-w-0 flex-col items-start gap-5">
           <p className={eyebrowClass}>Informed decision. Informed consent.</p>
           <h1 id="home-h" className="font-heading text-3xl leading-tight font-semibold tracking-tight md:text-5xl">
             Finding the right care for your loved ones.
           </h1>
           {/* The same mark as under the other pages' headings (welcome-band, globals.css). */}
-          <span aria-hidden className="-mt-2 h-1 w-12 rounded-full bg-accent adult:hidden" />
+          <span aria-hidden className="reveal-bar -mt-2 h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           {/* "Sums up" is the site's own working-out of each report's judgments, by rules, not AI. */}
           <p className="max-w-xl text-ink-muted md:text-lg">
             When someone you love needs nursing home care, you want to know they will be safe and well looked after.
@@ -73,7 +74,7 @@ export function HomeHero() {
           </Link>
         </div>
 
-        <div className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6 shadow-sm md:p-8 adult:rounded-lg adult:shadow-none">
+        <div className="reveal flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6 shadow-sm [--slide-delay:0.15s] md:p-8 adult:rounded-lg adult:shadow-none">
           <p className="flex items-center gap-3 font-heading text-lg font-semibold">
             <IconCircle path={ICON_PATHS.guides} tint="sage" />
             Practical guidance for you and your family

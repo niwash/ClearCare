@@ -2,7 +2,8 @@
 // What the site offers, as four cards: an icon in its own soft colour, a heading, a line spoken to
 // the reader and an arrow, the whole card a link to its page (CCARE-179). On the page's own
 // background, as the hero's band sits just above. Each card lifts on hover and its arrow moves on,
-// so it's clear the whole card can be chosen.
+// so it's clear the whole card can be chosen. The heading's bar draws out and the cards rise in one
+// after another as they scroll into view (CCARE-186).
 import Link from "next/link";
 import { linkCardClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
@@ -42,18 +43,18 @@ const FEATURES: { title: string; text: string; href: string; icon: string; tint:
 
 export function SiteFeatures() {
   return (
-    <section aria-labelledby="help-h" className="reveal flex flex-col gap-8 py-4 md:py-6">
-      <div className="flex flex-col items-center gap-3 text-center adult:items-start adult:text-left">
+    <section aria-labelledby="help-h" className="flex flex-col gap-8 py-4 md:py-6">
+      <div className="reveal flex flex-col items-center gap-3 text-center adult:items-start adult:text-left">
         <h2 id="help-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
           How can ClearCare help you today?
         </h2>
-        <span aria-hidden className="h-1 w-12 rounded-full bg-accent" />
+        <span aria-hidden className="reveal-bar h-1 w-12 origin-center rounded-full bg-accent" />
       </div>
-      <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <ul className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {FEATURES.map((feature) => (
           <li key={feature.href}>
             <Link href={feature.href} className={`${linkCardClass} flex h-full flex-col gap-3 p-6`}>
-              <IconCircle path={feature.icon} size="large" tint={feature.tint} />
+              <IconCircle path={feature.icon} size="large" tint={feature.tint} className="reveal-pop" />
               <h3 className="font-heading text-xl font-semibold text-ink group-hover:underline">{feature.title}</h3>
               <p className="text-ink-muted">{feature.text}</p>
               <span

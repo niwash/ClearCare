@@ -8,6 +8,7 @@ import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
+import { SlideUp } from "@/components/home/slide-up";
 import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
@@ -25,6 +26,9 @@ export default async function StartPage() {
   // why it matters, what ClearCare is, an example record, and a last invitation to start.
   return (
     <>
+      {/* The sections slide up as they come into view (CCARE-186). */}
+      <SlideUp />
+
       <FeatureCarousel />
 
       <HomeHero />
@@ -51,7 +55,7 @@ export default async function StartPage() {
         className={`${fullWidthClass} -mt-6 bg-tint-blue px-4 py-10 md:-mt-8 md:px-8 md:py-14`}
       >
         <div className="mx-auto flex max-w-6xl flex-col gap-6">
-          <div className="flex max-w-3xl flex-col gap-2">
+          <div className="reveal flex max-w-3xl flex-col gap-2">
             <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
               About ClearCare
             </h2>
@@ -61,7 +65,7 @@ export default async function StartPage() {
             </p>
           </div>
           {/* Side by side from tablet width, stacked on phones. */}
-          <div className="reveal grid gap-4 md:grid-cols-2 md:gap-6">
+          <div className="reveal-stagger grid gap-4 md:grid-cols-2 md:gap-6">
             <StatementCard label="Our Mission" icon="mission" tint="sage">
               To help people make informed decisions, and give informed consent, about nursing home care.
             </StatementCard>
@@ -76,11 +80,11 @@ export default async function StartPage() {
       {/* What a record looks like, under a heading that says so (CCARE-179). A new home on every
           load. The page above arrives first; the example streams in. */}
       <section aria-labelledby="example-h" className="flex flex-col gap-5">
-        <div className="flex flex-col items-start gap-2">
+        <div className="reveal flex flex-col items-start gap-2">
           <h2 id="example-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Here&apos;s an example of how we sum up reports
           </h2>
-          <span aria-hidden className="h-1 w-12 rounded-full bg-accent adult:hidden" />
+          <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           <p className="text-ink-muted md:text-lg">A home picked at random, and what its latest inspection found.</p>
         </div>
         <Suspense fallback={<SampleCentreFallback />}>
@@ -136,7 +140,7 @@ function StatementCard({
 }) {
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm md:p-8 adult:rounded-lg adult:shadow-none">
-      <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
+      <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="reveal-pop" />
       <h3 className="font-heading text-xl font-semibold md:text-2xl">{label}</h3>
       <p className="text-ink-muted md:text-lg">{children}</p>
     </div>

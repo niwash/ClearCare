@@ -21,15 +21,18 @@ export function NotAlone() {
       aria-labelledby="not-alone-h"
       className={`${fullWidthClass} -mb-6 grid bg-linear-to-br from-warm to-tint-blue md:-mb-8 md:grid-cols-2`}
     >
-      {/* The words' column sets the band's height, at least 28rem, and the photo fills it. */}
-      <div className="relative aspect-[4/3] md:aspect-auto md:min-h-[28rem]">
+      {/* The words' column sets the band's height, at least 28rem, and the photo fills it. The
+          photo eases from slightly enlarged to its full view as the band scrolls past (scroll-zoom,
+          globals.css, CCARE-186); the box clips the enlarged edges. Clip, not hidden, which would
+          make the box the scroll container the animation follows. */}
+      <div className="relative aspect-[4/3] overflow-clip md:aspect-auto md:min-h-[28rem]">
         <Image
           src="/home/support.jpg"
           alt=""
           fill
           sizes="(min-width: 768px) 50vw, 100vw"
           // A portrait photo cut through the middle: both faces and their joined hands.
-          className="object-cover object-[50%_45%]"
+          className="scroll-zoom object-cover object-[50%_45%]"
         />
       </div>
       {/* The right-hand padding matches the page's column (max-w-6xl, md:px-8), so the words end
@@ -38,7 +41,7 @@ export function NotAlone() {
         <h2 id="not-alone-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
           You&apos;re not alone in this
         </h2>
-        <span aria-hidden className="h-1 w-12 rounded-full bg-accent" />
+        <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent" />
         <p className="text-ink-muted md:text-lg">
           Questions come up at every step, about Fair Deal, a home you&apos;re worried about, or how to support the
           person moving. You don&apos;t have to find the answers on your own: your local Nursing Homes Support Office,
