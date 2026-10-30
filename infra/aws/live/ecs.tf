@@ -92,7 +92,19 @@ resource "aws_ecs_task_definition" "web" {
         { name = "API_URL", value = "https://${var.api_hostname}" },
         # The standalone server listens on HOSTNAME; the health check calls it on loopback.
         { name = "HOSTNAME", value = "0.0.0.0" },
+        # Public accounts (CCARE-183), empty until the production pool exists. While any of them is
+        # missing the account controls stay hidden and the authentication routes answer 503, so the
+        # site behaves exactly as it does today.
+        { name = "AUTH_COGNITO_ISSUER", value = var.cognito_issuer },
+        { name = "AUTH_COGNITO_ID", value = var.cognito_client_id },
+        { name = "COGNITO_DOMAIN", value = var.cognito_domain },
       ]
+      # ECS refuses to start a container whose secret has no value, so these arrive only once
+      # accounts_enabled is on, which is after both values have been set.
+      secrets = var.accounts_enabled ? [
+        { name = "AUTH_COGNITO_SECRET", valueFrom = aws_secretsmanager_secret.cognito_client_secret.arn },
+        { name = "AUTH_SECRET", valueFrom = aws_secretsmanager_secret.auth_session.arn },
+      ] : []
       # The image has node but no curl.
       healthCheck = {
         command     = ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
