@@ -140,7 +140,7 @@ read -rs key
 aws secretsmanager put-secret-value --secret-id clearcare/openai --secret-string "$key"
 ```
 
-A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`.
+A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`. The apply that adds the secret registers a pipeline revision that reads it, but the schedules keep the one recorded in `/clearcare/release/pipeline`: run the deploy workflow for the running commit afterwards, so they start the new one.
 
 ## Plan and apply
 
