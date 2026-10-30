@@ -49,11 +49,11 @@ export function SiteFigures({
         </h2>
         {/* One row of cards from tablet width; on phones each card is a short row of its own, the icon
             beside the figure, so the three take less height. */}
-        <ul className="grid gap-3 sm:grid-cols-3 md:gap-4">
+        <ul className="reveal grid gap-3 sm:grid-cols-3 md:gap-4">
           {figures.map((figure) => (
             <li
               key={figure.label}
-              className="flex items-center gap-4 rounded-lg border border-line bg-surface p-4 sm:flex-col sm:gap-2 sm:text-center md:p-5"
+              className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm sm:flex-col sm:gap-2 sm:text-center md:p-5 adult:rounded-lg adult:shadow-none"
             >
               <IconCircle path={figure.icon} size="large" />
               <span className="flex flex-col sm:items-center">

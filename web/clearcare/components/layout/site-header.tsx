@@ -1,28 +1,33 @@
 import Link from "next/link";
+import { CompareNavLink } from "@/components/compare/compare-nav-link";
+import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { primaryButtonClass } from "@/components/ui/classes";
 
-// An unfinished page has no href and shows as plain text, "(coming soon)".
-type NavEntry = { label: string; href: string | null };
+// An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
+// Compare Homes link, which shows how many homes are saved (CCARE-127).
+type NavEntry = { label: string; href: string | null; compare?: true };
 
-const NAV_ITEMS: NavEntry[] = [
+// The footer lists these too, so a page added here shows in both.
+export const NAV_ITEMS: NavEntry[] = [
   { label: "Search for Homes", href: "/search" },
-  { label: "National Figures", href: "/national" },
+  { label: "Compare Homes", href: "/compare", compare: true },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
   { label: "Fair Deal", href: "/guides/fair-deal" },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
+  // Last: the figures across every home are background, not a step in choosing one (CCARE-179).
+  { label: "National Figures", href: "/national" },
 ];
 
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
+  const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
+  if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
   return item.href ? (
-    <Link
-      href={item.href}
-      className={`${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`}
-    >
+    <Link href={item.href} className={linkClass}>
       {item.label}
     </Link>
   ) : (
@@ -39,12 +44,19 @@ function NavItem({ item, className }: { item: NavEntry; className: string }) {
 export function SiteHeader() {
   return (
     <header className="border-b border-line bg-surface">
+      {/* Says when a home is added to or removed from the shortlist, on every page (CCARE-127). */}
+      <CompareStatus />
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
-          <Link href="/" className="font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
-            ClearCare
-          </Link>
+          {/* The name, and under it the motto: what the site is, in one line, on every page (CCARE-179).
+              Only the name is the link home. */}
+          <div className="flex flex-col">
+            <Link href="/" className="w-fit font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
+              ClearCare
+            </Link>
+            <p className="text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
+          </div>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
           <div className="flex flex-auto items-center justify-end gap-2">

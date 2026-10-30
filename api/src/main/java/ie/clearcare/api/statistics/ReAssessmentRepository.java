@@ -52,7 +52,22 @@ class ReAssessmentRepository {
   private static final String DATA_DATE =
       "SELECT max(inspection_date) FROM clearcare.centre_report";
 
+  // The statistics depend only on the loaded reports and their judgments. The pipeline only adds
+  // reports, each with its judgments in the same transaction (db/V2), and a report_id is never
+  // used twice, so this changes whenever the statistics can.
+  private static final String FINGERPRINT =
+      "SELECT count(*) AS reports, max(report_id) AS last_report_id FROM clearcare.centre_report";
+
+  private record Fingerprint(long reports, Long lastReportId) {}
+
+  private record Kept(Fingerprint fingerprint, Optional<ReAssessmentStatistics> statistics) {}
+
   private final JdbcClient jdbc;
+
+  // Counting takes about 0.6 s on AWS with the national data, and the home page asks for the
+  // statistics on every visit. Two calls that miss at once may both count, and either pair may be
+  // kept: each result still belongs to its own fingerprint.
+  private volatile Kept kept;
 
   ReAssessmentRepository(JdbcClient jdbc) {
     this.jdbc = jdbc;
@@ -60,11 +75,23 @@ class ReAssessmentRepository {
 
   /**
    * Returns the statistics, or nothing until a report with an inspection date has been loaded: a
-   * report without one cannot be paired (ADR-0015). Everything is read in one transaction, so the
-   * parts agree even if reports are loaded meanwhile.
+   * report without one cannot be paired (ADR-0015). The result is kept until other reports are
+   * loaded. Everything is read in one transaction, so the parts agree, and a kept result belongs
+   * to its fingerprint, even if reports are loaded meanwhile.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<ReAssessmentStatistics> find() {
+    Fingerprint fingerprint = jdbc.sql(FINGERPRINT).query(Fingerprint.class).single();
+    Kept last = kept;
+    if (last != null && last.fingerprint().equals(fingerprint)) {
+      return last.statistics();
+    }
+    Optional<ReAssessmentStatistics> statistics = count();
+    kept = new Kept(fingerprint, statistics);
+    return statistics;
+  }
+
+  private Optional<ReAssessmentStatistics> count() {
     Optional<LocalDate> dataDate = jdbc.sql(DATA_DATE).query(LocalDate.class).optional();
     if (dataDate.isEmpty()) {
       return Optional.empty();

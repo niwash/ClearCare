@@ -29,6 +29,14 @@ export default function LoginPage() {
       >
         Log in (coming soon)
       </button>
+      {/* Accounts collect an email address, so the notice is linked where they'll be made (GDPR Art. 13). */}
+      <p className="mt-4 max-w-md text-sm text-ink-muted">
+        Read how we&rsquo;ll use your details in our{" "}
+        <Link href="/privacy" className="inline-block py-1 tap-target">
+          privacy notice
+        </Link>
+        .
+      </p>
     </main>
   );
 }
