@@ -10,6 +10,7 @@ import {
   cognitoLogoutUrl,
   logoutUri,
   sessionCookieNames,
+  signOutDestination,
 } from "../lib/cognito-logout.ts";
 
 const env = {
@@ -63,6 +64,8 @@ describe("session cookies", () => {
       sessionCookieNames([
         "authjs.session-token",
         "__Secure-authjs.session-token",
+        "__Host-authjs.session-token",
+        "authjs.session-token.0",
         "authjs.csrf-token",
         "authjs.callback-url",
         "theme",
@@ -71,9 +74,34 @@ describe("session cookies", () => {
       [
         "authjs.session-token",
         "__Secure-authjs.session-token",
+        "__Host-authjs.session-token",
+        "authjs.session-token.0",
         "authjs.csrf-token",
         "authjs.callback-url",
       ],
     );
+  });
+});
+
+describe("where the browser goes", () => {
+  test("the hosted logout when it can be built", () => {
+    const destination = signOutDestination(env, origin, "/search");
+
+    assert.equal(new URL(destination).hostname, "clearcare-dev-test.auth.eu-north-1.amazoncognito.com");
+    assert.equal(new URL(destination).searchParams.get("logout_uri"), `${origin}/`);
+  });
+
+  test("the start page with the notice when it cannot", () => {
+    for (const broken of [
+      {},
+      { ...env, COGNITO_DOMAIN: "" },
+      { ...env, COGNITO_DOMAIN: "not a url" },
+      { ...env, AUTH_COGNITO_ID: " " },
+    ]) {
+      assert.equal(
+        signOutDestination(broken, origin),
+        `${origin}/?logout=unavailable`,
+      );
+    }
   });
 });

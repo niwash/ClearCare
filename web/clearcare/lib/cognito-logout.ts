@@ -37,7 +37,22 @@ export function cognitoLogoutUrl(
   return url.toString();
 }
 
-/** The ClearCare session cookies to remove, whatever prefix the scheme gave them. */
+/** Where the browser goes once the local session is cleared: the hosted logout when it can be
+ * built, otherwise the start page carrying the notice. A malformed domain takes the same path as a
+ * missing one: the visitor is told the provider was not asked, rather than left to assume it was. */
+export function signOutDestination(
+  env: Record<string, string | undefined>,
+  origin: string,
+  path = "/",
+): string {
+  return (
+    cognitoLogoutUrl(env, origin, path) ??
+    new URL("/?logout=unavailable", origin).toString()
+  );
+}
+
+/** The ClearCare session cookies to remove. Auth.js prefixes them __Secure- or __Host- when the
+ * connection is secure, so both have to match. */
 export function sessionCookieNames(names: Iterable<string>): string[] {
-  return [...names].filter((name) => /^(__Secure-)?authjs\./.test(name));
+  return [...names].filter((name) => /^(__Secure-|__Host-)?authjs\./.test(name));
 }

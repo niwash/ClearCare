@@ -32,8 +32,8 @@ export default async function StartPage({
           role="status"
           className="mx-auto mt-6 mb-2 w-full max-w-6xl rounded-md border border-line bg-surface-muted p-4 text-ink md:px-8"
         >
-          You are signed out of ClearCare. The identity provider could not be reached to end its
-          own session, so this browser may still remember you there.
+          You are signed out of ClearCare. The identity provider was not asked to end its own
+          session, so this browser may still be signed in there.
         </p>
       )}
 
