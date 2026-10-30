@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { endSession, startSignIn, startSignUp } from "@/lib/auth-actions";
+import { signOut, startSignIn, startSignUp } from "@/lib/auth-actions";
 
 // The signed-in or signed-out controls.
 //
@@ -85,8 +85,9 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
           >
             {state.email}
           </span>
-          {/* A form action, because signing out clears the server-side session before it redirects. */}
-          <form action={endSession}>
+          {/* A form action, so the browser cannot be sent here by another site, and Auth.js clears
+              its own cookies with the options it set them with. */}
+          <form action={signOut}>
             <button type="submit" className={inMenu ? `${menuRow} text-left` : secondaryClass}>
               Log out
             </button>
