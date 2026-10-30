@@ -1,7 +1,8 @@
-# One secret per database login (ADR-0010). Terraform creates the secrets but
-# not their values, so no password is in the state or in a plan; README.md
-# shows how to set them. The administrator's secret belongs to RDS (rds.tf).
-# Each task's execution role can read only its own secret (iam.tf).
+# One secret per database login (ADR-0010), and the pipeline's OpenAI key.
+# Terraform creates the secrets but not their values, so no password or key
+# is in the state or in a plan; README.md shows how to set them. The
+# administrator's secret belongs to RDS (rds.tf). Each task's execution role
+# can read only its own secrets (iam.tf).
 
 locals {
   # Secret name => the role infra/postgres/roles.sql creates.
