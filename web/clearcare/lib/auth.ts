@@ -12,6 +12,14 @@ import {
 export function createAuthConfig(
   env: AuthEnvironment = process.env,
 ): NextAuthConfig {
+  // The two providers are the same client with the same checks; only the entry page differs.
+  const client = {
+    clientId: env.AUTH_COGNITO_ID,
+    clientSecret: env.AUTH_COGNITO_SECRET,
+    issuer: env.AUTH_COGNITO_ISSUER,
+    checks: ["pkce", "state", "nonce"] as ("pkce" | "state" | "nonce")[],
+  };
+
   return {
     secret: env.AUTH_SECRET,
     // Both the load balancer and Vercel's proxy set the forwarded host, and the
@@ -19,12 +27,15 @@ export function createAuthConfig(
     trustHost: true,
     session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
     providers: [
+      // One client, two entry pages: Cognito's authorize endpoint always lands on /login, so
+      // "Create account" names the hosted /signup page directly. Auth.js adds the state, nonce,
+      // PKCE and its own redirect_uri, so it is the same flow with a different entry page. The
+      // managed login domain is required, so this provider is always present.
+      Cognito({ ...client, authorization: { params: { scope: "openid email profile" } } }),
       Cognito({
-        clientId: env.AUTH_COGNITO_ID,
-        clientSecret: env.AUTH_COGNITO_SECRET,
-        issuer: env.AUTH_COGNITO_ISSUER,
-        checks: ["pkce", "state", "nonce"],
-        authorization: { params: { scope: "openid email profile" } },
+        ...client,
+        id: "cognito-signup",
+        authorization: { url: `${env.COGNITO_DOMAIN ?? ""}/signup` },
       }),
     ],
     callbacks: {

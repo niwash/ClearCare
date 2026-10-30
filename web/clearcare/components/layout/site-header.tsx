@@ -1,10 +1,11 @@
 import Link from "next/link";
+
+import { AccountControls } from "@/components/auth/account-controls";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
-import { primaryButtonClass } from "@/components/ui/classes";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
 // Compare Homes link, which shows how many homes are saved (CCARE-127).
@@ -65,15 +66,9 @@ export function SiteHeader() {
               <DesignToggle />
               <ThemeToggle />
             </div>
-            {/* Filled, so it reads as a button beside the outlined toggles. Left out on phones, where
-                the row has no room for it; the menu (standard) or the navigation band
-                (adult-centred) has it instead. */}
-            <Link
-              href="/login"
-              className={`${primaryButtonClass} hidden items-center text-sm no-underline hover:text-on-primary sm:flex`}
-            >
-              Log in
-            </Link>
+            {/* Read the session in the browser and return the visitor to this page. Left out on
+                phones, where the menu carries them. */}
+            <AccountControls variant="header" />
           </div>
         </div>
       </div>
@@ -87,8 +82,8 @@ export function SiteHeader() {
               <NavItem item={item} className="flex min-h-11 items-center text-base" />
             </li>
           ))}
-          <li className="border-t border-line-soft">
-            <NavItem item={{ label: "Log in", href: "/login" }} className="flex min-h-11 items-center text-base" />
+          <li className="border-t border-line pt-2">
+            <AccountControls variant="menu" />
           </li>
         </ul>
       </MobileMenu>
@@ -104,7 +99,7 @@ export function SiteHeader() {
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and
                 there is no menu. */}
             <li className="sm:hidden">
-              <NavItem item={{ label: "Log in", href: "/login" }} className="inline-block py-3" />
+              <AccountControls variant="nav" />
             </li>
           </ul>
         </nav>

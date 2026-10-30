@@ -16,6 +16,9 @@ module "cognito" {
 
   pool_name     = "clearcare-dev"
   domain_prefix = var.domain_prefix
-  callback_urls = ["${var.web_origin}/api/auth/callback/cognito"]
-  logout_urls   = ["${var.web_origin}/"]
+  callback_urls = [
+    "${var.web_origin}/api/auth/callback/cognito",
+    "${var.web_origin}/api/auth/callback/cognito-signup",
+  ]
+  logout_urls = ["${var.web_origin}/"]
 }
