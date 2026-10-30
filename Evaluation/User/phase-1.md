@@ -49,7 +49,7 @@ Some reviewers gave a general review rather than answering the three questions. 
 
 - Add a way to check the staff at a nursing home: whether nurses and carers are qualified and able to care for older people. For example, by pulling in reviews or qualifications. Nothing like this currently exists in Ireland, so families have no way to be sure their relative is in good hands. This would give them that reassurance.
 
-# General User 3
+## General User 3
 
 ### Comments
 
@@ -58,35 +58,41 @@ Some reviewers gave a general review rather than answering the three questions. 
 - Good tool to start for the family who doesn't have a clue where to start.
 - Having HIQA results is a plus as well for them to define the best and appropriate home for their loved ones.
 
-# General User 4
+## General User 4
 
 ### Likes
+
 - The details are complete, especially about Fair Deal because a lot of patients' families don't know about this.
 - The website has statistics of the performance as well.
 - Search engine and contact info.
 
 ### Suggestions
+
 - Maybe add 'Frequently Asked Questions' that are asked that can be easily read aside from the fact that they can inquire them from the contacts provided.
 
-# General User 5
+## General User 5
 
 ### Dislikes
+
 - The steps where HSE checks your money seems scary to see/hear.
   - Dev Note: this is from /how-a-family-chooses in step 4.
 
-# General User 6
+## General User 6
 
 ### Likes
+
 - Website has great potential.
 
 ### Suggestions
+
 - Services where families could come and celebrate (e.g., Important dates).
 - Comparison of nursing homes side by side with clear summaries of their HIQA inspection reports and links to the original documents.
 - Transparency when the information was last updated is important.
 - Add a practical checklist for families visiting a nursing home.
 
-# General User 7
+## General User 7
 
 ### Likes
+
 - Very helpful and informative, can get mostly everything about a nursing home all over Ireland.
 - Easy to navigate.
