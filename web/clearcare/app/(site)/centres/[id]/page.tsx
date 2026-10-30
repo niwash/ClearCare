@@ -107,7 +107,9 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
           rate or recommend homes.
         </p>
-        <p className="whitespace-nowrap">
+        {/* On one line beside the licence from md up; free to wrap on phones, where the
+            adult-centred design's larger text would run past the edge (CCARE-184). */}
+        <p className="md:whitespace-nowrap">
           Source:{" "}
           <a href={centre.register_snapshot.url} className="text-ink-muted">
             HIQA register
