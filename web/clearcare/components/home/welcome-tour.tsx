@@ -1,21 +1,24 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { primaryButtonClass, secondaryLinkClass } from "@/components/ui/classes";
 import { MAX_COMPARED } from "@/lib/compare";
 
 // The welcome tour (CCARE-164): a short walk around the site from the home page, pointing at one
 // part at a time, in the order of the How to navigate ClearCare guide (/guides/using-clearcare).
-// A first-time visitor is asked first ("New here?"), never started on it; "Take a quick tour"
-// in the welcome band starts it again, and the guide links to /?tour, which starts it on arrival.
+// Every visitor is offered it in a box in the bottom-left corner ("New to ClearCare?"), never
+// started on it; "Take a quick tour" in the welcome band starts it too, and the guide links to
+// /?tour, which starts it on arrival.
 //
 // It is a native modal <dialog>, like the leaving-site box: focus stays inside it, the page behind
 // can't be used, and Escape skips. Each step's heading takes focus, so screen readers read it.
 // Nothing moves on its own. Without JavaScript there is no tour and the button stays disabled,
 // like the Easier to read button.
 
-// Finishing or skipping is remembered on this device, so the offer isn't shown again.
-const TOUR_STORAGE_KEY = "tour";
+// Dismissing the offer, or finishing the tour, hides it for the rest of the visit (this tab), so
+// the tour stays an option on the next visit, for returning visitors too (CCARE-184).
+const OFFER_STORAGE_KEY = "tour-offer";
 
 // Where a step points, found by its data-tour attribute. A step lists the places in order and
 // shows the first one on screen: the navigation bar, or the Menu button where the bar is hidden
@@ -163,10 +166,9 @@ const TOUR_STEPS: TourStep[] = [
   },
 ];
 
-// The offer is shown until the tour is finished or skipped. If storage is blocked it isn't shown
-// at all, rather than on every visit; seenHere covers storage that reads but won't save.
+// If storage is blocked, dismissing lasts until the page reloads (dismissedHere).
 const listeners = new Set<() => void>();
-let seenHere = false;
+let dismissedHere = false;
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
@@ -175,19 +177,19 @@ function subscribe(listener: () => void) {
   };
 }
 
-function tourSeen() {
-  if (seenHere) return true;
+function offerDismissed() {
+  if (dismissedHere) return true;
   try {
-    return localStorage.getItem(TOUR_STORAGE_KEY) === "done";
+    return sessionStorage.getItem(OFFER_STORAGE_KEY) === "dismissed";
   } catch {
-    return true;
+    return false;
   }
 }
 
-function markSeen() {
-  seenHere = true;
+function dismissOffer() {
+  dismissedHere = true;
   try {
-    localStorage.setItem(TOUR_STORAGE_KEY, "done");
+    sessionStorage.setItem(OFFER_STORAGE_KEY, "dismissed");
   } catch {
     // Remembered until the page reloads.
   }
@@ -268,11 +270,11 @@ function highlightPosition(rect: DOMRect): Box {
 const outlineButtonClass =
   "inline-flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface px-5 font-semibold text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:px-4";
 
-// "Take a quick tour", for the welcome band, with the first-visit offer and the tour itself.
+// "Take a quick tour", for the welcome band, with the offer in the corner and the tour itself.
 export function WelcomeTour() {
-  // The server can't know whether the tour has been seen, so it renders without the offer.
+  // The server can't know whether the offer was dismissed, so it renders without it.
   const hydrated = useSyncExternalStore(subscribe, () => true, () => false);
-  const seen = useSyncExternalStore(subscribe, tourSeen, () => true);
+  const dismissed = useSyncExternalStore(subscribe, offerDismissed, () => true);
   const [step, setStep] = useState<number | null>(null);
   const [target, setTarget] = useState<Target | null>(null);
   const [rect, setRect] = useState<DOMRect | null>(null);
@@ -289,7 +291,7 @@ export function WelcomeTour() {
   }
 
   function end() {
-    markSeen();
+    dismissOffer();
     setStep(null);
     setTarget(null);
     setRect(null);
@@ -364,26 +366,35 @@ export function WelcomeTour() {
         Take a quick tour
       </button>
 
-      {/* Asked, not started (CCARE-164). In the bottom-left corner, clear of the Menu button. */}
-      {!seen && step === null && (
-        <section
-          aria-labelledby="tour-offer-h"
-          className="fixed bottom-4 left-4 right-24 z-30 flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 text-left text-ink shadow-xl sm:right-auto sm:w-96"
-        >
-          <h2 id="tour-offer-h" className="font-heading text-xl font-semibold">
-            New here?
-          </h2>
-          <p>Take a quick tour to see where things are on ClearCare.</p>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => go(0)} className={primaryButtonClass}>
-              Start tour
-            </button>
-            <button type="button" onClick={markSeen} className={outlineButtonClass}>
-              Skip tutorial
-            </button>
-          </div>
-        </section>
-      )}
+      {/* Asked, not started (CCARE-164). In the bottom-left corner, clear of the Menu button.
+          Straight into <body> (CCARE-184): inside the welcome band it was fixed to the band's
+          fade-in animation rather than to the window (an animated translate makes a containing
+          block), so it stayed hidden until the band scrolled in. The footer makes room for it.
+          TODO: If the user is logged in, remove the box entirely. */}
+      {hydrated &&
+        !dismissed &&
+        step === null &&
+        createPortal(
+          <section
+            data-tour-offer
+            aria-labelledby="tour-offer-h"
+            className="fixed bottom-4 left-4 right-24 z-30 flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 text-left text-ink shadow-xl sm:right-auto sm:w-96"
+          >
+            <h2 id="tour-offer-h" className="font-heading text-xl font-semibold">
+              New to ClearCare?
+            </h2>
+            <p>Take a quick tour to see where things are on ClearCare.</p>
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => go(0)} className={primaryButtonClass}>
+                Take the tour
+              </button>
+              <button type="button" onClick={dismissOffer} className={outlineButtonClass}>
+                Not now
+              </button>
+            </div>
+          </section>,
+          document.body,
+        )}
 
       {/* The whole window, see-through: the highlight darkens everything around the part. A click
           outside the card does nothing, so a stray tap doesn't end the tour. */}
