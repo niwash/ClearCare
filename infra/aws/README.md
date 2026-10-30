@@ -226,6 +226,10 @@ It prints the end of each container's log and exits 0 only if every container ex
 
 A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A failure of any other stage shows only in the log.
 
+Each run downloads the whole of `raw/` one object at a time, about 4,600 files and 1.2 GB on 30 October 2026, into the task's default 20 GiB of storage, so the time before the first stage grows with the corpus.
+
+Two runs at once, the daily schedule and a manual AWS run pipeline, would each restore the checkpoint and write it back, and the later write would win, undoing the other's next attempts. Start a manual run only when no scheduled one is running.
+
 To turn the pipeline on, with `pipeline_enabled = false` until the last step:
 
 1. Run AWS deploy for the commit to release.

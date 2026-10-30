@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Releases a pipeline revision: moves the pipeline schedule to it and
 # records it, with its image, for Terraform (infra/aws/live/release.tf). The
-# schedules' other settings and their state, enabled or not, stay as they are.
+# schedule's other settings and its state, enabled or not, stay as they are.
 #
 # The three writes succeed together or not at all. Each is tried three times.
 # If one still fails, or the script is stopped, it puts the earlier targets
@@ -106,7 +106,7 @@ undo_unless_released() {
   if [[ $released != yes ]]; then
     echo "release-pipeline: $arn was not released; putting $previous_arn back" >&2
     if put_back; then
-      echo "release-pipeline: the schedules and records are back at $previous_arn" >&2
+      echo "release-pipeline: the schedule and records are back at $previous_arn" >&2
     else
       echo "release-pipeline: could not put everything back. Now:" >&2
       report
