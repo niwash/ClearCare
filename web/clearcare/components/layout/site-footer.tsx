@@ -15,7 +15,9 @@ const FOOTER_LINKS = [
 export function SiteFooter() {
   return (
     <footer className="brand-band brand-band-deep text-sm">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-8">
+      {/* Taller at the bottom while the welcome tour's offer is in the corner, so it doesn't cover
+          the small print. */}
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-8 [body:has([data-tour-offer])_&]:pb-64">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
             <Link href="/" className="w-fit font-heading text-xl font-semibold text-ink no-underline hover:text-ink tap-target">
