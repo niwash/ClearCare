@@ -11,8 +11,10 @@
 #                changing anything while deploys are off, or when main has
 #                moved past COMMIT, whose own build deploys it instead
 #
-# Runs only while deploys are enabled (infra/aws/live/release.tf), and not
-# while a pipeline task is running, which could write during a migration.
+# Runs only while deploys are enabled (infra/aws/live/release.tf). It waits
+# for a running pipeline task to stop, and the migrate task takes the same
+# run lock as a pipeline run (ADR-0021), so neither can write while the other
+# is.
 
 set -euo pipefail
 
@@ -44,10 +46,22 @@ if [[ $automatic == yes ]]; then
   [[ $main == "$commit" ]] || not_now "main is now at $main"
 fi
 
-running=$(aws ecs list-tasks --cluster clearcare --family clearcare-pipeline \
-  --desired-status RUNNING --query 'taskArns' --output text)
-[[ -z $running || $running == None ]] ||
-  { echo "deploy: a pipeline task is running ($running); deploy once it has stopped" >&2; exit 1; }
+# A running pipeline task only delays the migration, which waits for the run
+# lock, but waiting here fails sooner than run-task's own timeout when one is
+# stuck.
+pipeline_wait=${PIPELINE_WAIT_MINUTES:-20}
+deadline=$(($(date +%s) + pipeline_wait * 60))
+while :; do
+  running=$(aws ecs list-tasks --cluster clearcare --family clearcare-pipeline \
+    --desired-status RUNNING --query 'taskArns' --output text)
+  [[ -n $running && $running != None ]] || break
+  if (($(date +%s) >= deadline)); then
+    echo "deploy: a pipeline task is still running after $pipeline_wait minutes ($running); deploy once it has stopped" >&2
+    exit 1
+  fi
+  echo "deploy: waiting for the pipeline task ($running) to stop"
+  sleep 30
+done
 
 region=${AWS_REGION:-$(aws configure get region)}
 registry="$(aws sts get-caller-identity --query Account --output text).dkr.ecr.$region.amazonaws.com"
