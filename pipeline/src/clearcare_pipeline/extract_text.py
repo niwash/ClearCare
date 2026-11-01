@@ -9,6 +9,7 @@ from pathlib import Path
 import psycopg
 import pymupdf
 
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.ingest_reports.__main__ import (
     DEFAULT_BATCH_SIZE,
     DEFAULT_FIELDS,
@@ -119,14 +120,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
     except (psycopg.Error, OSError) as error:
         logger.error("%s", error)
-        return 1
+        return EXIT_FAILED
     logger.info(
         "parsed %d, wrote %d, failed %d",
         summary.parsed,
         summary.written,
         summary.failed,
     )
-    return int(summary.failed > 0)
+    if summary.failed == 0:
+        return EXIT_DONE
+    # A response the report does not have, or a file that cannot be read, is
+    # counted and tried again; nothing read at all is the pipeline's failure.
+    return EXIT_FAILED if summary.parsed == 0 else EXIT_RETRY
 
 
 if __name__ == "__main__":

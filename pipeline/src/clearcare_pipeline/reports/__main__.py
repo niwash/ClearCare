@@ -1,4 +1,9 @@
-"""Command line entry point: ``python -m clearcare_pipeline.reports``."""
+"""Command line entry point: ``python -m clearcare_pipeline.reports``.
+
+Exit codes (clearcare_pipeline.exit_codes, ADR-0021): 0 when the crawl
+finished; 3 when HIQA would not answer, which the schedule retries on the
+job's own schedule; 1 for anything else, which is the pipeline's own failure.
+"""
 
 import argparse
 import logging
@@ -8,6 +13,7 @@ from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.reports.download import (
     SpacedFetcher,
@@ -112,7 +118,9 @@ def main(
         summary.downloaded_bytes,
         summary.already_stored,
     )
-    return 0 if summary.failure is None else 1
+    if summary.failure is None:
+        return EXIT_DONE
+    return EXIT_RETRY if summary.blocked else EXIT_FAILED
 
 
 if __name__ == "__main__":

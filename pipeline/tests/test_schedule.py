@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from clearcare_pipeline.exit_codes import EXIT_RETRY
 from clearcare_pipeline.schedule.__main__ import STAGES, Stage, main
 from tests.object_store_fakes import FakeObjectStore
 
@@ -45,6 +46,24 @@ class Stopped(BaseException):
     """The container was stopped while a stage was running."""
 
 
+class FakeRun:
+    """A run that records what the schedule told it, without a database."""
+
+    def __init__(self) -> None:
+        self.outcome: str | None = None
+        self.exit_code: int | None = None
+        self.detail: str | None = None
+        self.closed = False
+
+    def finish(self, outcome: str, exit_code: int, detail: str | None) -> None:
+        self.outcome = outcome
+        self.exit_code = exit_code
+        self.detail = detail
+
+    def close(self) -> None:
+        self.closed = True
+
+
 class FakeStages:
     """Stage mains that record each call and return or raise their outcome."""
 
@@ -75,14 +94,17 @@ def _start(
     crawl: str = "all",
     bucket: Mapping[str, str] = BUCKET,
     store: FakeObjectStore | None = None,
+    run: FakeRun | None = None,
 ) -> int:
     argv = ["--data-dir", str(data_dir), "--once"]
+    taken = run if run is not None else FakeRun()
     return main(
         argv if store is None else [*argv, "--bucket-state"],
         env={"CLEARCARE_CRAWL": crawl, **bucket},
         stages=stages.mains(),
         now=lambda: at,
         store=store,
+        begin=lambda: taken,
     )
 
 
@@ -246,3 +268,79 @@ def test_a_failed_upload_leaves_the_checkpoint_at_the_downloads_start(
     checkpoint = json.loads(store.objects[CHECKPOINT])
     assert code == 1
     assert checkpoint["schedule"]["register"]["last_outcome"] == "started"
+
+
+def test_a_clean_run_succeeds_and_closes_its_row(tmp_path: Path) -> None:
+    run = FakeRun()
+
+    code = _start(tmp_path, FakeStages(), START, run=run)
+
+    assert code == 0
+    assert (run.outcome, run.exit_code, run.detail) == ("succeeded", 0, None)
+    assert run.closed
+
+
+def test_a_failed_stage_fails_the_run(tmp_path: Path) -> None:
+    run = FakeRun()
+
+    code = _start(tmp_path, FakeStages({"ingest_reports": 1}), START, run=run)
+
+    assert code == 1
+    assert run.outcome == "failed"
+    assert run.exit_code == 1
+    assert run.detail == "ingest_reports exited with status 1"
+    assert run.closed
+
+
+def test_a_stage_that_raises_fails_the_run(tmp_path: Path) -> None:
+    run = FakeRun()
+
+    code = _start(
+        tmp_path,
+        FakeStages({"extract_text": RuntimeError("no such column")}),
+        START,
+        run=run,
+    )
+
+    assert code == 1
+    assert run.outcome == "failed"
+
+
+def test_a_crawl_hiqa_blocked_is_not_a_failure(tmp_path: Path) -> None:
+    run = FakeRun()
+
+    code = _start(tmp_path, FakeStages({"reports": EXIT_RETRY}), START, run=run)
+
+    assert code == 0
+    assert (run.outcome, run.exit_code, run.detail) == ("incomplete", 0, None)
+    state = json.loads((tmp_path / "schedule-state.json").read_text())
+    assert state["reports"]["last_outcome"] == "incomplete"
+
+
+def test_the_run_is_closed_even_when_the_container_is_stopped(
+    tmp_path: Path,
+) -> None:
+    run = FakeRun()
+
+    with pytest.raises(Stopped):
+        _start(tmp_path, FakeStages({"reports": Stopped()}), START, run=run)
+
+    assert run.outcome == "failed"
+    assert run.detail == "the run stopped before it finished"
+    assert run.closed
+
+
+def test_a_run_that_cannot_take_the_lock_does_nothing(
+    tmp_path: Path,
+) -> None:
+    stages = FakeStages()
+
+    code = main(
+        ["--data-dir", str(tmp_path), "--once"],
+        env={"CLEARCARE_CRAWL": "all", **BUCKET},
+        stages=stages.mains(),
+        begin=lambda: None,
+    )
+
+    assert code == 0
+    assert stages.calls == []

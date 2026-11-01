@@ -8,6 +8,7 @@ from collections.abc import Sequence
 
 import psycopg
 
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.ingest_reports.database import LOCK_KEY, Connection
 from clearcare_pipeline.ingest_reports.run import Summary
 from clearcare_pipeline.parser.commitments import VERSION, split
@@ -94,14 +95,18 @@ def main(argv: Sequence[str] | None = None) -> int:
             summary = backfill(connection)
     except psycopg.Error as error:
         logger.error("%s", error)
-        return 1
+        return EXIT_FAILED
     logger.info(
         "responses %d, wrote %d, failed %d",
         summary.parsed,
         summary.written,
         summary.failed,
     )
-    return int(summary.failed > 0)
+    if summary.failed == 0:
+        return EXIT_DONE
+    # A response the rules cannot split is counted and tried again; nothing
+    # split at all is the pipeline's failure.
+    return EXIT_FAILED if summary.parsed == 0 else EXIT_RETRY
 
 
 if __name__ == "__main__":

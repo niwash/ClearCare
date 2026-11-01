@@ -5,10 +5,12 @@
 # alarm). A task that starts and then fails is reported by the stopped-task
 # rule instead.
 #
-# The schedule starts the task once a day. The task runs its own command: it
-# restores its data directory from the raw bucket and runs every job that is
-# due. The schedule stays off (var.pipeline_enabled) until the bucket holds the
-# pipeline's state (infra/aws/README.md).
+# The schedule starts the task once a day. The task runs its own command: one
+# run, which restores its data directory from the raw bucket, records itself
+# in clearcare.pipeline_run, holds the run lock while it works, runs every job
+# that is due, and exits non-zero if a stage failed (ADR-0021). The schedule
+# stays off (var.pipeline_enabled) until the bucket holds the pipeline's state
+# (infra/aws/README.md).
 
 locals {
   # Times are UTC, after the database's backup window (rds.tf). The daily run

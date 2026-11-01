@@ -78,6 +78,9 @@ class DownloadSummary:
     already_stored: int
     downloaded_bytes: int
     failure: str | None
+    # True when the run stopped because HIQA would not answer, rather than
+    # because the pipeline could not read what it got (ADR-0021).
+    blocked: bool = False
 
 
 class _TemporaryError(Exception):
@@ -86,6 +89,10 @@ class _TemporaryError(Exception):
 
 class _StopError(Exception):
     """A failure that stops the run at once, such as a verification page."""
+
+
+class _BlockedError(_StopError):
+    """HIQA would not answer: the run is retried later, not failed."""
 
 
 def download_reports(
@@ -107,8 +114,9 @@ def download_reports(
     records: list[CentreRecord] = []
     downloads: list[Report] = []
     failure = None
+    blocked = False
     for centre in centres:
-        record, new = _download_centre(
+        record, new, centre_blocked = _download_centre(
             centre, fetcher, store, stored, now, sleep, waits
         )
         append_record(manifest, record)
@@ -118,6 +126,7 @@ def download_reports(
         failure = _failure(record)
         if failure is not None:
             logger.error("%s", failure)
+            blocked = centre_blocked
             break
         logger.info(
             "centre %s: %d reports listed, %d downloaded",
@@ -136,6 +145,7 @@ def download_reports(
         already_stored=with_copy - len(downloads),
         downloaded_bytes=sum(report.size or 0 for report in downloads),
         failure=failure,
+        blocked=blocked,
     )
 
 
@@ -147,8 +157,8 @@ def _download_centre(
     now: Callable[[], datetime],
     sleep: Callable[[float], None],
     waits: Sequence[float],
-) -> tuple[CentreRecord, tuple[Report, ...]]:
-    """Returns the centre's record and the reports downloaded for it."""
+) -> tuple[CentreRecord, tuple[Report, ...], bool]:
+    """Returns the record, the new reports, and whether HIQA blocked."""
     record = CentreRecord(
         centre_id=centre.centre_id,
         url=centre.url,
@@ -160,14 +170,19 @@ def _download_centre(
     try:
         body, page = _fetch(fetcher, centre.url, _read_page, sleep, waits)
     except _StopError as error:
-        return dataclasses.replace(record, error=str(error)), ()
+        return (
+            dataclasses.replace(record, error=str(error)),
+            (),
+            isinstance(error, _BlockedError),
+        )
     record = dataclasses.replace(record, page_sha256=store.put(body))
     if page.centre_id != centre.centre_id:
         error = f"the page is for centre {page.centre_id}"
-        return dataclasses.replace(record, error=error), ()
+        return dataclasses.replace(record, error=error), (), False
     known = dict(stored)
     reports: list[Report] = []
     new: list[Report] = []
+    blocked = False
     for listed in page.reports:
         copy = known.get(listed.file_name)
         if reports and reports[-1].error is not None:
@@ -180,12 +195,19 @@ def _download_centre(
                 fetched_at=copy.fetched_at,
             )
         else:
-            report = _download_report(listed, fetcher, store, now, sleep, waits)
+            report, report_blocked = _download_report(
+                listed, fetcher, store, now, sleep, waits
+            )
+            blocked = blocked or report_blocked
             if report.error is None:
                 new.append(report)
                 known[report.file_name] = report
         reports.append(report)
-    return dataclasses.replace(record, reports=tuple(reports)), tuple(new)
+    return (
+        dataclasses.replace(record, reports=tuple(reports)),
+        tuple(new),
+        blocked,
+    )
 
 
 def _download_report(
@@ -195,16 +217,22 @@ def _download_report(
     now: Callable[[], datetime],
     sleep: Callable[[float], None],
     waits: Sequence[float],
-) -> Report:
+) -> tuple[Report, bool]:
     try:
         body = _fetch(fetcher, listed.url, _read_pdf, sleep, waits)
     except _StopError as error:
-        return dataclasses.replace(listed, error=str(error))
-    return dataclasses.replace(
-        listed,
-        sha256=store.put(body),
-        size=len(body),
-        fetched_at=_timestamp(now),
+        return (
+            dataclasses.replace(listed, error=str(error)),
+            isinstance(error, _BlockedError),
+        )
+    return (
+        dataclasses.replace(
+            listed,
+            sha256=store.put(body),
+            size=len(body),
+            fetched_at=_timestamp(now),
+        ),
+        False,
     )
 
 
@@ -252,7 +280,9 @@ def _fetch[T](
             wait,
         )
         sleep(wait)
-    raise _StopError(problem)
+    # The waits are used up: HIQA is not answering, so the next run tries
+    # again rather than the task reporting the pipeline as broken.
+    raise _BlockedError(problem)
 
 
 def _ok_response(fetcher: Fetcher, url: str) -> FetchResult:
@@ -263,7 +293,7 @@ def _ok_response(fetcher: Fetcher, url: str) -> FetchResult:
     if result.status == 200:
         return result
     if any(word in result.body.lower() for word in _VERIFICATION_WORDS):
-        raise _StopError(f"browser verification page (HTTP {result.status})")
+        raise _BlockedError(f"browser verification page (HTTP {result.status})")
     if result.status == 429 or result.status >= 500:
         raise _TemporaryError(f"HTTP {result.status}")
     if 300 <= result.status < 400:

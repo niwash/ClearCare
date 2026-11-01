@@ -236,7 +236,9 @@ resource "aws_ecs_task_definition" "migrate" {
       dependsOn   = [local.rds_ca_dependency]
       mountPoints = [local.rds_ca_mount]
       # The image runs flyway migrate unless the command names another
-      # Flyway command, such as info or validate.
+      # Flyway command, such as info or validate. Before it migrates it takes
+      # the run lock a pipeline task holds (ADR-0021), on a psql session it
+      # opens from these same variables, so its settings do not change.
       environment = [
         { name = "FLYWAY_URL", value = local.jdbc_url },
         { name = "FLYWAY_USER", value = local.database_logins.migrator },
