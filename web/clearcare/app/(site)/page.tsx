@@ -49,9 +49,9 @@ export default async function StartPage() {
           the page's gap). The adult-centred design turns the tints to its band colour. */}
       <section
         aria-labelledby="about-h"
-        className={`${fullWidthClass} -mt-6 bg-tint-blue px-4 py-10 md:-mt-8 md:px-8 md:py-14`}
+        className={`${fullWidthClass} -mt-6 bg-tint-blue py-10 md:-mt-8 md:py-14`}
       >
-        <div className="page-column flex flex-col gap-6">
+        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
           <div className="flex max-w-3xl flex-col gap-2">
             <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
               About ClearCare
