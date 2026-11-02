@@ -54,7 +54,6 @@ class CentreAmenitiesTest {
           "db/V1__register_entries.sql",
           "db/V2__inspection_reports.sql",
           "db/V3__inspection_report_views.sql",
-          "db/V5__inspection_report_text.sql",
           "db/V11__report_amenities.sql");
 
   // A register snapshot, so that the centres exist (db/V1), and two reports of Elm Hall
@@ -104,16 +103,18 @@ class CentreAmenitiesTest {
       INSERT INTO clearcare.report_amenities (
           report_id, care_types, room_types, has_outdoor_space, activities, has_transport,
           has_chapel_or_religious_services, special_units, dining_notes, other_notes,
-          extractor_version, model)
+          extractor_version, model, extracted_at)
       VALUES
           (1, '{long-term residential}', '{single room}', NULL, '{}', NULL, NULL, '{}', '',
-           'From the older report.', 'amenities-v0', 'gpt-4o-mini'),
-          (2, '{long-term residential}', '{single room}', TRUE, '{}', NULL, NULL, '{}', '',
-           'First reading of the newer report.', 'amenities-v0', 'gpt-4o-mini'),
+           'From the older report.', 'amenities-v0', 'gpt-4o-mini', '2026-10-29 12:00:00+00'),
           (2, '{long-term residential,"dementia care"}', '{single room,en-suite}', TRUE,
            '{physiotherapy,"music therapy"}', NULL, TRUE, '{"memory care unit"}',
            'Meals are served in the dining room.', 'Views over the garden.', 'amenities-v1',
-           'gpt-4o-mini');
+           'gpt-4o-mini', '2026-10-28 12:00:00+00'),
+          -- Load the older extraction last: extraction time must win over insertion order.
+          (2, '{long-term residential}', '{single room}', TRUE, '{}', NULL, NULL, '{}', '',
+           'First reading of the newer report.', 'amenities-v0', 'gpt-4o-mini',
+           '2026-10-27 12:00:00+00');
       """;
 
   // roles.sql runs from the image's init scripts, as it does for a new local database.

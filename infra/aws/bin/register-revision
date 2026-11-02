@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Registers a new revision of a ClearCare task definition that differs from
+# the newest one only in its image, and prints the new revision's ARN.
+# Terraform owns every other setting (infra/aws/live/ecs.tf).
+#
+# Usage: register-revision FAMILY IMAGE
+#
+#   FAMILY  web, api, pipeline or migrate; the container has the same name
+#   IMAGE   <repository>@sha256:<digest>
+
+set -euo pipefail
+
+[[ $# -eq 2 ]] || { echo "Usage: register-revision FAMILY IMAGE" >&2; exit 2; }
+family=$1 image=$2
+case $family in
+  web | api | pipeline | migrate) ;;
+  *) echo "register-revision: FAMILY must be web, api, pipeline or migrate, got '$family'" >&2; exit 2 ;;
+esac
+[[ $image == *@sha256:* ]] || { echo "register-revision: IMAGE must name a digest, got '$image'" >&2; exit 2; }
+
+# describe-task-definition returns fields that register-task-definition does
+# not accept, so only the ones it accepts are passed on.
+definition=$(aws ecs describe-task-definition --task-definition "clearcare-$family" \
+  --include TAGS --output json |
+  jq --arg name "$family" --arg image "$image" '
+    .tags as $tags
+    | .taskDefinition
+    | if any(.containerDefinitions[]; .name == $name) then . else error("no container named \($name)") end
+    | (.containerDefinitions[] | select(.name == $name) | .image) = $image
+    | {family, taskRoleArn, executionRoleArn, networkMode, containerDefinitions, volumes,
+       placementConstraints, requiresCompatibilities, cpu, memory, runtimePlatform,
+       ephemeralStorage, tags: $tags}
+    | with_entries(select(.value != null and .value != []))')
+
+aws ecs register-task-definition --cli-input-json "$definition" \
+  --query taskDefinition.taskDefinitionArn --output text

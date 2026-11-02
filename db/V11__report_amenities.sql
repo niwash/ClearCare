@@ -58,6 +58,7 @@ ORDER BY
     report.inspection_date DESC NULLS LAST,
     -- Ties on date go to the lower report id, as in the API's report list.
     report.id,
+    amenities.extracted_at DESC,
     amenities.id DESC;
 
 -- The API reads this view and nothing behind it, as with the views in db/V3.

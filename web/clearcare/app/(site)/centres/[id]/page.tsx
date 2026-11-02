@@ -1,5 +1,7 @@
 // app/centres/[id]/page.tsx
 import { CentreHighlights } from "@/components/centre/centre-highlights";
+import { CompareButton } from "@/components/compare/compare-button";
+import { ShortlistBox } from "@/components/compare/shortlist-box";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { GuidesBand } from "@/components/guides/guide-ending";
@@ -7,6 +9,7 @@ import { Alert } from "@/components/layout/alert";
 import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
@@ -17,15 +20,16 @@ import {
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
+import { SHORTLIST_FULL_ID } from "@/lib/compare";
 import { getGuide } from "@/lib/guides";
-import { formatEircode, searchHref, unavailableMessage } from "@/lib/search";
+import { formatEircode, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface CentrePageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ regulations?: string; inspections?: string; from?: string }>;
+  searchParams: Promise<{ regulations?: string; inspections?: string }>;
 }
 
 export async function generateMetadata({ params }: CentrePageProps) {
@@ -37,7 +41,7 @@ export async function generateMetadata({ params }: CentrePageProps) {
 
 export default async function CentrePage({ params, searchParams }: CentrePageProps) {
   const { id } = await params;
-  const { regulations, inspections, from } = await searchParams;
+  const { regulations, inspections } = await searchParams;
   const lookup = await getCentre(id);
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
@@ -46,7 +50,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHero centre={centre} from={from} />
+      <CentreHero centre={centre} />
 
       <CentreFacts centre={centre} reports={reports} />
 
@@ -55,8 +59,16 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
 
           {reports.visitQuestions.length > 0 && (
-            <section aria-labelledby="visit-h" className="grid gap-3 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:px-7">
-              <h2 id="visit-h" className="font-heading text-xl font-semibold">
+            // On the warm band colour, as the part of the record that turns what HIQA found into what
+            // the family can do next (CCARE-179).
+            <section
+              aria-labelledby="visit-h"
+              className="grid gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line"
+            >
+              <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
+                <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
+                  <Icon name="talk" className="size-4" />
+                </span>
                 Worth asking on a visit
               </h2>
               <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
@@ -73,7 +85,6 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
             trails={reports.trails}
             showAll={regulations === "all"}
             showAllInspections={inspections === "all"}
-            from={from}
           />
 
           {reports.trails.map((trail) => (
@@ -81,7 +92,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           ))}
         </>
       ) : (
-        <section aria-labelledby="reports-h" className="rounded-lg border border-line bg-surface p-6">
+        <section aria-labelledby="reports-h" className="rounded-2xl border border-line bg-surface p-6 adult:rounded-lg">
           <h2 id="reports-h" className="font-heading text-xl font-semibold">
             Inspection reports
           </h2>
@@ -124,31 +135,21 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
-// home's name on a band of brand colour (brand-band, globals.css).
-function CentreHero({ centre, from }: { centre: CentreDetail; from?: string }) {
+// home's name on the soft welcome band (welcome-band, globals.css).
+function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
-    <section aria-labelledby="centre-h" className={`${fullWidthClass} brand-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
+    <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
+      <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
         <div className="flex min-w-0 flex-col gap-2.5">
-          {/* The breadcrumb is where the home sits in the site, the same however the user got here.
-              The way back to the search they came from is a link of its own, only when there is one
-              (not from a shared link or the start page). On phones it has a line of its own, so it
-              isn't read as part of the breadcrumb's "‹ Co. …". */}
-          <div className="flex flex-col items-start sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-x-6">
-            <Breadcrumb
-              trail={[
-                SEARCH_CRUMB,
-                { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
-              ]}
-              current={centre.centre_name}
-            />
-            {from !== undefined && (
-              <Link href={searchHref(from)} className="inline-block py-1 text-sm tap-target">
-                ← Back to your results
-              </Link>
-            )}
-          </div>
-          <h1 id="centre-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-5xl">
+          {/* Where the home sits in the site, the same however the user got here. */}
+          <Breadcrumb
+            trail={[
+              SEARCH_CRUMB,
+              { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
+            ]}
+            current={centre.centre_name}
+          />
+          <h1 id="centre-h" className="font-heading text-[2rem] leading-tight font-semibold tracking-tight text-ink md:text-[2.5rem]">
             {centre.centre_name}
           </h1>
         </div>
@@ -163,39 +164,31 @@ const outlineButtonClass = `${actionButtonClass} border border-line bg-surface t
 
 function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   return (
-    <div className="flex flex-col gap-2.5 lg:min-w-60">
-      {/* TODO: Link to the assistant once that page exists. */}
-      <span
-        aria-disabled="true"
-        title="Coming soon"
-        className={`${actionButtonClass} ${comingSoonClass}`}
-      >
-        Ask about this home (coming soon)
-      </span>
+    <div className="flex flex-col gap-2.5 lg:w-80 lg:shrink-0">
+      {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
+          Taken out until then (CCARE-164). */}
+      {/* Once the list is full, the shortlist below says so once. */}
+      <CompareButton
+        home={{ id: centre.centre_id, name: centre.centre_name }}
+        fullNoteId={SHORTLIST_FULL_ID}
+        className={`${actionButtonClass} w-full`}
+      />
       {reports && (
         <a
           href={`/centres/${centre.centre_id}/record.csv`}
           download
           className={outlineButtonClass}
         >
-          <svg
-            aria-hidden
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="size-4 shrink-0"
-          >
-            <path d="M12 4v11M7 10l5 5 5-5M5 20h14" />
-          </svg>
+          <Icon name="download" className="size-4" />
           Download this record as a spreadsheet
         </a>
       )}
       <a href={centre.hiqa_url} className={outlineButtonClass}>
         View on the HIQA website
       </a>
+      {/* The homes saved so far, so the family can see where this one fits and go on to compare
+          them. As on the search page, phones only show it once a home is saved. */}
+      <ShortlistBox currentId={centre.centre_id} className="mt-2" />
     </div>
   );
 }
@@ -217,21 +210,21 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
         {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
             background in the standard design; the adult-centred design adds a 3:1 edge. */}
-        <dl className="w-full max-w-2xl rounded-lg bg-surface py-2 adult:border adult:border-line">
-          <Fact label="HIQA centre ID">
+        <dl className="w-full max-w-2xl rounded-2xl border border-line-soft bg-surface py-2 shadow-sm adult:rounded-lg adult:border-line adult:shadow-none">
+          <Fact label="HIQA centre ID" icon="id">
             <span className="font-mono">{centre.centre_id}</span>
           </Fact>
-          <Fact label="County">Co. {centre.county}</Fact>
+          <Fact label="County" icon="county">Co. {centre.county}</Fact>
           {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
-          <Fact label="Address">{centre.address}</Fact>
+          <Fact label="Address" icon="address">{centre.address}</Fact>
           {eircode && !addressHasEircode && (
-            <Fact label="Eircode">
+            <Fact label="Eircode" icon="eircode">
               <span className="font-mono">{eircode}</span>
             </Fact>
           )}
           {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
           {phone && (
-            <Fact label="Phone">
+            <Fact label="Phone" icon="phone">
               {phone.tel ? (
                 <a href={`tel:${phone.tel}`} className="tap-target">
                   {phone.text}
@@ -241,16 +234,32 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
               )}
             </Fact>
           )}
-          <Fact label="Registered for">
+          <Fact label="Registered for" icon="beds">
             {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
-            {/* The most residents HIQA allows, not free beds. */}
-            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds</span>
+            {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
+                the question comes up, rather than on the search page (CCARE-179). */}
+            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds.</span>
+            <span className="block text-small text-ink-muted">
+              To ask about a free bed, contact the home
+              {phone?.tel ? (
+                <>
+                  {" "}
+                  on{" "}
+                  <a href={`tel:${phone.tel}`} className="tap-target">
+                    {phone.text}
+                  </a>
+                </>
+              ) : (
+                " directly"
+              )}
+              .
+            </span>
           </Fact>
           {/* From the HSE price list the price came from. No row when there's no list for the home. */}
-          {centre.home_type && <Fact label="Type of home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
+          {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
           {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
           {centre.contract_price !== undefined && (
-            <Fact label="Full weekly cost">
+            <Fact label="Full weekly cost" icon="cost">
               {centre.contract_price !== null ? (
                 <>
                   {formatWeeklyPrice(centre.contract_price)} per week
@@ -277,7 +286,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
             </Fact>
           )}
           {latest && first && (
-            <Fact label="Latest report">
+            <Fact label="Latest report" icon="report">
               Inspected {formatDate(latest.date)}
               <span className="block text-small text-ink-muted">
                 {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
@@ -292,7 +301,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       {/* TODO: Show these with the details once the API has them. */}
       <div className={`flex w-full max-w-2xl flex-col gap-1 px-4 py-3 ${comingSoonClass}`}>
         <h3 className="font-semibold text-ink">Coming soon</h3>
-        <p>The home&apos;s care types, services and amenities, so you can see what it offers.</p>
+        <p>The home&apos;s care types and amenities, so you can see what it offers.</p>
       </div>
     </section>
   );
@@ -303,7 +312,7 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="text-sm text-ink-muted">
-        <Link href="/home" className="inline-block py-1 tap-target">
+        <Link href="/" className="inline-block py-1 tap-target">
           Home
         </Link>
       </div>
@@ -312,10 +321,14 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
   );
 }
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+// One row of the details. The icon helps the eye find a row; the label says the same in words.
+function Fact({ label, icon, children }: { label: string; icon: IconName; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[10rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="font-medium text-ink-muted">{label}</dt>
+    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
+      <dt className="flex items-center gap-2 font-medium text-ink-muted">
+        <Icon name={icon} />
+        {label}
+      </dt>
       <dd>{children}</dd>
     </div>
   );

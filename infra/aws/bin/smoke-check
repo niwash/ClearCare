@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# Checks the site and the API through the load balancer, under their public
+# hostnames, as a reader would reach them. It connects to the load balancer
+# directly, so it checks AWS whatever the DNS records point at. Fails unless
+# the API returns centres and the site's search page lists the first of them.
+#
+# Usage: smoke-check
+#
+# Needs the AWS CLI with credentials for the account, curl and jq.
+
+set -euo pipefail
+
+endpoints=$(aws ssm get-parameter --name /clearcare/public-endpoints \
+  --query Parameter.Value --output text)
+load_balancer=$(jq -r .load_balancer <<<"$endpoints")
+api=$(jq -r .api_hostname <<<"$endpoints")
+site=$(jq -r .site_hostname <<<"$endpoints")
+
+# HOST PATH: the body of https://HOST/PATH, fetched from the load balancer.
+fetch() {
+  curl -fsS --max-time 20 --retry 3 --retry-all-errors --retry-delay 10 \
+    --connect-to "$1:443:$load_balancer:443" "https://$1$2"
+}
+
+fail() {
+  echo "smoke-check: $*" >&2
+  exit 1
+}
+
+centres=$(fetch "$api" "/centres?county=Dublin") || fail "https://$api/centres?county=Dublin did not answer 200"
+id=$(jq -er '.centres[0].centre_id' <<<"$centres") || fail "https://$api/centres?county=Dublin returned no centre"
+echo "smoke-check: the API returns centres, the first is $id"
+
+page=$(fetch "$site" "/search?county=Dublin") || fail "https://$site/search?county=Dublin did not answer 200"
+grep -q "/centres/$id" <<<"$page" || fail "https://$site/search?county=Dublin does not link centre $id"
+echo "smoke-check: the site's search lists centre $id"
+
+# The load balancer answers /actuator itself (alb.tf).
+status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
+  --connect-to "$api:443:$load_balancer:443" "https://$api/actuator/health") || true
+[[ $status == 404 ]] || fail "https://$api/actuator/health answered $status, not 404"
+echo "smoke-check: /actuator is not public"

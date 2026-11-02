@@ -7,6 +7,7 @@ import { StepNumber } from "@/components/guides/step-number";
 import type { Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
+import { ShowHide } from "@/components/ui/chevron";
 
 const guide = getGuide("reading-inspection-reports");
 
@@ -44,18 +45,25 @@ function Prose({ children }: { children: ReactNode }) {
   return <div className="flex max-w-3xl flex-col gap-3 leading-relaxed">{children}</div>;
 }
 
-// One step of the guide, as a card with its number in a circle of brand colour.
+// One step of the guide, closed until opened (CCARE-164: less scrolling), with its number in a
+// circle of brand colour. The same <details> pattern as the Fair Deal guide's worked examples: no
+// script, "Show" or "Hide" as well as the arrow so it is clear it opens, and find-in-page still
+// opens it.
 function Step({ number, title, children }: { number: number; title: string; children: ReactNode }) {
   return (
-    <li className="flex gap-4 rounded-lg border border-line bg-surface p-5 md:gap-6 md:p-8">
-      <StepNumber number={number} />
-      <div className="flex min-w-0 flex-col gap-3">
-        <h2 className="font-heading text-xl font-semibold md:text-2xl">
-          <span className="sr-only">Step {number}: </span>
-          {title}
-        </h2>
-        {children}
-      </div>
+    <li>
+      <details className="group rounded-lg border border-line bg-surface open:border-primary">
+        <summary className="flex cursor-pointer list-none items-center gap-4 p-4 md:p-5 [&::-webkit-details-marker]:hidden">
+          <StepNumber number={number} />
+          <h2 className="flex-1 font-heading text-lg font-semibold md:text-xl">
+            <span className="sr-only">Step {number}: </span>
+            {title}
+          </h2>
+          <ShowHide />
+        </summary>
+        {/* Lined up with the title, past the number. */}
+        <div className="px-4 pb-4 sm:pl-[4.5rem] md:px-5 md:pb-5 md:pl-[5.25rem]">{children}</div>
+      </details>
     </li>
   );
 }
@@ -65,7 +73,7 @@ export default function ReadingInspectionReportsGuide() {
     <>
       <GuideHero guide={guide} />
 
-      <ol className="flex max-w-4xl flex-col gap-4 md:gap-6">
+      <ol className="flex max-w-4xl flex-col gap-3">
         <Step number={1} title="Start with the basic information">
           <Prose>
             <p>
@@ -154,10 +162,10 @@ export default function ReadingInspectionReportsGuide() {
       {/* A tinted band the full width of the window, like the home page's welcome. */}
       <section
         aria-labelledby="checklist-h"
-        className={`${fullWidthClass} bg-band py-10 md:py-16`}
+        className={`${fullWidthClass} bg-band py-8 md:py-12`}
       >
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
-          <h2 id="checklist-h" className="font-heading text-2xl font-semibold tracking-tight md:text-4xl">
+          <h2 id="checklist-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Quick checklist
           </h2>
           <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
@@ -183,7 +191,7 @@ export default function ReadingInspectionReportsGuide() {
       </section>
 
       {/* The one thing to remember, set apart in the brand colour. */}
-      <section aria-labelledby="takeaway-h" className="brand-band flex max-w-4xl flex-col gap-3 rounded-lg p-6 md:p-8">
+      <section aria-labelledby="takeaway-h" className="brand-band flex max-w-4xl flex-col gap-3 rounded-lg p-5 md:p-6">
         <h2 id="takeaway-h" className="font-heading text-2xl font-semibold text-ink md:text-3xl">
           Final takeaway
         </h2>

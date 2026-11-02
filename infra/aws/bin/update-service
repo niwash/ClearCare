@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Moves a ClearCare service to a task-definition revision and waits until it
+# runs there, then records its image for Terraform (infra/aws/live/ecs.tf).
+# Fails if the deployment circuit breaker rolled it back.
+#
+# Usage: update-service SERVICE TASK_DEFINITION
+#
+#   SERVICE          web or api
+#   TASK_DEFINITION  a revision ARN, or clearcare-<SERVICE>:<revision>
+
+set -euo pipefail
+
+[[ $# -eq 2 ]] || { echo "Usage: update-service SERVICE TASK_DEFINITION" >&2; exit 2; }
+service=$1 task_definition=$2
+case $service in
+  web | api) ;;
+  *) echo "update-service: SERVICE must be web or api, got '$service'" >&2; exit 2 ;;
+esac
+
+read -r arn image < <(aws ecs describe-task-definition --task-definition "$task_definition" \
+  --query "taskDefinition.[taskDefinitionArn, containerDefinitions[?name=='$service'].image | [0]]" \
+  --output text)
+[[ -n ${arn:-} && -n ${image:-} ]] || { echo "update-service: no task definition $task_definition with a $service container" >&2; exit 1; }
+aws ecs update-service --cluster clearcare --service "$service" \
+  --task-definition "$arn" >/dev/null
+echo "$service: deploying $arn"
+
+# services-stable also succeeds after a rollback, so the revision is checked.
+aws ecs wait services-stable --cluster clearcare --services "$service"
+running=$(aws ecs describe-services --cluster clearcare --services "$service" \
+  --query 'services[0].taskDefinition' --output text)
+if [[ $running != "$arn" ]]; then
+  echo "update-service: $service runs $running, not $arn; the deployment was rolled back" >&2
+  exit 1
+fi
+aws ssm put-parameter --name "/clearcare/image/$service" --value "$image" \
+  --type String --overwrite >/dev/null
+echo "$service: running $arn"

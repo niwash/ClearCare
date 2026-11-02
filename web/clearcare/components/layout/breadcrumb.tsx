@@ -12,7 +12,7 @@ export const SEARCH_CRUMB: Crumb = { label: "Search for Homes", href: "/search" 
 export const RESOURCES_CRUMB: Crumb = { label: "Resources", href: "/resources" };
 
 export function Breadcrumb({ trail, current }: { trail: Crumb[]; current: string }) {
-  const crumbs = [{ label: "Home", href: "/home" }, ...trail];
+  const crumbs = [{ label: "Home", href: "/" }, ...trail];
 
   return (
     <>

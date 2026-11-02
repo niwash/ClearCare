@@ -1,4 +1,5 @@
 import functools
+import json
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -6,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from clearcare_pipeline.schedule.__main__ import STAGES, Stage, main
+from tests.object_store_fakes import FakeObjectStore
 
 START = datetime(2026, 10, 14, 6, 0, tzinfo=UTC)
 BUCKET = {
@@ -35,6 +37,8 @@ REPORTS_JOB = [
     "split_commitments",
 ]
 EVERY_STAGE_OF_EVERY_JOB = [*STARTUP, *REGISTER_JOB, *PRICES_JOB, *REPORTS_JOB]
+CHECKPOINT = "state/pipeline.json"
+FIRST_CHECKPOINT = b'{"version": 1, "schedule": {}, "manifests": {}}'
 
 
 class Stopped(BaseException):
@@ -70,12 +74,15 @@ def _start(
     at: datetime,
     crawl: str = "all",
     bucket: Mapping[str, str] = BUCKET,
+    store: FakeObjectStore | None = None,
 ) -> int:
+    argv = ["--data-dir", str(data_dir), "--once"]
     return main(
-        ["--data-dir", str(data_dir), "--once"],
+        argv if store is None else [*argv, "--bucket-state"],
         env={"CLEARCARE_CRAWL": crawl, **bucket},
         stages=stages.mains(),
         now=lambda: at,
+        store=store,
     )
 
 
@@ -174,3 +181,68 @@ def test_crawl_off_only_uploads_and_loads_what_is_there(tmp_path: Path) -> None:
     _start(tmp_path, stages, START, crawl="off")
 
     assert stages.names() == STARTUP
+
+
+def test_with_bucket_state_a_new_task_skips_downloads_that_are_not_due(
+    tmp_path: Path,
+) -> None:
+    store = FakeObjectStore({CHECKPOINT: FIRST_CHECKPOINT})
+    _start(tmp_path / "first-task", FakeStages(), START, store=store)
+
+    stages = FakeStages()
+    code = _start(
+        tmp_path / "second-task",
+        stages,
+        START + timedelta(hours=1),
+        store=store,
+    )
+
+    assert code == 0
+    assert stages.names() == STARTUP
+
+
+@pytest.mark.parametrize(
+    "objects",
+    [
+        {},
+        {CHECKPOINT: b"not json"},
+        {CHECKPOINT: b'{"version": 2, "schedule": {}, "manifests": {}}'},
+        {CHECKPOINT: b'{"version": 1, "schedule": [], "manifests": {}}'},
+    ],
+    ids=["missing", "not json", "unknown version", "bad schedule state"],
+)
+def test_without_a_usable_checkpoint_no_stage_runs(
+    tmp_path: Path, objects: dict[str, bytes]
+) -> None:
+    stages = FakeStages()
+
+    code = _start(tmp_path, stages, START, store=FakeObjectStore(objects))
+
+    assert code == 1
+    assert stages.calls == []
+
+
+def test_if_the_checkpoint_cannot_be_written_hiqa_is_not_contacted(
+    tmp_path: Path,
+) -> None:
+    store = FakeObjectStore(
+        {CHECKPOINT: FIRST_CHECKPOINT}, failing_keys=frozenset({CHECKPOINT})
+    )
+    stages = FakeStages()
+
+    code = _start(tmp_path, stages, START, store=store)
+
+    assert code == 1
+    assert stages.names() == STARTUP
+
+
+def test_a_failed_upload_leaves_the_checkpoint_at_the_downloads_start(
+    tmp_path: Path,
+) -> None:
+    store = FakeObjectStore({CHECKPOINT: FIRST_CHECKPOINT})
+
+    code = _start(tmp_path, FakeStages({"upload": 1}), START, store=store)
+
+    checkpoint = json.loads(store.objects[CHECKPOINT])
+    assert code == 1
+    assert checkpoint["schedule"]["register"]["last_outcome"] == "started"

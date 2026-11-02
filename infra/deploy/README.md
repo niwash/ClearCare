@@ -32,7 +32,7 @@ The first deploy with this file moves the pipeline off the systemd timer it ran 
 
 The pipeline image changes with every commit, so a deploy recreates the pipeline container and stops a job that is running. Before each download the pipeline records the job's next attempt, a day after the attempt began, so a stopped download is not tried again before then. When the pipeline starts again, it uploads and loads what was stored. A restart during the first ingest of the stored reports is safe as well: the batches already written stay, and the next start skips the files they came from.
 
-The workflow logs in with a key that can run nothing but the script. To set it up:
+The VM deploy workflow (`.github/workflows/vm-deploy.yml`) logs in with a key that can run nothing but the script. To set it up:
 
 ```sh
 ssh-keygen -t ed25519 -N '' -C clearcare-deploy -f deploy_key

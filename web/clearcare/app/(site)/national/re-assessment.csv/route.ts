@@ -16,16 +16,17 @@ export async function GET() {
   const { matrix, re_check_rate, data_date } = lookup.statistics;
 
   const header = [
+    // In the page's words (app/(site)/national/page.tsx).
     "Judgment",
-    "Next report: Compliant",
-    "Next report: Substantially compliant",
-    "Next report: Not compliant",
-    "Not re-assessed",
-    "No later report",
-    "Total",
-    "With a later report",
-    "Re-assessed",
-    "Re-check rate",
+    "Next inspection: Compliant",
+    "Next inspection: Substantially compliant",
+    "Next inspection: Not compliant",
+    "Not checked again",
+    "No later report yet",
+    "Results judged",
+    "With a later inspection",
+    "Checked again",
+    "Share checked again",
   ];
   // The API returns both lists in the same order of starting judgments.
   const rows = matrix.map((row, index) => {

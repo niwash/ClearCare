@@ -1,6 +1,7 @@
 // lib/search.ts
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
+import { connection } from "next/server";
 
 export interface CentreSummary {
   centre_id: string;
@@ -57,24 +58,14 @@ export function apiUrl() {
 }
 
 export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
+  // Read the API on each request. Otherwise a build without API_URL prerenders the pages that
+  // search, such as /, as "API_URL isn't set" until the next build.
+  await connection();
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
   return fetchCentres(url, query);
 }
 
-// A centre page opened from the results gets the search as ?from=, so its "Back to your results"
-// link can go back to it. Only the search's own parameters are kept, so ?from= can't point that
-// link anywhere else.
-export function searchHref(from: string) {
-  const given = new URLSearchParams(from);
-  const params = new URLSearchParams();
-  for (const key of ["name", "address", "county", "eircode", "page"]) {
-    const value = given.get(key)?.trim();
-    if (value) params.set(key, value);
-  }
-  const search = params.toString();
-  return search ? `/search?${search}` : "/search";
-}
 
 // What to tell the user when the data can't be read: the same words on every page.
 export function unavailableMessage(status: number) {

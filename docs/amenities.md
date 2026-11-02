@@ -1,6 +1,6 @@
 # Amenities
 
-What each nursing home offers its residents, read from its HIQA inspection reports and served at `GET /centres/{centre_id}/amenities`. Design reasons are in [ADR-0019](adr/0019-amenities-read-from-reports.md). Findings and the accuracy plan are in `Research/Data Extraction/README.md`.
+What each nursing home offers its residents, read from its HIQA inspection reports and served at `GET /centres/{centre_id}/amenities`. Design reasons are in [ADR-0021](adr/0021-amenities-read-from-reports.md). Findings and the accuracy plan are in `Research/Data Extraction/README.md`.
 
 ## What the fields mean
 
@@ -10,7 +10,7 @@ The values are what a model (gpt-4o-mini) read from the whole report text, store
 - `has_outdoor_space`, `has_transport`, `has_chapel_or_religious_services`: true or false when the report says so, null when it is silent. Null does not mean the home has none. Transport counts only when the centre itself provides it for residents; public transport nearby does not.
 - `dining_notes`, `other_notes`: free text, empty when the report says nothing.
 
-Nothing on the VM fills the table yet. The extractor is not in the pipeline image and needs an OpenAI key, so the endpoint answers `"amenities": null` for every centre until the steps below are run by hand.
+Nothing in production fills the table yet. The extractor is not in the pipeline image and needs an OpenAI key, so the endpoint answers `"amenities": null` for every centre until the steps below are run by hand.
 
 ## How to run it
 

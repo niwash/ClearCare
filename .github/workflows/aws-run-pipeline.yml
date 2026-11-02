@@ -1,0 +1,33 @@
+name: AWS run pipeline
+
+# Runs the pipeline task's own command once, as the schedule does, and waits.
+# A single stage cannot be chosen, as it would skip the restore from the bucket.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+# In the same group as deploys and migrations, so the pipeline never writes
+# while a migration runs. GitHub keeps at most one run waiting in the group;
+# a newer one replaces it.
+concurrency:
+  group: aws-production
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: vars.AWS_ACCOUNT_ID != ''
+    runs-on: ubuntu-latest
+    # A national report crawl takes a few hours.
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/clearcare-github-deploy
+          aws-region: eu-north-1
+          role-duration-seconds: 21600
+      # exec, so that a cancelled run signals the script, which stops the task.
+      - run: exec infra/aws/bin/run-task --timeout 300 pipeline

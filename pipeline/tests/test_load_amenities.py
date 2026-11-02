@@ -86,6 +86,16 @@ def test_main_reports_an_unreadable_file(tmp_path: Path) -> None:
     assert main(["--input", str(tmp_path / "missing.json")]) == 1
 
 
+def test_main_names_a_file_that_is_not_utf8(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    path = tmp_path / "invalid.json"
+    path.write_bytes(b"\xff")
+
+    assert main(["--input", str(path)]) == 1
+    assert str(path) in caplog.text
+
+
 @pytest.mark.database
 def test_amenities_load_once_per_report_and_version() -> None:
     first = AmenitiesRecord.model_validate(RECORD)

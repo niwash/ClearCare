@@ -92,7 +92,6 @@ type InspectionHistoryProps = {
   trails: PromiseTrail[];
   showAll: boolean;
   showAllInspections: boolean;
-  from?: string; // the search the page was opened from, kept so "Back to your results" still works
 };
 
 // Column widths. With every inspection shown, each inspection column is wide enough for full
@@ -108,16 +107,15 @@ const stickyClass = "sticky left-0 z-10 after:absolute after:inset-y-0 after:rig
 const toggleClass =
   "flex min-h-11 items-center justify-center rounded-md border-2 border-primary bg-surface px-4 py-2 font-semibold no-underline hover:bg-surface-muted";
 
-// Keeps the other toggle and the search to go back to when one toggle changes.
-function historyHref({ from, regulations, inspections }: { from?: string; regulations: boolean; inspections: boolean }) {
+// Keeps the other toggle when one toggle changes.
+function historyHref({ regulations, inspections }: { regulations: boolean; inspections: boolean }) {
   const params = new URLSearchParams();
-  if (from !== undefined) params.set("from", from);
   if (regulations) params.set("regulations", "all");
   if (inspections) params.set("inspections", "all");
   return `?${params}#history`;
 }
 
-export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections, from }: InspectionHistoryProps) {
+export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
   // Cells are still built from every inspection, so "worse" and "better" compare with the right one.
   const shown = showAllInspections ? inspections : inspections.slice(-LATEST_INSPECTIONS);
@@ -146,9 +144,16 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
       {/* Inside this section so it shares the key above and follows the same inspections toggle. */}
       <JudgementsPerInspection inspections={inspections} shown={shown} history={history} />
 
+      {/* Its own heading, so the table (or the cards on narrow screens) isn't read as part of the
+          chart above. */}
+      <div className="border-t border-line-soft px-4 pb-1 pt-5 md:px-7">
+        <h3 className="font-semibold">Judgments for each regulation</h3>
+        <p className="mt-1 text-sm text-ink-muted">What HIQA found for each regulation at each inspection.</p>
+      </div>
+
       {/* Phones and tablets, where the table's columns don't fit: one card per regulation,
           listing each inspection's result. */}
-      <div className="border-t border-line-soft lg:hidden">
+      <div className="lg:hidden">
         {shown
           .filter((inspection) => !inspection.regulationJudgements)
           .map((inspection) => (
@@ -276,7 +281,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             {inspections.length > LATEST_INSPECTIONS && (
               <Link
-                href={historyHref({ from, regulations: showAll, inspections: !showAllInspections })}
+                href={historyHref({ regulations: showAll, inspections: !showAllInspections })}
                 scroll={false}
                 className={toggleClass}
               >
@@ -285,7 +290,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
             )}
             {history.length > SHORT_LIST && (
               <Link
-                href={historyHref({ from, regulations: !showAll, inspections: showAllInspections })}
+                href={historyHref({ regulations: !showAll, inspections: showAllInspections })}
                 scroll={false}
                 className={toggleClass}
               >

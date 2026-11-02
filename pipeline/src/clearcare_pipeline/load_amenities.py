@@ -114,12 +114,12 @@ def read_records(path: Path) -> list[AmenitiesRecord]:
 
 def _read_file(path: Path, *, single: bool) -> list[AmenitiesRecord]:
     """Reads one file: a single record if single, otherwise a list of them."""
-    text = path.read_text(encoding="utf-8")
     try:
+        text = path.read_text(encoding="utf-8")
         if single:
             return [AmenitiesRecord.model_validate_json(text)]
         return _RECORDS.validate_json(text)
-    except ValidationError as error:
+    except (UnicodeDecodeError, ValidationError) as error:
         raise ValueError(f"{path}: {error}") from error
 
 

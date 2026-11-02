@@ -1,0 +1,5 @@
+# Local installs and build output. The image installs and builds its own.
+node_modules/
+.next/
+.env*
+.vercel/

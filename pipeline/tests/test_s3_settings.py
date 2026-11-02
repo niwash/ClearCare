@@ -1,3 +1,4 @@
+import boto3
 import pytest
 
 from clearcare_pipeline.s3_settings import (
@@ -13,6 +14,11 @@ VALID_ENV = {
     "CLEARCARE_S3_BUCKET": "clearcare-raw",
     "CLEARCARE_S3_ACCESS_KEY_ID": "key-id-value",
     "CLEARCARE_S3_SECRET_ACCESS_KEY": "secret-value",
+}
+TASK_ROLE_ENV = {
+    "CLEARCARE_S3_AUTH": "default",
+    "CLEARCARE_S3_REGION": "eu-north-1",
+    "CLEARCARE_S3_BUCKET": "clearcare-raw-123456789012",
 }
 
 
@@ -66,3 +72,35 @@ def test_client_uses_the_endpoint_with_path_style_addressing() -> None:
     options = vars(client.meta.config)
     assert options["s3"] == {"addressing_style": "path"}
     assert options["request_checksum_calculation"] == "when_required"
+
+
+def test_default_auth_leaves_the_credentials_to_boto3(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[tuple[object, ...], dict[str, object]]] = []
+
+    def client(*args: object, **kwargs: object) -> None:
+        calls.append((args, kwargs))
+
+    monkeypatch.setattr(boto3, "client", client)
+
+    settings = S3Settings.from_env(TASK_ROLE_ENV)
+    make_s3_client(settings)
+
+    assert settings.bucket == "clearcare-raw-123456789012"
+    assert calls == [(("s3",), {"region_name": "eu-north-1"})]
+
+
+def test_default_auth_rejects_an_endpoint_and_keys() -> None:
+    with pytest.raises(SettingsError) as raised:
+        S3Settings.from_env({**VALID_ENV, "CLEARCARE_S3_AUTH": "default"})
+
+    message = str(raised.value)
+    assert "CLEARCARE_S3_ENDPOINT" in message
+    assert "CLEARCARE_S3_ACCESS_KEY_ID" in message
+    assert "CLEARCARE_S3_SECRET_ACCESS_KEY" in message
+
+
+def test_an_unknown_auth_mode_is_rejected() -> None:
+    with pytest.raises(SettingsError, match="CLEARCARE_S3_AUTH"):
+        S3Settings.from_env({**VALID_ENV, "CLEARCARE_S3_AUTH": "static"})
