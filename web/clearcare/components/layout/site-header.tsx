@@ -22,6 +22,8 @@ export const NAV_ITEMS: NavEntry[] = [
   { label: "Resources", href: "/resources" },
   // Last: the figures across every home are background, not a step in choosing one (CCARE-179).
   { label: "National Figures", href: "/national" },
+  // For the user evaluation (CCARE-147); the home page links to it too.
+  { label: "Survey", href: "/survey" },
 ];
 
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
