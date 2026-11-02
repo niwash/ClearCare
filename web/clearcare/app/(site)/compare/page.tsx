@@ -117,7 +117,7 @@ const DECIDING_GUIDES = [getGuide("how-a-family-chooses"), getGuide("choosing-a-
 function CompareHero() {
   return (
     <section aria-labelledby="compare-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Compare Homes" />
         {/* tabIndex -1: focus comes here when a Remove button, or Clear the list, goes. */}
         <h1 id="compare-h" tabIndex={-1} className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">

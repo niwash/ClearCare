@@ -45,7 +45,7 @@ export function SiteFigures({
   return (
     <section aria-labelledby="figures-h" className={`${fullWidthClass} bg-band py-8 md:py-10`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
+      <div className="page-column flex flex-col gap-6 px-4 md:px-8">
         <h2 id="figures-h" className="reveal text-center font-heading text-2xl font-semibold tracking-tight md:text-3xl adult:text-left">
           What ClearCare currently has
         </h2>

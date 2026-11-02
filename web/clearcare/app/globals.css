@@ -426,6 +426,25 @@
   }
 }
 
+/* The page's column: 72rem, and 80rem on screens 1536px and wider in the standard design, so wide
+   monitors aren't 40% empty. The adult-centred design stays at 72rem (1296px at its 18px root), so
+   its header and nav stay in the same place and its lines don't grow longer. Sections that line up
+   with the column use the same width, as calc((100vw - var(--page-max)) / 2 + 2rem). */
+:root {
+  --page-max: 72rem;
+}
+
+@media (min-width: 96rem) {
+  :root:not([data-design="adult-centred"]) {
+    --page-max: 80rem;
+  }
+}
+
+@utility page-column {
+  margin-inline: auto;
+  max-width: var(--page-max);
+}
+
 /* Small print: 13px in the standard design, and text-xs (about 16px) in the adult-centred one. */
 @utility text-small {
   font-size: 0.8125rem;

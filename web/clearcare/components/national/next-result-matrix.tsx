@@ -17,14 +17,24 @@ const COLUMNS: { key: keyof Omit<NextResultCounts, "judgment" | "total">; label:
 
 // One hue, from the surface to --shade-max of the primary colour. Any more and ink text on the
 // cell falls below 4.5:1 contrast in the dark theme, or below 7:1 in the adult-centred design.
-function shade(share: number) {
-  return `color-mix(in oklab, var(--primary) calc(var(--shade-max) * ${share.toFixed(2)}), var(--surface))`;
+// The largest share in the table takes the full --shade-max and the rest follow in proportion
+// (CCARE-184): no share comes near 100%, so shading by the share alone left every cell faint.
+// The primary colour is dark in the light theme and light in the dark one, so the words on the
+// page say "stronger", not "darker".
+function shade(share: number, largest: number) {
+  const strength = largest > 0 ? share / largest : 0;
+  return `color-mix(in oklab, var(--primary) calc(var(--shade-max) * ${strength.toFixed(2)}), var(--surface))`;
+}
+
+function rowShare(row: NextResultCounts, key: (typeof COLUMNS)[number]["key"]) {
+  return row.total > 0 ? row[key] / row.total : 0;
 }
 
 export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
+  const largest = Math.max(0, ...matrix.flatMap((row) => COLUMNS.map((column) => rowShare(row, column.key))));
   return (
     <div className="[--shade-max:50%] adult:[--shade-max:30%]">
-      <ResultCards matrix={matrix} />
+      <ResultCards matrix={matrix} largest={largest} />
       {/* Equal columns where they are wide enough for "Substantially"; below that, each column is as
           wide as its longest word, so the headings don't run into each other. */}
       <table className="hidden w-full border-collapse text-left text-sm md:table lg:table-fixed">
@@ -64,10 +74,10 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
                 </span>
               </th>
               {COLUMNS.map((column) => {
-                const share = row.total > 0 ? row[column.key] / row.total : 0;
+                const share = rowShare(row, column.key);
                 return (
                   // The surface-coloured border keeps a gap between neighbouring shaded cells.
-                  <td key={column.key} className="border-2 border-surface px-2 py-3" style={{ backgroundColor: shade(share) }}>
+                  <td key={column.key} className="border-2 border-surface px-2 py-3" style={{ backgroundColor: shade(share, largest) }}>
                     <span className="block font-medium">{row.total > 0 ? formatPercent(share) : "–"}</span>
                     <span className="block text-xs tabular-nums">{formatCount(row[column.key])}</span>
                   </td>
@@ -85,7 +95,7 @@ export function NextResultMatrix({ matrix }: { matrix: NextResultCounts[] }) {
 // The phone layout: one closed section per starting judgment, opening to its results one under
 // another, so the three fit on a screen until one is opened. The same <details> pattern as the
 // contacts page: no script, and find-in-page still opens it.
-function ResultCards({ matrix }: { matrix: NextResultCounts[] }) {
+function ResultCards({ matrix, largest }: { matrix: NextResultCounts[]; largest: number }) {
   return (
     <ul className="flex flex-col gap-3 md:hidden">
       {matrix.map((row) => (
@@ -116,13 +126,13 @@ function ResultCards({ matrix }: { matrix: NextResultCounts[] }) {
             </summary>
             <ul className="overflow-hidden rounded-b-md">
               {COLUMNS.map((column) => {
-                const share = row.total > 0 ? row[column.key] / row.total : 0;
+                const share = rowShare(row, column.key);
                 return (
                   // The surface-coloured border keeps a gap between neighbouring shaded results.
                   <li
                     key={column.key}
                     className="flex items-center justify-between gap-3 border-t-2 border-surface px-3 py-2.5 text-sm"
-                    style={{ backgroundColor: shade(share) }}
+                    style={{ backgroundColor: shade(share, largest) }}
                   >
                     <span className="flex items-center gap-2">
                       {column.judgement ? (

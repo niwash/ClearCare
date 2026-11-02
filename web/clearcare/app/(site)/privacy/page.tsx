@@ -15,7 +15,8 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 // The outcome pilot's raw/ answers.
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
-const LAST_UPDATED = "29 October 2026";
+const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
+const LAST_UPDATED = "2 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -44,8 +45,8 @@ export default function PrivacyPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>
               Some choices you make are saved in your own browser: the colour theme, the easier-to-read design,
-              whether you&apos;ve seen the welcome tour, and the homes on your Compare Homes shortlist. Clearing your
-              browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
+              whether you&apos;ve closed the welcome tour&apos;s box on this visit, and the homes on your Compare Homes
+              shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
               the page address, like any other page you visit, so they appear in the technical logs below.
             </li>
             <li>
@@ -53,6 +54,23 @@ export default function PrivacyPage() {
               secure is our legitimate interest in keeping them, and they&apos;re deleted after 14 days.
             </li>
           </ul>
+        </PrivacySection>
+
+        {/* The usability survey (CCARE-147), embedded from Microsoft Forms on /survey, which links
+            here. ClearCare only links to and frames the form: answers go straight to Forms. */}
+        <PrivacySection id="survey" title="If you answer the survey">
+          <p>
+            Our usability survey asks how easy ClearCare was to use. It runs on Microsoft Forms, so your answers go
+            to Microsoft, which stores them for us, and not to ClearCare&apos;s own servers. The survey doesn&apos;t
+            ask for your name or email address and doesn&apos;t record who you are, so please don&apos;t include
+            them in your answers.
+          </p>
+          <p>
+            We use the answers in our research, to find what&apos;s unclear or hard to use and improve ClearCare.
+            Microsoft may set its own cookies when the form loads, which{" "}
+            <a href="https://privacy.microsoft.com/privacystatement">Microsoft&apos;s privacy statement</a> covers.{" "}
+            {SURVEY_RETENTION}
+          </p>
         </PrivacySection>
 
         <PrivacySection id="accounts" title="If you create an account">
@@ -183,7 +201,7 @@ export default function PrivacyPage() {
 function PrivacyHero() {
   return (
     <section aria-labelledby="privacy-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Privacy notice" />
         <h1 id="privacy-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Privacy notice

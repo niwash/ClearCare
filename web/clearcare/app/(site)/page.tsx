@@ -9,6 +9,7 @@ import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-cen
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
 import { SlideUp } from "@/components/home/slide-up";
+import { SurveyBanner } from "@/components/home/survey-banner";
 import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
@@ -52,9 +53,9 @@ export default async function StartPage() {
           the page's gap). The adult-centred design turns the tints to its band colour. */}
       <section
         aria-labelledby="about-h"
-        className={`${fullWidthClass} -mt-6 bg-tint-blue px-4 py-10 md:-mt-8 md:px-8 md:py-14`}
+        className={`${fullWidthClass} -mt-6 bg-tint-blue py-10 md:-mt-8 md:py-14`}
       >
-        <div className="mx-auto flex max-w-6xl flex-col gap-6">
+        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
           <div className="reveal flex max-w-3xl flex-col gap-2">
             <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
               About ClearCare
@@ -91,6 +92,9 @@ export default async function StartPage() {
           <SampleCentre total={total} />
         </Suspense>
       </section>
+
+      {/* For the user evaluation (CCARE-147): after the example, before the last invitation. */}
+      <SurveyBanner />
 
       <StartBand />
     </>
