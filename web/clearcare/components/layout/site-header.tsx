@@ -20,7 +20,8 @@ export const NAV_ITEMS: NavEntry[] = [
   { label: "Fair Deal", href: "/guides/fair-deal" },
   { label: "Contacts", href: "/contacts" },
   { label: "Resources", href: "/resources" },
-  // Last: the figures across every home are background, not a step in choosing one (CCARE-179).
+  // After the pages for choosing a home: the figures across every home are background, not a step
+  // in choosing one (CCARE-179).
   { label: "National Figures", href: "/national" },
   // For the user evaluation (CCARE-147); the home page links to it too.
   { label: "Survey", href: "/survey" },

@@ -30,7 +30,7 @@ export default function SurveyPage() {
         </p>
         <p className="text-ink-muted">
           The survey runs on Microsoft Forms, so your answers go to Microsoft.{" "}
-          <Link href="/privacy#survey">How we handle survey answers</Link>
+          <Link href="/privacy#survey-h">How we handle survey answers</Link>
         </p>
         {/* Above the form, so someone who can't see it or struggles with it finds the way out first. */}
         <p className="text-ink-muted">
@@ -41,12 +41,11 @@ export default function SurveyPage() {
           </a>
         </p>
         {/* The form keeps Microsoft's own styling, so Easier to read and dark mode don't reach inside
-            it. It scrolls within the frame, which is capped at the window's height. */}
+            it. It scrolls within the frame. */}
         <iframe
           src={SURVEY_EMBED_URL}
           title="ClearCare Usability Survey"
-          className="h-[80vh] max-h-screen min-h-[32rem] w-full rounded-lg border border-line bg-white"
-          allowFullScreen
+          className="h-[80vh] min-h-[32rem] w-full rounded-lg border border-line bg-white"
         />
       </section>
     </>
