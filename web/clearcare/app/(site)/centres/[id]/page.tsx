@@ -141,7 +141,7 @@ const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosin
 function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column px-4 py-6 md:px-8 md:py-8">
         <div className="flex min-w-0 flex-col gap-2.5">
           {/* Where the home sits in the site, the same however the user got here. */}
           <Breadcrumb

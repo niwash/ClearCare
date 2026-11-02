@@ -79,7 +79,7 @@ const NATIONAL_GUIDES = [
 function NationalHero() {
   return (
     <section aria-labelledby="national-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
           <Breadcrumb trail={[]} current="National Figures" />
           <h1 id="national-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
@@ -121,7 +121,7 @@ function NationalSection({ id, description, children }: { id: SectionId; descrip
       aria-labelledby={`${id}-h`}
       className={`${sectionScrollMargin} ${tinted ? `${fullWidthClass} bg-band py-8 md:py-10` : ""}`}
     >
-      <div className={`flex flex-col gap-4 ${tinted ? "mx-auto max-w-6xl px-4 md:px-8" : ""}`}>
+      <div className={`flex flex-col gap-4 ${tinted ? "page-column px-4 md:px-8" : ""}`}>
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <StepNumber number={index + 1} />

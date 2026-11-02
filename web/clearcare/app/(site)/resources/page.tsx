@@ -96,7 +96,7 @@ export default function ResourcesPage() {
 function ResourcesHero() {
   return (
     <section aria-labelledby="resources-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Resources" />
         <h1 id="resources-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Resources
@@ -165,7 +165,7 @@ function OfficialInformation() {
       className={`${fullWidthClass} bg-band -mb-6 -mt-6 py-8 md:-mb-10 md:-mt-8 md:py-12`}
     >
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 md:px-8">
+      <div className="page-column flex flex-col gap-6 px-4 md:px-8">
         <div className="flex max-w-3xl flex-col gap-2">
           <h2 id="official-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Official Information

@@ -11,7 +11,7 @@ import { Icon } from "@/components/ui/icons";
 export function ContactsBanner({ className = "" }: { className?: string }) {
   return (
     <section aria-labelledby="contacts-h" className={`${fullWidthClass} bg-warm ${className}`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-8">
+      <div className="page-column flex flex-col items-start gap-4 px-4 py-8 md:flex-row md:items-center md:justify-between md:px-8">
         <div className="flex items-center gap-4">
           <span aria-hidden className="grid size-12 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose md:size-14 adult:bg-surface">
             <Icon name="talk" className="size-6 md:size-7" />
