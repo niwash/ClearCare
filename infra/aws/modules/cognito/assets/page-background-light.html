@@ -1,0 +1,110 @@
+<!--
+  Background artwork for ClearCare's managed login pages (Cognito managed login version 2).
+
+  Cognito draws one form, centred or set to the side, and cannot show two panels or copy of its
+  own. So the split, the gradient and the panel words are a single picture per colour mode, set as
+  the page background. Managed login covers the page with it, so it must be at least as wide as the
+  widest screen it will be seen on: 1280 x 800 here, rendered at twice that for sharp text.
+
+  To change a word or a colour, edit this file and re-render both modes. The fonts come from the
+  same Google Fonts stylesheet the site's own layout links, so the render needs the network and has
+  to wait for them (--virtual-time-budget does that):
+
+    cd infra/aws/modules/cognito/assets
+    for mode in light dark; do
+      chrome_flags="--headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2"
+      "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" $chrome_flags \
+        --virtual-time-budget=10000 --window-size=1280,800 \
+        --screenshot=/tmp/$mode.png "file://$PWD/page-background-$mode.html"
+    done
+
+  Then flatten each screenshot to 256 colours (flat artwork, so nothing is lost from a 600 KB
+  PNG to about 80 KB):
+
+    python3 - <<'PY'
+    from PIL import Image
+    for mode in ("light", "dark"):
+        Image.open(f"/tmp/{mode}.png").convert("RGB") \
+            .convert("P", palette=Image.ADAPTIVE, colors=256) \
+            .save(f"page-background-{mode}.png", optimize=True)
+    PY
+
+  The words are the ones in the design, and the colours are the site's own tokens from
+  web/clearcare/app/globals.css, with a darker blue for the panel (#21405c light, #132a40 dark)
+  because white type has to sit on it.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ClearCare managed login background, light mode</title>
+<!-- The same two families the web app loads through next/font, from the same source. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400&display=block">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1280px; height: 800px; overflow: hidden; }
+
+  /* Left two fifths: the soft wash the form card sits on. Right three fifths:
+     the solid panel that carries the words, since managed login cannot show
+     copy of its own. Both colours come from the site's own tokens. */
+  .page { position: relative; width: 1280px; height: 800px; }
+  .form-half { position: absolute; inset: 0 60% 0 0;
+               background: linear-gradient(135deg, #dbe5ee 0%, #efe3cf 100%); }
+  .copy-half { position: absolute; inset: 0 0 0 40%; background: #21405c; }
+
+  .copy { position: absolute; top: 0; bottom: 0; left: 40%; right: 0;
+          padding: 0 96px; display: flex;
+          flex-direction: column; justify-content: center;
+          transform: translateY(3px); }
+
+  h1 { font-family: "Source Serif 4", Georgia, serif; font-weight: 400;
+       font-size: 59px; line-height: 75px; letter-spacing: -0.01em;
+       color: #ffffff;
+       /* The site serves a fixed instance of this face; Google serves the variable one and
+          would pick an optical size from 59px, so pin the instance the app's headings use. */
+       font-variation-settings: "opsz" 14; }
+
+  .rule { display: block; width: 48px; height: 4px; margin-top: 20px;
+          background: #f2a585; }
+
+  .lede { font-family: "Public Sans", Arial, sans-serif; font-weight: 400;
+          font-size: 20px; line-height: 28px; margin-top: 18px;
+          max-width: 470px; color: #dee2e7; }
+
+  ul { list-style: none; margin-top: 23px; display: flex;
+       flex-direction: column; gap: 12px; }
+  li { display: flex; align-items: center; gap: 16px; height: 32px;
+       font-family: "Public Sans", Arial, sans-serif; font-weight: 500;
+       font-size: 18px; line-height: 1; color: #ffffff; }
+  .check { width: 32px; height: 32px; border-radius: 50%; background: #37536c;
+           display: flex; align-items: center; justify-content: center;
+           flex: none; }
+
+  /* The dark mode variant of this file. */
+  body.dark .form-half { background: linear-gradient(135deg, #17222e 0%, #1d2028 100%); }
+  body.dark .copy-half { background: #132a40; }
+  body.dark .lede { color: #dee2e7; }
+  body.dark .check { background: #2b3f53; }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="form-half"></div>
+    <div class="copy-half"></div>
+    <div class="copy">
+      <h1>Finding the<br>right care for<br>your loved one</h1>
+      <span class="rule"></span>
+      <p class="lede">ClearCare helps you understand the process of choosing a nursing home, one clear step at a time.</p>
+      <ul>
+        <li><span class="check"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 8l3.2 3.2L12.5 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>The ideal path to care</li>
+        <li><span class="check"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 8l3.2 3.2L12.5 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Fair Deal explained</li>
+        <li><span class="check"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 8l3.2 3.2L12.5 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>See HIQA inspection reports</li>
+        <li><span class="check"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 8l3.2 3.2L12.5 4" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Compare homes</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
