@@ -23,6 +23,10 @@ export default function SurveyPage() {
         <h2 id="survey-form-h" className="sr-only">
           Survey form
         </h2>
+        <p className="max-w-3xl md:text-lg">
+          Your answers help us find what&apos;s unclear or hard to use, so we can make ClearCare better for families
+          choosing a nursing home.
+        </p>
         {/* Above the form, so someone who can't see it or struggles with it finds the way out first. */}
         <p className="text-ink-muted">
           Can&apos;t see the form, or finding it hard to answer?{" "}
