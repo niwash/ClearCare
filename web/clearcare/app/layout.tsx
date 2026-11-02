@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
 import { LeavingSiteDialog } from "@/components/layout/leaving-site-dialog";
-import { SLIDE_UP_SCRIPT } from "@/components/home/slide-up-script";
 import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
+import { SLIDE_UP_SCRIPT } from "@/components/ui/slide-up-script";
 import "./globals.css";
 
 const sourceSerif = Source_Serif_4({

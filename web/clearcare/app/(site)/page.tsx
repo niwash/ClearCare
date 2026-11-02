@@ -8,7 +8,7 @@ import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
-import { SlideUp } from "@/components/home/slide-up";
+import { SlideUp } from "@/components/ui/slide-up";
 import { SurveyBanner } from "@/components/home/survey-banner";
 import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";

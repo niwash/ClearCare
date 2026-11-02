@@ -74,7 +74,7 @@ export function HomeHero() {
           </Link>
         </div>
 
-        <div className="reveal flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6 shadow-sm [--slide-delay:0.15s] md:p-8 adult:rounded-lg adult:shadow-none">
+        <div className="reveal flex flex-col gap-4 rounded-2xl border border-line bg-surface p-6 shadow-sm [--slide-delay:0.08s] md:p-8 adult:rounded-lg adult:shadow-none">
           <p className="flex items-center gap-3 font-heading text-lg font-semibold">
             <IconCircle path={ICON_PATHS.guides} tint="sage" />
             Practical guidance for you and your family

@@ -334,46 +334,34 @@
   align-items: flex-start;
 }
 
-/* The home page's cards and blocks of text slide up into place as they come into view (CCARE-179,
-   CCARE-186). components/home/slide-up.tsx marks the page with data-slide-up and each block with
-   data-shown once it is in view; without it (no JavaScript) nothing is hidden. Only for people who
-   haven't asked their device for less motion (WCAG 2.3.3), and never in the adult-centred design.
+/* Cards and blocks of text slide up into place as they come into view, on the pages that render
+   <SlideUp /> (CCARE-179, CCARE-186). components/ui/slide-up.tsx marks the page with data-slide-up
+   and each block with data-shown once it is in view; without it (no JavaScript) nothing is hidden.
+   Only for people who haven't asked their device for less motion (WCAG 2.3.3), and never in the
+   adult-centred design. Short and quick, so nobody scrolls past a block before it arrives: NN/g
+   finds fades over 500ms feel slow, and the further a block travels, the longer it needs.
    - reveal: a block that slides up.
-   - reveal-stagger: a row of cards that slide up one after another, where they sit side by side.
-     Stacked on phones, they already arrive one at a time.
+   - reveal-stagger: a row of cards that slide up one after another. slide-up.tsx sets each card's
+     --slide-delay from the order the cards come into view.
    - reveal-pop: an icon that grows into place as its card arrives.
    - reveal-bar: a heading's accent bar, drawn out from its start (origin-left, or origin-center
      under a centred heading) as its block arrives. */
 @media (prefers-reduced-motion: no-preference) {
   :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *) {
     transition:
-      opacity 0.7s ease-out var(--slide-delay, 0s),
-      translate 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) var(--slide-delay, 0s);
+      opacity 0.4s ease-out var(--slide-delay, 0s),
+      translate 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) var(--slide-delay, 0s);
   }
 
   :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) {
     opacity: 0;
-    translate: 0 2.5rem;
-  }
-
-  @media (min-width: 40rem) {
-    .reveal-stagger > :nth-child(2) {
-      --slide-delay: 0.12s;
-    }
-
-    .reveal-stagger > :nth-child(3) {
-      --slide-delay: 0.24s;
-    }
-
-    .reveal-stagger > :nth-child(4) {
-      --slide-delay: 0.36s;
-    }
+    translate: 0 1rem;
   }
 
   :root[data-slide-up]:not([data-design="adult-centred"]) .reveal-pop {
     transition:
-      opacity 0.5s ease-out calc(var(--slide-delay, 0s) + 0.25s),
-      scale 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--slide-delay, 0s) + 0.25s);
+      opacity 0.3s ease-out calc(var(--slide-delay, 0s) + 0.15s),
+      scale 0.3s cubic-bezier(0.3, 1.4, 0.5, 1) calc(var(--slide-delay, 0s) + 0.15s);
   }
 
   :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) .reveal-pop {
@@ -382,7 +370,7 @@
   }
 
   :root[data-slide-up]:not([data-design="adult-centred"]) .reveal-bar {
-    transition: scale 0.6s ease-out calc(var(--slide-delay, 0s) + 0.3s);
+    transition: scale 0.4s ease-out calc(var(--slide-delay, 0s) + 0.15s);
   }
 
   :root[data-slide-up]:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *):not([data-shown]) .reveal-bar {
