@@ -58,8 +58,9 @@ export function CardResult({ centre }: CardResultProps) {
         {/* Replaces the "Add to list (coming soon)" placeholder for CCARE-46 (CCARE-127). */}
         <CompareButton
           home={{ id: centre.centre_id, name: centre.centre_name }}
-          // Once the list is full, Your shortlist says so once, beside the results.
+          // Once the list is full, it opens Your shortlist, which says why and has the homes to remove.
           fullNoteId={SHORTLIST_FULL_ID}
+          opensShortlist
           className="min-h-11 px-3 text-sm adult:whitespace-nowrap"
         />
         <Link

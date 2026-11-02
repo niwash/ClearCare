@@ -2,8 +2,10 @@
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { ShortlistBox } from "@/components/compare/shortlist-box";
+import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { CardResult } from "@/components/search/card-result";
+import { FilterLayout } from "@/components/search/filter-layout";
+import { SearchPanel } from "@/components/search/search-panel";
 import { actionLinkClass, comingSoonClass, fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
@@ -31,9 +33,8 @@ const FILTERS = ["name", "address", "county", "eircode"] as const;
 // TODO: Make these real filters once the API has the data.
 const COMING_SOON_FILTERS = ["Care types", "Amenities"] as const;
 
-// The results grid has 1 or 2 columns depending on screen width (2 beside the left column from lg
-// up). 24 divides by both, and by 3 should a wider layout come back, so every full page fills its
-// last row. The API's default of 20 would leave gaps.
+// The results grid has 1, 2 or 3 columns depending on screen width. 24 divides by each, so every
+// full page fills its last row. The API's default of 20 would leave gaps.
 const RESULTS_PER_PAGE = "24";
 
 // The county list's "Any county": its own value, so the blank the list starts on is the only
@@ -115,25 +116,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <>
       <SearchHero query={query} />
 
-      {/* From lg up, the filters and the shortlist in a column on the left and the results on the
-          right; stacked in that order below it. The column stretches to the results' height, so the
-          shortlist can stay in view while they scroll. */}
-      <div className="grid gap-6 lg:grid-cols-[17rem_minmax(0,1fr)] lg:gap-8">
-        <aside aria-label="Search filters and shortlist" className="flex flex-col gap-6">
-          <SearchForm query={query} />
-          {/* The homes saved to compare (CCARE-127), in view while the results scroll. */}
-          <ShortlistBox className="lg:sticky lg:top-4" />
-        </aside>
+      {/* Under the hero (CCARE-189): the search as a bar above the results, as on listing sites,
+          then the results the full width. On phones, once there are results, the search folds into
+          a line saying what was searched. Keyed by the search, so a new one starts the panel and the
+          fields afresh: moving between searches in the app keeps a component, with its state and
+          what was typed, if its key doesn't change. */}
+      <SearchPanel key={pageQuery(query, 1)} summary={searched ? describe(query) : null}>
+        <SearchForm query={query} />
+      </SearchPanel>
 
-        <div className="flex min-w-0 flex-col gap-4">
-          {result === null ? (
-            <SearchPrompt empty={await sentEmpty(searchParams)} />
-          ) : result.ok ? (
-            <Results query={query} data={result.data} />
-          ) : (
-            <SearchError status={result.status} detail={result.detail} />
-          )}
-        </div>
+      <div className="flex min-w-0 flex-col gap-4">
+        {result !== null && result.ok ? (
+          <Results query={query} data={result.data} />
+        ) : (
+          <>
+            <ResultsBar />
+            {result === null ? (
+              <SearchPrompt empty={await sentEmpty(searchParams)} />
+            ) : (
+              <SearchError status={result.status} detail={result.detail} />
+            )}
+          </>
+        )}
       </div>
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
@@ -144,32 +148,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
 
 // The top of the page, flush under the header as on the resources page: the heading and a line of
-// welcome on the soft welcome band (welcome-band, globals.css). The search form sits under it.
+// welcome on the soft welcome band (welcome-band, globals.css). The page's heading names the task,
+// so the search under it has none of its own.
 function SearchHero({ query }: { query: SearchQuery }) {
   const searched = hasFilters(query);
 
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
-        <div className="flex flex-col items-start gap-3">
-          <Breadcrumb trail={[]} current="Search for Homes" />
-          <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-            {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
-          </h1>
-          {!searched && (
-            <p className="max-w-2xl text-ink-muted md:text-lg">
-              Search every nursing home registered with HIQA. Each one has a page with its inspection reports over
-              time.
-            </p>
-          )}
-        </div>
-
+      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+        <Breadcrumb trail={[]} current="Search for Homes" />
+        <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+          {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
+        </h1>
         {!searched && (
-          <p className="text-sm text-ink-muted">
-            Not sure where to start?{" "}
-            <Link href="/guides/how-a-family-chooses" className="text-ink tap-target">
-              Read how a family chooses a nursing home →
-            </Link>
+          <p className="max-w-2xl text-ink-muted md:text-lg">
+            Search every nursing home registered with HIQA. Each one has a page with its inspection reports over time.
           </p>
         )}
       </div>
@@ -181,109 +174,116 @@ const inputClass = `${textInputClass} w-full`;
 
 function SearchForm({ query }: { query: SearchQuery }) {
   return (
-    // Two fields to a row on tablets; one under another in the left column from lg up.
+    // A name and a county find most homes, so they're in the row with Search; the address, the
+    // Eircode and the filters that are coming soon are under "More filters" (FilterLayout).
     <form
       action="/search"
       method="GET"
       role="search"
-      aria-labelledby="filters-h"
-      className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-4 shadow-sm md:p-5 adult:rounded-lg adult:shadow-none"
+      aria-label="Search nursing homes"
+      className="flex flex-col gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm md:p-5 adult:rounded-lg adult:shadow-none"
     >
-      <h2 id="filters-h" className="font-heading text-lg font-semibold md:text-xl">
-        Find a nursing home
-      </h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-        <Field id="search-name" label="Nursing home name">
-          {/* No faded example in any field: people read one as already filled in (CCARE-164). */}
-          <input
-            id="search-name"
-            name="name"
-            type="search"
-            defaultValue={query.name}
-            maxLength={MAX_TEXT_LENGTH}
-            className={inputClass}
-          />
-        </Field>
-        <Field id="search-address" label="Address or town">
-          <input
-            id="search-address"
-            name="address"
-            type="search"
-            defaultValue={query.address}
-            maxLength={MAX_TEXT_LENGTH}
-            className={inputClass}
-          />
-        </Field>
-        <Field id="search-county" label="County">
-          <select id="search-county" name="county" defaultValue={query.county ?? ""} className={inputClass}>
-            {/* The box starts blank, so nothing looks chosen (CCARE-164). The blank is hidden from the
-                list, so "Any county" is the one to pick; both search every county (readQuery). */}
-            <option value="" hidden></option>
-            <option value={ANY_COUNTY}>Any county</option>
-            {COUNTIES.map((county) => (
-              <option key={county} value={county}>
-                {county}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <Field id="search-eircode" label="Eircode">
-          <input
-            id="search-eircode"
-            name="eircode"
-            type="search"
-            defaultValue={query.eircode}
-            autoComplete="postal-code"
-            className={`${inputClass} uppercase`}
-          />
-        </Field>
-      </div>
-      <ComingSoonFilters />
-      <div className="flex items-center gap-4">
-        <button
-          type="submit"
-          className={primaryButtonClass}
-        >
-          Search
-        </button>
-        {hasFilters(query) && (
-          <Link href="/search" className="inline-block py-1 text-sm tap-target">
-            Clear filters
-          </Link>
-        )}
-      </div>
+      <FilterLayout
+        moreSet={[query.address, query.eircode].filter(Boolean).length}
+        main={
+          <>
+            <Field id="search-name" label="Nursing home name" className="md:flex-[3]">
+              {/* No faded example in any field: people read one as already filled in (CCARE-164). */}
+              <input
+                id="search-name"
+                name="name"
+                type="search"
+                defaultValue={query.name}
+                maxLength={MAX_TEXT_LENGTH}
+                className={inputClass}
+              />
+            </Field>
+            <Field id="search-county" label="County" className="md:flex-[2]">
+              <select id="search-county" name="county" defaultValue={query.county ?? ""} className={inputClass}>
+                {/* The box starts blank, so nothing looks chosen (CCARE-164). The blank is hidden from
+                    the list, so "Any county" is the one to pick; both search every county (readQuery). */}
+                <option value="" hidden></option>
+                <option value={ANY_COUNTY}>Any county</option>
+                {COUNTIES.map((county) => (
+                  <option key={county} value={county}>
+                    {county}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          </>
+        }
+        actions={
+          <>
+            <button type="submit" className={`${primaryButtonClass} px-7`}>
+              Search
+            </button>
+            {hasFilters(query) && (
+              <Link href="/search" className="inline-block py-1 text-sm tap-target">
+                Clear filters
+              </Link>
+            )}
+          </>
+        }
+        more={
+          <>
+            <div className="grid gap-3 sm:grid-cols-2 md:max-w-2xl">
+              <Field id="search-address" label="Address or town">
+                <input
+                  id="search-address"
+                  name="address"
+                  type="search"
+                  defaultValue={query.address}
+                  maxLength={MAX_TEXT_LENGTH}
+                  className={inputClass}
+                />
+              </Field>
+              <Field id="search-eircode" label="Eircode">
+                <input
+                  id="search-eircode"
+                  name="eircode"
+                  type="search"
+                  defaultValue={query.eircode}
+                  autoComplete="postal-code"
+                  className={`${inputClass} uppercase`}
+                />
+              </Field>
+            </div>
+            <ComingSoonFilters />
+          </>
+        }
+      />
     </form>
   );
 }
 
-// Each looks like a closed dropdown, with the dashed look of other unfinished features. They do
-// nothing, and aren't form fields, so they never reach the search.
+// Chips like the filter rows of listing sites, each with the dashed look of other unfinished
+// features. They do nothing, and aren't form fields, so they never reach the search.
 function ComingSoonFilters() {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+    <div className="flex flex-wrap gap-2">
       {COMING_SOON_FILTERS.map((label) => (
-        <div key={label} className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-ink-muted">{label}</span>
-          <button
-            type="button"
-            aria-disabled="true"
-            title="Coming soon"
-            className={`flex h-11 items-center justify-between gap-2 px-3 text-left ${comingSoonClass}`}
-          >
-            <span>
-              <span className="sr-only">Filter by {label.toLowerCase()} </span>Coming soon
-            </span>
-            <span aria-hidden>▾</span>
-          </button>
-        </div>
+        <button
+          key={label}
+          type="button"
+          aria-disabled="true"
+          title="Coming soon"
+          className={`flex min-h-11 items-center gap-2 rounded-full px-4 text-sm adult:rounded-md ${comingSoonClass}`}
+        >
+          <span>
+            <span className="sr-only">Filter by </span>
+            <span className="font-medium text-ink">{label}</span> · Coming soon
+          </span>
+          <span aria-hidden>▾</span>
+        </button>
       ))}
     </div>
   );
 }
 
-function Field({ id, label, children }: { id: string; label: string; children: ReactNode }) {
+function Field({ id, label, className = "", children }: { id: string; label: string; className?: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col gap-1">
+    <div className={`flex min-w-0 flex-col gap-1 ${className}`}>
       <label htmlFor={id} className="text-sm font-medium">
         {label}
       </label>
@@ -293,7 +293,8 @@ function Field({ id, label, children }: { id: string; label: string; children: R
 }
 
 // In place of results before anything is searched for: what to enter, in a tinted panel like the
-// no-results one, with the icon in a soft circle. If the form was sent empty, it says so first.
+// no-results one, with the icon in a soft circle, and where to start for a family new to this. If
+// the form was sent empty, it says so instead.
 function SearchPrompt({ empty }: { empty: boolean }) {
   return (
     <section
@@ -303,10 +304,13 @@ function SearchPrompt({ empty }: { empty: boolean }) {
       <IconCircle path={ICON_PATHS.search} size="large" tint="band" />
       <div className="flex flex-col gap-2">
         <h2 id="prompt-h" className="font-heading text-xl font-semibold text-ink md:text-2xl">
-          {empty ? "Please enter something to search for" : "Find a nursing home"}
+          {empty ? "Please enter something to search for" : "Start with a name, a town or a county"}
         </h2>
-        <p className="max-w-2xl text-ink-muted">
-          Search by name, address or town, county or Eircode.
+        <p className="text-ink-muted">
+          Not sure where to start?{" "}
+          <Link href="/guides/how-a-family-chooses" className="text-ink tap-target">
+            Read how a family chooses a nursing home →
+          </Link>
         </p>
       </div>
     </section>
@@ -315,8 +319,6 @@ function SearchPrompt({ empty }: { empty: boolean }) {
 
 function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) {
   const { centres, page, page_size, total, register_snapshot } = data;
-  const first = (page - 1) * page_size + 1;
-  const last = first + centres.length - 1;
   const lastPage = Math.max(1, Math.ceil(total / page_size));
 
   return (
@@ -351,13 +353,12 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
         </div>
       ) : (
         <>
-          <p className="text-sm text-ink-muted" aria-live="polite">
-            {total === centres.length
-              ? `${total} registered ${total === 1 ? "centre" : "centres"}`
-              : `Showing ${first}–${last} of ${total} registered centres`}
-            .
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <ResultsBar>
+            <p className="text-sm text-ink-muted" aria-live="polite">
+              {total} HIQA registered {total === 1 ? "centre" : "centres"} found
+            </p>
+          </ResultsBar>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {centres.map((centre) => (
               <CardResult key={centre.centre_id} centre={centre} />
             ))}
@@ -383,6 +384,19 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
         , downloaded {formatDate(register_snapshot.fetched_at)}.
       </p>
     </section>
+  );
+}
+
+// The bar at the top of the results: how many there are, and Your shortlist (ShortlistDrawer). It
+// stays at the top of the window while the results scroll, so the shortlist is always in reach.
+function ResultsBar({ children }: { children?: ReactNode }) {
+  return (
+    <div className={`${fullWidthClass} sticky top-0 z-20 bg-page/95 backdrop-blur-sm`}>
+      <div className="mx-auto flex min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-1.5 md:px-8">
+        <div className="min-w-0">{children}</div>
+        <ShortlistDrawer />
+      </div>
+    </div>
   );
 }
 
