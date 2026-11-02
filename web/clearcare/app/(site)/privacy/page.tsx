@@ -15,7 +15,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 // The outcome pilot's raw/ answers.
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
-const LAST_UPDATED = "29 October 2026";
+const LAST_UPDATED = "2 November 2026";
 
 export default function PrivacyPage() {
   return (

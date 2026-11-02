@@ -16,8 +16,9 @@ export function SiteFooter() {
   return (
     <footer className="brand-band brand-band-deep text-sm">
       {/* Taller at the bottom while the welcome tour's offer is in the corner, so it doesn't cover
-          the small print. */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-8 [body:has([data-tour-offer])_&]:pb-64">
+          the small print. Enough for the box at its tallest, on a 320px phone, and taller again in
+          Easier to read, where its text and buttons are bigger. */}
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 md:px-8 [body:has([data-tour-offer])_&]:pb-80 [body:has([data-tour-offer])_&]:adult:pb-96">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
             <Link href="/" className="w-fit font-heading text-xl font-semibold text-ink no-underline hover:text-ink tap-target">
