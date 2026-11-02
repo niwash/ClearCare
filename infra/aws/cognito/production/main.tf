@@ -51,6 +51,8 @@ module "cognito" {
   # Accounts cannot be recreated by an apply, so the pool is protected from terraform destroy.
   deletion_protection = "ACTIVE"
 
+  branding_enabled = true
+
   ses_source_arn     = aws_sesv2_email_identity.mail.arn
   from_email_address = var.from_email_address
 }

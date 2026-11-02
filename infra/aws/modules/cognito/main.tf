@@ -54,9 +54,9 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = var.domain_prefix
   user_pool_id = aws_cognito_user_pool.this.id
 
-  # Version 1 is the classic hosted UI. The branded managed login is version 2,
-  # which also needs a branding style per app client.
-  managed_login_version = 1
+  # Version 1 is the classic hosted UI, which ignores branding. Version 2 is the managed
+  # login that takes a style per app client, so the two move together.
+  managed_login_version = var.branding_enabled ? 2 : 1
 }
 
 resource "aws_cognito_user_pool_client" "web" {
@@ -86,4 +86,35 @@ resource "aws_cognito_user_pool_client" "web" {
 
   prevent_user_existence_errors = "ENABLED"
   enable_token_revocation       = true
+}
+
+# The style behind Cognito's managed login pages: sign in, sign up, confirm the address and reset
+# the password, since they are all one set of screens.
+#
+# The settings document is the branding editor's own export, taken from a style Cognito created
+# with its provided values and then edited to the design (assets/settings.json), so every value it
+# does not mention is still Cognito's, not a guess.
+#
+# The artwork is a page background per colour mode. Managed login draws one form and no copy of its
+# own, so the two-panel split, the gradient and the panel words are a picture the page is covered
+# with; the form is set to the start of the page so it sits over the gradient half. The picture is
+# static: re-render it from assets/page-background-<mode>.html when the words or colours change.
+resource "aws_cognito_managed_login_branding" "web" {
+  count = var.branding_enabled ? 1 : 0
+
+  client_id    = aws_cognito_user_pool_client.web.id
+  user_pool_id = aws_cognito_user_pool.this.id
+
+  settings = file("${path.module}/assets/settings.json")
+
+  dynamic "asset" {
+    for_each = { light = "LIGHT", dark = "DARK" }
+
+    content {
+      bytes      = filebase64("${path.module}/assets/page-background-${asset.key}.png")
+      category   = "PAGE_BACKGROUND"
+      color_mode = asset.value
+      extension  = "PNG"
+    }
+  }
 }

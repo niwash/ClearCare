@@ -97,7 +97,17 @@ terraform apply
 terraform output -raw client_secret
 ```
 
-The sign-in domain runs the classic hosted UI, managed login version 1. The branded version 2 needs a branding style per app client, which would be a change of its own.
+The sign-in domain runs **managed login version 2**, with one branding style for the app client, because the module is called with `branding_enabled = true`. Both roots do, so the development pool and production look the same.
+
+Version 2 is what the branding editor edits. The classic version 1 cannot be branded beyond a logo and a stylesheet, which is why the module moved: sign-in, sign-up, address confirmation and password reset are one set of screens, and branding them covers all four flows at once.
+
+The style is the ClearCare design: a soft gradient on the left two fifths with the form over it, and a solid blue panel on the right three fifths carrying a headline, one line of copy and four points.
+
+Managed login draws one form and no copy of its own, so the two panels and their words are a picture: `modules/cognito/assets/page-background-light.png` and `page-background-dark.png`, sent as the `PAGE_BACKGROUND` asset for each colour mode. The form is set to the start of the page so it sits over the gradient half, the header and footer are off, and the display mode follows the visitor's device. The settings document is Cognito's own merged export with only those values changed, so the wording, the font and the password rules are as Cognito ships them.
+
+The words and colours live in `page-background-light.html` and `page-background-dark.html`; the comment at the top of either file has the command that re-renders both images.
+
+The split is proportional and the form is a fixed width, so the two only clear each other on a wide page. Measured on the development pool: from about 1210px up the card sits wholly on the gradient; between roughly 1000px and 1210px it crosses the seam but the panel copy is still to its right; below about 1000px it covers the first words of the headline; and from about 500px down Cognito drops the page background entirely and the form sits on its own colour, full width.
 
 Cognito serves the discovery document on the pool's issuer, not on the login domain, so ask it there:
 
