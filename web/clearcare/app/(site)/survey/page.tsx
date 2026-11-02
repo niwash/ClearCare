@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { fullWidthClass } from "@/components/ui/classes";
@@ -26,6 +27,10 @@ export default function SurveyPage() {
         <p className="max-w-3xl md:text-lg">
           Your answers help us find what&apos;s unclear or hard to use, so we can make ClearCare better for families
           choosing a nursing home.
+        </p>
+        <p className="text-ink-muted">
+          The survey runs on Microsoft Forms, so your answers go to Microsoft.{" "}
+          <Link href="/privacy#survey">How we handle survey answers</Link>
         </p>
         {/* Above the form, so someone who can't see it or struggles with it finds the way out first. */}
         <p className="text-ink-muted">
