@@ -8,6 +8,7 @@ import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
+import { SurveyBanner } from "@/components/home/survey-banner";
 import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
@@ -87,6 +88,9 @@ export default async function StartPage() {
           <SampleCentre total={total} />
         </Suspense>
       </section>
+
+      {/* For the user evaluation (CCARE-147): after the example, before the last invitation. */}
+      <SurveyBanner />
 
       <StartBand />
     </>
