@@ -52,7 +52,7 @@ export function SiteHeader() {
       <CompareStatus />
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
+        <div className="page-column flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
           {/* The name, and under it the motto: what the site is, in one line, on every page (CCARE-179).
               Only the name is the link home. */}
           <div className="flex flex-col">
@@ -92,7 +92,7 @@ export function SiteHeader() {
       </MobileMenu>
 
       <div className="hidden bg-surface-muted lg:block adult:block">
-        <nav aria-label="Main" data-tour="nav" className="mx-auto max-w-6xl overflow-x-auto px-4 md:px-8">
+        <nav aria-label="Main" data-tour="nav" className="page-column overflow-x-auto px-4 md:px-8">
           <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>

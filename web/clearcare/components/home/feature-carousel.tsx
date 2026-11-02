@@ -223,7 +223,7 @@ function FeatureCard({ feature, priority = false }: { feature: Feature; priority
         />
       </div>
 
-      <div className="feature-panel flex flex-1 flex-col items-start gap-3 p-5 md:absolute md:inset-y-0 md:left-0 md:right-[calc(50%-7rem)] md:justify-center md:py-10 md:pl-[max(6rem,calc((100vw-72rem)/2+2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)] adult:static adult:w-auto adult:justify-start adult:p-5 adult:[clip-path:none]">
+      <div className="feature-panel flex flex-1 flex-col items-start gap-3 p-5 md:absolute md:inset-y-0 md:left-0 md:right-[calc(50%-7rem)] md:justify-center md:py-10 md:pl-[max(6rem,calc((100vw_-_var(--page-max))/2_+_2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)] adult:static adult:w-auto adult:justify-start adult:p-5 adult:[clip-path:none]">
         <h3 className="font-heading text-xl font-semibold text-ink md:text-2xl lg:text-3xl adult:text-lg">
           {feature.title}
         </h3>

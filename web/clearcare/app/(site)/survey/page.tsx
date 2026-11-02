@@ -57,7 +57,7 @@ export default function SurveyPage() {
 function SurveyHero() {
   return (
     <section aria-labelledby="survey-page-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Survey" />
         <h1 id="survey-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           How easy was ClearCare to use?
