@@ -44,7 +44,7 @@ export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb
   return (
     <section aria-labelledby={id} className={`${fullWidthClass} bg-band py-8 md:py-10 ${className}`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 md:px-8">
+      <div className="page-column flex flex-col gap-4 px-4 md:px-8">
         <div className="flex max-w-3xl flex-col gap-2">
           <h2 id={id} className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             {title}

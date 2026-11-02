@@ -29,7 +29,7 @@ export function GuideHero({ guide }: { guide: Guide }) {
               className={`object-cover ${guide.photoFocus ?? "object-[50%_30%]"}`}
             />
           </div>
-          <div className="welcome-band flex flex-col items-start justify-center gap-3 px-4 py-8 md:relative md:min-h-[18rem] md:w-[calc(50%+7rem)] md:py-8 lg:min-h-[22rem] md:pl-[max(2rem,calc((100vw-72rem)/2+2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)]">
+          <div className="welcome-band flex flex-col items-start justify-center gap-3 px-4 py-8 md:relative md:min-h-[18rem] md:w-[calc(50%+7rem)] md:py-8 lg:min-h-[22rem] md:pl-[max(2rem,calc((100vw_-_var(--page-max))/2_+_2rem))] md:pr-32 md:[clip-path:polygon(0_0,100%_0,calc(100%-7rem)_100%,0_100%)]">
             <Breadcrumb trail={guideTrail(guide)} current={guide.title} />
             <h1 className="font-heading text-3xl font-semibold tracking-tight text-ink lg:text-4xl">{guide.title}</h1>
             {guide.status === "draft" && <DraftLabel />}
