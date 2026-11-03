@@ -99,6 +99,10 @@ resource "aws_cognito_user_pool_client" "web" {
 # own, so the two-panel split, the gradient and the panel words are a picture the page is covered
 # with; the form is set to the start of the page so it sits over the gradient half. The picture is
 # static: re-render it from assets/page-background-<mode>.html when the words or colours change.
+#
+# The header logo is the site's wordmark over its motto, on the brand band. On a phone the page
+# background is dropped, so that band is all a visitor sees above the form and the only thing that
+# says whose sign-in page this is.
 resource "aws_cognito_managed_login_branding" "web" {
   count = var.branding_enabled ? 1 : 0
 
@@ -108,12 +112,17 @@ resource "aws_cognito_managed_login_branding" "web" {
   settings = file("${path.module}/assets/settings.json")
 
   dynamic "asset" {
-    for_each = { light = "LIGHT", dark = "DARK" }
+    for_each = {
+      background_light = { category = "PAGE_BACKGROUND", mode = "LIGHT", file = "page-background-light.png" }
+      background_dark  = { category = "PAGE_BACKGROUND", mode = "DARK", file = "page-background-dark.png" }
+      logo_light       = { category = "PAGE_HEADER_LOGO", mode = "LIGHT", file = "header-logo.png" }
+      logo_dark        = { category = "PAGE_HEADER_LOGO", mode = "DARK", file = "header-logo.png" }
+    }
 
     content {
-      bytes      = filebase64("${path.module}/assets/page-background-${asset.key}.png")
-      category   = "PAGE_BACKGROUND"
-      color_mode = asset.value
+      bytes      = filebase64("${path.module}/assets/${asset.value.file}")
+      category   = asset.value.category
+      color_mode = asset.value.mode
       extension  = "PNG"
     }
   }

@@ -164,9 +164,9 @@
     },
     "pageHeader": {
       "lightMode": {
-        "borderColor": "d5dbdbff",
+        "borderColor": "e2ddd3ff",
         "background": {
-          "color": "fafafaff"
+          "color": "21405cff"
         }
       },
       "backgroundImage": {
@@ -174,12 +174,12 @@
       },
       "logo": {
         "location": "START",
-        "enabled": false
+        "enabled": true
       },
       "darkMode": {
-        "borderColor": "424650ff",
+        "borderColor": "2d3843ff",
         "background": {
-          "color": "0f141aff"
+          "color": "132a40ff"
         }
       }
     },
@@ -434,7 +434,7 @@
         "enabled": false
       },
       "pageHeader": {
-        "enabled": false
+        "enabled": true
       },
       "spacingDensity": "REGULAR"
     },
