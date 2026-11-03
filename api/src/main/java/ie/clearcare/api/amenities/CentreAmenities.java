@@ -23,4 +23,4 @@ record CentreAmenities(
     String diningNotes,
     String otherNotes,
     String extractorVersion,
-    String model) {}
+    String model) implements AmenitiesResponse {}

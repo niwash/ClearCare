@@ -11,21 +11,34 @@ on which report was read, and carries the model and extractor version:
      "extracted_at": "2026-10-26T12:00:00+00:00",
      "amenities": {"care_types": [...], ...}}
 
-extracted_at is optional; a record without it is stamped with the load time.
-Other keys in a record, such as centre_id or inspection_date, are ignored.
+extracted_at is required and must include a timezone, including for legacy
+v1 input. Missing timestamps are rejected, never replaced with load time. V2
+files use the exact shared contract and require the matching stored source PDF.
 """
 
 import argparse
+import hashlib
 import logging
+import os
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
 
 import psycopg
-from pydantic import BaseModel, ConfigDict, Field, TypeAdapter, ValidationError
+import pymupdf
+from psycopg.types.json import Jsonb
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    TypeAdapter,
+    ValidationError,
+    field_validator,
+)
 
+from clearcare_pipeline.amenities_v2 import ExtractionFile
 from clearcare_pipeline.ingest_reports.database import Connection
 
 logger = logging.getLogger(__name__)
@@ -60,13 +73,24 @@ class AmenitiesRecord(BaseModel):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     model: str = Field(min_length=1)
     extractor_version: str = Field(min_length=1)
-    # When the extractor ran. Older results may not have it.
-    extracted_at: datetime | None = None
+    # Never invent an extraction time for older files.
+    extracted_at: AwareDatetime
+
+    @field_validator("extractor_version")
+    @classmethod
+    def legacy_version(cls, value: str) -> str:
+        """V2 must validate against the exact v2 file contract."""
+        if value not in {"amenities-v0", "amenities-v1"}:
+            raise ValueError("Unsupported legacy extractor version")
+        return value
+
     amenities: Amenities
 
 
 # Reads a list file in one step, without wrapping it in another object.
-_RECORDS = TypeAdapter(list[AmenitiesRecord])
+Record = AmenitiesRecord | ExtractionFile
+_RECORD = TypeAdapter(Record)
+_RECORDS = TypeAdapter(list[Record])
 
 
 @dataclass(frozen=True)
@@ -90,20 +114,19 @@ _INSERT = (
     " has_chapel_or_religious_services, special_units, dining_notes,"
     " other_notes, extractor_version, model, extracted_at)"
     " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-    # A record without extracted_at gets the load time, as the column default.
-    " COALESCE(%s, now()))"
+    " %s)"
     " ON CONFLICT (report_id, extractor_version) DO NOTHING"
 )
 
 
-def read_records(path: Path) -> list[AmenitiesRecord]:
+def read_records(path: Path) -> list[Record]:
     """Reads and checks the input: a folder of files, or one list file.
 
     Raises:
         ValueError: If a file is not a valid record, or a list of them.
     """
     if path.is_dir():
-        files = sorted(path.glob("*.json"))
+        files = sorted(path.rglob("*.json"))
         if not files:
             raise ValueError(f"{path}: no .json files found")
         return [
@@ -112,18 +135,50 @@ def read_records(path: Path) -> list[AmenitiesRecord]:
     return _read_file(path, single=False)
 
 
-def _read_file(path: Path, *, single: bool) -> list[AmenitiesRecord]:
+def _read_file(path: Path, *, single: bool) -> list[Record]:
     """Reads one file: a single record if single, otherwise a list of them."""
     try:
         text = path.read_text(encoding="utf-8")
         if single:
-            return [AmenitiesRecord.model_validate_json(text)]
+            return [_RECORD.validate_json(text)]
         return _RECORDS.validate_json(text)
     except (UnicodeDecodeError, ValidationError) as error:
         raise ValueError(f"{path}: {error}") from error
 
 
-def load(connection: Connection, records: Sequence[AmenitiesRecord]) -> Summary:
+_FIND_V2_REPORT = (
+    "SELECT r.id FROM clearcare.inspection_report r"
+    " JOIN clearcare.source_file s USING (source_file_id)"
+    " WHERE s.sha256 = %s AND r.centre_id = %s"
+    " AND r.inspection_date = %s ORDER BY r.id LIMIT 1"
+)
+_INSERT_V2 = (
+    "INSERT INTO clearcare.report_amenities_v2"
+    " (report_id, amenities, file_name, hiqa_url, extractor_version,"
+    " model, extracted_at)"
+    " VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    " ON CONFLICT (report_id, extractor_version) DO NOTHING"
+)
+
+
+def validate_source_pdf(record: ExtractionFile, data_dir: Path) -> None:
+    """Check evidence bounds against the exact original PDF."""
+    pdf_path = data_dir / "raw" / "sha256" / record.sha256[:2] / record.sha256
+    content = pdf_path.read_bytes()
+    if hashlib.sha256(content).hexdigest() != record.sha256:
+        raise ValueError(
+            f"Source PDF hash mismatch for centre {record.centre_id}"
+        )
+    with pymupdf.open(stream=content, filetype="pdf") as document:
+        record.amenities.validate_pages(len(document))
+
+
+def load(
+    connection: Connection,
+    records: Sequence[Record],
+    *,
+    data_dir: Path | None = None,
+) -> Summary:
     """Writes each record once; a loaded report and version is left alone.
 
     A record whose PDF is not among the stored reports is counted and logged,
@@ -133,10 +188,41 @@ def load(connection: Connection, records: Sequence[AmenitiesRecord]) -> Summary:
     written = already_loaded = unmatched = 0
     with connection.transaction():
         for record in records:
-            row = connection.execute(_FIND_REPORT, (record.sha256,)).fetchone()
+            if isinstance(record, ExtractionFile):
+                row = connection.execute(
+                    _FIND_V2_REPORT,
+                    (record.sha256, record.centre_id, record.inspection_date),
+                ).fetchone()
+            else:
+                row = connection.execute(
+                    _FIND_REPORT, (record.sha256,)
+                ).fetchone()
             if row is None:
                 logger.warning("no stored report for %s", record.sha256)
                 unmatched += 1
+                continue
+            if isinstance(record, ExtractionFile):
+                if data_dir is None:
+                    raise ValueError(
+                        "V2 loading requires data_dir with original PDFs"
+                    )
+                validate_source_pdf(record, data_dir)
+                cursor = connection.execute(
+                    _INSERT_V2,
+                    (
+                        row[0],
+                        Jsonb(record.amenities.model_dump()),
+                        record.file_name,
+                        record.hiqa_url,
+                        record.extractor_version,
+                        record.model,
+                        record.extracted_at,
+                    ),
+                )
+                if cursor.rowcount:
+                    written += 1
+                else:
+                    already_loaded += 1
                 continue
             amenities = record.amenities
             cursor = connection.execute(
@@ -168,6 +254,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Loads the file, connecting through libpq settings."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, required=True)
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        default=Path(os.environ.get("CLEARCARE_DATA_DIR", "data")),
+        help="raw store for v2 source/hash/page checks",
+    )
     args = parser.parse_args(argv)
     logging.basicConfig(
         level=logging.INFO, format="%(levelname)s %(name)s: %(message)s"
@@ -175,7 +267,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         records = read_records(args.input)
         with psycopg.connect(autocommit=True) as connection:
-            summary = load(connection, records)
+            summary = load(connection, records, data_dir=args.data_dir)
     except (psycopg.Error, OSError, ValueError) as error:
         logger.error("%s", error)
         return 1

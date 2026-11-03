@@ -5,4 +5,4 @@ package ie.clearcare.api.amenities;
  * not have the centre, and amenities is null if it has the centre but nothing has been extracted
  * for it yet.
  */
-record CentreAmenitiesLookup(boolean centreFound, CentreAmenities amenities) {}
+record CentreAmenitiesLookup(boolean centreFound, AmenitiesResponse amenities) {}

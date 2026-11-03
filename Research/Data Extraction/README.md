@@ -68,12 +68,12 @@ only the `amenities` wrapper.
 
 ## Integration status
 
-The current loader, database and HTTP endpoint support v1 only. Do not send
-these v2 item objects to the v1 loader. Lossless evidence storage, API
-compatibility and migration work are the next focused part of CCARE-195.
-The HTTP envelope is not changed by this extractor patch. Scheduling remains
-CCARE-171. Human labels and evaluation remain Waseel's CCARE-192/193 work;
-these tests establish implementation behaviour, not model accuracy.
+The CCARE-195 storage/API branch adds a shared pipeline contract, a v2 loader,
+V12 storage and an explicit version=amenities-v2 API query while preserving v1.
+See docs/amenities.md for loading requirements. This patch depends on extractor
+PR #132; it is not yet deployed. Scheduling remains CCARE-171. Human labels and
+evaluation remain Waseel's CCARE-192/193 work. Tests establish implementation
+behaviour, not model accuracy.
 
 ## Offline checks
 
