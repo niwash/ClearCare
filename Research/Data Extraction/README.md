@@ -27,7 +27,7 @@ order. Quote-content verification and human evaluation remain separate work.
 Use Python 3.11 or newer, with the existing extractor dependencies:
 
 ```sh
-pip install pdfplumber==0.11.10 anthropic==2.4.0 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
+pip install pdfplumber==0.11.10 anthropic==1.15.0 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
 ```
 
 Set `ANTHROPIC_API_KEY` in the environment or root `.env`, or `OPENAI_API_KEY`

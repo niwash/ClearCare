@@ -39,6 +39,15 @@ or one JSON list file. V2 loads need the exact original PDF in the raw store for
 hash/page-bound checks and must match stored centre, inspection date and PDF hash.
 The entire load is transactional. Existing report/version rows are never replaced.
 
+The extractor version names the prompt and the schema, not the model, so a run
+with another model writes the same file paths and the same (report_id,
+extractor_version) rows. To replace one model's results with another's, extract
+with `--force`, which rewrites the output files, and load into a database that
+has no amenities-v2 rows for those reports: the loader keeps existing rows, so
+an administrator deletes the rows to replace first, for example
+`DELETE FROM clearcare.report_amenities_v2 WHERE model LIKE 'gpt-%'`. The model
+column on every row says which run it came from.
+
 V2 files require a timezone-aware UTC extracted_at value. The legacy loader
 keeps its existing optional timestamp and load-time fallback for files without
 one. Existing database rows remain untouched.
