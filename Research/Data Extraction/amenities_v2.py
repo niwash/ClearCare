@@ -1,7 +1,7 @@
 """Approved amenities-v2 structured output and extraction-file validation."""
 
 from datetime import date
-from typing import Literal
+from typing import Literal, get_args
 from urllib.parse import urlsplit
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
@@ -12,7 +12,7 @@ class StrictModel(BaseModel):
 
 
 class Evidence(StrictModel):
-    quote: str = Field(min_length=1)
+    quote: str
     page_start: int = Field(ge=1)
     page_end: int = Field(ge=1)
 
@@ -140,108 +140,15 @@ class FacilitiesItem(StrictModel):
     evidence: list[Evidence] = Field(min_length=1)
 
 
+# The Literal choices are the single source of category order.
 CATEGORY_ORDER = {
-    "care_types": [
-        "General nursing care",
-        "Long-term residential care",
-        "Short-term care",
-        "Respite care",
-        "Convalescent care",
-        "Transitional care",
-        "Step-down care",
-        "Rehabilitation",
-        "Day care",
-        "Dementia care",
-        "Palliative care",
-        "End-of-life care",
-        "Acquired brain injury care",
-        "Physical disability care",
-        "Sensory impairment care",
-        "Neurological care",
-        "Intellectual disability care",
-        "Mental health care",
-    ],
-    "room_types": [
-        "Single room",
-        "Twin/double room",
-        "Multi-bed room",
-        "Shared room, occupancy unspecified",
-        "En-suite facilities",
-        "Shared bathroom facilities",
-    ],
-    "activities": [
-        "Music and singing",
-        "Dancing",
-        "Drama and performances",
-        "Arts and crafts",
-        "Knitting and sewing",
-        "Cooking and baking",
-        "Gardening and flower arranging",
-        "Bingo",
-        "Quizzes and word games",
-        "Board and card games",
-        "Ball and movement games",
-        "Reading and writing",
-        "Talks and discussion groups",
-        "Exercise classes",
-        "Walking",
-        "Outings",
-        "Social gatherings and celebrations",
-        "Men’s groups",
-        "Films and television",
-        "Radio",
-        "Reminiscence activities",
-        "Sensory activities",
-        "Cognitive stimulation therapy",
-        "Sonas",
-        "Physiotherapy",
-        "Occupational therapy",
-        "Music therapy",
-        "Art therapy",
-        "Pet therapy",
-        "Aromatherapy",
-        "Meditation and relaxation",
-        "Hairdressing",
-        "Beauty and nail care",
-        "Massage",
-        "Religious services and prayer",
-    ],
-    "facilities": [
-        "Garden",
-        "Courtyard",
-        "Patio/terrace",
-        "Balcony",
-        "Outdoor space, type unspecified",
-        "Lounge/day room",
-        "Dining room",
-        "Activities room",
-        "Private visitors/family room",
-        "Conservatory/sun room",
-        "Quiet/relaxation room",
-        "Chapel/oratory",
-        "Prayer/reflection room",
-        "Library",
-        "Cinema room",
-        "Games room",
-        "Sensory room",
-        "Gym",
-        "Café/coffee dock",
-        "Shop",
-        "Hairdressing/beauty salon",
-        "Designated smoking area",
-        "Physiotherapy room",
-        "Occupational therapy room",
-        "Hydrotherapy pool/bathroom",
-        "Resident internet/Wi-Fi",
-        "Visitor parking",
-        "Passenger lift",
-        "Stairlift",
-        "Dementia-specific unit",
-        "Mental-health-specific unit",
-        "Acquired-brain-injury unit",
-        "Convalescence unit",
-        "Centre-provided bus/car transport",
-    ],
+    field: list(get_args(model.model_fields["item"].annotation))
+    for field, model in (
+        ("care_types", CareTypesItem),
+        ("room_types", RoomTypesItem),
+        ("activities", ActivitiesItem),
+        ("facilities", FacilitiesItem),
+    )
 }
 
 

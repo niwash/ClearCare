@@ -1,6 +1,6 @@
 # Amenities
 
-What each nursing home offers its residents, read from its HIQA inspection reports and served at `GET /centres/{centre_id}/amenities`. Design reasons are in [ADR-0021](adr/0021-amenities-read-from-reports.md). Findings and the accuracy plan are in `Research/Data Extraction/README.md`.
+What each nursing home offers its residents, read from its HIQA inspection reports and served at `GET /centres/{centre_id}/amenities`. Design reasons are in [ADR-0021](adr/0021-amenities-read-from-reports.md). Historical v1 findings are in `Research/Data Extraction/README.md`. Human v2 revision and evaluation are tracked in [CCARE-192](https://niwash.atlassian.net/browse/CCARE-192) and [CCARE-193](https://niwash.atlassian.net/browse/CCARE-193).
 
 ## What the fields mean
 
@@ -14,7 +14,7 @@ Nothing in production fills the table yet. The extractor is not in the pipeline 
 
 ## How to run it
 
-The pipeline must have downloaded the reports first, so that `data/raw/` and `data/manifests/inspection-reports.jsonl` exist.
+The pipeline must have downloaded the reports first, so that `data/raw/` and `data/manifests/inspection-reports.jsonl` exist. The extractor now writes v2 files under `data/amenities/amenities-v2/<centre_id>/<sha256>.json`; the current v1 loader cannot read them until integration PR #133 is ready. Step 2 below is for existing v1 files only.
 
 1. **Run the extractor.** Put `OPENAI_API_KEY=` and your key in `.env` and install the packages listed in `Research/Data Extraction/README.md`. From the repository root:
 
@@ -23,9 +23,9 @@ The pipeline must have downloaded the reports first, so that `data/raw/` and `da
    python "Research/Data Extraction/extractor.py" --limit 5
    ```
 
-   The first command lists which report it would read for 5 homes and calls nothing. The second writes those 5 homes to `data/amenities/`. Drop `--limit` to do every home.
+   The first command lists which report it would read for 5 homes and calls nothing. The second writes those 5 homes to the versioned v2 paths above. Drop `--limit` to do every home.
 
-2. **Load the results.**
+2. **Load existing v1 results only.**
 
    ```sh
    docker compose run --rm --build pipeline clearcare_pipeline.load_amenities --input /data/amenities
