@@ -20,8 +20,34 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+// The social preview (CCARE-185): the logo with its tagline on the header's blue.
+const SHARE_IMAGE = { url: "/logos/og-image.png", width: 1200, height: 630, alt: "ClearCare: Nursing home inspections made clear" };
+
 export const metadata: Metadata = {
+  // The live site, so the social preview image gets the absolute URL it needs.
+  metadataBase: new URL("https://clearcare.intelijake.com"),
   title: "ClearCare",
+  icons: {
+    icon: [
+      { url: "/logos/favicon.svg", type: "image/svg+xml" },
+      { url: "/logos/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logos/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/logos/apple-touch-icon.png",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "ClearCare",
+    title: "ClearCare",
+    description: "Nursing home inspections, made clear",
+    images: [SHARE_IMAGE],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ClearCare",
+    description: "Nursing home inspections, made clear",
+    images: [SHARE_IMAGE],
+  },
   description: "ClearCare is an interactive web application that makes HIQA nursing home inspection reports easier to search, understand, track, and compare. It ingests publicly available HIQA inspection PDFs, extracts regulation-level compliance judgements, and presents each nursing home’s compliance history in a structured format.",
 };
 

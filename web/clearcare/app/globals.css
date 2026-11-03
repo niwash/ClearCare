@@ -185,6 +185,22 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
+/* The logo (SiteLogo, CCARE-185): the house from clearcare-mark-for-blue.svg beside the name in the
+   site's heading font, "Clear" in white and "Care" in the logo's soft gold, on the brand band. The
+   house is sized by the name's font size, about as tall beside the name as in the full logo files.
+   Negative margins take back the empty space the file keeps around it (8 of 64 units above and to the
+   left, 4.5 to the right, 1.5 below), so the house lines up with the page's left edge; the right
+   margin then leaves the gap the logo files have between the house and the name. */
+.site-logo-mark {
+  width: 1.5em;
+  height: 1.5em;
+  margin: -0.19em 0.2em -0.03em -0.19em;
+}
+
+.site-logo-care {
+  color: #ffd477;
+}
+
 /* The top of a page, and the home page carousel's text panels: the soft wash of --welcome-from
    and --welcome-to, with the page's own text colours. Plain --band in the adult-centred design. */
 .welcome-band,
