@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "2 November 2026";
+const LAST_UPDATED = "3 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -124,16 +124,16 @@ export default function PrivacyPage() {
               the API. Everything else the site shows from reports is worked out by rules (ADR-0015, -0017). */}
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>To show each home&apos;s inspection history and what its reports say.</li>
-            {/* What the extractor does today: free-text dining_notes and other_notes, which aren't quotes,
-                and a prompt that accepts what is "clearly implied" (extractor.py:120, 127, 193). Once it
-                only keeps values it can quote from the report, this can say it extracts and doesn't write.
-                Nothing it finds is shown on the site yet: the care types and amenities filters, the centre
-                page and Compare Homes all say "Coming soon". Change this when they show it. */}
+            {/* The amenities-v2 extractor (CCARE-195): items from a fixed list of 93, each kept only with
+                a quote from the report and its pages, and no free-text notes. The centre page shows them
+                with the quotes (CCARE-163); the filters and Compare Homes still say "Coming soon". The
+                checking is the gold set and evaluation, CCARE-192 and -193: change "We're now checking"
+                here and in centre-amenities.tsx when it's done. */}
             <li>
-              To find details such as care types and amenities. An AI service reads each report and records what it
-              finds, including short notes that summarise what the report says. This tool is still being developed:
-              its results haven&apos;t yet been checked against the reports, and none of them are shown on ClearCare
-              yet. We&apos;ll update this notice before they are.
+              To show what each home offers, such as its types of care, rooms, activities and facilities. An AI
+              service reads each report, picks these out from a fixed list and keeps the passage of the report each
+              one comes from. Each home&apos;s page shows them with those passages, marked as read by AI. We&apos;re
+              now checking these results against the reports, so until that&apos;s done some may be wrong or missing.
             </li>
             <li>
               For research on how findings change from one inspection to the next. An AI service reads the reports

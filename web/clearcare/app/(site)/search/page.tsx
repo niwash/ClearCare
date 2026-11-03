@@ -28,7 +28,10 @@ interface SearchPageProps {
 const FILTERS = ["name", "address", "county", "eircode"] as const;
 
 // Filters the API can't apply yet, shown so people know they're on the way.
-// TODO: Make these real filters once the API has the data.
+// TODO: Make these real filters now the centre page shows amenities v2 (CCARE-163, CCARE-195). The
+// options are v2's fixed lists: care_types, plus room_types, activities and facilities, which may want
+// their own filters rather than one "Amenities". GET /centres needs a filter parameter for them
+// first: PR #133 only adds /centres/{centre_id}/amenities.
 const COMING_SOON_FILTERS = ["Care types", "Amenities"] as const;
 
 // The results grid has 1 or 2 columns depending on screen width (2 beside the left column from lg
