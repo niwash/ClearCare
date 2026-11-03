@@ -75,6 +75,19 @@ export function clearCompared() {
   write([]);
 }
 
+// Opens the search page's shortlist panel (ShortlistDrawer) from elsewhere on the page: a result's
+// button, once the list is full, so the way to make room is one click away (CCARE-189).
+const OPEN_SHORTLIST_EVENT = "clearcare:open-shortlist";
+
+export function openShortlist() {
+  dispatchEvent(new Event(OPEN_SHORTLIST_EVENT));
+}
+
+export function onOpenShortlist(listener: () => void) {
+  addEventListener(OPEN_SHORTLIST_EVENT, listener);
+  return () => removeEventListener(OPEN_SHORTLIST_EVENT, listener);
+}
+
 // What the last change to the list was, for the one status message on the page (CompareStatus).
 // Kept here, not in the button that made the change: a Remove button can go with its home in the
 // same update, and a message inside it would go too.

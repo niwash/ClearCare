@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.json.JsonMapper;
 
 /** Reads amenities from the view the clearcare_api role can read (db/V11). */
 @Repository
@@ -33,10 +34,19 @@ class CentreAmenitiesRepository {
       WHERE centre_id = :centre_id
       """;
 
+  private static final String AMENITIES_V2 =
+      """
+      SELECT report_id, inspection_date, amenities, extractor_version, model
+      FROM clearcare.centre_amenities_v2
+      WHERE centre_id = :centre_id
+      """;
+
+  private final JsonMapper json;
   private final JdbcClient jdbc;
 
-  CentreAmenitiesRepository(JdbcClient jdbc) {
+  CentreAmenitiesRepository(JdbcClient jdbc, JsonMapper json) {
     this.jdbc = jdbc;
+    this.json = json;
   }
 
   /**
@@ -45,12 +55,21 @@ class CentreAmenitiesRepository {
    * loaded meanwhile.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
-  Optional<CentreAmenitiesLookup> find(String centreId) {
+  Optional<CentreAmenitiesLookup> find(String centreId, String version) {
     if (!registerPublished()) {
       return Optional.empty();
     }
     if (!centreExists(centreId)) {
       return Optional.of(new CentreAmenitiesLookup(false, null));
+    }
+    if (version.equals("amenities-v2")) {
+      CentreAmenitiesV2 amenities =
+          jdbc.sql(AMENITIES_V2)
+              .param("centre_id", centreId)
+              .query((rs, rowNumber) -> rowV2(rs))
+              .optional()
+              .orElse(null);
+      return Optional.of(new CentreAmenitiesLookup(true, amenities));
     }
     CentreAmenities amenities =
         jdbc.sql(AMENITIES)
@@ -67,6 +86,15 @@ class CentreAmenitiesRepository {
 
   private boolean centreExists(String centreId) {
     return jdbc.sql(CENTRE).param("centre_id", centreId).query(Integer.class).optional().isPresent();
+  }
+
+  private CentreAmenitiesV2 rowV2(ResultSet rs) throws SQLException {
+    AmenitiesV2Lists lists = json.readValue(rs.getString("amenities"), AmenitiesV2Lists.class);
+    return new CentreAmenitiesV2(
+        rs.getLong("report_id"),
+        rs.getObject("inspection_date", LocalDate.class),
+        lists.careTypes(), lists.roomTypes(), lists.activities(), lists.facilities(),
+        rs.getString("extractor_version"), rs.getString("model"));
   }
 
   private static CentreAmenities row(ResultSet rs, int rowNumber) throws SQLException {

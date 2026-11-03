@@ -1,7 +1,7 @@
 """Tests for loading extracted amenities. The database tests need Docker."""
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -13,7 +13,7 @@ from clearcare_pipeline.load_amenities import (
     main,
     read_records,
 )
-from tests.database import PIPELINE, migrated_database
+from tests.database import API, PIPELINE, migrated_database
 
 SHA = "ab" * 32
 OTHER_SHA = "cd" * 32
@@ -35,6 +35,7 @@ RECORD: dict[str, object] = {
     "model": "gpt-4o-mini",
     "extractor_version": "amenities-v0",
     "amenities": AMENITIES,
+    "extracted_at": EXTRACTED_AT.isoformat(),
 }
 
 
@@ -98,7 +99,12 @@ def test_main_names_a_file_that_is_not_utf8(
 
 @pytest.mark.database
 def test_amenities_load_once_per_report_and_version() -> None:
-    first = AmenitiesRecord.model_validate(RECORD)
+    first = AmenitiesRecord.model_validate(
+        {
+            **RECORD,
+            "extracted_at": (EXTRACTED_AT - timedelta(days=1)).isoformat(),
+        }
+    )
     unmatched = AmenitiesRecord.model_validate({**RECORD, "sha256": OTHER_SHA})
     newer = AmenitiesRecord.model_validate(
         {
@@ -131,10 +137,16 @@ def test_amenities_load_once_per_report_and_version() -> None:
             (stored[0],),
         )
 
-        assert load(connection, [first, unmatched]) == Summary(1, 0, 1)
-        # The same extraction again adds nothing.
+        assert load(connection, [newer, unmatched]) == Summary(1, 0, 1)
+        # Load the older extraction last: load time must not win.
+        assert load(connection, [first]) == Summary(1, 0, 0)
         assert load(connection, [first]) == Summary(0, 1, 0)
-        assert load(connection, [newer]) == Summary(1, 0, 0)
+        connection.commit()
+        with database.connect(API) as api:
+            assert api.execute(
+                "SELECT extractor_version FROM clearcare.centre_amenities"
+                " WHERE centre_id = '117'"
+            ).fetchone() == ("amenities-v1",)
         # The extractor's own time is kept rather than the load time.
         stored_at = connection.execute(
             "SELECT extracted_at FROM clearcare.report_amenities"

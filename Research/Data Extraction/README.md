@@ -1,113 +1,92 @@
-# Amenities extractor
+# Amenities v2 extractor
 
-Reads the latest HIQA inspection report of each nursing home and uses
-GPT-4o-mini to pull out what the home offers its residents: care types, room
-types, outdoor space, activities, transport, religious services, special units,
-dining and other notes.
+Reads each centre's latest stored HIQA inspection report using GPT-4o-mini.
+It downloads nothing and does not load the database or run on a schedule.
 
-It does not download anything. The pipeline already stores every HIQA report
-and a manifest of them in its data folder, and the extractor reads from there.
+## Contract
 
-## Why it reads the whole report
+`amenities-v2.schema.json` is the frozen approved extraction-file contract.
+`amenities_v2.py` enforces its exact categories and keys plus structural checks
+that JSON Schema cannot express. There are four required arrays: care_types
+(18 choices), room_types (6), activities (35) and facilities (34).
+Each selected category has `item` and non-empty `evidence`, containing exact
+`quote`, integer `page_start` and integer `page_end`. Empty lists mean no
+confirmed items in a successfully processed report, never a processing failure.
 
-The first version of this extractor cut each report to its first 12,000
-characters. Reports run from about 19,000 to 49,000 characters, and gardens and
-activities are described later on, so some homes came back with nothing for
-them. This version sends the whole report. The longest Dublin report is about
-12,000 tokens, well inside GPT-4o-mini's limit.
+The prompt includes the approved category boundaries. It requires direct
+support for current provision and excludes future compliance-plan promises.
+PDF page markers count from 1 including the cover and blank pages. Structural
+checks reject unknown categories/keys, duplicate items, blank quotes, missing
+evidence, non-integer pages and invalid ranges. Exact duplicate evidence is
+removed; distinct passages and restrictions remain. Categories use checklist
+order. Quote-content verification and human evaluation remain separate work.
 
-## Setup
+## Setup and run
 
-1. Run the pipeline's report download at least once so the data folder has
-   reports. See `CLEARCARE_CRAWL` in `.env.example` and
-   `docs/adr/0014-pipeline-schedules-itself-in-compose.md` for how the scheduler works. The extractor needs:
-   - `data/manifests/inspection-reports.jsonl`
-   - `data/raw/sha256/...` (the stored PDFs)
-2. Use Python 3.11 or newer. The pipeline uses 3.13, which is what this was
-   tested with.
-3. Install the packages:
-
-   ```sh
-   pip install pdfplumber==0.11.10 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
-   ```
-
-4. Set your key in the root `.env` (copy it from `.env.example` if you do not
-   have one):
-
-   ```
-   OPENAI_API_KEY=your-key-here
-   ```
-
-## Run
-
-From the repository root, so the root `.env` is found:
+Use Python 3.11 or newer, with the existing extractor dependencies:
 
 ```sh
-python "Research/Data Extraction/extractor.py"
+pip install pdfplumber==0.11.10 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
 ```
 
-| Option | What it does |
-| --- | --- |
-| `--dry-run` | Lists the report that would be used for each home and stops. Costs nothing. |
-| `--centre-id 13` | Only this home. Can be given more than once. |
-| `--centres-file file.json` | Only the homes in a JSON file (a list of IDs, or of objects with a `centre_id`). |
-| `--limit 10` | Stop after 10 homes. |
-| `--force` | Extract again even if the output is up to date. |
-| `--data-dir path` | The pipeline's data folder. Defaults to `CLEARCARE_DATA_DIR`, or `./data`. |
-| `--output-dir path` | Where to write the files. Defaults to `<data-dir>/amenities`. |
+Set `OPENAI_API_KEY` in the environment or root `.env`. From the repository root:
 
-A home is skipped when its output file already exists for the same report. If
-HIQA has published a newer report since, that home is extracted again. A
-failed home is reported at the end and tried again on the next run.
-
-Each report is sent whole, up to about 12,000 tokens for the longest, so a
-full run costs little (the earlier Dublin run on trimmed text cost about 6
-cents). Try `--limit 5` first.
-
-## Output
-
-One file per home at `data/amenities/<centre_id>.json`:
-
-```json
-{
-  "centre_id": "1",
-  "inspection_date": "2026-01-15",
-  "file_name": "0001-aclare-house-nursing-home-15-january-2026.pdf",
-  "hiqa_url": "https://www.hiqa.ie/system/files/inspectionreports/...",
-  "sha256": "220e8b82...",
-  "model": "gpt-4o-mini",
-  "extractor_version": "amenities-v1",
-  "extracted_at": "2026-10-26T13:06:32+00:00",
-  "amenities": {
-    "care_types": ["respite care"],
-    "room_types": ["single room", "twin room"],
-    "has_outdoor_space": true,
-    "activities": ["music therapy"],
-    "has_transport": null,
-    "has_chapel_or_religious_services": null,
-    "special_units": [],
-    "dining_notes": "",
-    "other_notes": ""
-  }
-}
+```sh
+python "Research/Data Extraction/extractor.py" --dry-run
+python "Research/Data Extraction/extractor.py" --centre-id 13
 ```
 
-- The values are what the model read from the whole report text. Provider
-  text and inspector observations are not separated yet.
-- The three flags are `true` or `false` when the report says so and `null`
-  when it is silent. `null` does not mean the home has none.
-- The lists are not normalised yet, so "physio" and "physiotherapy" are
-  different values.
-- `sha256` names the exact PDF the amenities were read from. It is the same
-  hash the database stores for a report.
+Input is `<data-dir>/manifests/inspection-reports.jsonl` and PDFs under
+`<data-dir>/raw/sha256/<first two hash characters>/<hash>`. The data directory
+defaults to `CLEARCARE_DATA_DIR` or `./data`. The stored PDF hash is checked
+before sending text to the model. Metadata must exist and be valid; none is
+invented. The requested model remains GPT-4o-mini; output records the model
+identifier returned by the API and a UTC extraction timestamp.
 
-## Loading into the database
+Options remain `--data-dir`, `--output-dir`, repeatable `--centre-id`,
+`--centres-file`, `--limit`, `--force` and `--dry-run`. Dry-run makes no model
+calls. Try a small explicit limit before a paid batch. Output allowance is
+16,000 tokens for quote-bearing results. Reports over 200,000 characters fail
+instead of being truncated. Unreadable PDFs, refusals, incomplete responses and
+invalid output fail without overwriting good results. Any failed centre gives
+an exit status of 1 so an operator can detect partial runs.
 
-`clearcare_pipeline.load_amenities` reads the files this script writes and
-matches each to a stored report by `sha256`. The API then serves them at
-`GET /centres/{centre_id}/amenities`. The commands are in `docs/amenities.md`.
+## Output and retained history
 
-## What we found while building it
+Files now use `<output-dir>/amenities-v2/<centre_id>/<sha256>.json`.
+The output directory defaults to `<data-dir>/amenities`. Existing v1 files at
+`<output-dir>/<centre_id>.json` remain untouched. Different PDF hashes have
+separate files. A valid v2 file for the same centre and hash is skipped;
+`--force` atomically replaces that file only after successful extraction.
+Prompt/model/schema changes after this version is frozen require a new version.
+
+The outer keys remain `centre_id`, `inspection_date`, `file_name`, `hiqa_url`,
+`sha256`, `model`, `extractor_version`, `extracted_at` and `amenities`.
+Source metadata comes from the manifest, never the model. The model returns
+only the `amenities` wrapper.
+
+## Loading and API
+
+The extractor and pipeline loader share the same v2 validation contract.
+V12 stores item-level evidence, and the API exposes it through the explicit
+version=amenities-v2 query while keeping the default v1 response.
+See docs/amenities.md for loading requirements and API behaviour.
+Human labels and evaluation remain independent of model outputs. Tests verify
+implementation behaviour, not model accuracy.
+
+## Offline checks
+
+No API key, model calls, Docker or human gold labels are required:
+
+```sh
+python -m unittest discover -s "Research/Data Extraction" -p "test_extractor.py" -v
+```
+
+The tests need Pydantic and python-dotenv. They check the frozen category
+contract, evidence validation, page numbering, model failures, provenance,
+version-aware caching and preservation of good files after failures.
+
+## Historical v1 findings
 
 - The first version cut each report to 12,000 characters and missed gardens
   and activities described later on. Some homes were missed (for example
@@ -125,23 +104,3 @@ matches each to a stored report by `sha256`. The API then serves them at
 - Of the 103 Dublin PDFs in that run, 97 matched the database's latest report
   for their centre by hash. Centres 7, 22, 183, 5590 and 5880 have a newer
   report in the database, and centre 5307 had a newer one locally.
-
-## Accuracy
-
-The values have not been measured yet. The plan is a hand-labelled gold set.
-A person reads the report and writes down what the nine fields should be,
-without looking at the model's answer. Each field of each home is then counted
-as a match, a false negative (the model missed something that is in the
-report) or a false positive (the model added something that is not). From
-those counts we report precision, recall and F1, per field and overall. The
-first gold set is 18 Dublin homes, chosen to vary provider, naming and report
-history. After that it grows and extends to other counties.
-
-## Not done yet
-
-- Normalising the list values.
-- Sending only the "About the designated centre" section instead of the
-  whole report. It would be cheaper and may be more accurate.
-- Reports that are scanned images with no text are skipped and logged.
-- GPT-4o-mini is due to be retired from OpenAI's API in January 2027, so the
-  model will need to change before the project's end date matters.
