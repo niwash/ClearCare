@@ -27,12 +27,25 @@ paths:
         `Saint` are different words. A value that is blank, or has no letters
         or digits, is ignored.
 
-        Centres are sorted by their folded name, character by character in
-        code order (so a space comes before any letter), then by `centre_id`
-        as a number. Results are not ranked.
+        `care_type`, `room_type`, `facility` and `activity` filter by what
+        the centre's latest extracted inspection report mentions, read by a
+        model: the same record `GET /centres/{centre_id}/amenities` serves
+        with `version=amenities-v2`. Each takes exact item names from the
+        amenities-v2 lists and may be repeated. A centre matches `care_type`,
+        `facility` and `activity` when its report mentions every value given,
+        and `room_type` when it mentions any of them. A report that does not
+        mention an item does not show the centre lacks it, and a centre with
+        no extracted report matches none of these four.
 
-        An unknown parameter, or a parameter given more than once, is
-        refused with 400.
+        `sort=name` orders centres by their folded name, character by
+        character in code order (so a space comes before any letter), then by
+        `centre_id` as a number. `sort=latest_inspection` orders them by the
+        inspection date of their newest loaded report, newest first, centres
+        without a report last, ties by name. Results are not ranked.
+
+        An unknown parameter, an unknown item name or sort, or a parameter
+        other than the four filters given more than once, is refused with
+        400. A filter value given twice counts once.
       parameters:
         - name: name
           in: query
@@ -67,6 +80,57 @@ paths:
           schema:
             $ref: "#/components/schemas/County"
           example: Dublin
+        - name: care_type
+          in: query
+          description: >
+            Care types the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/CareTypeItem"
+          example: ["Dementia care", "Respite care"]
+        - name: room_type
+          in: query
+          description: >
+            Room types of which the centre's latest extracted report must mention at least one. Exact item names; case matters. May be repeated.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/RoomTypeItem"
+          example: ["Single room"]
+        - name: facility
+          in: query
+          description: >
+            Facilities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/FacilityItem"
+          example: ["Garden"]
+        - name: activity
+          in: query
+          description: >
+            Activities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ActivityItem"
+          example: ["Bingo"]
+        - name: sort
+          in: query
+          description: The order of the results, as described above.
+          schema:
+            type: string
+            enum: [name, latest_inspection]
+            default: name
         - name: page
           in: query
           schema:
@@ -86,7 +150,8 @@ paths:
           description: >
             One page of the matching centres. A page past the last one has no
             centres, and `total` is still the number of matches. No matches
-            give `"centres": []` and `"total": 0`.
+            give `"centres": []` and `"total": 0`. `facets` and `sort` are
+            present on every page, whatever `page_size`.
           content:
             application/json:
               schema:
@@ -100,6 +165,16 @@ paths:
                     eircode: W23P6EX
                     maximum_occupancy: 62
                     hiqa_url: https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home
+                    amenities:
+                      report_id: 112
+                      inspection_date: "2026-01-15"
+                      care_types: ["Long-term residential care", "Respite care"]
+                      room_types: ["Single room", "Twin/double room"]
+                      activities: ["Music and singing", "Bingo"]
+                      facilities: ["Garden", "Lounge/day room"]
+                    fair_deal: true
+                    latest_inspection:
+                      date: "2026-01-15"
                 page: 1
                 page_size: 20
                 total: 1
@@ -107,10 +182,18 @@ paths:
                   fetched_at: "2026-10-05T06:12:54Z"
                   url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+                facets:
+                  care_type: {"Dementia care": 0, "Respite care": 1}
+                  room_type: {"Single room": 1, "Twin/double room": 1}
+                  facility: {"Garden": 1, "Courtyard": 0}
+                  activity: {"Bingo": 1, "Dancing": 0}
+                  fair_deal: 1
+                sort: name
         "400":
           description: >
-            A parameter is unknown, given more than once, too long, out of
-            range, or not of the expected type or shape.
+            A parameter is unknown, given more than once where it may not be,
+            too long, out of range, not of the expected type or shape, or an
+            item name or sort the API does not know.
           content:
             application/problem+json:
               schema:
@@ -505,12 +588,12 @@ components:
   schemas:
     CentreSearchResult:
       type: object
-      required: [centres, page, page_size, total, register_snapshot]
+      required: [centres, page, page_size, total, register_snapshot, facets, sort]
       properties:
         centres:
           type: array
           items:
-            $ref: "#/components/schemas/Centre"
+            $ref: "#/components/schemas/CentreSummary"
         page:
           type: integer
         page_size:
@@ -520,6 +603,122 @@ components:
           description: The number of matching centres on all pages.
         register_snapshot:
           $ref: "#/components/schemas/RegisterSnapshot"
+        facets:
+          $ref: "#/components/schemas/Facets"
+        sort:
+          type: string
+          enum: [name, latest_inspection]
+          description: The order applied to the results.
+
+    CentreSummary:
+      description: >
+        A centre as a search result: its register entry, what its latest
+        extracted report mentions, and the date of its newest inspection.
+      allOf:
+        - $ref: "#/components/schemas/Centre"
+        - type: object
+          required: [amenities, fair_deal, latest_inspection]
+          properties:
+            amenities:
+              description: >
+                The items the centre's latest extracted report mentions, as
+                `GET /centres/{centre_id}/amenities?version=amenities-v2`
+                serves them but without the evidence. null when no report of
+                the centre has been read yet. An item that is missing is not
+                confirmed absent.
+              oneOf:
+                - $ref: "#/components/schemas/MentionedAmenities"
+                - type: "null"
+            fair_deal:
+              type: boolean
+              description: >
+                Whether a contract price is stored for the centre, the one
+                `GET /centres/{centre_id}` returns as `contract_price`. It
+                does not show that the centre is on the newest HSE list.
+            latest_inspection:
+              description: >
+                The centre's newest loaded inspection report, or null when
+                none has been loaded.
+              oneOf:
+                - type: object
+                  required: [date]
+                  properties:
+                    date:
+                      type: [string, "null"]
+                      format: date
+                      description: >
+                        The inspection date; null when the report does not
+                        give one.
+                - type: "null"
+
+    MentionedAmenities:
+      type: object
+      additionalProperties: false
+      required: [report_id, inspection_date, care_types, room_types, activities, facilities]
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            The report the items were read from, for `GET /reports/{report_id}`.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            That report's inspection date. It can be older than
+            `latest_inspection`, because the newest report may not have been
+            read yet.
+        care_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareTypeItem"
+        room_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomTypeItem"
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+        facilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/FacilityItem"
+
+    Facets:
+      type: object
+      description: >
+        For every item of every list, how many centres would match if that
+        item were also given, with the other parameters as they are: added to
+        the all-of values for `care_type`, `facility` and `activity`, and to
+        the any-of values for `room_type`. Every item is a key, those that
+        match no centre with 0. `fair_deal` is how many of the matching
+        centres have a stored contract price.
+      required: [care_type, room_type, facility, activity, fair_deal]
+      properties:
+        care_type:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        room_type:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        facility:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        activity:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        fair_deal:
+          type: integer
+          minimum: 0
 
     CentreResult:
       type: object
@@ -738,6 +937,26 @@ components:
           minimum: 1
           description: Inclusive end, at least page_start; same-page evidence repeats the page.
 
+    CareTypeItem:
+      type: string
+      description: A care type from the amenities-v2 list, as the extractor names it.
+      enum: ["General nursing care", "Long-term residential care", "Short-term care", "Respite care", "Convalescent care", "Transitional care", "Step-down care", "Rehabilitation", "Day care", "Dementia care", "Palliative care", "End-of-life care", "Acquired brain injury care", "Physical disability care", "Sensory impairment care", "Neurological care", "Intellectual disability care", "Mental health care"]
+
+    RoomTypeItem:
+      type: string
+      description: A room type from the amenities-v2 list, as the extractor names it.
+      enum: ["Single room", "Twin/double room", "Multi-bed room", "Shared room, occupancy unspecified", "En-suite facilities", "Shared bathroom facilities"]
+
+    ActivityItem:
+      type: string
+      description: A activity from the amenities-v2 list, as the extractor names it.
+      enum: ["Music and singing", "Dancing", "Drama and performances", "Arts and crafts", "Knitting and sewing", "Cooking and baking", "Gardening and flower arranging", "Bingo", "Quizzes and word games", "Board and card games", "Ball and movement games", "Reading and writing", "Talks and discussion groups", "Exercise classes", "Walking", "Outings", "Social gatherings and celebrations", "Men’s groups", "Films and television", "Radio", "Reminiscence activities", "Sensory activities", "Cognitive stimulation therapy", "Sonas", "Physiotherapy", "Occupational therapy", "Music therapy", "Art therapy", "Pet therapy", "Aromatherapy", "Meditation and relaxation", "Hairdressing", "Beauty and nail care", "Massage", "Religious services and prayer"]
+
+    FacilityItem:
+      type: string
+      description: A facility from the amenities-v2 list, as the extractor names it.
+      enum: ["Garden", "Courtyard", "Patio/terrace", "Balcony", "Outdoor space, type unspecified", "Lounge/day room", "Dining room", "Activities room", "Private visitors/family room", "Conservatory/sun room", "Quiet/relaxation room", "Chapel/oratory", "Prayer/reflection room", "Library", "Cinema room", "Games room", "Sensory room", "Gym", "Café/coffee dock", "Shop", "Hairdressing/beauty salon", "Designated smoking area", "Physiotherapy room", "Occupational therapy room", "Hydrotherapy pool/bathroom", "Resident internet/Wi-Fi", "Visitor parking", "Passenger lift", "Stairlift", "Dementia-specific unit", "Mental-health-specific unit", "Acquired-brain-injury unit", "Convalescence unit", "Centre-provided bus/car transport"]
+
     CentreAmenitiesV2:
       type: object
       additionalProperties: false
@@ -757,8 +976,7 @@ components:
             required: [item, evidence]
             properties:
               item:
-                type: string
-                enum: ["General nursing care", "Long-term residential care", "Short-term care", "Respite care", "Convalescent care", "Transitional care", "Step-down care", "Rehabilitation", "Day care", "Dementia care", "Palliative care", "End-of-life care", "Acquired brain injury care", "Physical disability care", "Sensory impairment care", "Neurological care", "Intellectual disability care", "Mental health care"]
+                $ref: "#/components/schemas/CareTypeItem"
               evidence:
                 type: array
                 minItems: 1
@@ -772,8 +990,7 @@ components:
             required: [item, evidence]
             properties:
               item:
-                type: string
-                enum: ["Single room", "Twin/double room", "Multi-bed room", "Shared room, occupancy unspecified", "En-suite facilities", "Shared bathroom facilities"]
+                $ref: "#/components/schemas/RoomTypeItem"
               evidence:
                 type: array
                 minItems: 1
@@ -787,8 +1004,7 @@ components:
             required: [item, evidence]
             properties:
               item:
-                type: string
-                enum: ["Music and singing", "Dancing", "Drama and performances", "Arts and crafts", "Knitting and sewing", "Cooking and baking", "Gardening and flower arranging", "Bingo", "Quizzes and word games", "Board and card games", "Ball and movement games", "Reading and writing", "Talks and discussion groups", "Exercise classes", "Walking", "Outings", "Social gatherings and celebrations", "Men’s groups", "Films and television", "Radio", "Reminiscence activities", "Sensory activities", "Cognitive stimulation therapy", "Sonas", "Physiotherapy", "Occupational therapy", "Music therapy", "Art therapy", "Pet therapy", "Aromatherapy", "Meditation and relaxation", "Hairdressing", "Beauty and nail care", "Massage", "Religious services and prayer"]
+                $ref: "#/components/schemas/ActivityItem"
               evidence:
                 type: array
                 minItems: 1
@@ -802,8 +1018,7 @@ components:
             required: [item, evidence]
             properties:
               item:
-                type: string
-                enum: ["Garden", "Courtyard", "Patio/terrace", "Balcony", "Outdoor space, type unspecified", "Lounge/day room", "Dining room", "Activities room", "Private visitors/family room", "Conservatory/sun room", "Quiet/relaxation room", "Chapel/oratory", "Prayer/reflection room", "Library", "Cinema room", "Games room", "Sensory room", "Gym", "Café/coffee dock", "Shop", "Hairdressing/beauty salon", "Designated smoking area", "Physiotherapy room", "Occupational therapy room", "Hydrotherapy pool/bathroom", "Resident internet/Wi-Fi", "Visitor parking", "Passenger lift", "Stairlift", "Dementia-specific unit", "Mental-health-specific unit", "Acquired-brain-injury unit", "Convalescence unit", "Centre-provided bus/car transport"]
+                $ref: "#/components/schemas/FacilityItem"
               evidence:
                 type: array
                 minItems: 1
