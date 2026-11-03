@@ -1,12 +1,13 @@
 "use client";
 
-// "Your shortlist" on the search page (CCARE-189): a button with the count, in the bar that stays at
-// the top of the results, that opens the shortlist in a panel sliding in from the right, as saved
-// items do on shopping sites. The results stay in sight beside it. The panel is a modal dialog, so
-// focus stays in it and Escape or a click beside it closes it. Once the list is full, the button
-// says so, and each result's "Shortlist full" button opens the panel too (openShortlist).
+// "Your shortlist" on the search page (CCARE-189): a button with the count, at the top of the
+// results, that opens the shortlist in a panel sliding in from the right, as saved items do on
+// shopping sites. The results stay in sight beside it. The panel is a modal dialog, so focus stays
+// in it and Escape or a click beside it closes it. Once the list is full, a link beside the button
+// goes to Compare Homes, and each result's "Shortlist full" button opens the panel too (openShortlist).
+import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { MAX_COMPARED } from "@/lib/compare";
+import { compareHref, MAX_COMPARED } from "@/lib/compare";
 import { onOpenShortlist, useComparedHomes } from "./compare-store";
 import { ShortlistBox } from "./shortlist-box";
 
@@ -26,7 +27,6 @@ export function ShortlistDrawer() {
   return (
     <>
       <div className="flex shrink-0 items-center gap-3">
-        {count >= MAX_COMPARED && <span className="hidden text-sm text-ink-muted sm:inline">Your shortlist is full</span>}
         <button
           type="button"
           onClick={() => dialog.current?.showModal()}
@@ -40,6 +40,14 @@ export function ShortlistDrawer() {
             <span className="sr-only"> of {MAX_COMPARED}</span>
           </span>
         </button>
+        {homes && count >= MAX_COMPARED && (
+          <span className="hidden text-sm text-ink-muted sm:inline">
+            Full.{" "}
+            <Link href={compareHref(homes.map((home) => home.id))} className="tap-target">
+              Compare these {count} →
+            </Link>
+          </span>
+        )}
       </div>
       <dialog
         ref={dialog}

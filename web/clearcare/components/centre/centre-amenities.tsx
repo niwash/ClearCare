@@ -8,7 +8,8 @@ import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centre
 import type { ReactNode } from "react";
 import { AmenityTags, Passages } from "./amenity-tags";
 
-const tagClass = "rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage adult:rounded-md";
+// Shared with Compare Homes, so an item looks the same in both places.
+export const amenityTagClass = "rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage adult:rounded-md";
 
 type CentreAmenitiesProps = {
   amenities: CentreAmenities | null;
@@ -43,12 +44,13 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
     <section aria-labelledby="amenities-h" className="border-t border-line-soft py-2">
       <div className="flex flex-col gap-1 px-4 pb-2 pt-2">
         <Heading />
-        {/* Said before the values, so nobody takes them as the home's own list. How to see the
-            passages depends on the design, since each shows them its own way. */}
+        {/* Said before the values, so nobody takes them as the home's own list; the first sentence is
+            the disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays. How to see
+            the passages depends on the design, since each shows them its own way. */}
         <p className="text-small text-ink-muted">
           Read by an AI tool from {reportUrl ? <a href={reportUrl}>{report}</a> : report}. We&apos;re now checking
-          these against the report, and the home may offer more than the report mentions, so ask the home about
-          anything that matters to you.
+          these against the report, and the home may offer more than the report mentions, so always call the home
+          to confirm anything that matters to you.
           {found.length > 0 && (
             <>
               {" "}
@@ -73,7 +75,7 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
                 </div>
                 <ul className="hidden flex-wrap gap-1.5 adult:flex">
                   {items.map(({ item }) => (
-                    <li key={item} className={tagClass}>
+                    <li key={item} className={amenityTagClass}>
                       {item}
                     </li>
                   ))}
@@ -90,16 +92,9 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
 
 function Heading() {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <h3 id="amenities-h" className="font-semibold text-ink">
-        What the home offers
-      </h3>
-      {/* Outlined in the easier-to-read design, where the tints are all one sand colour and a filled
-          label would look like one of the items. */}
-      <span className="rounded-full bg-tint-gold px-2 py-0.5 text-xs font-semibold text-on-tint-gold adult:rounded-md adult:border adult:border-current adult:bg-transparent adult:text-sm">
-        Read by AI
-      </span>
-    </div>
+    <h3 id="amenities-h" className="font-semibold text-ink">
+      What the home offers
+    </h3>
   );
 }
 

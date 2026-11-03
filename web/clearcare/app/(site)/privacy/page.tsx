@@ -132,7 +132,8 @@ export default function PrivacyPage() {
             <li>
               To show what each home offers, such as its types of care, rooms, activities and facilities. An AI
               service reads each report, picks these out from a fixed list and keeps the passage of the report each
-              one comes from. Each home&apos;s page shows them with those passages, marked as read by AI. We&apos;re
+              one comes from. Each home&apos;s page shows them with those passages, and Compare Homes shows them side
+              by side, both saying they were read by an AI tool. We&apos;re
               now checking these results against the reports, so until that&apos;s done some may be wrong or missing.
             </li>
             <li>

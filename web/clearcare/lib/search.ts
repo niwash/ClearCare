@@ -2,6 +2,7 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
+import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
 
 export interface CentreSummary {
   centre_id: string;
@@ -11,6 +12,10 @@ export interface CentreSummary {
   eircode: string | null; // without the space: "W23P6EX"
   maximum_occupancy: number | null; // the most residents HIQA allows, not free beds
   hiqa_url: string;
+  // From an API with the care and amenity filters (lib/search-filters.ts); absent before it.
+  amenities?: Record<"care_types" | "room_types" | "facilities" | "activities", string[]> | null;
+  fair_deal?: boolean; // on the latest HSE contract price list, so it takes part in Fair Deal
+  latest_inspection?: { date: string; compliant: number; assessed: number } | null; // regulations judged
 }
 
 // Which copy of the HIQA register the results come from.
@@ -26,6 +31,13 @@ export interface SearchResponse {
   page_size: number;
   total: number;
   register_snapshot: RegisterSnapshot;
+  // From an API with the filters. Each option's count is how many homes would match with it ticked
+  // too, given the other filters. Without facets the filters aren't offered, so nothing looks
+  // filtered when it isn't.
+  facets?: Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
+  // With no matches: how many there would be without each active filter.
+  relaxations?: { param: string; value?: string; total: number }[];
+  sort?: string; // the order applied, echoed; without it, results are by name
 }
 
 // Straight from the URL, so the API does the validating.
@@ -36,6 +48,7 @@ export interface SearchQuery {
   eircode?: string;
   page?: string;
   page_size?: string;
+  sort?: string;
 }
 
 export type SearchResult =
@@ -57,13 +70,14 @@ export function apiUrl() {
   return process.env.API_URL?.replace(/\/$/, "") || null;
 }
 
-export async function searchCentres(query: SearchQuery): Promise<SearchResult> {
+// filters: the care and amenity filters' parameters (apiFilterParams, lib/search-filters.ts).
+export async function searchCentres(query: SearchQuery, filters?: URLSearchParams): Promise<SearchResult> {
   // Read the API on each request. Otherwise a build without API_URL prerenders the pages that
   // search, such as /, as "API_URL isn't set" until the next build.
   await connection();
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
-  return fetchCentres(url, query);
+  return fetchCentres(url, query, filters);
 }
 
 
@@ -74,8 +88,8 @@ export function unavailableMessage(status: number) {
     : "ClearCare can't reach its data at the moment. Please try again later.";
 }
 
-async function fetchCentres(apiUrl: string, query: SearchQuery): Promise<SearchResult> {
-  const params = new URLSearchParams();
+async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSearchParams): Promise<SearchResult> {
+  const params = new URLSearchParams(filters);
   for (const [key, value] of Object.entries(query)) {
     if (value) params.set(key, value);
   }
@@ -104,4 +118,63 @@ export function looksLikeEircode(text: string) {
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.
 export function formatEircode(eircode: string) {
   return eircode.length === 7 ? `${eircode.slice(0, 3)} ${eircode.slice(3)}` : eircode;
+}
+
+// The search as the page address holds it: the name, one "Town, area or Eircode" field (place), the
+// county, the care and amenity filters, the order and the page. place goes to the API as an Eircode
+// if it looks like one, otherwise as an address; links from before it, with address or eircode,
+// still work.
+export interface PageSearch {
+  query: SearchQuery; // for GET /centres, with the filters sent separately (apiFilterParams)
+  name: string;
+  place: string;
+  county: string; // "" for any county
+  selection: FilterSelection;
+  sort: SortValue;
+}
+
+type PageParams = Record<string, string | string[] | undefined>;
+
+function first(params: PageParams, key: string) {
+  const value = params[key];
+  return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
+}
+
+// The county list's "Any county" value. It means no county, as a blank does.
+export const ANY_COUNTY = "any";
+
+export function readSearch(params: PageParams): PageSearch {
+  const name = first(params, "name");
+  const place = first(params, "place") || first(params, "address") || first(params, "eircode");
+  const countyValue = first(params, "county");
+  const county = countyValue === ANY_COUNTY ? "" : countyValue;
+  const sortValue = first(params, "sort");
+  const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;
+
+  const query: SearchQuery = {};
+  if (name) query.name = name;
+  if (place) query[looksLikeEircode(place) ? "eircode" : "address"] = place;
+  if (county) query.county = county;
+  if (sort !== "name") query.sort = sort;
+  for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);
+
+  return { query, name, place, county, selection: readSelection(params), sort };
+}
+
+// Something to search for: a name, a place, a county or a filter.
+export function hasSearch(search: Pick<PageSearch, "name" | "place" | "county" | "selection">) {
+  return Boolean(search.name || search.place || search.county || filterCount(search.selection) > 0);
+}
+
+// The page address for a search, leaving out what's empty, so a shared link stays short.
+export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">, page = 1) {
+  const params = new URLSearchParams();
+  if (search.name) params.set("name", search.name);
+  if (search.place) params.set("place", search.place);
+  if (search.county) params.set("county", search.county);
+  for (const [key, value] of selectionParams(search.selection)) params.set(key, value);
+  if (search.sort !== "name") params.set("sort", search.sort);
+  if (page > 1) params.set("page", String(page));
+  const text = params.toString();
+  return text ? `/search?${text}` : "/search";
 }

@@ -1,7 +1,7 @@
 // app/(site)/compare/page.tsx
 // Compare Homes (CCARE-127): up to three saved homes side by side, laid out as in the comparison
-// grid wireframe: rows grouped into Cost, The home, Inspections and Results by regulation, then a
-// next step for each home. A grid from md up; on phones, one card per row. With room for more
+// grid wireframe: rows grouped into Cost, The home, What the home offers (amenities v2, CCARE-163),
+// Inspections and Results by regulation, then a next step for each home. A grid from md up; on phones, one card per row. With room for more
 // homes, a panel says how to add them. The homes are saved in this browser (components/compare);
 // their IDs come in the address, ?homes=101,34, so the page is drawn on the server like a centre
 // page, and CompareSync keeps the address in step with the saved list. Framed for a family deciding
@@ -19,7 +19,8 @@ import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { actionLinkClass, comingSoonClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { amenityTagClass } from "@/components/centre/centre-amenities";
+import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import {
@@ -28,8 +29,10 @@ import {
   formatMonth,
   formatWeeklyPrice,
   getCentre,
+  getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  type CentreAmenities,
   type CentreDetail,
   type CentreReports,
   type Regulation,
@@ -56,8 +59,22 @@ interface ComparePageProps {
 }
 
 // One home's column. A saved home can drop off the register, or the API can be down.
-type FoundColumn = { id: string; status: "found"; centre: CentreDetail; reports: CentreReports | null };
+type FoundColumn = {
+  id: string;
+  status: "found";
+  centre: CentreDetail;
+  reports: CentreReports | null;
+  amenities: CentreAmenities | null;
+};
 type Column = FoundColumn | { id: string; status: "not-found" | "unavailable" };
+
+// The amenities v2 lists, labelled and ordered as on the centre page.
+const AMENITY_LISTS = [
+  { key: "care_types", label: "Types of care" },
+  { key: "room_types", label: "Rooms" },
+  { key: "activities", label: "Activities" },
+  { key: "facilities", label: "Facilities" },
+] as const;
 
 // The register's name, or a stand-in for a home that didn't load.
 function columnName(column: Column) {
@@ -67,7 +84,8 @@ function columnName(column: Column) {
 async function loadColumn(id: string): Promise<Column> {
   const lookup = await getCentre(id);
   if (lookup.status !== "found") return { id, status: lookup.status };
-  return { id, status: "found", centre: lookup.centre, reports: await getCentreReports(id) };
+  const [reports, amenities] = await Promise.all([getCentreReports(id), getCentreAmenities(id)]);
+  return { id, status: "found", centre: lookup.centre, reports, amenities };
 }
 
 export default async function ComparePage({ searchParams }: ComparePageProps) {
@@ -341,12 +359,6 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             ),
           ),
         },
-        {
-          // TODO: A row each once the API has them.
-          key: "coming-soon",
-          label: "Care types and amenities",
-          span: <span className={`inline-block px-3 py-1.5 text-sm ${comingSoonClass}`}>Coming soon</span>,
-        },
         { key: "address", label: "Address", cells: each(({ centre }) => <Value main={shortAddress(centre)} />) },
         {
           key: "eircode",
@@ -371,6 +383,54 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
           }),
         },
         { key: "id", label: "HIQA centre ID", cells: each(({ centre }) => <Value main={centre.centre_id} mono />) },
+      ],
+    },
+    {
+      // As on the centre page (CentreAmenitiesSection): what an AI tool read from one report, said
+      // before the values; the passages are on each home's full record. The first sentence is the
+      // disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays.
+      title: "What the home offers",
+      icon: ICON_PATHS.beds,
+      tint: "band",
+      intro: (
+        <>
+          Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these, and a home may offer
+          more than its report mentions, so always call the home to confirm anything that matters to you.
+        </>
+      ),
+      rows: [
+        ...AMENITY_LISTS.map(
+          ({ key, label }): Row => ({
+            key,
+            label,
+            cells: each(({ amenities }) => {
+              if (!amenities) return <Muted>Not read from its reports yet</Muted>;
+              if (amenities[key].length === 0) return <Muted>None found in the report</Muted>;
+              return (
+                <ul className="flex flex-wrap gap-1.5">
+                  {amenities[key].map(({ item }) => (
+                    <li key={item} className={amenityTagClass}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              );
+            }),
+          }),
+        ),
+        {
+          key: "amenities-report",
+          label: "Read from",
+          cells: each(({ amenities }) =>
+            !amenities ? (
+              <Muted>–</Muted>
+            ) : amenities.inspection_date ? (
+              <Value main={`The ${formatDate(amenities.inspection_date)} report`} />
+            ) : (
+              <Value main="An inspection report" />
+            ),
+          ),
+        },
       ],
     },
     {

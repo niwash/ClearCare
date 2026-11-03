@@ -4,17 +4,23 @@
 // to shortlist", then a filled "✓ Added to shortlist" that takes it off again; once three homes are
 // saved, a dashed button with a note on how to make room; on the search page, a dashed "Shortlist
 // full" that opens the shortlist to make room in (opensShortlist). "remove", on Compare Homes and in
-// Your shortlist: "✕ Remove", or the ✕ alone where space is short. CompareStatus tells screen
-// readers what happened.
+// Your shortlist: "✕ Remove", or the ✕ alone where space is short. "result", on the search results:
+// "+ Add to shortlist" and "✓ Added to shortlist" as a pill; full, "Shortlist full", which opens the
+// shortlist, or on phones says so in a toast (ShortlistToast). CompareStatus tells screen readers what happened.
 import Link from "next/link";
 import { compareHref, MAX_COMPARED, type ComparedHome } from "@/lib/compare";
-import { addToCompare, announce, openShortlist, removeFromCompare, useComparedHomes } from "./compare-store";
+import { addToCompare, announce, notifyShortlistFull, openShortlist, removeFromCompare, useComparedHomes } from "./compare-store";
 
 const ICONS = {
   add: "M12 5v14M5 12h14",
   added: "M5 12l5 5 9-10",
   remove: "M6 6l12 12M18 6 6 18",
 };
+
+// Phones, where the shortlist panel would cover the results: the md breakpoint.
+function onPhone() {
+  return matchMedia("(max-width: 47.99rem)").matches;
+}
 
 function ButtonIcon({ name }: { name: keyof typeof ICONS }) {
   return (
@@ -37,7 +43,7 @@ export function CompareButton({
   home: ComparedHome;
   // Size and layout only; the colours follow the state.
   className: string;
-  variant?: "toggle" | "remove";
+  variant?: "toggle" | "remove" | "result";
   iconOnly?: boolean;
   // A round ✕ with no border, for a chip that already has one (the search page's shortlist).
   bare?: boolean;
@@ -74,6 +80,44 @@ export function CompareButton({
       addToCompare(home);
       announce(`${home.name} added. ${homes.length + 1} of ${MAX_COMPARED} homes on your shortlist.`);
     }
+  }
+
+  if (variant === "result") {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          if (full) {
+            if (onPhone()) notifyShortlistFull();
+            else openShortlist();
+            return;
+          }
+          toggle();
+        }}
+        disabled={homes === null}
+        aria-pressed={full ? undefined : saved}
+        aria-haspopup={full ? "dialog" : undefined}
+        className={`${className} inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-full px-4 text-sm font-semibold adult:rounded-md ${
+          full
+            ? "border-2 border-dashed border-field bg-surface-muted text-ink hover:border-primary"
+            : saved
+              ? "border border-primary bg-primary text-on-primary hover:bg-primary-hover"
+              : "border border-primary bg-surface text-primary hover:bg-surface-muted"
+        }`}
+      >
+        {!full && <ButtonIcon name={saved ? "added" : "add"} />}
+        {full ? (
+          <>
+            Shortlist full<span className="sr-only">: make room for {home.name}</span>
+          </>
+        ) : (
+          <>
+            {saved ? "Added to shortlist" : "Add to shortlist"}
+            <span className="sr-only"> ({home.name})</span>
+          </>
+        )}
+      </button>
+    );
   }
 
   if (variant === "remove") {
