@@ -87,7 +87,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // someone can start from the care they need. Only the counts are asked for: one result, not shown.
   const start = searched ? null : await searchCentres({ page: "1", page_size: "1" });
   // The care and amenity filters only count once the API counts them (lib/search.ts). Before
-  // then, any in the address are ignored here as they are by the API, so nothing says it's filtered.
+  // then, any in the address are ignored here, as searchCentres searches again without them when
+  // the API rejects them, so nothing says it's filtered.
   const facets = (data ?? (start?.ok ? start.data : null))?.facets ?? null;
   const shown: PageSearch = facets ? search : { ...search, selection: NO_FILTERS };
 

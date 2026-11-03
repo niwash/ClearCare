@@ -1,8 +1,8 @@
 // components/search/card-result.tsx
 // One search result (CCARE-189): the home's name, where it is, its size and Fair Deal, a button to
-// shortlist it, a tick for each chosen filter it meets, and its latest inspection. The filter ticks,
-// Fair Deal and the inspection come from an API with the filters (lib/search.ts); before that, the
-// card has the name, place and size.
+// shortlist it, a tick for each chosen filter it meets, and the date of its latest inspection. The
+// filter ticks, Fair Deal and the inspection come from an API with the filters (lib/search.ts);
+// before that, the card has the name, place and size.
 import { CompareButton } from "@/components/compare/compare-button";
 import { formatDate } from "@/lib/centres";
 import { formatEircode, type CentreSummary } from "@/lib/search";
@@ -56,45 +56,45 @@ export function CardResult({ centre, selection }: CardResultProps) {
       </div>
 
       {ticks.length > 0 && (
-        <ul aria-label="Matches your filters" className="flex flex-wrap gap-2">
-          {ticks.map((label) => (
-            <li key={label} className="inline-flex items-center gap-1.5 rounded-lg bg-tint-blue px-2.5 py-1 text-sm font-semibold text-on-tint-blue adult:rounded-md">
-              <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" className="size-3.5">
-                <path d="M5 12.5l4.5 4.5L19 7.5" />
-              </svg>
-              {label}
-            </li>
-          ))}
-        </ul>
+        <div className="flex flex-col gap-2">
+          <ul aria-label="Matches your filters" className="flex flex-wrap gap-2">
+            {ticks.map((label) => (
+              <li key={label} className="inline-flex items-center gap-1.5 rounded-lg bg-tint-blue px-2.5 py-1 text-sm font-semibold text-on-tint-blue adult:rounded-md">
+                <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" className="size-3.5">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+                {label}
+              </li>
+            ))}
+          </ul>
+          {/* Which report the ticks were read from: it can be older than the latest inspection below,
+              as the newest report may not have been read yet. The link goes to the centre page's
+              "What the home offers", with the passages behind each item. */}
+          <p className="text-sm text-ink-muted">
+            <Link href={`${href}#amenities-h`}>
+              {centre.amenities?.inspection_date
+                ? `From the ${formatDate(centre.amenities.inspection_date)} inspection report`
+                : "From its inspection report"}
+            </Link>
+            , read by an AI tool
+          </p>
+        </div>
       )}
 
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5 border-t border-line-soft pt-3.5 text-sm text-ink-muted">
+        {/* The date only, with no compliance count: inspections judge different sets of regulations,
+            so a count would read as a score that can't be compared between homes, and ClearCare
+            doesn't rank homes. */}
         {inspection && (
-          <>
-            <span>
-              Latest HIQA inspection: <strong className="text-ink">{formatDate(inspection.date)}</strong>
-            </span>
-            {inspection.assessed > 0 && <Compliance compliant={inspection.compliant} assessed={inspection.assessed} />}
-          </>
+          <span>
+            Latest HIQA inspection:{" "}
+            <strong className="text-ink">{inspection.date ? formatDate(inspection.date) : "date not given"}</strong>
+          </span>
         )}
         <Link href={`${href}#history`} className="font-semibold md:ml-auto">
           View inspections →
         </Link>
       </div>
     </article>
-  );
-}
-
-// How many of the regulations judged at the latest inspection were Compliant, as a short bar and in
-// words. A bar rather than one dot per regulation: inspections judge anything from a handful to
-// twenty or more.
-function Compliance({ compliant, assessed }: { compliant: number; assessed: number }) {
-  return (
-    <span className="inline-flex items-center gap-2">
-      <span aria-hidden className="h-2 w-16 overflow-hidden rounded-full bg-line">
-        <span className="block h-full rounded-full bg-primary" style={{ width: `${(compliant / assessed) * 100}%` }} />
-      </span>
-      Compliant with {compliant} of {assessed} regulations judged
-    </span>
   );
 }

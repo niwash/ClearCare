@@ -119,22 +119,27 @@ export default function PrivacyPage() {
           </ul>
 
           <PrivacySubheading>How we use them</PrivacySubheading>
-          {/* Amenities: Research/Data Extraction/extractor.py (OpenAI). Research: the outcome pilot,
-              pipeline/src/clearcare_pipeline/outcome_pilot.py (Anthropic), run by hand and not served by
-              the API. Everything else the site shows from reports is worked out by rules (ADR-0015, -0017). */}
+          {/* Amenities: Research/Data Extraction/extractor.py, Anthropic (Claude Haiku 5.5) by default since
+              CCARE-198 (#135), OpenAI (GPT-4o-mini) with --provider openai; the rows loaded before it were
+              read by GPT-4o-mini. Research: the outcome pilot, pipeline/src/clearcare_pipeline/outcome_pilot.py
+              (Anthropic), run by hand and not served by the API. Everything else the site shows from reports
+              is worked out by rules (ADR-0015, -0017). */}
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>To show each home&apos;s inspection history and what its reports say.</li>
             {/* The amenities-v2 extractor (CCARE-195): items from a fixed list of 93, each kept only with
-                a quote from the report and its pages, and no free-text notes. The centre page shows them
-                with the quotes (CCARE-163); the filters and Compare Homes still say "Coming soon". The
-                checking is the gold set and evaluation, CCARE-192 and -193: change "We're now checking"
-                here and in centre-amenities.tsx when it's done. */}
+                a quote from the report and its pages, and no free-text notes; since CCARE-199 (#137) a quote
+                not found in the report's text is dropped before storing. The centre page and Compare Homes
+                show them with the quotes (CCARE-163). The search filters and the ticks on search results
+                use the same items (centre_amenities_v2), once GET /centres filters by them. The checking is
+                the gold set and evaluation, CCARE-192 and -193: change "We're now checking" here and in
+                centre-amenities.tsx when it's done. */}
             <li>
-              To show what each home offers, such as its types of care, rooms, activities and facilities. An AI
-              service reads each report, picks these out from a fixed list and keeps the passage of the report each
-              one comes from. Each home&apos;s page shows them with those passages, and Compare Homes shows them side
-              by side, both saying they were read by an AI tool. We&apos;re
-              now checking these results against the reports, so until that&apos;s done some may be wrong or missing.
+              To show what each home offers, such as its types of care, rooms, activities and facilities, and to let
+              you search for homes by them. An AI service reads each report, picks these out from a fixed list and
+              keeps the passage of the report each one comes from. Each home&apos;s page shows them with those
+              passages, and Compare Homes shows them side by side, both saying they were read by an AI tool.
+              We&apos;re now checking these results against the reports, so until that&apos;s done some may be wrong
+              or missing.
             </li>
             <li>
               For research on how findings change from one inspection to the next. An AI service reads the reports
@@ -162,10 +167,11 @@ export default function PrivacyPage() {
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
               the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
-              code on 29 Oct 2026: AWS in eu-north-1 (infra/aws), Vercel for previews of the site, OpenAI
-              (Research/Data Extraction/extractor.py) and Anthropic
-              (pipeline/src/clearcare_pipeline/outcome_pilot.py), the last three in the US. Cloudflare
-              only holds DNS records, so it sees no visits. Update this when a service changes. */}
+              code on 3 Nov 2026, after CCARE-198 (#135): AWS in eu-north-1 (infra/aws), Vercel for previews
+              of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
+              pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
+              openai, and the amenities loaded before CCARE-198), the last three in the US. Cloudflare only
+              holds DNS records, so it sees no visits. Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
             Service providers handle data for us: hosting providers run the site and store its data in the EU, and

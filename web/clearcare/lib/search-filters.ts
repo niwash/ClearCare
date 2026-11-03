@@ -186,6 +186,12 @@ export interface FilterSelection {
 
 export const NO_FILTERS: FilterSelection = { care: [], room: [], fac: [], act: [], fairDeal: false };
 
+// The Fair Deal filter, off until the API filters by it: it isn't offered, fairdeal=1 in the page
+// address is ignored, and fair_deal isn't sent, which the API would reject. Left out of the API's
+// first round of filters: 526 of the 547 homes have a contract price, so it would remove only 21.
+// The "Fair Deal" label on results still shows, from each home's fair_deal field.
+export const FAIR_DEAL_FILTER = false;
+
 type Params = Record<string, string | string[] | undefined>;
 
 function values(params: Params, key: string) {
@@ -195,7 +201,7 @@ function values(params: Params, key: string) {
 
 // From the page address. Unknown slugs are dropped, so an old or mistyped link still works.
 export function readSelection(params: Params): FilterSelection {
-  const selection: FilterSelection = { ...NO_FILTERS, fairDeal: params.fairdeal === "1" };
+  const selection: FilterSelection = { ...NO_FILTERS, fairDeal: FAIR_DEAL_FILTER && params.fairdeal === "1" };
   for (const group of FILTER_GROUPS) {
     const picked = new Set(values(params, group.key));
     selection[group.key] = group.options.filter((option) => picked.has(option.slug)).map((option) => option.slug);

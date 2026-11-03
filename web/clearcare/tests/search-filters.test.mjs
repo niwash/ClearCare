@@ -7,6 +7,7 @@ import assert from "node:assert/strict";
 import {
   activeFilters,
   apiFilterParams,
+  FAIR_DEAL_FILTER,
   filterCount,
   FILTER_GROUPS,
   matchedLabels,
@@ -18,19 +19,26 @@ import {
 
 test("reads comma-joined and repeated values, in the options' order, and drops unknown slugs", () => {
   const selection = readSelection({ care: "respite,dementia", room: ["single", "twin"], fac: "garden,moat", fairdeal: "1" });
-  assert.deepEqual(selection, { care: ["dementia", "respite"], room: ["single", "twin"], fac: ["garden"], act: [], fairDeal: true });
+  assert.deepEqual(selection, { care: ["dementia", "respite"], room: ["single", "twin"], fac: ["garden"], act: [], fairDeal: FAIR_DEAL_FILTER });
 });
 
-test("Fair Deal is only on with fairdeal=1", () => {
+test("Fair Deal is only on with fairdeal=1, and only while the API filters by it", () => {
+  assert.equal(readSelection({ fairdeal: "1" }).fairDeal, FAIR_DEAL_FILTER);
   assert.equal(readSelection({ fairdeal: "yes" }).fairDeal, false);
   assert.equal(readSelection({}).fairDeal, false);
+});
+
+test("with the Fair Deal filter off, an old link's fairdeal=1 sends nothing the API would reject", () => {
+  if (FAIR_DEAL_FILTER) return;
+  assert.equal(apiFilterParams(readSelection({ care: "dementia", fairdeal: "1" })).get("fair_deal"), null);
 });
 
 test("a selection survives the page address", () => {
   const selection = { care: ["long-term", "palliative"], room: ["en-suite"], fac: [], act: ["music"], fairDeal: true };
   const params = Object.fromEntries(selectionParams(selection));
   assert.deepEqual(params, { care: "long-term,palliative", room: "en-suite", act: "music", fairdeal: "1" });
-  assert.deepEqual(readSelection(params), selection);
+  // Fair Deal comes back only while the filter is on (FAIR_DEAL_FILTER).
+  assert.deepEqual(readSelection(params), { ...selection, fairDeal: FAIR_DEAL_FILTER });
 });
 
 test("no filters leave the page address empty", () => {

@@ -15,6 +15,7 @@ import { textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
 import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, searchHref, type PageSearch, type SearchResponse } from "@/lib/search";
 import {
+  FAIR_DEAL_FILTER,
   filterCount,
   FILTER_GROUPS,
   NO_FILTERS,
@@ -277,8 +278,9 @@ function FilterPanel({
             ))}
           </select>
         </Field>
-        {/* Under the place, as cost is often the first thing a family rules homes in or out by. */}
-        {facets && (
+        {/* Under the place, as cost is often the first thing a family rules homes in or out by. Only
+            once the API filters by it (FAIR_DEAL_FILTER, lib/search-filters.ts). */}
+        {FAIR_DEAL_FILTER && facets && (
           <label htmlFor={`${id}-fairdeal`} className="flex min-h-11 cursor-pointer items-start gap-3">
             <input
               id={`${id}-fairdeal`}
@@ -293,7 +295,7 @@ function FilterPanel({
               <span className="font-semibold">Takes part in Fair Deal</span>
               <span className="text-sm text-ink-muted">Nursing Home Support Scheme</span>
             </span>
-            {!state.selection.fairDeal && <Count n={facets.fair_deal} />}
+            {!state.selection.fairDeal && <Count n={facets.fair_deal ?? 0} />}
           </label>
         )}
         {state.sort !== "name" && <input type="hidden" name="sort" value={state.sort} />}

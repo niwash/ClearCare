@@ -13,9 +13,22 @@ export interface CentreSummary {
   maximum_occupancy: number | null; // the most residents HIQA allows, not free beds
   hiqa_url: string;
   // From an API with the care and amenity filters (lib/search-filters.ts); absent before it.
-  amenities?: Record<"care_types" | "room_types" | "facilities" | "activities", string[]> | null;
-  fair_deal?: boolean; // on the latest HSE contract price list, so it takes part in Fair Deal
-  latest_inspection?: { date: string; compliant: number; assessed: number } | null; // regulations judged
+  amenities?: MentionedAmenities | null; // null when none of its reports has been read yet
+  fair_deal?: boolean; // the API has an HSE contract price for it, so it takes part in Fair Deal
+  // The newest loaded report; date is null when the report doesn't give one.
+  latest_inspection?: { date: string | null } | null;
+}
+
+// What a home's latest read report mentions (MentionedAmenities in api/openapi.yaml), item names only:
+// the record the centre page shows with its passages. The report can be older than
+// latest_inspection, as the newest report may not have been read yet.
+export interface MentionedAmenities {
+  report_id: number;
+  inspection_date: string | null;
+  care_types: string[];
+  room_types: string[];
+  facilities: string[];
+  activities: string[];
 }
 
 // Which copy of the HIQA register the results come from.
@@ -33,8 +46,8 @@ export interface SearchResponse {
   register_snapshot: RegisterSnapshot;
   // From an API with the filters. Each option's count is how many homes would match with it ticked
   // too, given the other filters. Without facets the filters aren't offered, so nothing looks
-  // filtered when it isn't.
-  facets?: Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
+  // filtered when it isn't. fair_deal only with the Fair Deal filter (FAIR_DEAL_FILTER).
+  facets?: Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal?: number };
   // With no matches: how many there would be without each active filter.
   relaxations?: { param: string; value?: string; total: number }[];
   sort?: string; // the order applied, echoed; without it, results are by name
@@ -77,7 +90,16 @@ export async function searchCentres(query: SearchQuery, filters?: URLSearchParam
   await connection();
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
-  return fetchCentres(url, query, filters);
+  const result = await fetchCentres(url, query, filters);
+  // An API from before the filters rejects their parameters with a 400 ("care_type is not a
+  // parameter"), so search again without them: with no facets, the page then shows the results
+  // unfiltered and offers no filters, as if the address had none. An API with the filters answers
+  // with facets, so its 400 was about the filter itself (an unknown item) and stands.
+  if (!result.ok && result.status === 400 && filters?.toString()) {
+    const unfiltered = await fetchCentres(url, query);
+    if (unfiltered.ok && !unfiltered.data.facets) return unfiltered;
+  }
+  return result;
 }
 
 
