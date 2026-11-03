@@ -2,9 +2,7 @@
 
 The API serves report-derived amenities with their report ID, inspection date,
 extractor version and model. The values are model output, not established fact.
-Human gold-set revision and evaluation remain separate under
-[CCARE-192](https://niwash.atlassian.net/browse/CCARE-192) and
-[CCARE-193](https://niwash.atlassian.net/browse/CCARE-193). Design: [ADR-0021](adr/0021-amenities-read-from-reports.md).
+Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenities-read-from-reports.md).
 
 ## API versions
 
@@ -41,10 +39,9 @@ or one JSON list file. V2 loads need the exact original PDF in the raw store for
 hash/page-bound checks and must match stored centre, inspection date and PDF hash.
 The entire load is transactional. Existing report/version rows are never replaced.
 
-New loads require extracted_at with a timezone, even for legacy v0/v1 files.
-A legacy file without it is rejected; recover genuine extraction provenance or
-produce a new versioned extraction rather than stamping it with load time.
-Existing database rows remain untouched. V2 timestamps are UTC.
+V2 files require a timezone-aware UTC extracted_at value. The legacy loader
+keeps its existing optional timestamp and load-time fallback for files without
+one. Existing database rows remain untouched.
 
 Apply migrations through the normal Flyway process before loading v2. V12 adds
 a separate v2 table and read-only API view; V11 and existing data are not reset.
@@ -60,7 +57,5 @@ descending. Version labels do not determine recency. A changed prompt/model/sche
 requires a new extractor version. V0 was truncated text, v1 was whole-report free
 lists/flags, and v2 uses the approved 93 categories and item-level evidence.
 
-Scheduling and production enablement remain CCARE-171. No live job or secret
-population is established by this integration patch. Frontend belongs to CCARE-163.
 Unmatched inputs are reported and skipped; correct source identities and ingestion
 before retrying rather than attaching evidence to another report.

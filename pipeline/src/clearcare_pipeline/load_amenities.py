@@ -11,9 +11,9 @@ on which report was read, and carries the model and extractor version:
      "extracted_at": "2026-10-26T12:00:00+00:00",
      "amenities": {"care_types": [...], ...}}
 
-extracted_at is required and must include a timezone, including for legacy
-v1 input. Missing timestamps are rejected, never replaced with load time. V2
-files use the exact shared contract and require the matching stored source PDF.
+Legacy input keeps its existing optional extracted_at and load-time fallback.
+V2 files use the exact shared contract, require a timezone-aware UTC timestamp
+and need the matching stored source PDF.
 """
 
 import argparse
@@ -23,13 +23,13 @@ import os
 import sys
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
 import psycopg
 import pymupdf
 from psycopg.types.json import Jsonb
 from pydantic import (
-    AwareDatetime,
     BaseModel,
     ConfigDict,
     Field,
@@ -73,15 +73,15 @@ class AmenitiesRecord(BaseModel):
     sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     model: str = Field(min_length=1)
     extractor_version: str = Field(min_length=1)
-    # Never invent an extraction time for older files.
-    extracted_at: AwareDatetime
+    # Keep the legacy loader behaviour; v2 has its own strict contract.
+    extracted_at: datetime | None = None
 
     @field_validator("extractor_version")
     @classmethod
     def legacy_version(cls, value: str) -> str:
         """V2 must validate against the exact v2 file contract."""
-        if value not in {"amenities-v0", "amenities-v1"}:
-            raise ValueError("Unsupported legacy extractor version")
+        if value == "amenities-v2":
+            raise ValueError("V2 input must use the complete v2 contract")
         return value
 
     amenities: Amenities
@@ -114,7 +114,8 @@ _INSERT = (
     " has_chapel_or_religious_services, special_units, dining_notes,"
     " other_notes, extractor_version, model, extracted_at)"
     " VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,"
-    " %s)"
+    # Preserve main's fallback for legacy files without extraction times.
+    " COALESCE(%s, now()))"
     " ON CONFLICT (report_id, extractor_version) DO NOTHING"
 )
 

@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pymupdf
 import pytest
-from pydantic import ValidationError
 
 from clearcare_pipeline.amenities_v2 import ExtractionFile
 from clearcare_pipeline.load_amenities import (
@@ -85,14 +84,43 @@ def test_versioned_directories_and_list_files(
 
 
 @pytest.mark.parametrize("stamp", [None, "2026-10-26T12:00:00"])
-def test_legacy_input_needs_an_aware_extraction_time(stamp: str | None) -> None:
+def test_legacy_timestamp_behaviour_is_unchanged(stamp: str | None) -> None:
     record = dict(RECORD)
     if stamp is None:
         record.pop("extracted_at")
     else:
         record["extracted_at"] = stamp
-    with pytest.raises(ValidationError):
-        AmenitiesRecord.model_validate(record)
+    parsed = AmenitiesRecord.model_validate(record)
+    if stamp is None:
+        assert parsed.extracted_at is None
+    else:
+        assert parsed.extracted_at is not None
+        assert parsed.extracted_at.isoformat() == stamp
+
+
+@pytest.mark.parametrize("stamp", [None, "2026-11-03T02:00:00"])
+def test_v2_still_requires_an_aware_timestamp(
+    tmp_path: Path, source_record: ExtractionFile, stamp: str | None
+) -> None:
+    record = source_record.model_dump(mode="json")
+    if stamp is None:
+        record.pop("extracted_at")
+    else:
+        record["extracted_at"] = stamp
+    path = tmp_path / "invalid-v2.json"
+    path.write_text(json.dumps([record]), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"invalid-v2\.json"):
+        read_records(path)
+
+
+def test_v2_cannot_fall_back_to_the_legacy_contract(tmp_path: Path) -> None:
+    path = tmp_path / "legacy-shape-v2.json"
+    path.write_text(
+        json.dumps([{**RECORD, "extractor_version": "amenities-v2"}]),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match=r"legacy-shape-v2\.json"):
+        read_records(path)
 
 
 def test_loader_checks_original_pdf_bounds_and_hash(
@@ -142,9 +170,17 @@ def test_v2_round_trip_retains_evidence_and_v1_history(
             (source[0],),
         )
         legacy = AmenitiesRecord.model_validate(
-            {**RECORD, "sha256": source_record.sha256}
+            {**RECORD, "sha256": source_record.sha256, "extracted_at": None}
         )
+        legacy_load_time = connection.execute("SELECT now()").fetchone()
         assert load(connection, [legacy]) == Summary(1, 0, 0)
+        assert (
+            connection.execute(
+                "SELECT extracted_at FROM clearcare.report_amenities"
+                " WHERE extractor_version = 'amenities-v0'"
+            ).fetchone()
+            == legacy_load_time
+        )
         assert load(connection, [source_record], data_dir=tmp_path) == Summary(
             1, 0, 0
         )
