@@ -3,11 +3,18 @@
 import hashlib
 import json
 from pathlib import Path
+from typing import cast
 
 import pymupdf
 import pytest
 
-from clearcare_pipeline.amenities_v2 import ExtractionFile
+from clearcare_pipeline.amenities_v2 import (
+    CATEGORY_ORDER,
+    Amenities,
+    EvidenceCheck,
+    ExtractionFile,
+    SelectedItem,
+)
 from clearcare_pipeline.load_amenities import (
     AmenitiesRecord,
     Summary,
@@ -217,3 +224,178 @@ def test_v2_round_trip_retains_evidence_and_v1_history(
                 "SELECT extractor_version FROM clearcare.centre_amenities"
                 " WHERE centre_id = '117'"
             ).fetchone() == ("amenities-v0",)
+
+
+# Evidence checked against the report text (verify_evidence).
+
+PAGES = [
+    "Cover page.\nPage 1 of 5",
+    "The centre has a large garden.\nPage 2 of 5",
+    "Residents enjoyed bingo.\nPage 3 of 5",
+    "Residents enjoyed bingo.\nPage 4 of 5",
+    "Residents enjoyed bingo.\nPage 5 of 5",
+]
+Quote = tuple[str, int, int]
+
+
+def amenities(**lists: dict[str, list[Quote]]) -> Amenities:
+    data: dict[str, list[dict[str, object]]] = {
+        field: [] for field in CATEGORY_ORDER
+    }
+    for field, items in lists.items():
+        data[field] = [
+            {
+                "item": item,
+                "evidence": [
+                    {"quote": quote, "page_start": start, "page_end": end}
+                    for quote, start, end in quotes
+                ],
+            }
+            for item, quotes in items.items()
+        ]
+    return Amenities.model_validate(data)
+
+
+def quotes(result: Amenities, field: str) -> list[Quote]:
+    entries = cast(list[SelectedItem], getattr(result, field))
+    return [
+        (evidence.quote, evidence.page_start, evidence.page_end)
+        for entry in entries
+        for evidence in entry.evidence
+    ]
+
+
+def test_a_quote_on_its_cited_page_is_kept_as_it_is() -> None:
+    # The passage is on pages 3, 4 and 5; the cited page 4 wins.
+    original = amenities(
+        activities={"Bingo": [("Residents enjoyed bingo.", 4, 4)]}
+    )
+    verified, check = original.verify_evidence(PAGES)
+    assert verified == original
+    assert check == EvidenceCheck(items_kept=1)
+
+
+def test_a_quote_on_another_page_gets_the_page_it_is_on() -> None:
+    # Pages 4 and 5 do not have it, so the whole report is searched.
+    verified, check = amenities(
+        facilities={"Garden": [("The centre has a large garden.", 5, 5)]}
+    ).verify_evidence(PAGES)
+    assert quotes(verified, "facilities") == [
+        ("The centre has a large garden.", 2, 2)
+    ]
+    assert check == EvidenceCheck(items_kept=1, evidence_corrected=1)
+
+
+def test_the_pages_next_to_the_cited_one_are_searched_first() -> None:
+    # The passage is on pages 1 and 5. Page 5 is next to the cited page 4,
+    # so it wins over page 1, which a search of the whole report finds first.
+    pages = [
+        "Bingo daily.",
+        "Other text.",
+        "Other text.",
+        "Other.",
+        "Bingo daily.",
+    ]
+    verified, _ = amenities(
+        activities={"Bingo": [("Bingo daily.", 4, 4)]}
+    ).verify_evidence(pages)
+    assert quotes(verified, "activities") == [("Bingo daily.", 5, 5)]
+
+
+def test_a_quote_across_a_page_break_is_found_despite_the_footer() -> None:
+    pages = [
+        "Residents had access to radio and\nPage 1 of 2",
+        "newspapers every day.\nPage 2 of 2",
+    ]
+    quote = "Residents had access to radio and newspapers every day."
+    verified, check = amenities(
+        activities={"Radio": [(quote, 1, 1)]}
+    ).verify_evidence(pages)
+    assert quotes(verified, "activities") == [(quote, 1, 2)]
+    assert check == EvidenceCheck(items_kept=1, evidence_corrected=1)
+
+
+@pytest.mark.parametrize(
+    ("page", "quote", "found"),
+    [
+        (
+            "Twenty bedrooms had an en-\nsuite shower.",
+            "had an en-suite shower",
+            True,
+        ),
+        ("All rooms are en suite.", "All rooms are en-suite.", True),
+        ("All rooms are en-suite.", "All rooms are en suite.", True),
+        ("A large gar-\nden.", "A large garden.", True),
+        ("A large gar\u00ad\nden.", "A large garden.", True),
+        (
+            "The residents\u2019 en-suite rooms.",
+            "The residents' en-suite rooms.",
+            True,
+        ),
+        ("A \u201cfamily\u201d en-suite.", 'A "family" en-suite.', True),
+        ("En-suite \u2013 all rooms.", "En-suite - all rooms.", True),
+        ("En-suite with \ufb02owers.", "En-suite with flowers.", True),
+        ("All rooms are EN-SUITE,", "all rooms are en-suite.", True),
+        ("Bingo, music and art.", "Bingo", True),
+        ("It has 6 twin rooms and 1 single.", "6 twin rooms, and 1", True),
+        (
+            "Rang the bell. tResidents had access to newspapers.",
+            "Residents had access to newspapers",
+            True,
+        ),
+        ("There are 12 single rooms.", "2 single rooms", False),
+        ("Room 12 has a sink.", "Room 1", False),
+    ],
+    ids=[
+        "line-end hyphen",
+        "hyphen for a space",
+        "space for a hyphen",
+        "split word",
+        "soft hyphen",
+        "apostrophe",
+        "quotes",
+        "dash",
+        "ligature",
+        "ends",
+        "short quote",
+        "comma added",
+        "letter glued on",
+        "inside a number",
+        "number cut short",
+    ],
+)
+def test_a_quote_matches_whatever_its_punctuation_but_not_inside_a_number(
+    page: str, quote: str, found: bool
+) -> None:
+    verified, check = amenities(
+        room_types={"En-suite facilities": [(quote, 1, 1)]}
+    ).verify_evidence([page])
+    assert quotes(verified, "room_types") == ([(quote, 1, 1)] if found else [])
+    assert check.evidence_dropped == (0 if found else 1)
+
+
+def test_a_quote_found_nowhere_is_dropped_and_so_is_an_item_left_bare() -> None:
+    verified, check = amenities(
+        facilities={
+            "Garden": [
+                ("The centre has a large garden.", 2, 2),
+                ("A rooftop garden.", 2, 2),
+                ("...", 2, 2),
+            ]
+        },
+        activities={"Bingo": [("Bingo on Fridays.", 3, 3)]},
+    ).verify_evidence(PAGES)
+    assert quotes(verified, "facilities") == [
+        ("The centre has a large garden.", 2, 2)
+    ]
+    assert verified.activities == []
+    assert check == EvidenceCheck(
+        items_kept=1,
+        items_dropped=1,
+        evidence_dropped=3,
+        dropped=(
+            ("activities", "Bingo", "Bingo on Fridays."),
+            ("facilities", "Garden", "A rooftop garden."),
+            ("facilities", "Garden", "..."),
+        ),
+    )

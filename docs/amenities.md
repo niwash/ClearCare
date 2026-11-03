@@ -33,6 +33,8 @@ docker compose run --rm --build pipeline clearcare_pipeline.load_amenities --inp
 ```
 
 The dry run makes no model call; the second command is paid extraction.
+Before writing a file, the extractor checks each quote against the report text
+(Research/Data Extraction/README.md, "Evidence check").
 V2 files live under data/amenities/amenities-v2/<centre_id>/<sha256>.json,
 preserving v1 files and distinct reports. The loader accepts recursive directories
 or one JSON list file. V2 loads need the exact original PDF in the raw store for

@@ -39,7 +39,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
-from amenities_v2 import Amenities, AmenitiesResult, ExtractionFile
+from amenities_v2 import Amenities, AmenitiesResult, EvidenceCheck, ExtractionFile
 from dotenv import load_dotenv
 from pydantic import ValidationError
 
@@ -128,15 +128,19 @@ Report text:
 """.strip()
 
 
-def extract_text_from_pdf(pdf_path: Path) -> tuple[str, int]:
-    """Preserve every PDF page position, including blank pages."""
+def extract_text_from_pdf(pdf_path: Path) -> tuple[str, list[str]]:
+    """Returns the marked-up report text for the model, and each page's text.
+
+    Every PDF page keeps its position, including blank pages.
+    """
     import pdfplumber
 
-    pages = []
     with pdfplumber.open(pdf_path) as pdf:
-        for number, page in enumerate(pdf.pages, 1):
-            pages.append(f"[PDF PAGE {number}]\n{page.extract_text() or ''}")
-        return "\n".join(pages), len(pdf.pages)
+        pages = [page.extract_text() or "" for page in pdf.pages]
+    text = "\n".join(
+        f"[PDF PAGE {number}]\n{page}" for number, page in enumerate(pages, 1)
+    )
+    return text, pages
 
 
 def call_llm(
@@ -145,7 +149,6 @@ def call_llm(
     centre_id: str,
     inspection_date: str,
     report_text: str,
-    page_count: int,
 ) -> tuple[Amenities, str] | None:
     """Sends the report to the provider's model and returns the amenities."""
     if len(report_text) > MAX_CHARS:
@@ -163,13 +166,10 @@ def call_llm(
     if reply is None:
         return None
     result, model = reply
-    try:
-        if not model.strip():
-            raise ValueError("Response is missing its model identifier")
-        return result.amenities.validate_pages(page_count), model
-    except ValueError as error:
-        log.error("Invalid extraction: %s", error)
+    if not model.strip():
+        log.error("Invalid extraction: the response has no model identifier")
         return None
+    return result.amenities, model
 
 
 def call_anthropic(
@@ -178,9 +178,9 @@ def call_anthropic(
     """Asks Claude for the amenities; None if the call or its output failed."""
     import anthropic
 
-    try:
+    def ask() -> anthropic.types.ParsedMessage[AmenitiesResult]:
         # No sampling parameters: current Claude models reject them.
-        response = client.messages.parse(
+        return client.messages.parse(
             model=MODELS["anthropic"],
             # Quote-bearing output and the model's thinking share this budget.
             max_tokens=16000,
@@ -188,6 +188,16 @@ def call_anthropic(
             messages=[{"role": "user", "content": user_message}],
             output_format=AmenitiesResult,
         )
+
+    try:
+        try:
+            response = ask()
+        except ValidationError as error:
+            # A reply outside the contract, such as an item listed twice or
+            # an empty quote, is the model's slip, not the request's, so a
+            # second reply can be valid.
+            log.warning("  Invalid extraction, asking once more: %s", error)
+            response = ask()
     except anthropic.APIStatusError as error:
         log.error("  LLM call failed with status %d: %s", error.status_code, error)
         return None
@@ -265,6 +275,10 @@ def output_file(output_dir: Path, centre_id: str, sha256: str) -> Path:
     return output_dir / EXTRACTOR_VERSION / centre_id / f"{sha256}.json"
 
 
+# Items kept and dropped, evidence corrected and dropped.
+EVIDENCE_LOG = "%s: items %d kept, %d dropped; evidence %d corrected, %d dropped"
+
+
 def process_centre(
     client: Anthropic | OpenAI,
     provider: str,
@@ -273,8 +287,12 @@ def process_centre(
     data_dir: Path,
     output_dir: Path,
     force: bool,
-) -> bool:
-    """Extracts one home's amenities. Returns True on success or if done."""
+) -> EvidenceCheck | None:
+    """Extracts one home's amenities.
+
+    Returns what the evidence check changed, an empty check if the home is
+    already done, or None if it failed.
+    """
     try:
         # Validate provenance before using IDs or hashes in filesystem paths.
         metadata = ExtractionFile.model_validate(
@@ -297,24 +315,24 @@ def process_centre(
         )
     except (KeyError, ValueError) as error:
         log.error("Invalid source metadata: %s", error)
-        return False
+        return None
     output_path = output_file(output_dir, centre_id, metadata.sha256)
     if not force and already_done(output_path, report["sha256"]):
         log.debug("Already done: centre %s", centre_id)
-        return True
+        return EvidenceCheck()
 
     log.info("Processing centre %s (%s)", centre_id, report["inspection_date"])
     pdf_path = stored_pdf(data_dir, report["sha256"])
     if not pdf_path.exists():
         log.error("  PDF not in the raw store: %s", pdf_path)
-        return False
+        return None
     try:
         if hashlib.sha256(pdf_path.read_bytes()).hexdigest() != metadata.sha256:
             raise ValueError("Stored PDF does not match its source hash")
-        text, page_count = extract_text_from_pdf(pdf_path)
+        text, pages = extract_text_from_pdf(pdf_path)
     except Exception as error:
         log.error("  PDF text extraction failed: %s", error)
-        return False
+        return None
     if not any(
         line.strip() and not line.startswith("[PDF PAGE ") for line in text.splitlines()
     ):
@@ -323,15 +341,27 @@ def process_centre(
             "pdfplumber cannot read.",
             pdf_path.name,
         )
-        return False
+        return None
 
-    extracted = call_llm(
-        client, provider, centre_id, report["inspection_date"], text, page_count
-    )
+    extracted = call_llm(client, provider, centre_id, report["inspection_date"], text)
     if extracted is None:
-        return False
+        return None
 
     amenities, actual_model = extracted
+    # The check comes first: a quote cited past the last page is searched
+    # for and moved, where the page check would fail the home.
+    amenities, check = amenities.verify_evidence(pages)
+    amenities.validate_pages(len(pages))
+    log.info(
+        EVIDENCE_LOG,
+        "  evidence check",
+        check.items_kept,
+        check.items_dropped,
+        check.evidence_corrected,
+        check.evidence_dropped,
+    )
+    for _, item, quote in check.dropped:
+        log.warning("  dropped quote: %s: %s", item, quote)
     output = ExtractionFile.model_validate(
         metadata.model_dump()
         | {
@@ -356,11 +386,11 @@ def process_centre(
         temporary.replace(output_path)
     except OSError as error:
         log.error("Could not write extraction: %s", error)
-        return False
+        return None
     finally:
         if temporary is not None:
             temporary.unlink(missing_ok=True)
-    return True
+    return check
 
 
 def centre_ids_from_file(path: Path) -> list[str]:
@@ -464,8 +494,9 @@ def main() -> None:
 
         client = OpenAI()
     failed = []
+    items_kept = items_dropped = evidence_corrected = evidence_dropped = 0
     for centre_id in centres:
-        ok = process_centre(
+        check = process_centre(
             client,
             args.provider,
             centre_id,
@@ -474,9 +505,22 @@ def main() -> None:
             output_dir,
             args.force,
         )
-        if not ok:
+        if check is None:
             failed.append(centre_id)
+            continue
+        items_kept += check.items_kept
+        items_dropped += check.items_dropped
+        evidence_corrected += check.evidence_corrected
+        evidence_dropped += check.evidence_dropped
 
+    log.info(
+        EVIDENCE_LOG,
+        "Evidence check, all homes",
+        items_kept,
+        items_dropped,
+        evidence_corrected,
+        evidence_dropped,
+    )
     log.info("Done. %d succeeded, %d failed.", len(centres) - len(failed), len(failed))
     if failed:
         log.warning("Failed centre IDs: %s", failed)
