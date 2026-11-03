@@ -92,23 +92,56 @@ One file per home at `data/amenities/<centre_id>.json`:
 }
 ```
 
-- The three flags are `true` when the report mentions the amenity and `null`
-  when it does not. `null` does not mean the home has none.
-- The lists keep the report's own wording. They are not normalised yet, so
-  "physio" and "physiotherapy" are different values.
+- The values are what the model read from the whole report text. Provider
+  text and inspector observations are not separated yet.
+- The three flags are `true` or `false` when the report says so and `null`
+  when it is silent. `null` does not mean the home has none.
+- The lists are not normalised yet, so "physio" and "physiotherapy" are
+  different values.
 - `sha256` names the exact PDF the amenities were read from. It is the same
-  hash the database stores for a report, so these files can be loaded into
-  the database later.
+  hash the database stores for a report.
+
+## Loading into the database
+
+`clearcare_pipeline.load_amenities` reads the files this script writes and
+matches each to a stored report by `sha256`. The API then serves them at
+`GET /centres/{centre_id}/amenities`. The commands are in `docs/amenities.md`.
+
+## What we found while building it
+
+- The first version cut each report to 12,000 characters and missed gardens
+  and activities described later on. Some homes were missed (for example
+  centres 7785 and 7793), and 13 homes came back with no outdoor space value.
+- The three flags came back as only true or null in the 103 Dublin results.
+  The prompt describes when to say true, and the model leaves the rest empty,
+  so false has not appeared yet.
+- `has_transport` first came back true for centre 5 (Annabeg) only because
+  its report says the centre is served by the Luas, DART and local buses. The
+  field description and the system prompt now say that public transport
+  nearby does not count, and centre 5 comes back null.
+- The earlier Dublin run (103 homes, on the first 12,000 characters) cost
+  about 6 cents. Those results are loaded as `amenities-v0` and give way to
+  later runs, because the API serves the newest.
+- Of the 103 Dublin PDFs in that run, 97 matched the database's latest report
+  for their centre by hash. Centres 7, 22, 183, 5590 and 5880 have a newer
+  report in the database, and centre 5307 had a newer one locally.
+
+## Accuracy
+
+The values have not been measured yet. The plan is a hand-labelled gold set.
+A person reads the report and writes down what the nine fields should be,
+without looking at the model's answer. Each field of each home is then counted
+as a match, a false negative (the model missed something that is in the
+report) or a false positive (the model added something that is not). From
+those counts we report precision, recall and F1, per field and overall. The
+first gold set is 18 Dublin homes, chosen to vary provider, naming and report
+history. After that it grows and extends to other counties.
 
 ## Not done yet
 
-- Loading the results into the database and serving them through the API. That is a separate pull request: `load_amenities` reads the files this script writes, matching each to a stored report by `sha256`.
 - Normalising the list values.
-- Measuring accuracy. The plan is to hand-check 40 to 50 homes against the
-  reports and report precision, recall and F1 for each field.
-- Sending only the "About the designated centre" paragraph instead of the
-  whole report. It would be cheaper and may be more accurate, and the
-  pipeline's parser already finds that section.
+- Sending only the "About the designated centre" section instead of the
+  whole report. It would be cheaper and may be more accurate.
 - Reports that are scanned images with no text are skipped and logged.
 - GPT-4o-mini is due to be retired from OpenAI's API in January 2027, so the
   model will need to change before the project's end date matters.
