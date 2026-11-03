@@ -97,7 +97,7 @@ terraform apply
 terraform output -raw client_secret
 ```
 
-The sign-in domain runs **managed login version 2**, with one branding style for the app client, because the module is called with `branding_enabled = true`. Both roots do, so the development pool and production look the same.
+The sign-in domain runs **managed login version 2**, with one branding style for the app client. Both roots get it, so the development pool and production look the same.
 
 Version 2 is what the branding editor edits. The classic version 1 cannot be branded beyond a logo and a stylesheet, which is why the module moved: sign-in, sign-up, address confirmation and password reset are one set of screens, and branding them covers all four flows at once.
 
@@ -143,8 +143,10 @@ When the pool does exist:
 
 ```sh
 cd infra/aws/cognito/production
-terraform output issuer client_id domain        # into live/terraform.tfvars
-terraform output -raw client_secret             # into the secret below, from the operator's own shell
+terraform output -raw issuer                    # cognito_issuer in live/terraform.tfvars
+terraform output -raw client_id                 # cognito_client_id
+terraform output -raw domain                    # cognito_domain
+terraform output -raw client_secret             # the client secret below, kept out of the shell history
 ```
 
 ```hcl
@@ -164,6 +166,8 @@ aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-se
 ```
 
 `accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+
+Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 
 ## Database passwords and roles
 

@@ -22,10 +22,11 @@ whoever holds the browser.
        --username someone@example.com
    ```
 
-3. Reply once it is done. Say that the address is no longer held, and that any page they had open
-   may keep working until they close it.
-4. Note the date and the address in the operations log. CloudTrail keeps the API call for 90 days;
-   nothing in ClearCare keeps a list of deleted accounts.
+3. Reply once it is done. Say that the account is closed and its address removed from the pool, and
+   that any page they had open may keep working until they close it.
+4. Note the date of the request in the operations log. The address is not written down: it is what
+   the request asked to remove. CloudTrail keeps the API call for 90 days; nothing in ClearCare
+   keeps a list of deleted accounts.
 
 ## What is not covered yet
 
@@ -34,13 +35,17 @@ appropriate while the number of accounts is small and is the first thing to auto
 
 ## Sign-up abuse
 
-Two things are watched, by hand, while accounts are new:
+Three things are watched, by hand, while accounts are new. The pool reports counts, not addresses, so
+the third one needs a look at the user list rather than a chart.
 
-- **Volume.** Cognito reports sign-ups and verification sends in CloudWatch. A burst from one
-  address range, or many sign-ups that never verify, is the signal. Verification mail costs money
-  and can damage the sending domain's reputation, so a burst is acted on rather than watched.
-- **Cost and reputation.** SES reports bounces and complaints per identity. A complaint rate above
-  0.1% means the sending domain is at risk; pause sign-ups (below) and investigate.
+- **Volume.** The pool publishes `SignUpSuccesses` and `SignUpThrottles` to CloudWatch, per user pool.
+  A spike in sign-ups, or throttles that mean something is retrying hard, is the signal. There is no
+  breakdown by address or address range.
+- **Reputation and cost.** SES publishes `Bounce`, `Complaint` and `Reputation.BounceRate` per
+  identity on the sending domain; a complaint rate above 0.1% puts deliverability at risk, because
+  verification mail is what a new visitor waits for. Pause sign-ups (below) and investigate.
+- **The user list itself.** `aws cognito-idp list-users` shows the addresses. A run of near-identical
+  addresses, or accounts created in the same minute, is the pattern a count cannot show.
 
 To stop new accounts without taking the pool down, set
 `admin_create_user_config.allow_admin_create_user_only = true` in the module and apply: existing
@@ -49,4 +54,4 @@ accounts keep working, and nobody can sign up. To stop a single address, disable
 
 A real abuse control — rate limiting per address, a disposable-address check, and an alarm on the
 sign-up metric — is still to be built. Until it is, the launch gate on abuse readiness is met by
-watching the two signals above, not by an automated control.
+watching the three signals above, not by an automated control.
