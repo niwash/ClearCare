@@ -2,7 +2,9 @@
 
 The API serves report-derived amenities with their report ID, inspection date,
 extractor version and model. The values are model output, not established fact.
-Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenities-read-from-reports.md).
+Human gold-set revision and evaluation remain separate under
+[CCARE-192](https://niwash.atlassian.net/browse/CCARE-192) and
+[CCARE-193](https://niwash.atlassian.net/browse/CCARE-193). Design: [ADR-0021](adr/0021-amenities-read-from-reports.md).
 
 ## API versions
 

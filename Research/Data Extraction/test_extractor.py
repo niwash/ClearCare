@@ -44,6 +44,28 @@ class ContractTests(unittest.TestCase):
             )
         self.assertEqual(sum(map(len, CATEGORY_ORDER.values())), 93)
 
+    def test_response_schema_omits_unsupported_string_length_constraints(self):
+        schema = AmenitiesResult.model_json_schema()
+
+        def check(value):
+            if isinstance(value, dict):
+                self.assertNotIn("minLength", value)
+                self.assertNotIn("maxLength", value)
+                for child in value.values():
+                    check(child)
+            elif isinstance(value, list):
+                for child in value:
+                    check(child)
+
+        check(schema)
+        quote = schema["$defs"]["Evidence"]["properties"]["quote"]
+        self.assertEqual(quote["type"], "string")
+        for text in ("", " ", "\n\t"):
+            with self.subTest(quote=text), self.assertRaises(ValidationError):
+                Amenities.model_validate(
+                    dict(payload(), facilities=[garden(quote=text)])
+                )
+
     def test_exact_fields_and_required_lists(self):
         for bad in (
             {},

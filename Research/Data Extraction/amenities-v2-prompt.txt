@@ -51,7 +51,7 @@ Exclude unavailable facilities and future compliance-plan promises. Include exis
 | Gardening and flower arranging | Gardening, horticulture or flower arranging; garden alone is insufficient. |
 | Bingo | Select only when the report directly supports current resident provision. |
 | Quizzes and word games | Quizzes, crosswords and word games. |
-| Board and card games | Board games, cards, bridge, Scrabble or jigsaws. Vague games need review. |
+| Board and card games | Board games, cards, bridge, Scrabble or jigsaws. Omit vague games unless board/card provision is directly supported. |
 | Ball and movement games | Ball, balloon, parachute, bowling and similar games. |
 | Reading and writing | Books/newspapers, book clubs, poetry, storytelling or creative writing. |
 | Talks and discussion groups | Organised talks/discussion, not ordinary conversation alone. |
@@ -82,7 +82,7 @@ Exclude unavailable facilities and future compliance-plan promises. Include exis
 
 | Exact choice | Meaning or boundary |
 |---|---|
-| Garden | Resident garden; nearby public gardens or grounds with unclear resident use need review. |
+| Garden | Resident garden. Exclude nearby public gardens; omit grounds with unclear resident use. |
 | Courtyard | Resident courtyard; courtyard garden can support both if both are explicit. |
 | Patio/terrace | Select only when the report directly supports current resident provision. |
 | Balcony | Select only when the report directly supports current resident provision. |
@@ -98,7 +98,7 @@ Exclude unavailable facilities and future compliance-plan promises. Include exis
 | Library | On-site library, not books alone or a public library. |
 | Cinema room | Actual room, not TV/movie night alone. |
 | Games room | Dedicated room, not games in lounge alone. |
-| Sensory room | Sensory/Snoezelen room. Non-functional or conflicting accounts need review. |
+| Sensory room | Sensory/Snoezelen room. Omit non-functional provision or unresolved conflicting accounts. |
 | Gym | Existing resident gym, not future proposal. |
 | Café/coffee dock | On-site cafe/coffee dock for residents. |
 | Shop | Operating shop, not painted shop fronts. |

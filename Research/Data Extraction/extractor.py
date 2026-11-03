@@ -61,14 +61,6 @@ MANIFEST_NAME = "inspection-reports.jsonl"
 
 
 # ---------------------------------------------------------------------------
-# Output schema
-# ---------------------------------------------------------------------------
-# Pydantic models with OpenAI's structured outputs (beta.chat.completions.parse).
-# The API is forced to return JSON that matches this schema, so the response
-# never needs to be parsed or repaired by hand.
-
-
-# ---------------------------------------------------------------------------
 # Finding the latest report for each home
 # ---------------------------------------------------------------------------
 
@@ -186,7 +178,7 @@ def call_llm(
             or not choice.message.parsed
         ):
             raise ValueError("Incomplete or refused extraction")
-        result = AmenitiesResult.model_validate(choice.message.parsed.model_dump())
+        result = choice.message.parsed
         if not response.model or not response.model.strip():
             raise ValueError("Response is missing its model identifier")
         return result.amenities.validate_pages(page_count), response.model
