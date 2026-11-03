@@ -1,6 +1,7 @@
 """Command line entry point: ``python -m clearcare_pipeline.schedule``.
 
 What it runs and when: CONTRIBUTING.md ("Pipeline and API") and ADR-0014.
+What one run is, and what it locks: ADR-0022.
 """
 
 import argparse
@@ -13,10 +14,14 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Protocol
+
+import psycopg
 
 from clearcare_pipeline.contract_prices.__main__ import (
     main as load_contract_prices,
 )
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.extract_text import main as extract_text
 from clearcare_pipeline.ingest_reports.__main__ import main as ingest_reports
 from clearcare_pipeline.load_register.__main__ import main as load_register
@@ -28,6 +33,7 @@ from clearcare_pipeline.object_store import (
     ObjectStoreError,
     S3ObjectStore,
 )
+from clearcare_pipeline.pipeline_run import PipelineRun
 from clearcare_pipeline.price_lists.__main__ import main as price_lists
 from clearcare_pipeline.reports.__main__ import main as reports
 from clearcare_pipeline.s3_settings import (
@@ -57,6 +63,8 @@ STAGES: Mapping[str, Stage] = {
 }
 STATE_NAME = "schedule-state.json"
 CHECK_SECONDS = 3600.0
+# The object store's settings are not a stage's answer, so the run has its
+# own code for them; the stage codes are clearcare_pipeline.exit_codes.
 EXIT_SETTINGS_ERROR = 2
 
 logger = logging.getLogger(__name__)
@@ -83,6 +91,52 @@ class JobState:
     last_outcome: str
 
 
+@dataclass
+class Attempt:
+    """What one bounded run did, for its exit code and its ledger row.
+
+    ``incomplete`` is work the next run retries: a crawl HIQA would not
+    answer, or reports this version cannot read. The run finished, so it is
+    not a failure, but less happened than was due.
+    """
+
+    failure: str | None = None
+    incomplete: bool = False
+    # A container that is stopped never reaches the end of the run.
+    completed: bool = False
+
+    def note(self, stage: str, status: int) -> None:
+        """Keeps the first stage that ended with a status other than 0."""
+        if self.failure is None:
+            self.failure = f"{stage} exited with status {status}"
+
+    @property
+    def outcome(self) -> str:
+        """The run's outcome, as ``clearcare.pipeline_run`` spells it."""
+        if self.failure is not None or not self.completed:
+            return "failed"
+        return "incomplete" if self.incomplete else "succeeded"
+
+    @property
+    def detail(self) -> str | None:
+        """The first failure, or that the run never got to its end."""
+        if self.failure is not None:
+            return self.failure
+        if not self.completed:
+            return "the run stopped before it finished"
+        return None
+
+
+class Run(Protocol):
+    """What ``main`` needs of a run: its lock, and its ledger row."""
+
+    def finish(self, outcome: str, exit_code: int, detail: str | None) -> None:
+        """Closes the run's row with how it ended."""
+
+    def close(self) -> None:
+        """Releases the run lock."""
+
+
 def _now() -> datetime:
     return datetime.now(UTC)
 
@@ -94,8 +148,13 @@ def main(
     now: Callable[[], datetime] = _now,
     sleep: Callable[[float], None] = time.sleep,
     store: ObjectStore | None = None,
+    begin: Callable[[], Run | None] | None = None,
 ) -> int:
-    """Runs what is due now, and again every hour unless --once is given."""
+    """Runs what is due now, and again every hour unless --once is given.
+
+    With --once it is one run: it takes the run lock, records itself in
+    ``clearcare.pipeline_run``, and exits as ``exit_codes`` says. ADR-0022.
+    """
     parser = argparse.ArgumentParser(
         description="Run the pipeline's stages when they are due."
     )
@@ -115,8 +174,48 @@ def main(
         " schedule state and the manifests there",
     )
     args = parser.parse_args(argv)
-    data_dir: Path = args.data_dir
     env = os.environ if env is None else env
+    attempt = Attempt()
+    if not args.once:
+        # The long-running pipeline of the VM is not a run: it holds nothing
+        # while it sleeps, and the VM's database is not the one a migration
+        # is ever run against.
+        return _run_due(args, env, stages, now, sleep, store, attempt)
+    try:
+        guarded = begin() if begin is not None else _begin()
+    except psycopg.Error as error:
+        logger.error("cannot start a run: %s", error)
+        return EXIT_FAILED
+    if guarded is None:
+        logger.warning(
+            "another run or a migration holds the lock; nothing to do"
+        )
+        return EXIT_DONE
+    code = EXIT_FAILED
+    try:
+        code = _run_due(args, env, stages, now, sleep, store, attempt)
+    finally:
+        guarded.finish(attempt.outcome, code, attempt.detail)
+        guarded.close()
+    return code
+
+
+def _begin() -> Run | None:
+    """Takes the run lock and opens its row; None if someone else has it."""
+    return PipelineRun.try_begin()
+
+
+def _run_due(
+    args: argparse.Namespace,
+    env: Mapping[str, str],
+    stages: Mapping[str, Stage],
+    now: Callable[[], datetime],
+    sleep: Callable[[float], None],
+    store: ObjectStore | None,
+    attempt: Attempt,
+) -> int:
+    """Runs the startup stages and every job that is due."""
+    data_dir: Path = args.data_dir
     state_path = data_dir / STATE_NAME
     try:
         bucket = _bucket_is_set(env)
@@ -126,19 +225,24 @@ def main(
         state = _read_state(state_path)
     except SettingsError as error:
         logger.error("%s", error)
+        attempt.failure = str(error)
         return EXIT_SETTINGS_ERROR
     except (bucket_state.BucketStateError, ObjectStoreError) as error:
         logger.error("cannot restore the data directory: %s", error)
-        return 1
+        attempt.failure = str(error)
+        return EXIT_FAILED
     except (ValueError, KeyError, TypeError, AttributeError) as error:
         logger.error("%s is not a schedule state file: %s", state_path, error)
-        return 1
+        attempt.failure = f"{state_path} is not a schedule state file"
+        return EXIT_FAILED
     crawl = env.get("CLEARCARE_CRAWL") or "off"
     logger.info(
         "CLEARCARE_CRAWL is %s; upload is %s", crawl, "on" if bucket else "off"
     )
+    # A failed upload is the run's failure, but the data directory is still
+    # worth loading: it holds what the last task uploaded.
     if bucket:
-        _run_stage(stages, ("upload",), data_dir)
+        _run_stage(stages, ("upload",), data_dir, attempt)
     # The centres first, as a report or a price is loaded only for a stored
     # centre. Text extraction then writes only what this pipeline version
     # lacks.
@@ -150,7 +254,7 @@ def main(
         "extract_text",
         "split_commitments",
     ):
-        _run_stage(stages, (name,), data_dir)
+        _run_stage(stages, (name,), data_dir, attempt)
     jobs = _jobs(crawl)
     while True:
         for job in jobs:
@@ -158,13 +262,22 @@ def main(
                 continue
             try:
                 state = _run_job(
-                    job, state, data_dir, stages, now, bucket, checkpoints
+                    job,
+                    state,
+                    data_dir,
+                    stages,
+                    now,
+                    bucket,
+                    checkpoints,
+                    attempt,
                 )
             except (bucket_state.BucketStateError, ObjectStoreError) as error:
                 logger.error("%s job: %s", job.name, error)
-                return 1
+                attempt.note(f"{job.name} job", EXIT_FAILED)
+                return EXIT_FAILED
         if args.once:
-            return 0
+            attempt.completed = True
+            return EXIT_DONE if attempt.failure is None else EXIT_FAILED
         sleep(CHECK_SECONDS)
 
 
@@ -230,6 +343,7 @@ def _run_job(
     now: Callable[[], datetime],
     bucket: bool,
     checkpoints: ObjectStore | None,
+    attempt: Attempt,
 ) -> dict[str, JobState]:
     """Runs a job's download, the upload and the stages after it.
 
@@ -239,7 +353,7 @@ def _run_job(
     """
     started = now()
     previous = state.get(job.name)
-    attempt = JobState(
+    attempt_state = JobState(
         scope=job.scope,
         last_success=(
             previous.last_success
@@ -250,31 +364,37 @@ def _run_job(
         next_attempt=started + timedelta(days=1),
         last_outcome="started",
     )
-    new_state = {**state, job.name: attempt}
+    new_state = {**state, job.name: attempt_state}
     _write_state(data_dir / STATE_NAME, new_state)
     if checkpoints is not None:
         # Before HIQA is contacted, so a new task cannot bring a crawl
         # forward either (ADR-0014).
         bucket_state.save(checkpoints, data_dir, data_dir / STATE_NAME)
     logger.info("%s job (%s) started", job.name, job.scope)
-    if _run_stage(stages, job.download, data_dir):
-        attempt = replace(
-            attempt,
+    status = _run_stage(stages, job.download, data_dir, attempt)
+    if status == 0:
+        attempt_state = replace(
+            attempt_state,
             last_success=started,
             next_attempt=started + job.wait_after_success,
             last_outcome="succeeded",
         )
+    elif status == EXIT_RETRY:
+        # The download is retried on the job's own schedule.
+        attempt_state = replace(attempt_state, last_outcome="incomplete")
     else:
-        attempt = replace(attempt, last_outcome="failed")
-    new_state = {**new_state, job.name: attempt}
+        attempt_state = replace(attempt_state, last_outcome="failed")
+    new_state = {**new_state, job.name: attempt_state}
     _write_state(data_dir / STATE_NAME, new_state)
     logger.info(
         "%s job: download %s, next attempt %s",
         job.name,
-        attempt.last_outcome,
-        attempt.next_attempt.isoformat(timespec="seconds"),
+        attempt_state.last_outcome,
+        attempt_state.next_attempt.isoformat(timespec="seconds"),
     )
-    uploaded = bucket and _run_stage(stages, ("upload",), data_dir)
+    uploaded = True
+    if bucket:
+        uploaded = _run_stage(stages, ("upload",), data_dir, attempt) == 0
     if checkpoints is not None:
         # The checkpoint may list only files the bucket holds, so a failed
         # upload leaves the one written before the download.
@@ -284,28 +404,37 @@ def _run_job(
             )
         bucket_state.save(checkpoints, data_dir, data_dir / STATE_NAME)
     for name in job.then:
-        _run_stage(stages, (name,), data_dir)
+        _run_stage(stages, (name,), data_dir, attempt)
     return new_state
 
 
 def _run_stage(
-    stages: Mapping[str, Stage], command: Sequence[str], data_dir: Path
-) -> bool:
-    """Runs a stage's main and returns whether it exited with status 0."""
+    stages: Mapping[str, Stage],
+    command: Sequence[str],
+    data_dir: Path,
+    attempt: Attempt,
+) -> int:
+    """Runs a stage's main and returns its exit status."""
     name, *options = command
     logger.info("%s started", name)
     try:
         status = stages[name](["--data-dir", str(data_dir), *options])
     except Exception:
         logger.exception("%s stopped with an exception", name)
-        return False
-    logger.log(
-        logging.INFO if status == 0 else logging.ERROR,
-        "%s finished with exit status %d",
-        name,
-        status,
+        attempt.note(name, EXIT_FAILED)
+        return EXIT_FAILED
+    if status == EXIT_RETRY:
+        # Work the next run retries: the run finished, but not all of it.
+        attempt.incomplete = True
+    elif status != EXIT_DONE:
+        attempt.note(name, status)
+    level = (
+        logging.ERROR
+        if status not in (EXIT_DONE, EXIT_RETRY)
+        else (logging.WARNING if status == EXIT_RETRY else logging.INFO)
     )
-    return status == 0
+    logger.log(level, "%s finished with exit status %d", name, status)
+    return status
 
 
 def _read_state(path: Path) -> dict[str, JobState]:
