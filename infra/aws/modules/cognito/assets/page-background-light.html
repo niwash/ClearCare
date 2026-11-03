@@ -3,8 +3,8 @@
 
   Cognito draws one form, centred or set to the side, and cannot show two panels or copy of its
   own. So the split, the gradient and the panel words are a single picture per colour mode, set as
-  the page background. Managed login covers the page with it, so it must be at least as wide as the
-  widest screen it will be seen on: 1280 x 800 here, rendered at twice that for sharp text.
+  the page background. Managed login covers the page with it, so it is drawn at 1920 x 1080, the
+  size of a large desktop screen, and rendered at twice that for sharp text.
 
   To change a word or a colour, edit this file and re-render both modes. The fonts come from the
   same Google Fonts stylesheet the site's own layout links, so the render needs the network and has
@@ -14,7 +14,7 @@
     for mode in light dark; do
       chrome_flags="--headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2"
       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" $chrome_flags \
-        --virtual-time-budget=10000 --window-size=1280,800 \
+        --virtual-time-budget=10000 --window-size=1920,1080 \
         --screenshot=/tmp/$mode.png "file://$PWD/page-background-$mode.html"
     done
 
@@ -45,20 +45,19 @@
       href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400&display=block">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { width: 1280px; height: 800px; overflow: hidden; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
 
   /* Left two fifths: the soft wash the form card sits on. Right three fifths:
      the solid panel that carries the words, since managed login cannot show
      copy of its own. Both colours come from the site's own tokens. */
-  .page { position: relative; width: 1280px; height: 800px; }
+  .page { position: relative; width: 1920px; height: 1080px; }
   .form-half { position: absolute; inset: 0 60% 0 0;
                background: linear-gradient(135deg, #dbe5ee 0%, #efe3cf 100%); }
   .copy-half { position: absolute; inset: 0 0 0 40%; background: #21405c; }
 
   .copy { position: absolute; top: 0; bottom: 0; left: 40%; right: 0;
           padding: 0 96px; display: flex;
-          flex-direction: column; justify-content: center;
-          transform: translateY(3px); }
+          flex-direction: column; justify-content: center; }
 
   h1 { font-family: "Source Serif 4", Georgia, serif; font-weight: 400;
        font-size: 59px; line-height: 75px; letter-spacing: -0.01em;
