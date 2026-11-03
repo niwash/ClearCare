@@ -133,11 +133,11 @@ It adapts `infra/postgres/roles.sql` for RDS, where the administrator is not a s
 
 A task reads its secret when it starts. After changing a password, change it in the database too, then start new tasks: run the deploy workflow again for the running commit.
 
-The pipeline also reads an OpenAI API key from `clearcare/openai`, whose value Terraform leaves out too. Paste the key at the prompt, which keeps it out of the shell history:
+The pipeline also reads an Anthropic API key from `clearcare/anthropic`, whose value Terraform leaves out too. Paste the key at the prompt, which keeps it out of the shell history:
 
 ```sh
 read -rs key
-aws secretsmanager put-secret-value --secret-id clearcare/openai --secret-string "$key"
+aws secretsmanager put-secret-value --secret-id clearcare/anthropic --secret-string "$key"
 ```
 
 A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`. The apply that adds the secret registers a pipeline revision that reads it, but the schedules keep the one recorded in `/clearcare/release/pipeline`: run the deploy workflow for the running commit afterwards, so they start the new one.
@@ -249,7 +249,7 @@ To turn the pipeline on, with `pipeline_enabled = false` until the last step:
        --query 'taskDefinition.containerDefinitions[?name==`pipeline`].command'
    ```
 
-4. If Terraform has created the secret `clearcare/openai`, set its value; a pipeline task does not start without it.
+4. If Terraform has created the secret `clearcare/anthropic`, set its value; a pipeline task does not start without it.
 5. Seed the state from the VM, below.
 6. Set `pipeline_enabled = true` and apply.
 
