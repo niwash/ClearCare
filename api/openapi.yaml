@@ -40,8 +40,9 @@ paths:
         `sort=name` orders centres by their folded name, character by
         character in code order (so a space comes before any letter), then by
         `centre_id` as a number. `sort=latest_inspection` orders them by the
-        inspection date of their newest loaded report, newest first, centres
-        without a report last, ties by name. Results are not ranked.
+        inspection date of their newest loaded report, newest first; centres
+        whose newest report has no date come last, together with centres
+        without a report, and ties are in name order. Results are not ranked.
 
         An unknown parameter, an unknown item name or sort, or a parameter
         other than the four filters given more than once, is refused with
@@ -949,7 +950,7 @@ components:
 
     ActivityItem:
       type: string
-      description: A activity from the amenities-v2 list, as the extractor names it.
+      description: An activity from the amenities-v2 list, as the extractor names it.
       enum: ["Music and singing", "Dancing", "Drama and performances", "Arts and crafts", "Knitting and sewing", "Cooking and baking", "Gardening and flower arranging", "Bingo", "Quizzes and word games", "Board and card games", "Ball and movement games", "Reading and writing", "Talks and discussion groups", "Exercise classes", "Walking", "Outings", "Social gatherings and celebrations", "Men’s groups", "Films and television", "Radio", "Reminiscence activities", "Sensory activities", "Cognitive stimulation therapy", "Sonas", "Physiotherapy", "Occupational therapy", "Music therapy", "Art therapy", "Pet therapy", "Aromatherapy", "Meditation and relaxation", "Hairdressing", "Beauty and nail care", "Massage", "Religious services and prayer"]
 
     FacilityItem:
