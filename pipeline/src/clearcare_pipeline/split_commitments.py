@@ -104,9 +104,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if summary.failed == 0:
         return EXIT_DONE
-    # A response the rules cannot split is counted and tried again; nothing
-    # split at all is the pipeline's failure.
-    return EXIT_FAILED if summary.parsed == 0 else EXIT_RETRY
+    # A response the rules cannot split is counted and tried again.
+    return EXIT_RETRY
 
 
 if __name__ == "__main__":

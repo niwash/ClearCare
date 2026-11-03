@@ -1,5 +1,5 @@
 # The migration image for AWS: Flyway with the SQL files in db/ (ADR-0010),
-# run under the run lock a pipeline run also takes (ADR-0021).
+# run under the run lock a pipeline run also takes (ADR-0022).
 #
 # Build it with the repository root as the context, so that this folder's
 # script is in it:

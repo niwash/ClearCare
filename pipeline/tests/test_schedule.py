@@ -306,6 +306,19 @@ def test_a_stage_that_raises_fails_the_run(tmp_path: Path) -> None:
     assert run.outcome == "failed"
 
 
+def test_a_startup_stage_with_retryable_work_leaves_the_run_incomplete(
+    tmp_path: Path,
+) -> None:
+    run = FakeRun()
+
+    code = _start(
+        tmp_path, FakeStages({"ingest_reports": EXIT_RETRY}), START, run=run
+    )
+
+    assert code == 0
+    assert (run.outcome, run.exit_code, run.detail) == ("incomplete", 0, None)
+
+
 def test_a_crawl_hiqa_blocked_is_not_a_failure(tmp_path: Path) -> None:
     run = FakeRun()
 
@@ -317,7 +330,7 @@ def test_a_crawl_hiqa_blocked_is_not_a_failure(tmp_path: Path) -> None:
     assert state["reports"]["last_outcome"] == "incomplete"
 
 
-def test_the_run_is_closed_even_when_the_container_is_stopped(
+def test_the_run_is_closed_when_a_stage_stops_the_process(
     tmp_path: Path,
 ) -> None:
     run = FakeRun()

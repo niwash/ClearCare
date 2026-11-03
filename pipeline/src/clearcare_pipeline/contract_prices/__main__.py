@@ -78,9 +78,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if summary.failed == 0:
         return EXIT_DONE
-    # A list this version cannot read is counted and tried again; nothing
-    # read at all is the pipeline's failure.
-    return EXIT_FAILED if summary.parsed == 0 else EXIT_RETRY
+    # A list this version cannot read is counted and tried again.
+    return EXIT_RETRY
 
 
 def _files(args: argparse.Namespace) -> list[PriceListFile]:

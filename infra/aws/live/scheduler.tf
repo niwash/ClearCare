@@ -8,7 +8,7 @@
 # The schedule starts the task once a day. The task runs its own command: one
 # run, which restores its data directory from the raw bucket, records itself
 # in clearcare.pipeline_run, holds the run lock while it works, runs every job
-# that is due, and exits non-zero if a stage failed (ADR-0021). The schedule
+# that is due, and exits non-zero if a stage failed (ADR-0022). The schedule
 # stays off (var.pipeline_enabled) until the bucket holds the pipeline's state
 # (infra/aws/README.md).
 

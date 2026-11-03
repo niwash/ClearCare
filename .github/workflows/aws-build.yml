@@ -37,7 +37,8 @@ jobs:
             file: pipeline/Dockerfile
           - image: migrate
             # The image holds the run lock, so it needs its own script next
-            # to db/, which means the repository root is the context.
+            # to db/, which means the repository root is the context; the
+            # root .dockerignore narrows it to those two paths.
             context: .
             file: infra/aws/migrate/Dockerfile
     env:

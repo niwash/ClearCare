@@ -1,4 +1,4 @@
-"""One bounded run: its advisory lock and its row in the ledger (ADR-0021).
+"""One bounded run: its advisory lock and its row in the ledger (ADR-0022).
 
 A scheduled task is one run from the container starting to the container
 stopping. Two of them must not write to the database at the same time, and a

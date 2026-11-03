@@ -13,7 +13,7 @@
 #
 # Runs only while deploys are enabled (infra/aws/live/release.tf). It waits
 # for a running pipeline task to stop, and the migrate task takes the same
-# run lock as a pipeline run (ADR-0021), so neither can write while the other
+# run lock as a pipeline run (ADR-0022), so neither can write while the other
 # is.
 
 set -euo pipefail

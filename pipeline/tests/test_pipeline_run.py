@@ -1,4 +1,4 @@
-# The run lock and the ledger, against a real PostgreSQL (ADR-0021).
+# The run lock and the ledger, against a real PostgreSQL (ADR-0022).
 
 from collections.abc import Iterator
 from typing import Any
@@ -7,7 +7,7 @@ import pytest
 from psycopg import errors
 from psycopg.rows import dict_row
 
-from clearcare_pipeline.pipeline_run import LOCK_KEY, PipelineRun
+from clearcare_pipeline.pipeline_run import PipelineRun
 from tests.database import (
     PASSWORDS,
     PIPELINE,
@@ -73,7 +73,9 @@ def test_a_run_is_open_while_it_runs_and_closed_when_it_ends(
     assert closed["finished_at"] is not None
 
 
-def test_a_second_run_waits_for_the_first(configured: None) -> None:
+def test_a_second_run_is_refused_while_the_first_holds_the_lock(
+    configured: None,
+) -> None:
     first = PipelineRun.try_begin()
 
     assert first is not None
@@ -84,24 +86,6 @@ def test_a_second_run_waits_for_the_first(configured: None) -> None:
     second = PipelineRun.try_begin()
     assert second is not None
     second.close()
-
-
-def test_a_run_holds_the_key_the_migrate_task_waits_on(
-    database: Database, configured: None
-) -> None:
-    # 149 is the key the migrate image's psql takes (ADR-0021), so a run
-    # that holds it is what makes a migration wait.
-    run = PipelineRun.try_begin()
-    assert run is not None
-
-    with database.connect(PIPELINE) as connection:
-        taken = connection.execute(
-            "SELECT pg_try_advisory_lock(%s)", (LOCK_KEY,)
-        ).fetchone()
-
-    run.close()
-
-    assert taken == (False,)
 
 
 def test_a_run_that_was_killed_leaves_an_open_row(

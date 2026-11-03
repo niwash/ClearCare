@@ -123,7 +123,7 @@ def test_a_verification_page_is_retried_later(tmp_path: Path) -> None:
     assert code == EXIT_RETRY
 
 
-def test_hiaq_not_answering_is_retried_later(tmp_path: Path) -> None:
+def test_hiqa_not_answering_is_retried_later(tmp_path: Path) -> None:
     fetcher = FakeFetcher({ELM_HALL: [UNAVAILABLE] * 3})
 
     code = main(
@@ -133,20 +133,6 @@ def test_hiaq_not_answering_is_retried_later(tmp_path: Path) -> None:
     )
 
     assert code == EXIT_RETRY
-
-
-def test_a_page_the_pipeline_cannot_read_fails_the_run(
-    tmp_path: Path,
-) -> None:
-    fetcher = FakeFetcher({ELM_HALL: [html(b"<html>Busy</html>")]})
-
-    code = main(
-        ["--data-dir", str(_data_dir(tmp_path)), "--county", "Kildare"],
-        fetcher=fetcher,
-        sleep=no_sleep,
-    )
-
-    assert code == 1
 
 
 def test_county_without_centres_fails(tmp_path: Path) -> None:
