@@ -79,7 +79,7 @@ class DownloadSummary:
     downloaded_bytes: int
     failure: str | None
     # True when the run stopped because HIQA would not answer, rather than
-    # because the pipeline could not read what it got (ADR-0021).
+    # because the pipeline could not read what it got (ADR-0022).
     blocked: bool = False
 
 

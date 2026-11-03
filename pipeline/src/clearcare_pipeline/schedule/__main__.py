@@ -1,7 +1,7 @@
 """Command line entry point: ``python -m clearcare_pipeline.schedule``.
 
 What it runs and when: CONTRIBUTING.md ("Pipeline and API") and ADR-0014.
-What one run is, and what it locks: ADR-0021.
+What one run is, and what it locks: ADR-0022.
 """
 
 import argparse
@@ -153,9 +153,7 @@ def main(
     """Runs what is due now, and again every hour unless --once is given.
 
     With --once it is one run: it takes the run lock, records itself in
-    ``clearcare.pipeline_run``, and exits 0 or 1, or 2 for the object store's
-    settings. A stage that answered 3 left work for the next run, which is
-    not a failure. The exit codes and the lock are ADR-0021.
+    ``clearcare.pipeline_run``, and exits as ``exit_codes`` says. ADR-0022.
     """
     parser = argparse.ArgumentParser(
         description="Run the pipeline's stages when they are due."
@@ -275,7 +273,7 @@ def _run_due(
                 )
             except (bucket_state.BucketStateError, ObjectStoreError) as error:
                 logger.error("%s job: %s", job.name, error)
-                attempt.failure = f"{job.name}: {error}"
+                attempt.note(f"{job.name} job", EXIT_FAILED)
                 return EXIT_FAILED
         if args.once:
             attempt.completed = True
@@ -382,9 +380,7 @@ def _run_job(
             last_outcome="succeeded",
         )
     elif status == EXIT_RETRY:
-        # HIQA would not answer, or the parser could not read every file.
-        # The download is retried tomorrow, so the run is not a failure.
-        attempt.incomplete = True
+        # The download is retried on the job's own schedule.
         attempt_state = replace(attempt_state, last_outcome="incomplete")
     else:
         attempt_state = replace(attempt_state, last_outcome="failed")
@@ -427,14 +423,17 @@ def _run_stage(
         logger.exception("%s stopped with an exception", name)
         attempt.note(name, EXIT_FAILED)
         return EXIT_FAILED
-    logger.log(
-        logging.INFO if status == 0 else logging.ERROR,
-        "%s finished with exit status %d",
-        name,
-        status,
-    )
-    if status not in (EXIT_DONE, EXIT_RETRY):
+    if status == EXIT_RETRY:
+        # Work the next run retries: the run finished, but not all of it.
+        attempt.incomplete = True
+    elif status != EXIT_DONE:
         attempt.note(name, status)
+    level = (
+        logging.ERROR
+        if status not in (EXIT_DONE, EXIT_RETRY)
+        else (logging.WARNING if status == EXIT_RETRY else logging.INFO)
+    )
+    logger.log(level, "%s finished with exit status %d", name, status)
     return status
 
 

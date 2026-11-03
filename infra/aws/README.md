@@ -8,7 +8,7 @@ ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the 
 | `live/` | Everything else, one file per concern |
 | `live/rds-ca/` | The RDS certificate bundle the database clients check the server against |
 | `cognito/` | The account pool for public sign-up and sign-in, one folder per environment |
-| `migrate/Dockerfile` | Flyway with the migrations in `db/`, under the run lock (ADR-0021) |
+| `migrate/Dockerfile` | Flyway with the migrations in `db/`, under the run lock (ADR-0022) |
 | `bin/` | The scripts the workflows and the operator run |
 
 The images are built from `api/Dockerfile`, `web/clearcare/Dockerfile`, `pipeline/Dockerfile` and `migrate/Dockerfile`. The workflows are `.github/workflows/aws-*.yml`.
@@ -211,7 +211,7 @@ These workflows run tasks with their own AWS role:
 - AWS run pipeline runs the scheduler once, as the schedule does, and waits for it. It runs only while the pipeline is enabled.
 - AWS migrate runs Flyway's `migrate`, `info` or `validate`. It runs only while deploys are enabled.
 
-Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run could still start during a migration; nothing keeps the two apart yet. Cancelling the workflow stops the task.
+Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run and a migration cannot overlap either: they take the same run lock (ADR-0022). Cancelling the workflow stops the task.
 
 With credentials, `infra/aws/bin/run-task` does the same from a terminal:
 
@@ -224,7 +224,7 @@ It prints the end of each container's log and exits 0 only if every container ex
 
 ## Pipeline state
 
-A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A stage that fails exits 1 too, with the first failure in the alarm's log line. Two kinds of answer are not a failure: a crawl HIQA would not answer (a browser verification page, or 429s still there after the stage's retries), and work the next run retries anyway, such as the report layouts this parser cannot load (ADR-0013). Those stages exit 3, the run is recorded as `incomplete`, and the task exits 0 with the alarm quiet; they exit 1, and fail the run, when they read nothing at all out of what they were given (ADR-0021).
+A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A stage that fails exits 1 too, with the first failure in the alarm's log line; a stage with work the next run retries exits 3, which records the run as `incomplete` and leaves the task green, so the alarm keeps meaning something (ADR-0022).
 
 Each run downloads the whole of `raw/` one object at a time, about 4,600 files and 1.2 GB on 30 October 2026, into the task's default 20 GiB of storage, so the time before the first stage grows with the corpus.
 

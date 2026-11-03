@@ -1,5 +1,5 @@
 -- One row per pipeline run, so an operator can tell what ran and how it
--- ended without reading CloudWatch (ADR-0021). Flyway runs this as
+-- ended without reading CloudWatch (ADR-0022). Flyway runs this as
 -- clearcare_owner (ADR-0010).
 --
 -- A run inserts its row before it does anything else, so a task that is

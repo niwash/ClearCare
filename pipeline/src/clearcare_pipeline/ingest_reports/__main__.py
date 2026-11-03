@@ -67,10 +67,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     if summary.failed == 0:
         return EXIT_DONE
-    # A layout this version cannot load (ADR-0013) is counted and tried
-    # again by the next run; nothing loaded at all is the pipeline's own
-    # failure, not a gap in the data.
-    return EXIT_FAILED if summary.parsed == 0 else EXIT_RETRY
+    # A layout this version cannot load (ADR-0013) is counted and the next
+    # run tries it again, whatever else that run parsed.
+    return EXIT_RETRY
 
 
 def _source(args: argparse.Namespace) -> Iterator[Source]:

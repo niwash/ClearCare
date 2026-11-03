@@ -1,8 +1,6 @@
 """Command line entry point: ``python -m clearcare_pipeline.reports``.
 
-Exit codes (clearcare_pipeline.exit_codes, ADR-0021): 0 when the crawl
-finished; 3 when HIQA would not answer, which the schedule retries on the
-job's own schedule; 1 for anything else, which is the pipeline's own failure.
+Its exit codes are ``clearcare_pipeline.exit_codes``; ADR-0022 explains them.
 """
 
 import argparse
