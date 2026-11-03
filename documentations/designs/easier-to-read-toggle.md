@@ -1,6 +1,6 @@
 # "Easier to read" toggle
 
-**Created:** 18 October 2026 · **Last modified:** 19 October 2026
+**Created:** 18 October 2026 · **Last modified:** 2 November 2026
 
 ClearCare has two adult-centred designs, and users can switch between them with the **Easier to read: Off / On** button in the header.
 
@@ -34,6 +34,7 @@ How the toggle works:
 | **National figures shading** | Up to 50% of the link colour | Up to 30%, so text on the darkest cell stays at least 7:1 (WCAG 1.4.6, AAA) [[10]](#ref-10) |
 | **Hover on main buttons** | Fade slightly | Darker colour. |
 | **Navigation on phones and tablets** | Behind a round menu button in the bottom-right corner. | Always visible as a row under the header. NIA/NLM: "Use pull down menus sparingly" and "Incorporate text with the icon if possible" [[5]](#ref-5) |
+| **Page width** | The content column is at most 1152px, widening to at most 1280px on screens 1536px and wider, so large monitors aren't left mostly empty | At most 1296px on every screen (the same 72rem, at the larger text size). It doesn't widen, so the header and navigation stay in the same place ("Use the same set of navigation buttons in the same place on each page" [[5]](#ref-5)) and lines of text don't grow longer |
 
 ### What the colours mean
 
@@ -48,7 +49,7 @@ How the toggle works:
 ## The same in both
 
 - **"(coming soon)" labels.** "Ask about this home", "Add to list" and any unfinished menu item are shown in readable text with "(coming soon)", not faded out. WCAG doesn't require contrast for inactive controls [[10]](#ref-10), but faded text is hard for anyone to read, and the label explains why nothing happens.
-- **Judgement shapes and labels, page content, layout and features.** Judgement colours follow each design's palette, so "Substantially compliant" is amber by default and gold in Easier to read.
+- **Judgement shapes and labels, page content, layout and features.** The layout is the same apart from the page width on large screens (see [What changes](#what-changes)). Judgement colours follow each design's palette, so "Substantially compliant" is amber by default and gold in Easier to read.
 - **Light and dark mode.** Both designs follow the device's light or dark setting until the user picks one with the theme button, and the choice is saved. Dark-on-light is the better choice for most older readers [[5]](#ref-5), [[7]](#ref-7), and the theme button sits next to the Easier to read toggle.
 
 ## Known gaps as of 19 October 2026
@@ -63,7 +64,8 @@ How the toggle works:
 ## For developers
 
 - On mode is switched on by `data-design="adult-centred"` on `<html>`, saved under the `design` key in `localStorage`.
-- Colours, text sizes and focus styles for both designs are in `web/clearcare/app/globals.css`. Form fields use `border-field`, which is 3:1 in both designs.
+- Colours, text sizes and focus styles for both designs are in `web/clearcare/app/globals.css`.
+- The page's column width is `--page-max` in `globals.css`, applied with the `page-column` class. Sections that line up with the column, such as the home page carousel's text, use `calc((100vw - var(--page-max)) / 2 + 2rem)`, so they follow it in both designs. Form fields use `border-field`, which is 3:1 in both designs.
 - The toggle is `web/clearcare/components/theme/design-toggle.tsx`. The phone menu is `web/clearcare/components/layout/mobile-menu.tsx`.
 
 ## References

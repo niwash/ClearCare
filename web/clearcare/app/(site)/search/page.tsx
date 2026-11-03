@@ -155,7 +155,7 @@ function SearchHero({ query }: { query: SearchQuery }) {
 
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="mx-auto flex max-w-6xl flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Search for Homes" />
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           {searched ? `Results for ${describe(query)}` : "Find a nursing home"}
@@ -392,7 +392,7 @@ function Results({ query, data }: { query: SearchQuery; data: SearchResponse }) 
 function ResultsBar({ children }: { children?: ReactNode }) {
   return (
     <div className={`${fullWidthClass} sticky top-0 z-20 bg-page/95 backdrop-blur-sm`}>
-      <div className="mx-auto flex min-h-14 max-w-6xl items-center justify-between gap-3 px-4 py-1.5 md:px-8">
+      <div className="page-column flex min-h-14 items-center justify-between gap-3 px-4 py-1.5 md:px-8">
         <div className="min-w-0">{children}</div>
         <ShortlistDrawer />
       </div>

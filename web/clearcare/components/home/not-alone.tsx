@@ -32,9 +32,9 @@ export function NotAlone() {
           className="object-cover object-[50%_45%]"
         />
       </div>
-      {/* The right-hand padding matches the page's column (max-w-6xl, md:px-8), so the words end
+      {/* The right-hand padding matches the page's column (page-column, md:px-8), so the words end
           where the sections above and below do. */}
-      <div className="reveal flex flex-col items-start justify-center gap-4 px-4 py-10 md:py-14 md:pl-12 md:pr-[max(2rem,calc((100vw-72rem)/2+2rem))] lg:pl-16">
+      <div className="reveal flex flex-col items-start justify-center gap-4 px-4 py-10 md:py-14 md:pl-12 md:pr-[max(2rem,calc((100vw_-_var(--page-max))/2_+_2rem))] lg:pl-16">
         <h2 id="not-alone-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
           You&apos;re not alone in this
         </h2>
