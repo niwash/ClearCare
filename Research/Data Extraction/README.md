@@ -20,7 +20,7 @@ PDF page markers count from 1 including the cover and blank pages. Structural
 checks reject unknown categories/keys, duplicate items, blank quotes, missing
 evidence, non-integer pages and invalid ranges. Exact duplicate evidence is
 removed; distinct passages and restrictions remain. Categories use checklist
-order. Quote-content verification and human evaluation remain separate work.
+order. Human evaluation remains separate work.
 
 ## Setup and run
 
@@ -52,7 +52,25 @@ Options are `--provider` (`anthropic` or `openai`), `--data-dir`,
 limit before a paid batch. Output allowance is 16,000 tokens for quote-bearing
 results. Reports over 200,000 characters fail instead of being truncated. Unreadable PDFs, refusals, incomplete responses and
 invalid output fail without overwriting good results. Any failed centre gives
-an exit status of 1 so an operator can detect partial runs.
+an exit status of 1 so an operator can detect partial runs. A Claude reply
+outside the contract, such as an item listed twice, is asked for once more
+before the centre fails.
+
+## Evidence check
+
+Before writing a result, the extractor looks for each quote in the report's
+page text. It searches the cited pages, then one page more on each side, then
+the whole report, and sets the quote's pages to where it is found. A quote
+cited past the last page is searched for the same way. Matching ignores case,
+spacing, punctuation, ligatures and the page footer between two pages, so
+"6 twin rooms, and 1" matches "6 twin rooms and 1". A digit next to either
+end of a quote stops a match, so "2 single rooms" is not found in "12 single
+rooms", but a letter that PDF extraction glued on ("bell. tResidents") does
+not. A hyphen reads as a space, so "en-suite" matches "en suite". A word split
+at a line end also matches whole: "gar-" followed by "den" on the next line
+matches "garden". A quote found nowhere is dropped, and the log gives a
+warning with the quote and its item. An item left without quotes is dropped
+too. The log gives the counts for each home and for the run.
 
 ## Output and retained history
 
@@ -87,7 +105,8 @@ python -m unittest discover -s "Research/Data Extraction" -p "test_extractor.py"
 
 The tests need the Anthropic SDK, Pydantic and python-dotenv. They check the
 frozen category contract, evidence validation, page numbering, model failures,
-provenance, version-aware caching and preservation of good files after failures.
+provenance, version-aware caching, the evidence check and preservation of good
+files after failures.
 
 ## Historical v1 findings
 
