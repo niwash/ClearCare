@@ -2,7 +2,6 @@
 
 Reads each centre's latest stored HIQA inspection report using GPT-4o-mini.
 It downloads nothing and does not load the database or run on a schedule.
-CCARE-195 tracks v2 implementation; CCARE-171 tracks scheduling.
 
 ## Contract
 
@@ -66,14 +65,14 @@ The outer keys remain `centre_id`, `inspection_date`, `file_name`, `hiqa_url`,
 Source metadata comes from the manifest, never the model. The model returns
 only the `amenities` wrapper.
 
-## Integration status
+## Loading and API
 
-The current loader, database and HTTP endpoint support v1 only. Do not send
-these v2 item objects to the v1 loader. Lossless evidence storage, API
-compatibility and migration work are the next focused part of CCARE-195.
-The HTTP envelope is not changed by this extractor patch. Scheduling remains
-CCARE-171. Human labels and evaluation remain Waseel's CCARE-192/193 work;
-these tests establish implementation behaviour, not model accuracy.
+The extractor and pipeline loader share the same v2 validation contract.
+V12 stores item-level evidence, and the API exposes it through the explicit
+version=amenities-v2 query while keeping the default v1 response.
+See docs/amenities.md for loading requirements and API behaviour.
+Human labels and evaluation remain independent of model outputs. Tests verify
+implementation behaviour, not model accuracy.
 
 ## Offline checks
 

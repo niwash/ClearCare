@@ -54,7 +54,8 @@ class CentreAmenitiesTest {
           "db/V1__register_entries.sql",
           "db/V2__inspection_reports.sql",
           "db/V3__inspection_report_views.sql",
-          "db/V11__report_amenities.sql");
+          "db/V11__report_amenities.sql",
+          "db/V12__report_amenities_v2.sql");
 
   // A register snapshot, so that the centres exist (db/V1), and two reports of Elm Hall
   // (db/V2). The newer report has two extractions, as after a re-run with a new prompt, and the
@@ -145,6 +146,7 @@ class CentreAmenitiesTest {
       execute("SET ROLE clearcare_owner;\n" + Files.readString(REPOSITORY.resolve(migration)));
     }
     execute(SEED);
+    seedV2();
   }
 
   @Test
@@ -203,6 +205,73 @@ class CentreAmenitiesTest {
                      "instance": "/centres/%s/amenities"}
                     """
                         .formatted(centreId)));
+  }
+
+  @Test
+  void returnsV2EvidenceOnlyWhenRequested() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(
+            """
+            {"centre_id":"34","amenities":{
+              "report_id":2,"inspection_date":"2026-05-13",
+              "care_types":[],"room_types":[],"activities":[],
+              "facilities":[{"item":"Garden","evidence":[
+                {"quote":"Residents used the garden.","page_start":3,"page_end":3},
+                {"quote":"Staff assisted access.","page_start":5,"page_end":6}]}],
+              "extractor_version":"amenities-v2","model":"gpt-4o-mini"}}
+            """, JsonCompareMode.STRICT));
+  }
+
+  @Test
+  void returnsNullWithoutFallingBackToV1() throws Exception {
+    execute("DELETE FROM clearcare.report_amenities_v2");
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.amenities").value(nullValue()));
+    } finally {
+      seedV2();
+    }
+  }
+
+  @Test
+  void rejectsAnUnsupportedVersion() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v99"))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.detail", is("version must be amenities-v1 or amenities-v2.")));
+  }
+
+  @Test
+  void v2PreservesNotFoundAndUnavailableResponses() throws Exception {
+    mvc.perform(get("/centres/999/amenities").param("version", "amenities-v2"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.detail", is("The register has no centre with this centre_id.")));
+    execute("DELETE FROM clearcare.register_publication");
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+          .andExpect(status().isServiceUnavailable())
+          .andExpect(jsonPath("$.detail", is("The register has not been loaded yet.")));
+    } finally {
+      execute("INSERT INTO clearcare.register_publication (source_file_id, published_at) VALUES (1, now())");
+    }
+  }
+
+  private static void seedV2() throws SQLException {
+    execute(
+        """
+        INSERT INTO clearcare.report_amenities_v2
+            (report_id, amenities, file_name, hiqa_url, extractor_version, model, extracted_at)
+        VALUES (2,
+          '{"care_types":[],"room_types":[],"activities":[],"facilities":[
+            {"item":"Garden","evidence":[
+              {"quote":"Residents used the garden.","page_start":3,"page_end":3},
+              {"quote":"Staff assisted access.","page_start":5,"page_end":6}]}]}',
+          'elm-hall.pdf', 'https://www.hiqa.ie/report.pdf', 'amenities-v2',
+          'gpt-4o-mini', '2026-11-03 02:00:00+00');
+        """);
   }
 
   private static void execute(String sql) throws SQLException {
