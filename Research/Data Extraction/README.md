@@ -1,6 +1,7 @@
 # Amenities v2 extractor
 
-Reads each centre's latest stored HIQA inspection report using GPT-4o-mini.
+Reads each centre's latest stored HIQA inspection report with Claude Haiku 5.5,
+or with GPT-4o-mini when run with `--provider openai`.
 It downloads nothing and does not load the database or run on a schedule.
 
 ## Contract
@@ -26,28 +27,30 @@ order. Quote-content verification and human evaluation remain separate work.
 Use Python 3.11 or newer, with the existing extractor dependencies:
 
 ```sh
-pip install pdfplumber==0.11.10 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
+pip install pdfplumber==0.11.10 anthropic==2.4.0 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
 ```
 
-Set `OPENAI_API_KEY` in the environment or root `.env`. From the repository root:
+Set `ANTHROPIC_API_KEY` in the environment or root `.env`, or `OPENAI_API_KEY`
+for `--provider openai`. From the repository root:
 
 ```sh
 python "Research/Data Extraction/extractor.py" --dry-run
 python "Research/Data Extraction/extractor.py" --centre-id 13
+python "Research/Data Extraction/extractor.py" --provider openai --centre-id 13
 ```
 
 Input is `<data-dir>/manifests/inspection-reports.jsonl` and PDFs under
 `<data-dir>/raw/sha256/<first two hash characters>/<hash>`. The data directory
 defaults to `CLEARCARE_DATA_DIR` or `./data`. The stored PDF hash is checked
 before sending text to the model. Metadata must exist and be valid; none is
-invented. The requested model remains GPT-4o-mini; output records the model
-identifier returned by the API and a UTC extraction timestamp.
+invented. Output records the model identifier returned by the API and a UTC
+extraction timestamp.
 
-Options remain `--data-dir`, `--output-dir`, repeatable `--centre-id`,
-`--centres-file`, `--limit`, `--force` and `--dry-run`. Dry-run makes no model
-calls. Try a small explicit limit before a paid batch. Output allowance is
-16,000 tokens for quote-bearing results. Reports over 200,000 characters fail
-instead of being truncated. Unreadable PDFs, refusals, incomplete responses and
+Options are `--provider` (`anthropic` or `openai`), `--data-dir`,
+`--output-dir`, repeatable `--centre-id`, `--centres-file`, `--limit`,
+`--force` and `--dry-run`. Dry-run makes no model calls. Try a small explicit
+limit before a paid batch. Output allowance is 16,000 tokens for quote-bearing
+results. Reports over 200,000 characters fail instead of being truncated. Unreadable PDFs, refusals, incomplete responses and
 invalid output fail without overwriting good results. Any failed centre gives
 an exit status of 1 so an operator can detect partial runs.
 
@@ -58,7 +61,7 @@ The output directory defaults to `<data-dir>/amenities`. Existing v1 files at
 `<output-dir>/<centre_id>.json` remain untouched. Different PDF hashes have
 separate files. A valid v2 file for the same centre and hash is skipped;
 `--force` atomically replaces that file only after successful extraction.
-Prompt/model/schema changes after this version is frozen require a new version.
+Prompt or schema changes after this version is frozen require a new version.
 
 The outer keys remain `centre_id`, `inspection_date`, `file_name`, `hiqa_url`,
 `sha256`, `model`, `extractor_version`, `extracted_at` and `amenities`.
@@ -82,9 +85,9 @@ No API key, model calls, Docker or human gold labels are required:
 python -m unittest discover -s "Research/Data Extraction" -p "test_extractor.py" -v
 ```
 
-The tests need Pydantic and python-dotenv. They check the frozen category
-contract, evidence validation, page numbering, model failures, provenance,
-version-aware caching and preservation of good files after failures.
+The tests need the Anthropic SDK, Pydantic and python-dotenv. They check the
+frozen category contract, evidence validation, page numbering, model failures,
+provenance, version-aware caching and preservation of good files after failures.
 
 ## Historical v1 findings
 

@@ -8,7 +8,7 @@ locals {
   # Family => the secrets its execution role may read. The site has none.
   execution_secrets = {
     api      = [aws_secretsmanager_secret.database["api"].arn]
-    pipeline = [aws_secretsmanager_secret.database["pipeline"].arn, aws_secretsmanager_secret.openai.arn]
+    pipeline = [aws_secretsmanager_secret.database["pipeline"].arn, aws_secretsmanager_secret.anthropic.arn]
     migrate  = [aws_secretsmanager_secret.database["migrator"].arn]
     restore  = [local.admin_secret_arn]
   }

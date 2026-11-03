@@ -23,7 +23,7 @@ Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenitie
 ## Extract and load
 
 The pipeline must first store reports and its inspection-reports manifest.
-Set OPENAI_API_KEY in the environment or root .env; install extractor dependencies
+Set ANTHROPIC_API_KEY in the environment or root .env; install extractor dependencies
 from Research/Data Extraction/README.md. From the repository root:
 
 ```sh
@@ -53,9 +53,10 @@ curl 'http://127.0.0.1:8080/centres/1/amenities?version=amenities-v2'
 
 Both views choose the newest inspection report with matching data, with report
 ID ascending for equal dates, then extraction time descending and insertion ID
-descending. Version labels do not determine recency. A changed prompt/model/schema
-requires a new extractor version. V0 was truncated text, v1 was whole-report free
-lists/flags, and v2 uses the approved 93 categories and item-level evidence.
+descending. Version labels do not determine recency. A changed prompt or schema
+requires a new extractor version; the model is recorded on every row. V0 was
+truncated text, v1 was whole-report free lists/flags, and v2 uses the approved 93
+categories and item-level evidence.
 
 Unmatched inputs are reported and skipped; correct source identities and ingestion
 before retrying rather than attaching evidence to another report.
