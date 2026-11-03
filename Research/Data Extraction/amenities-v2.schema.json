@@ -1,0 +1,282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ClearCare amenities-v2 extraction file",
+  "description": "Approved canonical extraction-file contract. Does not define the HTTP response envelope or database layout.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "centre_id",
+    "inspection_date",
+    "file_name",
+    "hiqa_url",
+    "sha256",
+    "model",
+    "extractor_version",
+    "extracted_at",
+    "amenities"
+  ],
+  "properties": {
+    "centre_id": {
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "inspection_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "file_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hiqa_url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1
+    },
+    "extractor_version": {
+      "type": "string",
+      "const": "amenities-v2"
+    },
+    "extracted_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "amenities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "care_types",
+        "room_types",
+        "activities",
+        "facilities"
+      ],
+      "properties": {
+        "care_types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "item",
+              "evidence"
+            ],
+            "properties": {
+              "item": {
+                "type": "string",
+                "enum": [
+                  "General nursing care",
+                  "Long-term residential care",
+                  "Short-term care",
+                  "Respite care",
+                  "Convalescent care",
+                  "Transitional care",
+                  "Step-down care",
+                  "Rehabilitation",
+                  "Day care",
+                  "Dementia care",
+                  "Palliative care",
+                  "End-of-life care",
+                  "Acquired brain injury care",
+                  "Physical disability care",
+                  "Sensory impairment care",
+                  "Neurological care",
+                  "Intellectual disability care",
+                  "Mental health care"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                }
+              }
+            }
+          }
+        },
+        "room_types": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "item",
+              "evidence"
+            ],
+            "properties": {
+              "item": {
+                "type": "string",
+                "enum": [
+                  "Single room",
+                  "Twin/double room",
+                  "Multi-bed room",
+                  "Shared room, occupancy unspecified",
+                  "En-suite facilities",
+                  "Shared bathroom facilities"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                }
+              }
+            }
+          }
+        },
+        "activities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "item",
+              "evidence"
+            ],
+            "properties": {
+              "item": {
+                "type": "string",
+                "enum": [
+                  "Music and singing",
+                  "Dancing",
+                  "Drama and performances",
+                  "Arts and crafts",
+                  "Knitting and sewing",
+                  "Cooking and baking",
+                  "Gardening and flower arranging",
+                  "Bingo",
+                  "Quizzes and word games",
+                  "Board and card games",
+                  "Ball and movement games",
+                  "Reading and writing",
+                  "Talks and discussion groups",
+                  "Exercise classes",
+                  "Walking",
+                  "Outings",
+                  "Social gatherings and celebrations",
+                  "Men’s groups",
+                  "Films and television",
+                  "Radio",
+                  "Reminiscence activities",
+                  "Sensory activities",
+                  "Cognitive stimulation therapy",
+                  "Sonas",
+                  "Physiotherapy",
+                  "Occupational therapy",
+                  "Music therapy",
+                  "Art therapy",
+                  "Pet therapy",
+                  "Aromatherapy",
+                  "Meditation and relaxation",
+                  "Hairdressing",
+                  "Beauty and nail care",
+                  "Massage",
+                  "Religious services and prayer"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                }
+              }
+            }
+          }
+        },
+        "facilities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "item",
+              "evidence"
+            ],
+            "properties": {
+              "item": {
+                "type": "string",
+                "enum": [
+                  "Garden",
+                  "Courtyard",
+                  "Patio/terrace",
+                  "Balcony",
+                  "Outdoor space, type unspecified",
+                  "Lounge/day room",
+                  "Dining room",
+                  "Activities room",
+                  "Private visitors/family room",
+                  "Conservatory/sun room",
+                  "Quiet/relaxation room",
+                  "Chapel/oratory",
+                  "Prayer/reflection room",
+                  "Library",
+                  "Cinema room",
+                  "Games room",
+                  "Sensory room",
+                  "Gym",
+                  "Café/coffee dock",
+                  "Shop",
+                  "Hairdressing/beauty salon",
+                  "Designated smoking area",
+                  "Physiotherapy room",
+                  "Occupational therapy room",
+                  "Hydrotherapy pool/bathroom",
+                  "Resident internet/Wi-Fi",
+                  "Visitor parking",
+                  "Passenger lift",
+                  "Stairlift",
+                  "Dementia-specific unit",
+                  "Mental-health-specific unit",
+                  "Acquired-brain-injury unit",
+                  "Convalescence unit",
+                  "Centre-provided bus/car transport"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "quote",
+        "page_start",
+        "page_end"
+      ],
+      "properties": {
+        "quote": {
+          "type": "string",
+          "minLength": 1
+        },
+        "page_start": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "page_end": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}
