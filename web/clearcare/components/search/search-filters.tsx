@@ -1,21 +1,20 @@
 "use client";
 
 // The search page's filters (CCARE-189): where to look, then the care and amenity filters
-// (lib/search-filters.ts) in folding groups, and Fair Deal. From md up they're a column beside the
+// (lib/search-filters.ts) in folding groups. From md up they're a column beside the
 // results; on phones they open in a full-screen sheet from a "Filters" button. Either way, choices
 // apply on "Show n nursing homes" (or Enter), not as they're made, so the results don't change
 // under someone still choosing. Until then the counts, and the number on the button, are asked for
 // as choices change (/search/count). Every choice is in the page address, so a search can be shared
 // as a link. It's a real form, so without scripts it still searches.
 //
-// The care and amenity groups and Fair Deal only show when the API counts them (facets): until the
-// API has the filters (see lib/search.ts), offering them would look like filtering that isn't done.
+// The care and amenity groups need the counts (facets): when the API can't be read, they're left
+// out rather than offered without them.
 import { Chevron } from "@/components/ui/chevron";
 import { textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
-import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, searchHref, type PageSearch, type SearchResponse } from "@/lib/search";
+import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, searchHref, type Facets, type PageSearch } from "@/lib/search";
 import {
-  FAIR_DEAL_FILTER,
   filterCount,
   FILTER_GROUPS,
   NO_FILTERS,
@@ -29,7 +28,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
 
-type Facets = NonNullable<SearchResponse["facets"]>;
 type FilterState = Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">;
 
 const EMPTY: FilterState = { name: "", place: "", county: "", selection: NO_FILTERS, sort: "name" };
@@ -278,26 +276,6 @@ function FilterPanel({
             ))}
           </select>
         </Field>
-        {/* Under the place, as cost is often the first thing a family rules homes in or out by. Only
-            once the API filters by it (FAIR_DEAL_FILTER, lib/search-filters.ts). */}
-        {FAIR_DEAL_FILTER && facets && (
-          <label htmlFor={`${id}-fairdeal`} className="flex min-h-11 cursor-pointer items-start gap-3">
-            <input
-              id={`${id}-fairdeal`}
-              type="checkbox"
-              name="fairdeal"
-              value="1"
-              checked={state.selection.fairDeal}
-              onChange={() => onChange({ ...state, selection: { ...state.selection, fairDeal: !state.selection.fairDeal } })}
-              className="mt-0.5 size-[18px] shrink-0 accent-primary"
-            />
-            <span className="flex flex-1 flex-col gap-0.5">
-              <span className="font-semibold">Takes part in Fair Deal</span>
-              <span className="text-sm text-ink-muted">Nursing Home Support Scheme</span>
-            </span>
-            {!state.selection.fairDeal && <Count n={facets.fair_deal ?? 0} />}
-          </label>
-        )}
         {state.sort !== "name" && <input type="hidden" name="sort" value={state.sort} />}
         {/* In the sheet, whose button is outside the form: so Enter searches, and without scripts
             the form can be sent. The column has its own in the footer. */}

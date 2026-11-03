@@ -175,22 +175,17 @@ export const SORTS = [
 
 export type SortValue = (typeof SORTS)[number]["value"];
 
-// What's ticked: each group's slugs, in the order of the options, and Fair Deal.
+// What's ticked: each group's slugs, in the order of the options. There's no Fair Deal filter: 526 of
+// the 547 homes have a contract price, so it would hardly filter anything. Each result still says
+// "Fair Deal" from the home's fair_deal field.
 export interface FilterSelection {
   care: string[];
   room: string[];
   fac: string[];
   act: string[];
-  fairDeal: boolean;
 }
 
-export const NO_FILTERS: FilterSelection = { care: [], room: [], fac: [], act: [], fairDeal: false };
-
-// The Fair Deal filter, off until the API filters by it: it isn't offered, fairdeal=1 in the page
-// address is ignored, and fair_deal isn't sent, which the API would reject. Left out of the API's
-// first round of filters: 526 of the 547 homes have a contract price, so it would remove only 21.
-// The "Fair Deal" label on results still shows, from each home's fair_deal field.
-export const FAIR_DEAL_FILTER = false;
+export const NO_FILTERS: FilterSelection = { care: [], room: [], fac: [], act: [] };
 
 type Params = Record<string, string | string[] | undefined>;
 
@@ -201,7 +196,7 @@ function values(params: Params, key: string) {
 
 // From the page address. Unknown slugs are dropped, so an old or mistyped link still works.
 export function readSelection(params: Params): FilterSelection {
-  const selection: FilterSelection = { ...NO_FILTERS, fairDeal: FAIR_DEAL_FILTER && params.fairdeal === "1" };
+  const selection: FilterSelection = { ...NO_FILTERS };
   for (const group of FILTER_GROUPS) {
     const picked = new Set(values(params, group.key));
     selection[group.key] = group.options.filter((option) => picked.has(option.slug)).map((option) => option.slug);
@@ -210,16 +205,15 @@ export function readSelection(params: Params): FilterSelection {
 }
 
 export function filterCount(selection: FilterSelection) {
-  return FILTER_GROUPS.reduce((total, group) => total + selection[group.key].length, 0) + (selection.fairDeal ? 1 : 0);
+  return FILTER_GROUPS.reduce((total, group) => total + selection[group.key].length, 0);
 }
 
-// For the page address: ?care=dementia,respite&fairdeal=1. Comma-joined, so a shared link stays short.
+// For the page address: ?care=dementia,respite&fac=garden. Comma-joined, so a shared link stays short.
 export function selectionParams(selection: FilterSelection) {
   const params = new URLSearchParams();
   for (const group of FILTER_GROUPS) {
     if (selection[group.key].length > 0) params.set(group.key, selection[group.key].join(","));
   }
-  if (selection.fairDeal) params.set("fairdeal", "1");
   return params;
 }
 
@@ -229,7 +223,6 @@ export function apiFilterParams(selection: FilterSelection) {
   for (const group of FILTER_GROUPS) {
     for (const slug of selection[group.key]) params.append(group.param, optionFor(group, slug)!.item);
   }
-  if (selection.fairDeal) params.set("fair_deal", "true");
   return params;
 }
 
@@ -252,15 +245,12 @@ export function toggled(selection: FilterSelection, key: FilterGroupKey, slug: s
 
 // Each active filter, for the removable tags: its label, and the selection without it.
 export function activeFilters(selection: FilterSelection) {
-  const active: { id: string; label: string; without: FilterSelection; param?: string; item?: string }[] = [];
+  const active: { id: string; label: string; without: FilterSelection }[] = [];
   for (const group of FILTER_GROUPS) {
     for (const slug of selection[group.key]) {
       const option = optionFor(group, slug)!;
-      active.push({ id: `${group.key}-${slug}`, label: option.label, without: toggled(selection, group.key, slug), param: group.param, item: option.item });
+      active.push({ id: `${group.key}-${slug}`, label: option.label, without: toggled(selection, group.key, slug) });
     }
-  }
-  if (selection.fairDeal) {
-    active.push({ id: "fairdeal", label: "Fair Deal", without: { ...selection, fairDeal: false }, param: "fair_deal" });
   }
   return active;
 }

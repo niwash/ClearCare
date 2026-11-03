@@ -86,11 +86,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Before a search, the filters still offer every option with its count across all homes, so
   // someone can start from the care they need. Only the counts are asked for: one result, not shown.
   const start = searched ? null : await searchCentres({ page: "1", page_size: "1" });
-  // The care and amenity filters only count once the API counts them (lib/search.ts). Before
-  // then, any in the address are ignored here, as searchCentres searches again without them when
-  // the API rejects them, so nothing says it's filtered.
+  // null only when the API couldn't be read: the filters then leave out the care and amenity groups,
+  // and the page says the search is unavailable.
   const facets = (data ?? (start?.ok ? start.data : null))?.facets ?? null;
-  const shown: PageSearch = facets ? search : { ...search, selection: NO_FILTERS };
 
   return (
     <>
@@ -100,14 +98,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           with the care and amenity filters, there are too many kinds of filter for a bar above the
           results (Baymard). Below md, a Filters button opens them in a sheet. */}
       <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={Boolean(data?.sort)} />
+        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ShortlistDrawer />
-            {/* The order, once the API applies it (it says so by echoing it). On phones it's in the
-                bar with Filters. */}
-            {data?.sort && (
+            {/* The order, once there are results to order. On phones it's in the bar with Filters. */}
+            {data && (
               <div className="hidden md:block">
                 <SortSelect search={search} />
               </div>
@@ -117,7 +114,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           {result === null ? (
             <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
           ) : result.ok ? (
-            <Results search={shown} data={result.data} />
+            <Results search={search} data={result.data} />
           ) : (
             <SearchError status={result.status} detail={result.detail} />
           )}
@@ -219,7 +216,7 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
 
       {total === 0 ? (
         filterCount(search.selection) > 0 ? (
-          <NoMatches search={search} relaxations={data.relaxations} />
+          <NoMatches search={search} />
         ) : (
           // In a tinted panel like the resources page's official information, with a way back to every
           // home, so a search that finds nothing isn't a dead end.
@@ -274,33 +271,20 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
   );
 }
 
-// No home has everything ticked: the filter that rules out the most, with how many there'd be
-// without it (relaxations, from the API), so the way out is one click.
-function NoMatches({ search, relaxations }: { search: PageSearch; relaxations: SearchResponse["relaxations"] }) {
-  const filters = activeFilters(search.selection);
-  const best = (relaxations ?? [])
-    .map((relaxation) => ({
-      ...relaxation,
-      filter: filters.find((filter) => filter.param === relaxation.param && (relaxation.param === "fair_deal" || filter.item === relaxation.value)),
-    }))
-    .filter((relaxation) => relaxation.filter && relaxation.total > 0)
-    .sort((a, b) => b.total - a.total)[0];
+// No home has everything ticked: the counts in the filters show which choice rules out the most, and
+// one click clears them all.
+function NoMatches({ search }: { search: PageSearch }) {
+  const count = filterCount(search.selection);
 
   return (
     <div className="flex flex-col items-start gap-3 rounded-2xl border border-line bg-surface p-6 md:p-8 adult:rounded-lg">
       <h3 className="font-heading text-[1.375rem] font-semibold">
-        No homes match all {filters.length} {filters.length === 1 ? "filter" : "filters"}
+        No homes match all {count} {count === 1 ? "filter" : "filters"}
       </h3>
       <p className="text-ink-muted">Remove the filter that is ruling out the most homes, or clear them and start again.</p>
-      {best?.filter ? (
-        <Link href={searchHref({ ...search, selection: best.filter.without })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
-          Remove &ldquo;{best.filter.label}&rdquo; to see {best.total} {noun(best.total)}
-        </Link>
-      ) : (
-        <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
-          Clear all filters
-        </Link>
-      )}
+      <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
+        Clear all filters
+      </Link>
     </div>
   );
 }

@@ -7,7 +7,6 @@ import assert from "node:assert/strict";
 import {
   activeFilters,
   apiFilterParams,
-  FAIR_DEAL_FILTER,
   filterCount,
   FILTER_GROUPS,
   matchedLabels,
@@ -18,27 +17,21 @@ import {
 } from "../lib/search-filters.ts";
 
 test("reads comma-joined and repeated values, in the options' order, and drops unknown slugs", () => {
-  const selection = readSelection({ care: "respite,dementia", room: ["single", "twin"], fac: "garden,moat", fairdeal: "1" });
-  assert.deepEqual(selection, { care: ["dementia", "respite"], room: ["single", "twin"], fac: ["garden"], act: [], fairDeal: FAIR_DEAL_FILTER });
+  const selection = readSelection({ care: "respite,dementia", room: ["single", "twin"], fac: "garden,moat" });
+  assert.deepEqual(selection, { care: ["dementia", "respite"], room: ["single", "twin"], fac: ["garden"], act: [] });
 });
 
-test("Fair Deal is only on with fairdeal=1, and only while the API filters by it", () => {
-  assert.equal(readSelection({ fairdeal: "1" }).fairDeal, FAIR_DEAL_FILTER);
-  assert.equal(readSelection({ fairdeal: "yes" }).fairDeal, false);
-  assert.equal(readSelection({}).fairDeal, false);
-});
-
-test("with the Fair Deal filter off, an old link's fairdeal=1 sends nothing the API would reject", () => {
-  if (FAIR_DEAL_FILTER) return;
-  assert.equal(apiFilterParams(readSelection({ care: "dementia", fairdeal: "1" })).get("fair_deal"), null);
+test("an old link's fairdeal=1 is ignored, so nothing the API would reject is sent", () => {
+  const selection = readSelection({ care: "dementia", fairdeal: "1" });
+  assert.deepEqual(selection, { ...NO_FILTERS, care: ["dementia"] });
+  assert.equal(apiFilterParams(selection).has("fair_deal"), false);
 });
 
 test("a selection survives the page address", () => {
-  const selection = { care: ["long-term", "palliative"], room: ["en-suite"], fac: [], act: ["music"], fairDeal: true };
+  const selection = { care: ["long-term", "palliative"], room: ["en-suite"], fac: [], act: ["music"] };
   const params = Object.fromEntries(selectionParams(selection));
-  assert.deepEqual(params, { care: "long-term,palliative", room: "en-suite", act: "music", fairdeal: "1" });
-  // Fair Deal comes back only while the filter is on (FAIR_DEAL_FILTER).
-  assert.deepEqual(readSelection(params), { ...selection, fairDeal: FAIR_DEAL_FILTER });
+  assert.deepEqual(params, { care: "long-term,palliative", room: "en-suite", act: "music" });
+  assert.deepEqual(readSelection(params), selection);
 });
 
 test("no filters leave the page address empty", () => {
@@ -46,11 +39,10 @@ test("no filters leave the page address empty", () => {
 });
 
 test("the API gets one parameter per ticked item, by its v2 name", () => {
-  const params = apiFilterParams({ care: ["dementia", "respite"], room: ["twin"], fac: ["cafe"], act: [], fairDeal: true });
+  const params = apiFilterParams({ care: ["dementia", "respite"], room: ["twin"], fac: ["cafe"], act: [] });
   assert.deepEqual(params.getAll("care_type"), ["Dementia care", "Respite care"]);
   assert.deepEqual(params.getAll("room_type"), ["Twin/double room"]);
   assert.deepEqual(params.getAll("facility"), ["Café/coffee dock"]);
-  assert.equal(params.get("fair_deal"), "true");
   assert.equal(params.has("activity"), false);
 });
 
@@ -75,16 +67,16 @@ test("toggling ticks and unticks, keeping the options' order", () => {
 });
 
 test("counts and lists the active filters, each with the selection without it", () => {
-  const selection = { care: ["dementia"], room: [], fac: ["garden"], act: [], fairDeal: true };
-  assert.equal(filterCount(selection), 3);
+  const selection = { care: ["dementia"], room: [], fac: ["garden"], act: [] };
+  assert.equal(filterCount(selection), 2);
   const active = activeFilters(selection);
-  assert.deepEqual(active.map((filter) => filter.label), ["Dementia care", "Garden", "Fair Deal"]);
+  assert.deepEqual(active.map((filter) => filter.label), ["Dementia care", "Garden"]);
   assert.deepEqual(active[0].without.care, []);
-  assert.equal(active[2].without.fairDeal, false);
+  assert.deepEqual(active[1].without.fac, []);
 });
 
 test("a result is ticked only for the chosen options it has", () => {
-  const selection = { care: ["dementia"], room: ["single", "twin"], fac: ["garden"], act: [], fairDeal: false };
+  const selection = { care: ["dementia"], room: ["single", "twin"], fac: ["garden"], act: [] };
   const amenities = { care_types: ["Dementia care"], room_types: ["Twin/double room"], facilities: [], activities: [] };
   assert.deepEqual(matchedLabels(selection, amenities), ["Dementia care", "Twin / double room"]);
   assert.deepEqual(matchedLabels(selection, null), []);

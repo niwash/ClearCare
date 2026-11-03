@@ -2,8 +2,7 @@
 
 // The shortlist button for one home (CCARE-127). "toggle", on its page and its search result: "+ Add
 // to shortlist", then a filled "✓ Added to shortlist" that takes it off again; once three homes are
-// saved, a dashed button with a note on how to make room; on the search page, a dashed "Shortlist
-// full" that opens the shortlist to make room in (opensShortlist). "remove", on Compare Homes and in
+// saved, a dashed button with a note on how to make room. "remove", on Compare Homes and in
 // Your shortlist: "✕ Remove", or the ✕ alone where space is short. "result", on the search results:
 // "+ Add to shortlist" and "✓ Added to shortlist" as a pill; full, "Shortlist full", which opens the
 // shortlist, or on phones says so in a toast (ShortlistToast). CompareStatus tells screen readers what happened.
@@ -38,7 +37,6 @@ export function CompareButton({
   bare = false,
   focusAfter,
   fullNoteId,
-  opensShortlist = false,
 }: {
   home: ComparedHome;
   // Size and layout only; the colours follow the state.
@@ -52,8 +50,6 @@ export function CompareButton({
   // "toggle": the id of a note elsewhere on the page that says the list is full. Without one, the
   // button shows its own under it.
   fullNoteId?: string;
-  // "toggle": once the list is full, open the shortlist panel (ShortlistDrawer) rather than do nothing.
-  opensShortlist?: boolean;
 }) {
   const homes = useComparedHomes();
   const saved = homes?.some((entry) => entry.id === home.id) ?? false;
@@ -71,7 +67,6 @@ export function CompareButton({
   }
 
   function toggle() {
-    if (full && opensShortlist) openShortlist();
     if (homes === null || full) return;
     if (saved) {
       removeFromCompare(home.id);
@@ -143,11 +138,8 @@ export function CompareButton({
     );
   }
 
-  // Full, it leads to the shortlist where it can; otherwise it does nothing, and looks it.
-  const makesRoom = full && opensShortlist;
-  const stateClass = makesRoom
-    ? "border-2 border-dashed border-field bg-surface-muted text-ink hover:border-primary"
-    : full
+  // Full, it does nothing, and looks it; the note under it says how to make room.
+  const stateClass = full
     ? "cursor-not-allowed border-2 border-dashed border-field bg-surface-muted text-ink-muted"
     : saved
       ? "border border-primary bg-primary text-on-primary hover:bg-primary-hover"
@@ -162,22 +154,13 @@ export function CompareButton({
         // Disabled until hydration, when the saved list is known.
         disabled={homes === null}
         aria-pressed={full ? undefined : saved}
-        aria-disabled={(full && !makesRoom) || undefined}
-        aria-haspopup={makesRoom ? "dialog" : undefined}
+        aria-disabled={full || undefined}
         aria-describedby={full ? (fullNoteId ?? ownNoteId) : undefined}
         className={`${className} inline-flex items-center justify-center gap-1.5 rounded-md font-semibold ${stateClass}`}
       >
         {!full && <ButtonIcon name={saved ? "added" : "add"} />}
-        {makesRoom ? (
-          <>
-            Shortlist full<span className="sr-only">: open your shortlist to make room for {home.name}</span>
-          </>
-        ) : (
-          <>
-            {saved ? "Added to shortlist" : "Add to shortlist"}
-            <span className="sr-only"> ({home.name})</span>
-          </>
-        )}
+        {saved ? "Added to shortlist" : "Add to shortlist"}
+        <span className="sr-only"> ({home.name})</span>
       </button>
       {full && homes && !fullNoteId && (
         // Its own line under the button: basis-full in a wrapping row, a line of its own in a column.
