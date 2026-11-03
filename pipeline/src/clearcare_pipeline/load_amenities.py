@@ -87,7 +87,6 @@ class AmenitiesRecord(BaseModel):
     amenities: Amenities
 
 
-# Reads a list file in one step, without wrapping it in another object.
 Record = AmenitiesRecord | ExtractionFile
 _RECORD = TypeAdapter(Record)
 _RECORDS = TypeAdapter(list[Record])
@@ -199,7 +198,16 @@ def load(
                     _FIND_REPORT, (record.sha256,)
                 ).fetchone()
             if row is None:
-                logger.warning("no stored report for %s", record.sha256)
+                if isinstance(record, ExtractionFile):
+                    logger.warning(
+                        "no stored report for centre %s, inspection date %s,"
+                        " hash %s",
+                        record.centre_id,
+                        record.inspection_date,
+                        record.sha256,
+                    )
+                else:
+                    logger.warning("no stored report for %s", record.sha256)
                 unmatched += 1
                 continue
             if isinstance(record, ExtractionFile):
@@ -220,30 +228,26 @@ def load(
                         record.extracted_at,
                     ),
                 )
-                if cursor.rowcount:
-                    written += 1
-                else:
-                    already_loaded += 1
-                continue
-            amenities = record.amenities
-            cursor = connection.execute(
-                _INSERT,
-                (
-                    row[0],
-                    amenities.care_types,
-                    amenities.room_types,
-                    amenities.has_outdoor_space,
-                    amenities.activities,
-                    amenities.has_transport,
-                    amenities.has_chapel_or_religious_services,
-                    amenities.special_units,
-                    amenities.dining_notes,
-                    amenities.other_notes,
-                    record.extractor_version,
-                    record.model,
-                    record.extracted_at,
-                ),
-            )
+            else:
+                amenities = record.amenities
+                cursor = connection.execute(
+                    _INSERT,
+                    (
+                        row[0],
+                        amenities.care_types,
+                        amenities.room_types,
+                        amenities.has_outdoor_space,
+                        amenities.activities,
+                        amenities.has_transport,
+                        amenities.has_chapel_or_religious_services,
+                        amenities.special_units,
+                        amenities.dining_notes,
+                        amenities.other_notes,
+                        record.extractor_version,
+                        record.model,
+                        record.extracted_at,
+                    ),
+                )
             if cursor.rowcount:
                 written += 1
             else:

@@ -13,7 +13,7 @@ CREATE TABLE clearcare.report_amenities_v2 (
     ),
     file_name text NOT NULL CHECK (length(btrim(file_name)) > 0),
     hiqa_url text NOT NULL CHECK (length(btrim(hiqa_url)) > 0),
-    extractor_version text NOT NULL CHECK (extractor_version = 'amenities-v2'),
+    extractor_version text NOT NULL CHECK (length(btrim(extractor_version)) > 0),
     model text NOT NULL CHECK (length(btrim(model)) > 0),
     -- No load-time default: provenance must come from the extraction file.
     extracted_at timestamptz NOT NULL,
