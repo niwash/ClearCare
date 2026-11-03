@@ -54,9 +54,9 @@ resource "aws_cognito_user_pool_domain" "this" {
   domain       = var.domain_prefix
   user_pool_id = aws_cognito_user_pool.this.id
 
-  # Version 1 is the classic hosted UI, which ignores branding. Version 2 is the managed
-  # login that takes a style per app client, so the two move together.
-  managed_login_version = var.branding_enabled ? 2 : 1
+  # Version 2 is the managed login, the only version that takes a style per app client. Version 1,
+  # the classic hosted UI, ignores the style below entirely, so the two are not worth separating.
+  managed_login_version = 2
 }
 
 resource "aws_cognito_user_pool_client" "web" {
@@ -104,8 +104,6 @@ resource "aws_cognito_user_pool_client" "web" {
 # background is dropped, so that band is all a visitor sees above the form and the only thing that
 # says whose sign-in page this is.
 resource "aws_cognito_managed_login_branding" "web" {
-  count = var.branding_enabled ? 1 : 0
-
   client_id    = aws_cognito_user_pool_client.web.id
   user_pool_id = aws_cognito_user_pool.this.id
 

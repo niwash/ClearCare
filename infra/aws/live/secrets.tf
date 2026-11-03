@@ -35,7 +35,7 @@ resource "aws_secretsmanager_secret" "anthropic" {
 # The site's session signing key and the Cognito app client secret (CCARE-183). Terraform creates
 # the secrets but not their values, like the database passwords, so neither lands in state. The web
 # task can only start with them once they are set, which is why ecs.tf injects them only when
-# cognito_client_secret_arn is given.
+# accounts_enabled is on.
 resource "aws_secretsmanager_secret" "auth_session" {
   name                    = "${local.name}/auth/session-secret"
   description             = "Signing key for the encrypted session cookie; generate with openssl rand -base64 33"

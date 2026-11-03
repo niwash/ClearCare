@@ -16,9 +16,7 @@ module "cognito" {
 
   pool_name = "clearcare-dev"
 
-  # The ClearCare style on Cognito's own sign-in, sign-up and reset screens.
-  branding_enabled = true
-  domain_prefix    = var.domain_prefix
+  domain_prefix = var.domain_prefix
   callback_urls = [
     "${var.web_origin}/api/auth/callback/cognito",
     "${var.web_origin}/api/auth/callback/cognito-signup",

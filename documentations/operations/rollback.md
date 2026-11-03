@@ -6,9 +6,9 @@ them rather than to delete anything.
 ## 1. Take the controls away (seconds)
 
 Remove `AUTH_COGNITO_ID`, `AUTH_COGNITO_SECRET`, `AUTH_COGNITO_ISSUER` or `COGNITO_DOMAIN` from the
-running environment and redeploy. The account controls disappear from every page, `/api/auth/*` and
-`/sign-out` answer 503, and the rest of the site is unchanged. Existing sessions stop being readable,
-so nobody is signed in any more.
+running environment and redeploy. The account controls, including Log out, disappear from every page,
+`/api/auth/*` answers 503, and the rest of the site is unchanged. Existing sessions stop being
+readable, so nobody is signed in any more.
 
 ## 2. Stop new accounts (a minute)
 

@@ -41,8 +41,3 @@ variable "from_email_address" {
   default     = ""
 }
 
-variable "branding_enabled" {
-  description = "Move the hosted pages to managed login (version 2) and give the app client the ClearCare style. Off keeps the classic hosted UI, which has no branding styles."
-  type        = bool
-  default     = false
-}

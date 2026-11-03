@@ -44,7 +44,7 @@ site can be deployed before the pool exists.
 | --- | --- |
 | Create account with a new address | Cognito's sign-up page, then the verification mail, then back on the page the visitor started from, signed in |
 | Log in with the same account | Straight to Cognito's sign-in page, no page of ours in between, then back signed in |
-| Log out | `/sign-out`, then Cognito's logout, then the start page with Log in and Create account showing |
+| Log out | The Log out button posts to the server action, which clears the ClearCare cookie and then leaves for Cognito's logout, landing on the start page with Log in and Create account showing |
 | Log in again after logging out | Credentials asked for again — a hosted session left alive shows up here |
 
 Check the cookie after signing in: `authjs.session-token` is `HttpOnly`, `Secure` on https, and the
