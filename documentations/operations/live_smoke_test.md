@@ -33,6 +33,8 @@ The site reads five variables, of which three come straight from the pool's outp
 Secrets Manager: `AUTH_COGNITO_ISSUER`, `AUTH_COGNITO_ID`, `COGNITO_DOMAIN`, `AUTH_COGNITO_SECRET`
 and `AUTH_SECRET`. In `infra/aws/live` they are `cognito_issuer`, `cognito_client_id`,
 `cognito_domain`, plus the two secrets, switched on together with `accounts_enabled = true`.
+The task also sets `AUTH_URL` to `https://<site_hostname>`: behind the load balancer the server would
+otherwise build Cognito's callback and logout URLs from the container's own address.
 
 With any of them missing the account controls disappear and the authentication routes answer 503, so
 an empty header is the symptom of a missing variable rather than a broken pool. That is also why the
