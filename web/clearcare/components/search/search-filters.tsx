@@ -387,41 +387,46 @@ function FilterGroupSection({
         )}
         <Chevron className={`size-[18px] ${open ? "-rotate-90" : "rotate-90"}`} />
       </button>
-      <div id={bodyId} hidden={!open} className="px-5 pb-4.5">
-        <fieldset>
-          <legend className="sr-only">{title}</legend>
-          {shown.map((option) => {
-            const checked = picked.includes(option.slug);
-            const n = counts[option.item] ?? 0;
-            const inputId = `${idPrefix}-${group.key}-${option.slug}`;
-            return (
-              <label key={option.slug} htmlFor={inputId} className="flex min-h-11 cursor-pointer items-start gap-3 py-2">
-                <input
-                  id={inputId}
-                  type="checkbox"
-                  name={group.key}
-                  value={option.slug}
-                  checked={checked}
-                  onChange={() => onToggle(option.slug)}
-                  className="mt-0.5 size-[18px] shrink-0 accent-primary"
-                />
-                <span className="flex flex-1 flex-col gap-0.5">
-                  {/* Greyed when ticking it would find nothing. */}
-                  <span className={`leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
-                    {option.label}
-                  </span>
-                  {option.help && <span className="text-sm leading-snug text-ink-muted">{option.help}</span>}
-                </span>
-                {!option.more && <Count n={n} />}
-              </label>
-            );
-          })}
-        </fieldset>
-        {folded.length < options.length && (
-          <button type="button" onClick={() => setShowAll(!showAll)} className="min-h-11 py-2 text-sm font-semibold text-primary underline">
-            {showAll ? "Show fewer" : `Show all ${options.length}`}
-          </button>
-        )}
+      {/* Slides open and shut (fold, globals.css); inert keeps it out of reach while it's shut. */}
+      <div id={bodyId} className="fold" data-open={open} inert={!open}>
+        <div>
+          <div className="px-5 pb-4.5">
+            <fieldset>
+              <legend className="sr-only">{title}</legend>
+              {shown.map((option) => {
+                const checked = picked.includes(option.slug);
+                const n = counts[option.item] ?? 0;
+                const inputId = `${idPrefix}-${group.key}-${option.slug}`;
+                return (
+                  <label key={option.slug} htmlFor={inputId} className="flex min-h-11 cursor-pointer items-start gap-3 py-2">
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      name={group.key}
+                      value={option.slug}
+                      checked={checked}
+                      onChange={() => onToggle(option.slug)}
+                      className="mt-0.5 size-[18px] shrink-0 accent-primary"
+                    />
+                    <span className="flex flex-1 flex-col gap-0.5">
+                      {/* Greyed when ticking it would find nothing. */}
+                      <span className={`leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
+                        {option.label}
+                      </span>
+                      {option.help && <span className="text-sm leading-snug text-ink-muted">{option.help}</span>}
+                    </span>
+                    {!option.more && <Count n={n} />}
+                  </label>
+                );
+              })}
+            </fieldset>
+            {folded.length < options.length && (
+              <button type="button" onClick={() => setShowAll(!showAll)} className="min-h-11 py-2 text-sm font-semibold text-primary underline">
+                {showAll ? "Show fewer" : `Show all ${options.length}`}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
