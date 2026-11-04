@@ -61,6 +61,12 @@
   /* A warm band for the sections that offer help, such as "Need to talk to someone?". Muted text
      keeps 5.4:1 on it, and links 5.7:1. */
   --warm: light-dark(#ecd6ca, #2c2324);
+  /* The contacts banner's band in the adult-centred design; the default design draws it in deep
+     teal (support-band, below). */
+  --support: var(--band);
+  /* A soft blue for the home page's invitation to the survey (CCARE-191). Muted text keeps 6.1:1
+     on it, and links 6.4:1. */
+  --invite: light-dark(#e1e8f3, #1d2738);
   /* The top of each page: a soft wash from blue to cream, so a page opens calmly rather than on a
      block of navy (welcome-band, below). Muted text keeps 5.9:1 or more across it, and links 6.2:1. */
   --welcome-from: light-dark(#dbe5ee, #17222e);
@@ -138,6 +144,7 @@
   --accent: var(--primary);
   --on-accent: var(--on-primary);
   --warm: var(--band);
+  --invite: var(--band);
   --welcome-from: var(--band);
   --welcome-to: var(--band);
 }
@@ -173,6 +180,30 @@
 
 :root[data-design="adult-centred"] .brand-band {
   --brand: light-dark(#8a2e0f, #5a2410);
+}
+
+/* "Need to talk to someone?", the contacts banner (CCARE-191): a block of deep teal, so it stands
+   apart from the bands around it and reads as calm help, where the warm band's red read as a
+   warning. Like brand-band, it redefines the colour tokens inside it, so the text turns white and
+   the button white on teal. White text is 7.9:1 on it in light mode and 9.2:1 in dark (WCAG 1.4.6).
+   Left out of the adult-centred design, which keeps its plain band (--support). */
+:root:not([data-design="adult-centred"]) .support-band {
+  --support-deep: light-dark(#1f5a55, #1d4f4b);
+  --surface: var(--support-deep);
+  --surface-muted: rgb(255 255 255 / 0.12);
+  --ink: #ffffff;
+  /* Plain white too, not faded as in brand-band: faded, the line under the heading is 6.6:1 on
+     the light teal, short of 7:1. The heading still stands out by its size and weight. */
+  --ink-muted: #ffffff;
+  --line: rgb(255 255 255 / 0.4);
+  --focus: #ffffff;
+  --primary: #ffffff;
+  --primary-hover: #e8ecef;
+  --on-primary: var(--support-deep);
+  background-color: var(--support-deep);
+  /* From the teal into the brand blue (brand-band), so it leads into the footer it often sits on.
+     White text keeps 7:1 or more across it. Without this line it's the solid teal. */
+  background-image: linear-gradient(110deg, var(--support-deep) 35%, light-dark(#2b4d6b, #1c3550));
 }
 
 /* The header's band: a deeper shade of the same colour, so it frames the page rather than
@@ -240,6 +271,8 @@
   --color-accent: var(--accent);
   --color-on-accent: var(--on-accent);
   --color-warm: var(--warm);
+  --color-support: var(--support);
+  --color-invite: var(--invite);
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius-card);
   --font-heading: var(--heading-font);
@@ -334,12 +367,8 @@
   align-items: flex-start;
 }
 
-/* Cards and blocks of text slide up into place as they come into view, on the pages that render
-   <SlideUp /> (CCARE-179, CCARE-186). components/ui/slide-up.tsx marks the page with data-slide-up
-   and each block with data-shown once it is in view; without it (no JavaScript) nothing is hidden.
-   Only for people who haven't asked their device for less motion (WCAG 2.3.3), and never in the
-   adult-centred design. Short and quick, so nobody scrolls past a block before it arrives: NN/g
-   finds fades over 500ms feel slow, and the further a block travels, the longer it needs.
+/* The slide-up as blocks come into view (CCARE-186; when and where: slide-up.tsx). Short and quick,
+   as NN/g finds fades over 500ms feel slow.
    - reveal: a block that slides up.
    - reveal-stagger: a row of cards that slide up one after another. slide-up.tsx sets each card's
      --slide-delay from the order the cards come into view.
@@ -471,6 +500,16 @@
     opacity: 1 !important;
     translate: none !important;
     scale: none !important;
+  }
+
+  /* A counting figure (count-up.tsx) prints the real figure, not the 0 it waits on until it scrolls
+     into view. */
+  .count-up-live {
+    visibility: hidden !important;
+  }
+
+  .count-up-sizer {
+    visibility: visible !important;
   }
 }
 
