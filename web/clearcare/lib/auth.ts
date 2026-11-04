@@ -22,8 +22,9 @@ export function createAuthConfig(
 
   return {
     secret: env.AUTH_SECRET,
-    // Both the load balancer and Vercel's proxy set the forwarded host, and the
-    // task is reachable only through the load balancer, so it is ours to trust.
+    // The task is reachable only through the load balancer, and a preview only through Vercel's
+    // proxy, so the host is ours to trust. On ECS the request URL carries the container's own
+    // address, so the task sets AUTH_URL (infra/aws/live/ecs.tf), which Auth.js uses instead.
     trustHost: true,
     session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
     providers: [
