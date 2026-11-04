@@ -32,10 +32,14 @@ function keepInView(event: MouseEvent) {
   const summary = event.target instanceof Element ? event.target.closest("summary") : null;
   const section = summary?.parentElement ?? null;
   if (!isSection(section)) return;
-  // After the browser has opened it, the other section has closed and the page has settled.
-  requestAnimationFrame(() => {
+  const bringBack = () => {
     if (section.open && section.getBoundingClientRect().top < 0) section.scrollIntoView();
-  });
+  };
+  // After the browser has opened it, the other section has closed and the page has settled. With
+  // the accordions' slide (globals.css, CCARE-203) the other one is still shrinking then, so it's
+  // checked again once the slide's 0.3s is over.
+  requestAnimationFrame(bringBack);
+  setTimeout(bringBack, 350);
 }
 
 export function SectionAccordion() {
