@@ -2,14 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-// A figure that counts up from 0 as it scrolls into view (CCARE-186), like the yearly figures on
-// sageadvocacy.ie. The server renders the real figure, so it shows without JavaScript, and screen
-// readers only ever hear the real figure: the counting copy is hidden from them. An invisible copy
-// of the real figure holds the width, so the words around it don't shift as the digits grow.
-//
-// Like the sections' rise-in (globals.css), it never runs in the adult-centred design or for people
-// who have asked their device for less motion, and a figure that is hidden or already on screen when
-// the page loads is left as it is rather than dropped to 0.
+// A figure that counts up from 0 as it scrolls into view (CCARE-186), under the same conditions as
+// the slide-up (slide-up.tsx). Screen readers and print get the real figure; an invisible copy of
+// it holds the width, so the words around it don't shift as the digits grow.
 
 // The same format as formatCount (lib/statistics.ts), which isn't imported to keep the API code out
 // of the browser.
@@ -23,15 +18,11 @@ export function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
   useEffect(() => {
     const element = counter.current;
     if (!element) return;
-    if (
-      document.documentElement.dataset.design === "adult-centred" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
-      !("IntersectionObserver" in window)
-    ) {
-      return;
-    }
-    // Hidden (the news banner's figure on phones) or already on screen: left as it is. A hidden
-    // figure would never scroll into view, and would stay at 0 if the window then widened.
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const motionOff = () => document.documentElement.dataset.design === "adult-centred" || reduced.matches;
+    if (motionOff() || !("IntersectionObserver" in window)) return;
+    // Hidden or already on screen: left as it is. A hidden figure would never scroll into view, and
+    // would stay at 0 if the window then widened.
     const box = element.getBoundingClientRect();
     if (element.getClientRects().length === 0 || (box.top < window.innerHeight && box.bottom > 0)) return;
 
@@ -56,19 +47,34 @@ export function CountUp({ to, suffix = "" }: { to: number; suffix?: string }) {
       { threshold: 0.6 },
     );
     observer.observe(element);
-    return () => {
+
+    // Easier to read, or less motion, chosen after the page opened: the real figure at once.
+    const stop = () => {
       observer.disconnect();
       cancelAnimationFrame(frame);
       element.textContent = text;
+    };
+    const settingChanged = () => {
+      if (motionOff()) stop();
+    };
+    const design = new MutationObserver(settingChanged);
+    design.observe(document.documentElement, { attributes: true, attributeFilter: ["data-design"] });
+    reduced.addEventListener("change", settingChanged);
+    return () => {
+      design.disconnect();
+      reduced.removeEventListener("change", settingChanged);
+      stop();
     };
   }, [to, suffix, text]);
 
   return (
     <span className="inline-grid tabular-nums">
-      <span ref={counter} aria-hidden className="col-start-1 row-start-1">
+      {/* Print swaps the two (globals.css), so a page printed before the figures scrolled into view
+          shows the real ones, not 0. */}
+      <span ref={counter} aria-hidden className="count-up-live col-start-1 row-start-1">
         {text}
       </span>
-      <span aria-hidden className="invisible col-start-1 row-start-1">
+      <span aria-hidden className="count-up-sizer invisible col-start-1 row-start-1">
         {text}
       </span>
       <span className="sr-only">{text}</span>

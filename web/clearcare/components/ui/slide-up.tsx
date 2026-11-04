@@ -3,19 +3,11 @@
 import { useEffect } from "react";
 
 // Cards and blocks of text slide up into place as they come into view (CCARE-186), on the home
-// page, Resources, National Figures and the guides. It replaces CCARE-179's rise-in, which followed
-// the scroll position: that was subtle, and missing in browsers that can't tie an animation to
-// scrolling. globals.css has the motion; this marks the page with data-slide-up, which hides the
-// blocks (.reveal, and each card in a .reveal-stagger row), and each block with data-shown as it
-// scrolls into view.
-//
-// On the home page the blocks on screen when the page opens slide up straight away (the layout's
-// script, slide-up-script.ts, hides them before the first paint). Elsewhere (slideOnOpen={false})
-// they simply show, so nobody waits for what they came to read and the largest image near the top
-// isn't held back; only blocks further down slide up.
-//
-// Like the rest of the site's motion it never runs in the adult-centred design or for people who
-// have asked their device for less motion, and without JavaScript nothing is hidden.
+// page, Resources, National Figures and the guides; globals.css has the motion. This marks the page
+// with data-slide-up, which hides the blocks, and each block with data-shown as it comes into view.
+// On the home page the blocks already on screen slide up too (slide-up-script.ts hides them before
+// the first paint); elsewhere (slideOnOpen={false}) they simply show. Never in the adult-centred
+// design or with reduced motion, and without JavaScript nothing is hidden.
 
 function motionAllowed() {
   return (

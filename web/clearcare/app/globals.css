@@ -367,12 +367,8 @@
   align-items: flex-start;
 }
 
-/* Cards and blocks of text slide up into place as they come into view, on the pages that render
-   <SlideUp /> (CCARE-179, CCARE-186). components/ui/slide-up.tsx marks the page with data-slide-up
-   and each block with data-shown once it is in view; without it (no JavaScript) nothing is hidden.
-   Only for people who haven't asked their device for less motion (WCAG 2.3.3), and never in the
-   adult-centred design. Short and quick, so nobody scrolls past a block before it arrives: NN/g
-   finds fades over 500ms feel slow, and the further a block travels, the longer it needs.
+/* The slide-up as blocks come into view (CCARE-186; when and where: slide-up.tsx). Short and quick,
+   as NN/g finds fades over 500ms feel slow.
    - reveal: a block that slides up.
    - reveal-stagger: a row of cards that slide up one after another. slide-up.tsx sets each card's
      --slide-delay from the order the cards come into view.
@@ -444,6 +440,16 @@
     opacity: 1 !important;
     translate: none !important;
     scale: none !important;
+  }
+
+  /* A counting figure (count-up.tsx) prints the real figure, not the 0 it waits on until it scrolls
+     into view. */
+  .count-up-live {
+    visibility: hidden !important;
+  }
+
+  .count-up-sizer {
+    visibility: visible !important;
   }
 }
 
