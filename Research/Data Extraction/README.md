@@ -27,7 +27,7 @@ order. Human evaluation remains separate work.
 Use Python 3.11 or newer, with the existing extractor dependencies:
 
 ```sh
-pip install pdfplumber==0.11.10 anthropic==1.15.0 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4
+pip install pdfplumber==0.11.10 anthropic==1.15.0 openai==3.37.0 pydantic==2.14.1 python-dotenv==1.2.4 "psycopg[binary]>=3.2"
 ```
 
 Set `ANTHROPIC_API_KEY` in the environment or root `.env`, or `OPENAI_API_KEY`
@@ -39,14 +39,20 @@ python "Research/Data Extraction/extractor.py" --centre-id 13
 python "Research/Data Extraction/extractor.py" --provider openai --centre-id 13
 ```
 
-Input is `<data-dir>/manifests/inspection-reports.jsonl` and PDFs under
+By default, input is the latest parsed database report per centre, ordered by
+inspection date descending (nulls last), then report ID ascending. Configure
+standard libpq PGHOST, PGPORT, PGDATABASE, PGUSER and password settings. Centres
+with only undated reports are logged and skipped; v2 requires a date. Reports
+that never ingested cannot displace a stored parsed report. Selection does not
+require intro text, and an unreadable selected PDF still fails explicitly.
+For the offline manifest catalogue use `--report-source manifest`. PDFs live under
 `<data-dir>/raw/sha256/<first two hash characters>/<hash>`. The data directory
 defaults to `CLEARCARE_DATA_DIR` or `./data`. The stored PDF hash is checked
 before sending text to the model. Metadata must exist and be valid; none is
 invented. Output records the model identifier returned by the API and a UTC
 extraction timestamp.
 
-Options are `--provider` (`anthropic` or `openai`), `--data-dir`,
+Options include `--report-source` (`database` by default or `manifest`), `--provider` (`anthropic` or `openai`), `--data-dir`,
 `--output-dir`, repeatable `--centre-id`, `--centres-file`, `--limit`,
 `--force` and `--dry-run`. Dry-run makes no model calls. Try a small explicit
 limit before a paid batch. Output allowance is 16,000 tokens for quote-bearing
@@ -83,7 +89,9 @@ Prompt or schema changes after this version is frozen require a new version.
 
 The outer keys remain `centre_id`, `inspection_date`, `file_name`, `hiqa_url`,
 `sha256`, `model`, `extractor_version`, `extracted_at` and `amenities`.
-Source metadata comes from the manifest, never the model. The model returns
+Source metadata comes from the selected database report and source URL (the
+filename is its decoded final path component), or the explicit manifest source,
+never the model. The model returns
 only the `amenities` wrapper.
 
 ## Loading and API

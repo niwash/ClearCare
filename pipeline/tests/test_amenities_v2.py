@@ -4,6 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 from typing import cast
+from unittest.mock import MagicMock
 
 import pymupdf
 import pytest
@@ -151,7 +152,9 @@ def test_loader_checks_original_pdf_bounds_and_hash(
 
 @pytest.mark.database
 def test_v2_round_trip_retains_evidence_and_v1_history(
-    tmp_path: Path, source_record: ExtractionFile
+    tmp_path: Path,
+    source_record: ExtractionFile,
+    caplog: pytest.LogCaptureFixture,
 ) -> None:
     with (
         migrated_database() as database,
@@ -188,9 +191,14 @@ def test_v2_round_trip_retains_evidence_and_v1_history(
             ).fetchone()
             == legacy_load_time
         )
-        assert load(connection, [source_record], data_dir=tmp_path) == Summary(
+        # A date mismatch on the first load must still store exact-source data.
+        mismatched = source_record.model_copy(
+            update={"inspection_date": "2026-12-05"}
+        )
+        assert load(connection, [mismatched], data_dir=tmp_path) == Summary(
             1, 0, 0
         )
+        assert "inspection date mismatch" in caplog.text
         assert load(connection, [source_record], data_dir=tmp_path) == Summary(
             0, 1, 0
         )
@@ -203,10 +211,16 @@ def test_v2_round_trip_retains_evidence_and_v1_history(
             update={"inspection_date": "2025-12-06"}
         )
         assert load(connection, [wrong_date], data_dir=tmp_path) == Summary(
-            0, 0, 1
+            0, 1, 0
         )
         connection.commit()
         with database.connect(API) as api:
+            stored_date = api.execute(
+                "SELECT inspection_date FROM clearcare.centre_amenities_v2"
+                " WHERE centre_id = '117'"
+            ).fetchone()
+            assert stored_date is not None
+            assert str(stored_date[0]) == "2025-12-05"
             row = api.execute(
                 "SELECT amenities, model, extracted_at, sha256, file_name,"
                 " hiqa_url FROM clearcare.centre_amenities_v2"
@@ -224,6 +238,23 @@ def test_v2_round_trip_retains_evidence_and_v1_history(
                 "SELECT extractor_version FROM clearcare.centre_amenities"
                 " WHERE centre_id = '117'"
             ).fetchone() == ("amenities-v0",)
+
+
+def test_ambiguous_source_rolls_back_instead_of_selecting_first(
+    source_record: ExtractionFile, tmp_path: Path
+) -> None:
+    connection = MagicMock()
+    connection.execute.return_value.fetchall.return_value = [
+        (1, "2025-12-05"),
+        (2, "2025-12-05"),
+    ]
+    with pytest.raises(ValueError, match="Ambiguous stored report"):
+        load(connection, [source_record], data_dir=tmp_path)
+    assert connection.execute.call_count == 1
+    assert (
+        connection.transaction.return_value.__exit__.call_args.args[0]
+        is ValueError
+    )
 
 
 # Evidence checked against the report text (verify_evidence).
