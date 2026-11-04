@@ -20,6 +20,13 @@ describe("public origin", () => {
     );
   });
 
+  test("AUTH_URL, where it is set, wins over every header", () => {
+    assert.equal(
+      originFrom({ "x-forwarded-host": "elsewhere.example", host: "0.0.0.0:3000" }, "https://clearcare.ie/"),
+      "https://clearcare.ie",
+    );
+  });
+
   test("the first value is used when a proxy appends its own", () => {
     assert.equal(
       originFrom({

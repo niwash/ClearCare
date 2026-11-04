@@ -22,9 +22,9 @@ export function createAuthConfig(
 
   return {
     secret: env.AUTH_SECRET,
-    // The task is reachable only through the load balancer, and a preview only through Vercel's
-    // proxy, so the host is ours to trust. On ECS the request URL carries the container's own
-    // address, so the task sets AUTH_URL (infra/aws/live/ecs.tf), which Auth.js uses instead.
+    // The load balancer passes X-Forwarded-Host on as the client sent it, so on ECS it is AUTH_URL
+    // (infra/aws/live/ecs.tf) that fixes the origin; Auth.js then reads no header. Without it, as on
+    // a Vercel preview, the origin comes from the forwarded headers Vercel's proxy sets.
     trustHost: true,
     session: { strategy: "jwt", maxAge: SESSION_MAX_AGE_SECONDS },
     providers: [
