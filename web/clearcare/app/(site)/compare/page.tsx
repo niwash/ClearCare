@@ -79,6 +79,9 @@ const AMENITY_LISTS = [
   { key: "facilities", label: "Facilities" },
 ] as const;
 
+// An item every home's report mentions, on a green highlight; the key in the group's intro uses it too.
+const commonClass = "inline-block rounded-full bg-tint-sage px-2 py-0.5 font-semibold text-on-tint-sage adult:rounded-md";
+
 // The register's name, or a stand-in for a home that didn't load.
 function columnName(column: Column) {
   return column.status === "found" ? column.centre.centre_name : `Centre ID ${column.id}`;
@@ -297,13 +300,17 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
   const latestDate = (column: FoundColumn) => column.reports?.inspections.at(-1)?.date ?? null;
 
   // Every item these homes' reports mention in one list, the most mentioned first, then A to Z.
+  // common: the ones every home whose report was read mentions, when there are 2 or more of them.
+  const readHomes = columns.filter((column) => column.status === "found" && column.amenities).length;
   const amenityItems = (key: (typeof AMENITY_LISTS)[number]["key"]) => {
     const counts = new Map<string, number>();
     for (const column of columns) {
       if (column.status !== "found" || !column.amenities) continue;
       for (const { item } of column.amenities[key]) counts.set(item, (counts.get(item) ?? 0) + 1);
     }
-    return [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b));
+    const items = [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b));
+    const common = new Set(readHomes > 1 ? items.filter((item) => counts.get(item) === readHomes) : []);
+    return { items, common };
   };
 
   // The lowest weekly cost and the latest inspection, each marked as a fact about these homes.
@@ -421,16 +428,25 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         <>
           Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these, and a home may offer
           more than its report mentions, so always call the home to confirm anything that matters to you.
+          {/* The key to the green highlight, where the lists below have one. */}
+          {AMENITY_LISTS.some(({ key }) => amenityItems(key).common.size > 0) && (
+            <>
+              {" "}
+              <span className={commonClass}>Green</span> is in every home.
+            </>
+          )}
         </>
       ),
       rows: [
-        // Each home's own items as plain words, in one order across the homes (the most mentioned
-        // first), so what most of them have sits at the top of every list.
+        // Each home's own items as bullet points, in one order across the homes (the most mentioned
+        // first). The ones every home has are on a green highlight, so what they share stands apart
+        // from where they differ; screen readers hear "in every home".
         ...AMENITY_LISTS.map(({ key, label }): Row => {
-          const items = amenityItems(key);
+          const { items, common } = amenityItems(key);
           return {
             key,
-            label,
+            // Larger and darker than other rows' labels: each heads a long list beside it.
+            label: <span className="text-base font-semibold text-ink">{label}</span>,
             cells: each(({ amenities }) => {
               if (!amenities) return <Muted>Not read from its reports yet</Muted>;
               const mentioned = new Set(amenities[key].map(({ item }) => item));
@@ -440,7 +456,17 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
                   {items
                     .filter((item) => mentioned.has(item))
                     .map((item) => (
-                      <li key={item}>{item}</li>
+                      <li key={item} className={common.has(item) ? "-ml-4 list-none" : undefined}>
+                        {common.has(item) ? (
+                          // On a green highlight in place of the bullet.
+                          <span className={commonClass}>
+                            {item}
+                            <span className="sr-only"> (in every home)</span>
+                          </span>
+                        ) : (
+                          item
+                        )}
+                      </li>
                     ))}
                 </ul>
               );
@@ -899,11 +925,11 @@ function markBest<T extends string | number>(values: (T | null)[], better: (a: T
 }
 
 // A fact about one home among these, such as the lowest weekly cost: in plain words, in the soft
-// sage so it's easy to spot, but with no tick or bright "success" green that would read as advice.
-// ClearCare doesn't rate or recommend homes.
+// gold so it's easy to spot and apart from the green of what every home offers, with no tick that
+// would read as advice. ClearCare doesn't rate or recommend homes.
 function Marker({ children }: { children: ReactNode }) {
   return (
-    <span className="mt-1.5 inline-block rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage adult:rounded-md">
+    <span className="mt-1.5 inline-block rounded-full bg-tint-gold px-2.5 py-0.5 text-sm text-on-tint-gold adult:rounded-md">
       {children}
     </span>
   );
