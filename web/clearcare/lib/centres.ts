@@ -285,6 +285,52 @@ export const getCentreReports = cache(async (id: string): Promise<CentreReports 
   return { inspections, history, highlights: [], visitQuestions: [], trails: [] };
 });
 
+// A passage of the report that supports an amenity: its exact words, as the AI tool quoted them
+// (not checked), and the pages it spans, counted from the PDF's first page, cover included.
+export interface AmenityEvidence {
+  quote: string;
+  page_start: number;
+  page_end: number; // the same as page_start for a passage on one page
+}
+
+// One item from the extractor's fixed list ("Respite care", "Garden"), with at least one passage.
+export interface AmenityItem {
+  item: string;
+  evidence: AmenityEvidence[];
+}
+
+// What the home offers, as an AI tool (gpt-4o-mini) read it from one inspection report: from
+// GET /centres/{centre_id}/amenities?version=amenities-v2 (CentreAmenitiesV2 in api/openapi.yaml,
+// docs/amenities.md, CCARE-195). Not yet checked against the reports. A list only has what the
+// report supports directly, so an item missing from it isn't confirmed, not known to be absent.
+export interface CentreAmenities {
+  report_id: number;
+  inspection_date: ISODate | null;
+  care_types: AmenityItem[];
+  room_types: AmenityItem[];
+  activities: AmenityItem[];
+  facilities: AmenityItem[];
+  extractor_version: string;
+  model: string;
+}
+
+interface CentreAmenitiesResult {
+  centre_id: string;
+  amenities: CentreAmenities | null;
+}
+
+const AMENITIES_VERSION = "amenities-v2";
+
+// null when nothing has been read from the home's reports yet, or it can't be read right now. An
+// API from before CCARE-195 ignores the version and answers in the v1 shape, so that counts as none.
+export const getCentreAmenities = cache(async (id: string): Promise<CentreAmenities | null> => {
+  const url = apiUrl();
+  if (!url) return null;
+  const result = await fetchJson<CentreAmenitiesResult>(`${url}/centres/${id}/amenities?version=${AMENITIES_VERSION}`);
+  const amenities = result?.amenities;
+  return amenities?.extractor_version === AMENITIES_VERSION ? amenities : null;
+});
+
 const DAY = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const MONTH = new Intl.DateTimeFormat("en-IE", { month: "short", year: "numeric", timeZone: "UTC" });
 
