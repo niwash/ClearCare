@@ -8,7 +8,7 @@ ClearCare runs in one AWS account in eu-north-1, the region AWS assigned to the 
 | `live/` | Everything else, one file per concern |
 | `live/rds-ca/` | The RDS certificate bundle the database clients check the server against |
 | `cognito/` | The account pool for public sign-up and sign-in, one folder per environment |
-| `migrate/Dockerfile` | Flyway with the migrations in `db/` |
+| `migrate/Dockerfile` | Flyway with the migrations in `db/`, under the run lock (ADR-0022) |
 | `bin/` | The scripts the workflows and the operator run |
 
 The images are built from `api/Dockerfile`, `web/clearcare/Dockerfile`, `pipeline/Dockerfile` and `migrate/Dockerfile`. The workflows are `.github/workflows/aws-*.yml`.
@@ -97,7 +97,17 @@ terraform apply
 terraform output -raw client_secret
 ```
 
-The sign-in domain runs the classic hosted UI, managed login version 1. The branded version 2 needs a branding style per app client, which would be a change of its own.
+The sign-in domain runs **managed login version 2**, with one branding style for the app client. Both roots get it, so the development pool and production look the same.
+
+Version 2 is what the branding editor edits. The classic version 1 cannot be branded beyond a logo and a stylesheet, which is why the module moved: sign-in, sign-up, address confirmation and password reset are one set of screens, and branding them covers all four flows at once.
+
+The style is the ClearCare design: a soft gradient on the left two fifths with the form over it, and a solid blue panel on the right three fifths carrying a headline, one line of copy and four points.
+
+Managed login draws one form and no copy of its own, so the two panels and their words are a picture: `modules/cognito/assets/page-background-light.png` and `page-background-dark.png`, sent as the `PAGE_BACKGROUND` asset for each colour mode. The form is set to the start of the page so it sits over the gradient half, the footer is off, the header carries only the wordmark, and the display mode follows the visitor's device. The settings document is Cognito's own merged export with only those values changed, so the wording, the font and the password rules are as Cognito ships them.
+
+The words and colours live in `page-background-light.html` and `page-background-dark.html`; the comment at the top of either file has the command that re-renders both images. The header band above the form is the site's wordmark over its motto (`assets/header-logo.png`, from `assets/header-logo.html`) on the brand band, which is the only branding a phone gets: managed login drops the page background below about 500px, so without it the phone shows a form with nothing saying whose it is.
+
+The split is proportional and the form is a fixed width, so the two only clear each other while the page is wider than the picture's 16:9. On 16:9 and wider, from about 1210px, the card sits wholly on the gradient. On squarer screens the cover scale crops the left edge inwards: at 1280 x 1024 the card crosses onto the panel by about 25px, though the panel copy stays clear of it. Below about 500px managed login drops the page background entirely and the form sits on its own colour, full width.
 
 Cognito serves the discovery document on the pool's issuer, not on the login domain, so ask it there:
 
@@ -109,6 +119,55 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 Callback and logout URLs are matched exactly, so a Vercel preview address has to be registered in `web_origin` before that preview can sign anyone in.
 
 No pool exists in the project account yet. Until one does, development runs against a pool in a personal test account, with its state kept in this folder rather than in the bucket; `account_id` names that account in the operator's own `terraform.tfvars`. Creating the pool in the project account is a one-off apply from this folder once the bucket exists.
+
+### Production pool
+
+`cognito/production` is the same module with four differences: the state key is `cognito-prod/terraform.tfstate`, the URLs come from the public origin, `deletion_protection` is `ACTIVE` so an apply cannot remove the accounts, and account mail goes through SES rather than Cognito's own sender, which AWS caps at 50 emails a day.
+
+| Input | What it is | Who supplies it |
+| --- | --- | --- |
+| `account_id` | Account that owns the pool; the provider refuses to run anywhere else | The project account, once it exists |
+| `web_origin` | The address visitors use, no trailing slash | The deployment |
+| `domain_prefix` | First label of the login domain, global and permanent | Chosen once, kept in `terraform.tfvars` |
+| `ses_domain`, `from_email_address` | Sending domain and the From line | The domain's owner |
+
+Before sign-up works in public, three things have to be true: the DKIM records from `terraform output ses_dkim_tokens` are published and verified in SES, the account is out of the SES sandbox, and `web_origin` matches the address in the browser exactly — Cognito matches callback and logout URLs character for character.
+
+Sign-up abuse is watched by hand for now; `documentations/operations/account_deletion.md` says which signals and how to stop sign-ups without taking sign-in away. The go-live check and the rollback are in `documentations/operations/`.
+
+### Switching public accounts on
+
+The site reaches the pool through its environment, and the web task in `live` owns that. Nothing about the site changes at build time, so the image can ship months before the pool exists: with the variables missing the account controls are hidden and `/api/auth/*` answers 503.
+
+When the pool does exist:
+
+```sh
+cd infra/aws/cognito/production
+terraform output -raw issuer                    # cognito_issuer in live/terraform.tfvars
+terraform output -raw client_id                 # cognito_client_id
+terraform output -raw domain                    # cognito_domain
+terraform output -raw client_secret             # the client secret below, kept out of the shell history
+```
+
+```hcl
+# infra/aws/live/terraform.tfvars
+cognito_issuer     = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_..."
+cognito_client_id  = "..."
+cognito_domain     = "https://clearcare-prod....auth.eu-north-1.amazoncognito.com"
+accounts_enabled   = true
+```
+
+```sh
+# Both secrets exist from the first apply, with no value. Set them, then deploy.
+aws secretsmanager put-secret-value --secret-id clearcare/auth/session-secret \
+    --secret-string "$(openssl rand -base64 33)"
+aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-secret \
+    --secret-string "<client_secret from the pool>"
+```
+
+`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+
+Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 
 ## Database passwords and roles
 
@@ -133,11 +192,11 @@ It adapts `infra/postgres/roles.sql` for RDS, where the administrator is not a s
 
 A task reads its secret when it starts. After changing a password, change it in the database too, then start new tasks: run the deploy workflow again for the running commit.
 
-The pipeline also reads an OpenAI API key from `clearcare/openai`, whose value Terraform leaves out too. Paste the key at the prompt, which keeps it out of the shell history:
+The pipeline also reads an Anthropic API key from `clearcare/anthropic`, whose value Terraform leaves out too. Paste the key at the prompt, which keeps it out of the shell history:
 
 ```sh
 read -rs key
-aws secretsmanager put-secret-value --secret-id clearcare/openai --secret-string "$key"
+aws secretsmanager put-secret-value --secret-id clearcare/anthropic --secret-string "$key"
 ```
 
 A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`. The apply that adds the secret registers a pipeline revision that reads it, but the schedules keep the one recorded in `/clearcare/release/pipeline`: run the deploy workflow for the running commit afterwards, so they start the new one.
@@ -211,7 +270,7 @@ These workflows run tasks with their own AWS role:
 - AWS run pipeline runs the scheduler once, as the schedule does, and waits for it. It runs only while the pipeline is enabled.
 - AWS migrate runs Flyway's `migrate`, `info` or `validate`. It runs only while deploys are enabled.
 
-Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run could still start during a migration; nothing keeps the two apart yet. Cancelling the workflow stops the task.
+Both share one queue with the deploys, so one of these workflows never runs during a deploy, and a deploy does not start while a pipeline task runs. A scheduled run and a migration cannot overlap either: they take the same run lock (ADR-0022). Cancelling the workflow stops the task.
 
 With credentials, `infra/aws/bin/run-task` does the same from a terminal:
 
@@ -224,11 +283,18 @@ It prints the end of each container's log and exits 0 only if every container ex
 
 ## Pipeline state
 
-A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A failure of any other stage shows only in the log.
+A pipeline task starts with an empty `/tmp`. Its command first copies the checkpoint `state/pipeline.json` and every object under `raw/` from the raw bucket, and checks each raw file against the hash in its key. The checkpoint holds the schedule state and the text of the three manifests. The scheduler writes it before each download, so a new task cannot bring a crawl forward (ADR-0014), and again once the download's new files are uploaded. If the checkpoint is missing or not valid, a raw file does not match, or the upload or a checkpoint write fails, the task exits 1 and the stopped-task alarm fires. A stage that fails exits 1 too, with the first failure in the alarm's log line; a stage with work the next run retries exits 3, which records the run as `incomplete` and leaves the task green, so the alarm keeps meaning something (ADR-0022).
 
 Each run downloads the whole of `raw/` one object at a time, about 4,600 files and 1.2 GB on 30 October 2026, into the task's default 20 GiB of storage, so the time before the first stage grows with the corpus.
 
-Two runs at once, the daily schedule and a manual AWS run pipeline, would each restore the checkpoint and write it back, and the later write would win, undoing the other's next attempts. Start a manual run only when no scheduled one is running.
+A run takes a session-level advisory lock before it restores anything, and records itself in `clearcare.pipeline_run`, so two runs cannot interleave: a manual run pipeline started while a scheduled one is going logs that the lock is held, does nothing, and exits 0. The migrate task takes the same lock, so a migration waits for a run rather than running beside it, and `bin/deploy` waits for a running pipeline task instead of failing. What the last runs did is a query, not a search through logs:
+
+```sh
+psql -c "SELECT id, started_at, finished_at, outcome, exit_code, detail \
+         FROM clearcare.pipeline_run ORDER BY id DESC LIMIT 5"
+```
+
+A row that is still `running` with no `finished_at` is a task that was killed before it could record its end.
 
 To turn the pipeline on, with `pipeline_enabled = false` until the last step:
 
@@ -242,7 +308,7 @@ To turn the pipeline on, with `pipeline_enabled = false` until the last step:
        --query 'taskDefinition.containerDefinitions[?name==`pipeline`].command'
    ```
 
-4. If Terraform has created the secret `clearcare/openai`, set its value; a pipeline task does not start without it.
+4. If Terraform has created the secret `clearcare/anthropic`, set its value; a pipeline task does not start without it.
 5. Seed the state from the VM, below.
 6. Set `pipeline_enabled = true` and apply.
 

@@ -23,6 +23,8 @@ jobs:
           enable-cache: true
       - run: uv sync
       - run: uv run pytest
+      # Extractor contract checks use no model calls or credentials.
+      - run: uv run --with python-dotenv==1.2.4 python -m unittest discover -s "../Research/Data Extraction" -p "test_extractor.py" -v
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pyright

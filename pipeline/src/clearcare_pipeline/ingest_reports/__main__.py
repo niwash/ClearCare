@@ -9,6 +9,7 @@ from pathlib import Path
 
 import psycopg
 
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.ingest_reports import database, sources
 from clearcare_pipeline.ingest_reports.run import ingest, parse_report
 from clearcare_pipeline.ingest_reports.sources import Source
@@ -52,10 +53,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
     except psycopg.Error as error:
         logger.error("database error: %s", error)
-        return 1
+        return EXIT_FAILED
     except (ManifestError, OSError) as error:
         logger.error("%s", error)
-        return 1
+        return EXIT_FAILED
     logger.info(
         "parsed %d, wrote %d, already loaded %d, skipped %d, failed %d",
         summary.parsed,
@@ -64,7 +65,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         summary.skipped,
         summary.failed,
     )
-    return 0 if summary.failed == 0 else 1
+    if summary.failed == 0:
+        return EXIT_DONE
+    # A layout this version cannot load (ADR-0013) is counted and the next
+    # run tries it again, whatever else that run parsed.
+    return EXIT_RETRY
 
 
 def _source(args: argparse.Namespace) -> Iterator[Source]:

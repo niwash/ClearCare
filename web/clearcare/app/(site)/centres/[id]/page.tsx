@@ -1,4 +1,5 @@
 // app/centres/[id]/page.tsx
+import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistBox } from "@/components/compare/shortlist-box";
@@ -8,15 +9,17 @@ import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { comingSoonClass, fullWidthClass } from "@/components/ui/classes";
+import { fullWidthClass } from "@/components/ui/classes";
 import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
   formatWeeklyPrice,
   getCentre,
+  getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  type CentreAmenities,
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
@@ -46,13 +49,13 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
   const { centre } = lookup;
-  const reports = await getCentreReports(id);
+  const [reports, amenities] = await Promise.all([getCentreReports(id), getCentreAmenities(id)]);
 
   return (
     <>
       <CentreHero centre={centre} />
 
-      <CentreFacts centre={centre} reports={reports} />
+      <CentreFacts centre={centre} reports={reports} amenities={amenities} />
 
       {reports ? (
         <>
@@ -195,7 +198,15 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
   );
 }
 
-function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
+function CentreFacts({
+  centre,
+  reports,
+  amenities,
+}: {
+  centre: CentreDetail;
+  reports: CentreReports | null;
+  amenities: CentreAmenities | null;
+}) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
@@ -210,100 +221,103 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       </h2>
       {/* The details, with the actions beside them on wide screens and under them on narrow ones. */}
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-        {/* One box of label and value rows, like the centre details on hiqa.ie. White on the page
-            background in the standard design; the adult-centred design adds a 3:1 edge. */}
-        <dl className="w-full max-w-2xl rounded-2xl border border-line-soft bg-surface py-2 shadow-sm adult:rounded-lg adult:border-line adult:shadow-none">
-          <Fact label="HIQA centre ID" icon="id">
-            <span className="font-mono">{centre.centre_id}</span>
-          </Fact>
-          <Fact label="County" icon="county">Co. {centre.county}</Fact>
-          {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
-          <Fact label="Address" icon="address">{centre.address}</Fact>
-          {eircode && !addressHasEircode && (
-            <Fact label="Eircode" icon="eircode">
-              <span className="font-mono">{eircode}</span>
+        {/* One box of label and value rows, like the centre details on hiqa.ie, with what the home
+            offers as its last part, so the two read as one record and the actions come after both on
+            phones. White on the page background in the standard design; the adult-centred design adds
+            a 3:1 edge. */}
+        <div className="w-full max-w-2xl rounded-2xl border border-line-soft bg-surface shadow-sm adult:rounded-lg adult:border-line adult:shadow-none">
+          <dl className="py-2">
+            <Fact label="HIQA centre ID" icon="id">
+              <span className="font-mono">{centre.centre_id}</span>
             </Fact>
-          )}
-          {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
-          {phone && (
-            <Fact label="Phone" icon="phone">
-              {phone.tel ? (
-                <a href={`tel:${phone.tel}`} className="tap-target">
-                  {phone.text}
-                </a>
-              ) : (
-                phone.text
-              )}
-            </Fact>
-          )}
-          <Fact label="Registered for" icon="beds">
-            {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
-            {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
-                the question comes up, rather than on the search page (CCARE-179). */}
-            <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds.</span>
-            <span className="block text-small text-ink-muted">
-              To ask about a free bed, contact the home
-              {phone?.tel ? (
-                <>
-                  {" "}
-                  on{" "}
+            <Fact label="County" icon="county">Co. {centre.county}</Fact>
+            {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
+            <Fact label="Address" icon="address">{centre.address}</Fact>
+            {eircode && !addressHasEircode && (
+              <Fact label="Eircode" icon="eircode">
+                <span className="font-mono">{eircode}</span>
+              </Fact>
+            )}
+            {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
+            {phone && (
+              <Fact label="Phone" icon="phone">
+                {phone.tel ? (
                   <a href={`tel:${phone.tel}`} className="tap-target">
                     {phone.text}
                   </a>
-                </>
-              ) : (
-                " directly"
-              )}
-              .
-            </span>
-          </Fact>
-          {/* From the HSE price list the price came from. No row when there's no list for the home. */}
-          {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
-          {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
-          {centre.contract_price !== undefined && (
-            <Fact label="Full weekly cost" icon="cost">
-              {centre.contract_price !== null ? (
-                <>
-                  {formatWeeklyPrice(centre.contract_price)} per week
-                  <span className="block text-small text-ink-muted">
-                    This does not include extra charges,{" "}
-                    <Link href="/guides/fair-deal#what-does-fair-deal-cover" className="tap-target">
-                      see here
-                    </Link>
-                    .
-                  </span>
-                  <span className="block text-small text-ink-muted">
-                    With Fair Deal you pay your own contribution.{" "}
-                    <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
-                      How much will you pay?
-                    </Link>
-                  </span>
-                </>
-              ) : (
-                <>
-                  Not available
-                  <span className="block text-small text-ink-muted">Ask the home</span>
-                </>
-              )}
-            </Fact>
-          )}
-          {latest && first && (
-            <Fact label="Latest report" icon="report">
-              Inspected {formatDate(latest.date)}
+                ) : (
+                  phone.text
+                )}
+              </Fact>
+            )}
+            <Fact label="Registered for" icon="beds">
+              {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
+              {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
+                  the question comes up, rather than on the search page (CCARE-179). */}
+              <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds.</span>
               <span className="block text-small text-ink-muted">
-                {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
-                {reports.inspections.length}{" "}
-                {reports.inspections.length === 1 ? "report" : "reports"} since {new Date(first.date).getUTCFullYear()}
+                To ask about a free bed, contact the home
+                {phone?.tel ? (
+                  <>
+                    {" "}
+                    on{" "}
+                    <a href={`tel:${phone.tel}`} className="tap-target">
+                      {phone.text}
+                    </a>
+                  </>
+                ) : (
+                  " directly"
+                )}
+                .
               </span>
             </Fact>
-          )}
-        </dl>
+            {/* From the HSE price list the price came from. No row when there's no list for the home. */}
+            {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
+            {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
+            {centre.contract_price !== undefined && (
+              <Fact label="Full weekly cost" icon="cost">
+                {centre.contract_price !== null ? (
+                  <>
+                    {formatWeeklyPrice(centre.contract_price)} per week
+                    <span className="block text-small text-ink-muted">
+                      This does not include extra charges,{" "}
+                      <Link href="/guides/fair-deal#what-does-fair-deal-cover" className="tap-target">
+                        see here
+                      </Link>
+                      .
+                    </span>
+                    <span className="block text-small text-ink-muted">
+                      With Fair Deal you pay your own contribution.{" "}
+                      <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
+                        How much will you pay?
+                      </Link>
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    Not available
+                    <span className="block text-small text-ink-muted">Ask the home</span>
+                  </>
+                )}
+              </Fact>
+            )}
+            {latest && first && (
+              <Fact label="Latest report" icon="report">
+                Inspected {formatDate(latest.date)}
+                <span className="block text-small text-ink-muted">
+                  {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
+                  {reports.inspections.length}{" "}
+                  {reports.inspections.length === 1 ? "report" : "reports"} since {new Date(first.date).getUTCFullYear()}
+                </span>
+              </Fact>
+            )}
+          </dl>
+          <CentreAmenitiesSection
+            amenities={amenities}
+            reportUrl={reports?.inspections.find((inspection) => inspection.id === String(amenities?.report_id))?.reportUrl}
+          />
+        </div>
         <CentreActions centre={centre} reports={reports} />
-      </div>
-      {/* TODO: Show these with the details once the API has them. */}
-      <div className={`flex w-full max-w-2xl flex-col gap-1 px-4 py-3 ${comingSoonClass}`}>
-        <h3 className="font-semibold text-ink">Coming soon</h3>
-        <p>The home&apos;s care types and amenities, so you can see what it offers.</p>
       </div>
     </section>
   );

@@ -13,15 +13,17 @@ import org.springframework.web.server.ResponseStatusException;
 class CentreSearchController {
 
   private final CentreSearchRepository repository;
+  private final AmenityItemNames itemNames;
 
-  CentreSearchController(CentreSearchRepository repository) {
+  CentreSearchController(CentreSearchRepository repository, AmenityItemNames itemNames) {
     this.repository = repository;
+    this.itemNames = itemNames;
   }
 
   // All the query parameters come in one map, so that unknown and repeated ones can be refused.
   @GetMapping("/centres")
   CentreSearchResult search(@RequestParam MultiValueMap<String, String> query) {
-    CentreSearchParameters parameters = CentreSearchParameters.parse(query);
+    CentreSearchParameters parameters = CentreSearchParameters.parse(query, itemNames);
     return repository.search(parameters).orElseThrow(CentreSearchController::registerNotLoaded);
   }
 

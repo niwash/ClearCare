@@ -3,9 +3,10 @@ from pathlib import Path
 
 import pytest
 
+from clearcare_pipeline.exit_codes import EXIT_RETRY
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.reports.__main__ import main
-from tests.reports.fakes import html, pdf
+from tests.reports.fakes import UNAVAILABLE, VERIFICATION, html, pdf
 from tests.snapshots.fakes import FakeFetcher, no_sleep
 
 PAGE = (Path(__file__).parent / "fixtures" / "centre-34.html").read_bytes()
@@ -108,6 +109,30 @@ def test_failed_download_fails_the_run(tmp_path: Path) -> None:
     )
 
     assert code == 1
+
+
+def test_a_verification_page_is_retried_later(tmp_path: Path) -> None:
+    fetcher = FakeFetcher({ELM_HALL: [VERIFICATION]})
+
+    code = main(
+        ["--data-dir", str(_data_dir(tmp_path)), "--county", "Kildare"],
+        fetcher=fetcher,
+        sleep=no_sleep,
+    )
+
+    assert code == EXIT_RETRY
+
+
+def test_hiqa_not_answering_is_retried_later(tmp_path: Path) -> None:
+    fetcher = FakeFetcher({ELM_HALL: [UNAVAILABLE] * 3})
+
+    code = main(
+        ["--data-dir", str(_data_dir(tmp_path)), "--county", "Kildare"],
+        fetcher=fetcher,
+        sleep=no_sleep,
+    )
+
+    assert code == EXIT_RETRY
 
 
 def test_county_without_centres_fails(tmp_path: Path) -> None:

@@ -36,7 +36,10 @@ jobs:
             context: pipeline
             file: pipeline/Dockerfile
           - image: migrate
-            context: db
+            # The image holds the run lock, so it needs its own script next
+            # to db/, which means the repository root is the context; the
+            # root .dockerignore narrows it to those two paths.
+            context: .
             file: infra/aws/migrate/Dockerfile
     env:
       COMMIT: ${{ github.event.workflow_run.head_sha }}

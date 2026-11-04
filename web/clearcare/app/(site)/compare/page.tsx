@@ -1,7 +1,7 @@
 // app/(site)/compare/page.tsx
 // Compare Homes (CCARE-127): up to three saved homes side by side, laid out as in the comparison
-// grid wireframe: rows grouped into Cost, The home, Inspections and Results by regulation, then a
-// next step for each home. A grid from md up; on phones, one card per row. With room for more
+// grid wireframe: rows grouped into Cost, The home, What the home offers (amenities v2, CCARE-163),
+// Inspections and Results by regulation, then a next step for each home. A grid from md up; on phones, one card per row. With room for more
 // homes, a panel says how to add them. The homes are saved in this browser (components/compare);
 // their IDs come in the address, ?homes=101,34, so the page is drawn on the server like a centre
 // page, and CompareSync keeps the address in step with the saved list. Framed for a family deciding
@@ -14,11 +14,13 @@ import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-i
 import { ClearCompareButton } from "@/components/compare/clear-compare-button";
 import { CompareButton } from "@/components/compare/compare-button";
 import { CompareSync } from "@/components/compare/compare-sync";
+import { StickyHomeNames } from "@/components/compare/sticky-home-names";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { actionLinkClass, comingSoonClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { amenityTagClass } from "@/components/centre/centre-amenities";
+import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import {
@@ -27,8 +29,10 @@ import {
   formatMonth,
   formatWeeklyPrice,
   getCentre,
+  getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  type CentreAmenities,
   type CentreDetail,
   type CentreReports,
   type Regulation,
@@ -55,8 +59,22 @@ interface ComparePageProps {
 }
 
 // One home's column. A saved home can drop off the register, or the API can be down.
-type FoundColumn = { id: string; status: "found"; centre: CentreDetail; reports: CentreReports | null };
+type FoundColumn = {
+  id: string;
+  status: "found";
+  centre: CentreDetail;
+  reports: CentreReports | null;
+  amenities: CentreAmenities | null;
+};
 type Column = FoundColumn | { id: string; status: "not-found" | "unavailable" };
+
+// The amenities v2 lists, labelled and ordered as on the centre page.
+const AMENITY_LISTS = [
+  { key: "care_types", label: "Types of care" },
+  { key: "room_types", label: "Rooms" },
+  { key: "activities", label: "Activities" },
+  { key: "facilities", label: "Facilities" },
+] as const;
 
 // The register's name, or a stand-in for a home that didn't load.
 function columnName(column: Column) {
@@ -66,7 +84,8 @@ function columnName(column: Column) {
 async function loadColumn(id: string): Promise<Column> {
   const lookup = await getCentre(id);
   if (lookup.status !== "found") return { id, status: lookup.status };
-  return { id, status: "found", centre: lookup.centre, reports: await getCentreReports(id) };
+  const [reports, amenities] = await Promise.all([getCentreReports(id), getCentreAmenities(id)]);
+  return { id, status: "found", centre: lookup.centre, reports, amenities };
 }
 
 export default async function ComparePage({ searchParams }: ComparePageProps) {
@@ -196,8 +215,10 @@ function NothingSaved() {
 // For a home whose reports in ClearCare are all thematic inspections, which judge no regulations.
 const NONE_JUDGED = "No inspection in ClearCare checked regulations";
 
-// A row of the comparison: a value per home, or one thing across them all (span).
-type Row = { key: string; label: ReactNode; hint?: ReactNode; cells?: ReactNode[]; span?: ReactNode };
+// A row of the comparison: a value per home, or one thing across them all (span). A numeric row's
+// digits are all one width in the grid, so amounts compare cleanly; they stay left-aligned like the
+// rest.
+type Row = { key: string; label: ReactNode; hint?: ReactNode; cells?: ReactNode[]; span?: ReactNode; numeric?: boolean };
 // Each group has an icon in its own soft colour beside its heading, so the eye can find it.
 type Group = { title: string; icon: string; tint: Tint; intro?: ReactNode; rows: Row[] };
 
@@ -258,6 +279,22 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
   const eachJudged = (cell: (reports: CentreReports) => ReactNode) =>
     eachReported((reports) => (latestJudged(reports) ? cell(reports) : <Muted>{NONE_JUDGED}</Muted>));
 
+  const latestDate = (column: FoundColumn) => column.reports?.inspections.at(-1)?.date ?? null;
+
+  // The lowest weekly cost and the latest inspection, each marked as a fact about these homes.
+  const lowestPrice = markBest(
+    columns.map((column) =>
+      column.status === "found" && typeof column.centre.contract_price === "number" ? column.centre.contract_price : null,
+    ),
+    (a, b) => a < b,
+  );
+  const latestInspection = markBest(
+    columns.map((column) => (column.status === "found" ? latestDate(column) : null)),
+    (a, b) => a > b,
+  );
+  const ofThese = (count: number, without: string) =>
+    count === columns.length ? `of these ${count}` : `of the ${count} with ${without}`;
+
   const rows = regulationRows(columns.map((column) => (column.status === "found" ? column.reports : null)));
   const shortfalls = rows.filter((row) => !compliantWhereverJudged(row));
   const compliant = rows.filter(compliantWhereverJudged);
@@ -279,9 +316,17 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
           key: "cost",
           label: "Full weekly cost",
           hint: "The HSE’s Fair Deal price, without extra charges.",
-          cells: each(({ centre }) =>
+          numeric: true,
+          cells: each(({ id, centre }) =>
             typeof centre.contract_price === "number" ? (
-              <Value main={formatWeeklyPrice(centre.contract_price)} sub="a week" big />
+              <>
+                <Value main={formatWeeklyPrice(centre.contract_price)} sub="a week" big />
+                {lowestPrice.marked[columns.findIndex((column) => column.id === id)] && (
+                  <Marker>
+                    {lowestPrice.joint ? "Joint lowest" : "Lowest"} weekly cost {ofThese(lowestPrice.count, "a price")}
+                  </Marker>
+                )}
+              </>
             ) : (
               <Value main="Not available" sub="Ask the home" muted />
             ),
@@ -305,6 +350,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
           key: "beds",
           label: "Registered for",
           hint: "HIQA’s limit, not free beds",
+          numeric: true,
           cells: each(({ centre }) =>
             centre.maximum_occupancy !== null ? (
               <Value main={`Up to ${centre.maximum_occupancy} residents`} />
@@ -312,12 +358,6 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
               <Value main="Not stated" muted />
             ),
           ),
-        },
-        {
-          // TODO: A row each once the API has them.
-          key: "coming-soon",
-          label: "Care types and amenities",
-          span: <span className={`inline-block px-3 py-1.5 text-sm ${comingSoonClass}`}>Coming soon</span>,
         },
         { key: "address", label: "Address", cells: each(({ centre }) => <Value main={shortAddress(centre)} />) },
         {
@@ -346,6 +386,54 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       ],
     },
     {
+      // As on the centre page (CentreAmenitiesSection): what an AI tool read from one report, said
+      // before the values; the passages are on each home's full record. The first sentence is the
+      // disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays.
+      title: "What the home offers",
+      icon: ICON_PATHS.beds,
+      tint: "band",
+      intro: (
+        <>
+          Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these, and a home may offer
+          more than its report mentions, so always call the home to confirm anything that matters to you.
+        </>
+      ),
+      rows: [
+        ...AMENITY_LISTS.map(
+          ({ key, label }): Row => ({
+            key,
+            label,
+            cells: each(({ amenities }) => {
+              if (!amenities) return <Muted>Not read from its reports yet</Muted>;
+              if (amenities[key].length === 0) return <Muted>None found in the report</Muted>;
+              return (
+                <ul className="flex flex-wrap gap-1.5">
+                  {amenities[key].map(({ item }) => (
+                    <li key={item} className={amenityTagClass}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              );
+            }),
+          }),
+        ),
+        {
+          key: "amenities-report",
+          label: "Read from",
+          cells: each(({ amenities }) =>
+            !amenities ? (
+              <Muted>–</Muted>
+            ) : amenities.inspection_date ? (
+              <Value main={`The ${formatDate(amenities.inspection_date)} report`} />
+            ) : (
+              <Value main="An inspection report" />
+            ),
+          ),
+        },
+      ],
+    },
+    {
       title: "Inspections",
       icon: ICON_PATHS.report,
       tint: "blue",
@@ -353,14 +441,24 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         {
           key: "latest",
           label: "Latest report",
-          cells: eachReported(({ inspections }) => {
+          cells: each((column) => {
+            if (!column.reports) return <Muted>No reports in ClearCare yet</Muted>;
+            const { inspections } = column.reports;
             const latest = inspections.at(-1)!;
             const since = new Date(inspections[0].date).getUTCFullYear();
             return (
-              <Value
-                main={`Inspected ${formatDate(latest.date)}`}
-                sub={`${inspections.length} ${inspections.length === 1 ? "report" : "reports"} since ${since}`}
-              />
+              <>
+                <Value
+                  main={`Inspected ${formatDate(latest.date)}`}
+                  sub={`${inspections.length} ${inspections.length === 1 ? "report" : "reports"} since ${since}`}
+                />
+                {latestInspection.marked[columns.indexOf(column)] && (
+                  <Marker>
+                    {latestInspection.joint ? "Joint most recent" : "Most recent"} inspection{" "}
+                    {ofThese(latestInspection.count, "reports")}
+                  </Marker>
+                )}
+              </>
             );
           }),
         },
@@ -438,23 +536,32 @@ const toggleClass =
 // inspection history.
 const labelCellClass = "sticky left-0 z-10 bg-surface p-4 text-left align-top font-medium text-ink-muted";
 const homeCellClass = "border-l border-line-soft p-4 align-top";
+// Shared with the bar of names (StickyHomeNames), so its columns line up with these.
+const tableClass = "w-full min-w-[30rem] table-fixed border-collapse";
+const labelColClass = "w-44 lg:w-52";
 
 function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group[] }) {
+  const corner = `${columns.length} of ${MAX_COMPARED} homes`;
   return (
-    <div className="h-full overflow-x-auto rounded-2xl border border-line bg-surface shadow-sm adult:rounded-lg adult:shadow-none">
-      <table className="w-full min-w-[30rem] table-fixed border-collapse">
+    <StickyHomeNames
+      names={columns.map(columnName)}
+      corner={corner}
+      labelColClass={labelColClass}
+      labelCellClass={labelCellClass}
+      homeCellClass={homeCellClass}
+      tableClass={tableClass}
+    >
+      <table className={tableClass}>
         <caption className="sr-only">The {columns.length} homes on your list, side by side</caption>
         <colgroup>
-          <col className="w-44 lg:w-52" />
+          <col className={labelColClass} />
           {columns.map((column) => (
             <col key={column.id} />
           ))}
         </colgroup>
         <thead>
           <tr className="border-b-2 border-ink">
-            <td className={`${labelCellClass} text-sm font-normal`}>
-              {columns.length} of {MAX_COMPARED} homes
-            </td>
+            <td className={`${labelCellClass} text-sm font-normal`}>{corner}</td>
             {columns.map((column) => (
               <th key={column.id} scope="col" className={`${homeCellClass} text-left font-normal`}>
                 <HomeHeading column={column} />
@@ -487,7 +594,7 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
                   </td>
                 ) : (
                   row.cells?.map((cell, i) => (
-                    <td key={columns[i].id} className={homeCellClass}>
+                    <td key={columns[i].id} className={`${homeCellClass} ${row.numeric ? "tabular-nums" : ""}`}>
                       {cell}
                     </td>
                   ))
@@ -509,7 +616,7 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
           </tr>
         </tbody>
       </table>
-    </div>
+    </StickyHomeNames>
   );
 }
 
@@ -715,6 +822,26 @@ function ResultCell({ result, column }: { result: LatestResult | null; column: C
         {JUDGEMENT_LABELS[result.judgement]}
         <span className="block text-sm text-ink-muted">{formatMonth(result.date)}</span>
       </span>
+    </span>
+  );
+}
+
+// Which homes have the best value (the lowest price, the latest date), for a marker under each.
+// None when fewer than 2 homes have a value or they're all the same, as there's nothing to tell apart.
+function markBest<T extends string | number>(values: (T | null)[], better: (a: T, b: T) => boolean) {
+  const known = values.filter((value): value is T => value !== null);
+  const best = known.reduce<T | null>((a, b) => (a === null || better(b, a) ? b : a), null);
+  const marked =
+    known.length < 2 || known.every((value) => value === best) ? values.map(() => false) : values.map((value) => value === best);
+  return { marked, joint: marked.filter(Boolean).length > 1, count: known.length };
+}
+
+// A fact about one home among these, such as the lowest weekly cost: in plain words, without a
+// colour or tick that would read as advice. ClearCare doesn't rate or recommend homes.
+function Marker({ children }: { children: ReactNode }) {
+  return (
+    <span className="mt-1.5 inline-block rounded-full bg-surface-muted px-2.5 py-0.5 text-sm text-ink-muted adult:rounded-md">
+      {children}
     </span>
   );
 }
