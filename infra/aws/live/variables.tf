@@ -103,3 +103,27 @@ variable "pipeline_enabled" {
   type        = bool
   default     = false
 }
+
+variable "cognito_issuer" {
+  description = "Cognito pool issuer for public accounts, from the cognito/production output. Empty keeps the account controls switched off."
+  type        = string
+  default     = ""
+}
+
+variable "cognito_client_id" {
+  description = "Cognito app client ID, from the cognito/production output."
+  type        = string
+  default     = ""
+}
+
+variable "cognito_domain" {
+  description = "Cognito managed login domain, from the cognito/production output. Without it Create account cannot be offered."
+  type        = string
+  default     = ""
+}
+
+variable "accounts_enabled" {
+  description = "Whether the web task is given the Cognito app client secret and the session key. Off until both secret values are set, because a task cannot start with an empty secret."
+  type        = bool
+  default     = false
+}

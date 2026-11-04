@@ -2,12 +2,14 @@
 
 import hashlib
 import json
+import sys
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
+import anthropic
 import extractor
 from amenities_v2 import CATEGORY_ORDER, Amenities, AmenitiesResult, ExtractionFile
 from pydantic import ValidationError
@@ -116,8 +118,8 @@ class ContractTests(unittest.TestCase):
         with patch.dict(
             "sys.modules", {"pdfplumber": SimpleNamespace(open=Mock(return_value=pdf))}
         ):
-            text, count = extractor.extract_text_from_pdf(Path("source.pdf"))
-        self.assertEqual(count, 3)
+            text, pages = extractor.extract_text_from_pdf(Path("source.pdf"))
+        self.assertEqual(pages, ["cover", "", "garden"])
         self.assertEqual(
             text, "[PDF PAGE 1]\ncover\n[PDF PAGE 2]\n\n[PDF PAGE 3]\ngarden"
         )
@@ -128,15 +130,6 @@ class ContractTests(unittest.TestCase):
             ("length", None, None),
             ("stop", "refused", None),
             ("stop", None, None),
-            (
-                "stop",
-                None,
-                AmenitiesResult(
-                    amenities=Amenities.model_validate(
-                        dict(payload(), facilities=[garden(4, 4)])
-                    )
-                ),
-            ),
         ]:
             client.beta.chat.completions.parse.return_value = SimpleNamespace(
                 usage=None,
@@ -148,11 +141,13 @@ class ContractTests(unittest.TestCase):
                     )
                 ],
             )
-            self.assertIsNone(extractor.call_llm(client, "1", "2026-01-01", "text", 3))
+            self.assertIsNone(
+                extractor.call_llm(client, "openai", "1", "2026-01-01", "text")
+            )
         client.reset_mock()
         self.assertIsNone(
             extractor.call_llm(
-                client, "1", "2026-01-01", "x" * (extractor.MAX_CHARS + 1), 3
+                client, "openai", "1", "2026-01-01", "x" * (extractor.MAX_CHARS + 1)
             )
         )
         client.beta.chat.completions.parse.assert_not_called()
@@ -202,7 +197,7 @@ class ContractTests(unittest.TestCase):
                 )
             ],
         )
-        result = extractor.call_llm(client, "1", "2026-01-01", "text", 1)
+        result = extractor.call_llm(client, "openai", "1", "2026-01-01", "text")
         self.assertEqual(result[0].model_dump(), payload())
         self.assertEqual(result[1], "gpt-4o-mini-2024-07-18")
 
@@ -226,7 +221,10 @@ class ContractTests(unittest.TestCase):
                 patch.object(
                     extractor,
                     "extract_text_from_pdf",
-                    return_value=("[PDF PAGE 1]\ngarden", 1),
+                    return_value=(
+                        "[PDF PAGE 1]\nAn accessible garden.",
+                        ["An accessible garden."],
+                    ),
                 ),
                 patch.object(
                     extractor,
@@ -239,27 +237,36 @@ class ContractTests(unittest.TestCase):
                     ),
                 ) as call,
             ):
-                self.assertTrue(
-                    extractor.process_centre(Mock(), "1", report, root, root, False)
+                self.assertIsNotNone(
+                    extractor.process_centre(
+                        Mock(), "openai", "1", report, root, root, False
+                    )
                 )
                 output = extractor.output_file(root, "1", digest)
                 before = output.read_bytes()
+                self.assertEqual(call.call_args.args[1], "openai")
                 stored = ExtractionFile.model_validate_json(before)
                 self.assertEqual(stored.amenities.facilities[0].item, "Garden")
                 self.assertEqual(stored.model, "gpt-4o-mini-2024-07-18")
-                self.assertTrue(
-                    extractor.process_centre(Mock(), "1", report, root, root, False)
+                self.assertIsNotNone(
+                    extractor.process_centre(
+                        Mock(), "openai", "1", report, root, root, False
+                    )
                 )
                 self.assertEqual(call.call_count, 1)
                 with patch.object(Path, "replace", side_effect=OSError("write failed")):
-                    self.assertFalse(
-                        extractor.process_centre(Mock(), "1", report, root, root, True)
+                    self.assertIsNone(
+                        extractor.process_centre(
+                            Mock(), "openai", "1", report, root, root, True
+                        )
                     )
                 self.assertEqual(output.read_bytes(), before)
                 self.assertEqual(list(output.parent.glob("*.tmp")), [])
                 call.return_value = None
-                self.assertFalse(
-                    extractor.process_centre(Mock(), "1", report, root, root, True)
+                self.assertIsNone(
+                    extractor.process_centre(
+                        Mock(), "openai", "1", report, root, root, True
+                    )
                 )
                 self.assertEqual(output.read_bytes(), before)
             self.assertEqual(
@@ -269,6 +276,196 @@ class ContractTests(unittest.TestCase):
             wrong_version["extractor_version"] = "amenities-v1"
             output.write_text(json.dumps(wrong_version))
             self.assertFalse(extractor.already_done(output, digest))
+
+
+def claude_reply(stop_reason="end_turn", parsed_output=None):
+    return SimpleNamespace(
+        stop_reason=stop_reason,
+        parsed_output=parsed_output,
+        model="model-as-reported",
+        usage=SimpleNamespace(input_tokens=12000, output_tokens=900),
+    )
+
+
+def result(*facilities):
+    return AmenitiesResult(
+        amenities=Amenities.model_validate(dict(payload(), facilities=list(facilities)))
+    )
+
+
+class AnthropicTests(unittest.TestCase):
+    def test_complete_response_records_the_reported_model(self):
+        client = Mock()
+        client.messages.parse.return_value = claude_reply(
+            parsed_output=result(garden())
+        )
+        amenities, model = extractor.call_llm(
+            client, "anthropic", "1", "2026-01-01", "text"
+        )
+        self.assertEqual(amenities.facilities[0].item, "Garden")
+        self.assertEqual(model, "model-as-reported")
+        request = client.messages.parse.call_args.kwargs
+        self.assertEqual(request["model"], "claude-haiku-5-5")
+        self.assertEqual(request["system"], extractor.SYSTEM_PROMPT)
+        self.assertIs(request["output_format"], AmenitiesResult)
+        self.assertNotIn("temperature", request)
+        client.beta.chat.completions.parse.assert_not_called()
+
+    def test_truncated_refused_or_invalid_output_fails(self):
+        for name, reply in {
+            "truncated": claude_reply("max_tokens", result(garden())),
+            "refused": claude_reply("refusal"),
+            "no output": claude_reply("end_turn"),
+        }.items():
+            client = Mock()
+            client.messages.parse.return_value = reply
+            with self.subTest(name):
+                self.assertIsNone(
+                    extractor.call_llm(client, "anthropic", "1", "2026-01-01", "text")
+                )
+
+    def test_output_cut_off_mid_json_fails(self):
+        # parse validates the text itself, so it raises before returning. The
+        # model is asked once more, and the centre fails on the second reply.
+        client = Mock()
+        client.messages.parse.side_effect = lambda **_: (
+            AmenitiesResult.model_validate_json('{"amenities": {')
+        )
+        self.assertIsNone(
+            extractor.call_llm(client, "anthropic", "1", "2026-01-01", "text")
+        )
+        self.assertEqual(client.messages.parse.call_count, 2)
+
+    def test_a_reply_outside_the_contract_is_asked_for_once_more(self):
+        try:
+            Amenities.model_validate(dict(payload(), facilities=[garden(), garden()]))
+        except ValidationError as error:
+            duplicate_item = error
+        client = Mock()
+        client.messages.parse.side_effect = [
+            duplicate_item,
+            claude_reply(parsed_output=result(garden())),
+        ]
+        with self.assertLogs(extractor.log, "WARNING"):
+            amenities, _ = extractor.call_llm(
+                client, "anthropic", "1", "2026-01-01", "text"
+            )
+        self.assertEqual(amenities.facilities[0].item, "Garden")
+        self.assertEqual(client.messages.parse.call_count, 2)
+
+    def test_api_errors_fail_the_centre(self):
+        for error in (
+            anthropic.APIStatusError(
+                "bad request", response=Mock(status_code=400, headers={}), body=None
+            ),
+            anthropic.APIConnectionError(request=Mock()),
+        ):
+            client = Mock()
+            client.messages.parse.side_effect = error
+            with self.subTest(error=type(error).__name__):
+                self.assertIsNone(
+                    extractor.call_llm(client, "anthropic", "1", "2026-01-01", "text")
+                )
+
+    def test_main_builds_the_client_of_the_chosen_provider(self):
+        with TemporaryDirectory() as folder:
+            manifest = Path(folder, "manifests", extractor.MANIFEST_NAME)
+            manifest.parent.mkdir()
+            manifest.write_text("")
+            for options, module, client_class in (
+                ([], "anthropic", "Anthropic"),
+                (["--provider", "openai"], "openai", "OpenAI"),
+            ):
+                fake = SimpleNamespace(**{client_class: Mock()})
+                argv = ["extractor.py", "--data-dir", folder, *options]
+                with (
+                    self.subTest(options=options),
+                    patch.dict("sys.modules", {module: fake}),
+                    patch.object(sys, "argv", argv),
+                ):
+                    extractor.main()
+                    getattr(fake, client_class).assert_called_once_with()
+
+
+def stored_report(root):
+    """Stores a source PDF in the raw store and returns its hash and report."""
+    raw = b"source PDF bytes"
+    digest = hashlib.sha256(raw).hexdigest()
+    pdf = extractor.stored_pdf(root, digest)
+    pdf.parent.mkdir(parents=True)
+    pdf.write_bytes(raw)
+    return digest, {
+        "sha256": digest,
+        "inspection_date": "2026-01-01",
+        "file_name": "report.pdf",
+        "url": "https://www.hiqa.ie/report.pdf",
+    }
+
+
+class EvidenceCheckTests(unittest.TestCase):
+    def test_output_keeps_the_quotes_found_and_logs_the_dropped_one(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            digest, report = stored_report(root)
+            page = "An accessible garden."
+            bingo = {"quote": "Bingo every Friday.", "page_start": 1, "page_end": 1}
+            reply = AmenitiesResult(
+                amenities=Amenities.model_validate(
+                    dict(
+                        payload(),
+                        facilities=[garden()],
+                        activities=[{"item": "Bingo", "evidence": [bingo]}],
+                    )
+                )
+            )
+            client = Mock()
+            client.messages.parse.return_value = claude_reply(parsed_output=reply)
+            with (
+                patch.object(
+                    extractor,
+                    "extract_text_from_pdf",
+                    return_value=(f"[PDF PAGE 1]\n{page}", [page]),
+                ),
+                self.assertLogs(extractor.log, "WARNING") as logs,
+            ):
+                check = extractor.process_centre(
+                    client, "anthropic", "1", report, root, root, False
+                )
+            self.assertEqual(
+                logs.output,
+                ["WARNING:extractor:  dropped quote: Bingo: Bingo every Friday."],
+            )
+            stored = ExtractionFile.model_validate_json(
+                extractor.output_file(root, "1", digest).read_bytes()
+            )
+            self.assertEqual(
+                [entry.item for entry in stored.amenities.facilities], ["Garden"]
+            )
+            self.assertEqual(stored.amenities.activities, [])
+            self.assertEqual((check.items_kept, check.items_dropped), (1, 1))
+
+    def test_a_quote_cited_past_the_last_page_gets_the_page_it_is_on(self):
+        with TemporaryDirectory() as folder:
+            root = Path(folder)
+            digest, report = stored_report(root)
+            pages = ["Cover.", "An accessible garden.", "", "", "Findings."]
+            client = Mock()
+            client.messages.parse.return_value = claude_reply(
+                parsed_output=result(garden(6, 6))
+            )
+            with patch.object(
+                extractor, "extract_text_from_pdf", return_value=("text", pages)
+            ):
+                self.assertIsNotNone(
+                    extractor.process_centre(
+                        client, "anthropic", "1", report, root, root, False
+                    )
+                )
+            stored = ExtractionFile.model_validate_json(
+                extractor.output_file(root, "1", digest).read_bytes()
+            )
+            evidence = stored.amenities.facilities[0].evidence[0]
+            self.assertEqual((evidence.page_start, evidence.page_end), (2, 2))
 
 
 if __name__ == "__main__":

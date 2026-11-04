@@ -1,5 +1,6 @@
 package ie.clearcare.api.centres;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -35,6 +36,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
@@ -61,16 +65,19 @@ class CentreSearchTest {
   private static final List<String> EVERY_CENTRE =
       List.of(ARAS, ELM_HALL, ST_JOSEPHS_CORK, ST_JOSEPHS_DUBLIN, STELLA_MARIS);
 
-  // The register migrations, and those that add centre_phone and the contract
-  // prices to it, as Flyway runs them (ADR-0010). The report migrations between
-  // them are not needed here.
+  // The register migrations, the reports and their views, those that add
+  // centre_phone and the contract prices, and the amenities-v2 view, as Flyway
+  // runs them (ADR-0010). The other migrations are not needed here.
   private static final List<String> MIGRATIONS =
       List.of(
           "db/V1__register_entries.sql",
+          "db/V2__inspection_reports.sql",
+          "db/V3__inspection_report_views.sql",
           "db/V7__centre_phone.sql",
           "db/V8__contract_prices.sql",
           "db/V9__centre_contract_price_view.sql",
-          "db/V10__centre_contract_price_home_type.sql");
+          "db/V10__centre_contract_price_home_type.sql",
+          "db/V12__report_amenities_v2.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -144,6 +151,59 @@ class CentreSearchTest {
           AND list.version = prices.version;
       """;
 
+  // The reports the pipeline loads (db/V2), and the amenities-v2 extractions of
+  // some of them (db/V12). The reports get ids 1 to 5 in the order of the rows:
+  // Elm Hall has an older report that has been read (1) and a newer one that
+  // has not (2), Áras one that has been read (3), St Joseph's in Cork one that
+  // has been read and gives no inspection date (4), and Stella Maris one that
+  // has not been read (5). St Joseph's in Dublin has no report. The extractions
+  // leave out the evidence, which the search does not read.
+  private static final String REPORTS =
+      """
+      INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
+      VALUES
+          ('inspection-reports', 'https://www.hiqa.ie/test/34-2025.pdf', repeat('1', 64), now()),
+          ('inspection-reports', 'https://www.hiqa.ie/test/34-2026.pdf', repeat('2', 64), now()),
+          ('inspection-reports', 'https://www.hiqa.ie/test/456.pdf', repeat('3', 64), now()),
+          ('inspection-reports', 'https://www.hiqa.ie/test/9.pdf', repeat('4', 64), now()),
+          ('inspection-reports', 'https://www.hiqa.ie/test/77.pdf', repeat('5', 64), now());
+
+      INSERT INTO clearcare.inspection_report (
+          source_file_id, centre_id, centre_code, centre_name, address, inspection_date,
+          fieldwork_id)
+      VALUES
+          ((SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('1', 64)),
+           '34', 'OSV-0000034', 'Elm Hall Nursing Home', 'Celbridge', '2025-05-13', 'MON-1'),
+          ((SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('2', 64)),
+           '34', 'OSV-0000034', 'Elm Hall Nursing Home', 'Celbridge', '2026-05-13', 'MON-2'),
+          ((SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('3', 64)),
+           '456', 'OSV-0000456', 'Áras Ui Dhomhnaill Nursing Home', 'Dublin 9', '2026-01-15',
+           'MON-3'),
+          ((SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('4', 64)),
+           '9', 'OSV-0000009', 'St Joseph''s Nursing Home', 'Cork', NULL, 'MON-4'),
+          ((SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('5', 64)),
+           '77', 'OSV-0000077', 'Stella Maris Nursing Home', 'Galway', '2026-03-01', 'MON-5');
+
+      INSERT INTO clearcare.report_amenities_v2 (
+          report_id, amenities, file_name, hiqa_url, extractor_version, model, extracted_at)
+      VALUES
+          (1, '{"care_types": [{"item": "Long-term residential care"}, {"item": "Dementia care"}],
+                "room_types": [{"item": "Single room"}],
+                "activities": [{"item": "Bingo"}, {"item": "Men’s groups"}],
+                "facilities": [{"item": "Garden"}]}',
+           '34-2025.pdf', 'https://www.hiqa.ie/test/34-2025.pdf', 'amenities-v2', 'test', now()),
+          (3, '{"care_types": [{"item": "Long-term residential care"}, {"item": "Respite care"}],
+                "room_types": [{"item": "Twin/double room"}, {"item": "En-suite facilities"}],
+                "activities": [{"item": "Music and singing"}, {"item": "Bingo"}],
+                "facilities": [{"item": "Garden"}, {"item": "Lounge/day room"}]}',
+           '456.pdf', 'https://www.hiqa.ie/test/456.pdf', 'amenities-v2', 'test', now()),
+          (4, '{"care_types": [{"item": "Dementia care"}],
+                "room_types": [{"item": "Multi-bed room"}],
+                "activities": [],
+                "facilities": [{"item": "Courtyard"}]}',
+           '9.pdf', 'https://www.hiqa.ie/test/9.pdf', 'amenities-v2', 'test', now());
+      """;
+
   // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
   static final PostgreSQLContainer database =
@@ -164,6 +224,8 @@ class CentreSearchTest {
   }
 
   @Autowired private MockMvc mvc;
+  @Autowired private JsonMapper json;
+  @Autowired private AmenityItemNames itemNames;
 
   // As the container's superuser. The migrations run as clearcare_owner, as Flyway runs them.
   @BeforeAll
@@ -174,39 +236,80 @@ class CentreSearchTest {
     execute(SNAPSHOT);
     execute(PUBLISH);
     execute(CONTRACT_PRICES);
+    execute(REPORTS);
   }
 
   @Test
   void returnsCentresWithTheSnapshotTheyCameFrom() throws Exception {
-    // Strict: any other property, such as provider_name or centre_phone, fails the test.
-    search("name=elm")
+    // Strict: any other property, such as provider_name, centre_phone or the evidence, fails the
+    // test. The facets have a key for every item, so they have tests of their own.
+    ObjectNode result = (ObjectNode) searchResult("name=elm");
+    assertThat(result.remove("facets")).isNotNull();
+    assertThat(result)
+        .isEqualTo(
+            json.readTree(
+                """
+                {
+                  "centres": [{
+                    "centre_id": "34",
+                    "centre_name": "Elm Hall Nursing Home",
+                    "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
+                    "county": "Kildare",
+                    "eircode": "W23P6EX",
+                    "maximum_occupancy": 62,
+                    "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home",
+                    "amenities": {
+                      "report_id": 1,
+                      "inspection_date": "2025-05-13",
+                      "care_types": ["Long-term residential care", "Dementia care"],
+                      "room_types": ["Single room"],
+                      "activities": ["Bingo", "Men’s groups"],
+                      "facilities": ["Garden"]
+                    },
+                    "fair_deal": true,
+                    "latest_inspection": {"date": "2026-05-13"}
+                  }],
+                  "page": 1,
+                  "page_size": 20,
+                  "total": 1,
+                  "register_snapshot": {
+                    "fetched_at": "2026-10-05T06:12:54Z",
+                    "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
+                    "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
+                  },
+                  "sort": "name"
+                }
+                """));
+  }
+
+  @ParameterizedTest
+  @MethodSource
+  void describesWhatIsKnownOfEachCentre(String query, String centre) throws Exception {
+    search(query)
         .andExpect(status().isOk())
-        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-        .andExpect(
-            content()
-                .json(
-                    """
-                    {
-                      "centres": [{
-                        "centre_id": "34",
-                        "centre_name": "Elm Hall Nursing Home",
-                        "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
-                        "county": "Kildare",
-                        "eircode": "W23P6EX",
-                        "maximum_occupancy": 62,
-                        "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home"
-                      }],
-                      "page": 1,
-                      "page_size": 20,
-                      "total": 1,
-                      "register_snapshot": {
-                        "fetched_at": "2026-10-05T06:12:54Z",
-                        "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
-                        "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
-                      }
-                    }
-                    """,
-                    JsonCompareMode.STRICT));
+        .andExpect(content().json("{\"centres\": [%s]}".formatted(centre)));
+  }
+
+  static Stream<Arguments> describesWhatIsKnownOfEachCentre() {
+    return Stream.of(
+        arguments(
+            "county=Cork",
+            """
+            {"amenities": {"report_id": 4, "inspection_date": null},
+             "fair_deal": true, "latest_inspection": {"date": null}}
+            """),
+        // Stella Maris has a report that has not been read.
+        arguments(
+            "county=Galway",
+            """
+            {"amenities": null, "fair_deal": false, "latest_inspection": {"date": "2026-03-01"}}
+            """),
+        // St Joseph's in Dublin has no report.
+        arguments(
+            "eircode=D6W",
+            """
+            {"amenities": null, "fair_deal": false, "latest_inspection": null}
+            """));
   }
 
   @ParameterizedTest
@@ -236,7 +339,87 @@ class CentreSearchTest {
         arguments("eircode=D6W", List.of(ST_JOSEPHS_DUBLIN)),
         arguments("county=Dublin", List.of(ARAS, ST_JOSEPHS_DUBLIN)),
         // A centre must match every parameter given.
-        arguments("name=st joseph&county=Dublin", List.of(ST_JOSEPHS_DUBLIN)));
+        arguments("name=st joseph&county=Dublin", List.of(ST_JOSEPHS_DUBLIN)),
+        // care_type, facility and activity: every value given. The centres whose reports have not
+        // been read, St Joseph's in Dublin and Stella Maris, match none of them.
+        arguments("care_type=Long-term residential care", List.of(ARAS, ELM_HALL)),
+        arguments(
+            "care_type=Long-term residential care&care_type=Dementia care", List.of(ELM_HALL)),
+        arguments("facility=Garden", List.of(ARAS, ELM_HALL)),
+        arguments("activity=Men’s groups", List.of(ELM_HALL)),
+        arguments("county=Dublin&facility=Garden", List.of(ARAS)),
+        // room_type: any value given.
+        arguments("room_type=Single room", List.of(ELM_HALL)),
+        arguments("room_type=Single room&room_type=Twin/double room", List.of(ARAS, ELM_HALL)),
+        // A value given twice counts once.
+        arguments("facility=Garden&facility=Garden", List.of(ARAS, ELM_HALL)),
+        arguments("sort=name", EVERY_CENTRE));
+  }
+
+  // Newest inspection first. St Joseph's in Cork has a report without a date and St Joseph's in
+  // Dublin none; both come last, in name order.
+  @Test
+  void sortsByTheLatestInspection() throws Exception {
+    search("sort=latest_inspection")
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.centres[*].centre_id",
+                is(List.of(ELM_HALL, STELLA_MARIS, ARAS, ST_JOSEPHS_CORK, ST_JOSEPHS_DUBLIN))))
+        .andExpect(jsonPath("$.sort").value("latest_inspection"));
+  }
+
+  // With no parameters every centre matches. Every item of every list is a key, with 0 for those
+  // that no report mentions.
+  @Test
+  void countsEveryItemOfEveryList() throws Exception {
+    JsonNode facets = searchResult("").get("facets");
+    assertThat(facets.get("care_type").propertyNames())
+        .containsExactlyInAnyOrderElementsOf(itemNames.careTypes());
+    assertThat(facets.get("room_type").propertyNames())
+        .containsExactlyInAnyOrderElementsOf(itemNames.roomTypes());
+    assertThat(facets.get("facility").propertyNames())
+        .containsExactlyInAnyOrderElementsOf(itemNames.facilities());
+    assertThat(facets.get("activity").propertyNames())
+        .containsExactlyInAnyOrderElementsOf(itemNames.activities());
+    assertThat(facets.get("facility").get("Garden").asLong()).isEqualTo(2);
+    assertThat(facets.get("facility").get("Gym").asLong()).isZero();
+    // Áras, Elm Hall and St Joseph's in Cork have a contract price.
+    assertThat(facets.get("fair_deal").asLong()).isEqualTo(3);
+  }
+
+  // Elm Hall matches. Áras is long-term residential care too, but has no single rooms.
+  @Test
+  void countsTheCentresThatWouldMatchWithEachItemAdded() throws Exception {
+    JsonNode result = searchResult("care_type=Long-term residential care&room_type=Single room");
+    assertThat(result.get("total").asLong()).isEqualTo(1);
+    JsonNode facets = result.get("facets");
+    // An item added to care_type, facility or activity keeps the matching centres that mention
+    // it.
+    assertThat(facets.get("care_type").get("Dementia care").asLong()).isEqualTo(1);
+    assertThat(facets.get("care_type").get("Respite care").asLong()).isZero();
+    assertThat(facets.get("activity").get("Men’s groups").asLong()).isEqualTo(1);
+    // An item added to room_type also matches the centres that mention it and match the other
+    // parameters: Áras for its twin rooms and en-suites, but not St Joseph's in Cork, which has
+    // a multi-bed room but not long-term residential care.
+    assertThat(facets.get("room_type"))
+        .isEqualTo(
+            json.readTree(
+                """
+                {"Single room": 1, "Twin/double room": 2, "Multi-bed room": 1,
+                 "Shared room, occupancy unspecified": 1, "En-suite facilities": 2,
+                 "Shared bathroom facilities": 1}
+                """));
+    assertThat(facets.get("fair_deal").asLong()).isEqualTo(1);
+  }
+
+  // Dementia care matches Elm Hall and St Joseph's in Cork, on one page or two.
+  @ParameterizedTest
+  @ValueSource(strings = {"page_size=1", "page=2&page_size=1", "page=3&page_size=1"})
+  void countsTheSameFacetsOnEveryPage(String page) throws Exception {
+    JsonNode onePage = searchResult("care_type=Dementia care").get("facets");
+    assertThat(onePage.get("care_type").get("Dementia care").asLong()).isEqualTo(2);
+    assertThat(searchResult("care_type=Dementia care&" + page).get("facets")).isEqualTo(onePage);
   }
 
   @ParameterizedTest
@@ -278,9 +461,26 @@ class CentreSearchTest {
         arguments("page_size=51", "page_size must be between 1 and 50"),
         arguments(
             "colour=red",
-            "colour is not a parameter; use one of name, address, eircode, county, page,"
-                + " page_size"),
+            "colour is not a parameter; use one of name, address, eircode, county, care_type,"
+                + " room_type, facility, activity, sort, page, page_size"),
         arguments("name=a&name=b", "name must be given only once"),
+        arguments("sort=name&sort=name", "sort must be given only once"),
+        arguments("sort=newest", "sort must be name or latest_inspection"),
+        // Item names are exact, and each list has its own.
+        arguments(
+            "facility=garden",
+            "facility must be an item name from the amenities-v2 list, such as Garden"),
+        arguments(
+            "care_type=Garden",
+            "care_type must be an item name from the amenities-v2 list, such as General nursing"
+                + " care"),
+        arguments(
+            "room_type=Single room&room_type=Suite",
+            "room_type must be an item name from the amenities-v2 list, such as Single room"),
+        arguments(
+            "activity=",
+            "activity must be an item name from the amenities-v2 list, such as Music and"
+                + " singing"),
         arguments("page=0", "page must be a whole number of 1 or more"),
         arguments("county=dublin", "county must be spelt as on the register, such as Dublin"),
         arguments("name=" + "a".repeat(101), "name must be at most 100 characters"),
@@ -289,8 +489,8 @@ class CentreSearchTest {
 
   @Test
   void returnsOneCentreWithTheSnapshotItCameFrom() throws Exception {
-    // Strict: the fields of a search result, centre_phone, contract_price and
-    // home_type, and no others.
+    // Strict: the register fields, centre_phone, contract_price and home_type,
+    // and no others.
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -409,6 +609,18 @@ class CentreSearchTest {
 
   private ResultActions search(String query) throws Exception {
     return mvc.perform(get("/centres?" + query));
+  }
+
+  // Read as bytes: the body is UTF-8, which the response's string form does not assume.
+  private JsonNode searchResult(String query) throws Exception {
+    byte[] body =
+        search(query)
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+    return json.readTree(body);
   }
 
   private static void execute(String sql) throws SQLException {

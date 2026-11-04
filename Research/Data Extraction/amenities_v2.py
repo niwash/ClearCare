@@ -10,5 +10,6 @@ from clearcare_pipeline.amenities_v2 import (  # noqa: E402, F401
     CATEGORY_ORDER,
     Amenities,
     AmenitiesResult,
+    EvidenceCheck,
     ExtractionFile,
 )

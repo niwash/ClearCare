@@ -9,16 +9,42 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * The checked parameters of GET /centres. A null field is a parameter that was not given.
+ * The checked parameters of GET /centres. A null field is a parameter that was not given, and an
+ * empty list an amenity filter that was not given.
  *
  * <p>name and address are not folded here: the query passes them to clearcare.search_key, so the
  * folding rule is written once, in db/V1.
  */
 record CentreSearchParameters(
-    String name, String address, String eircode, String county, int page, int pageSize) {
+    String name,
+    String address,
+    String eircode,
+    String county,
+    List<String> careTypes,
+    List<String> roomTypes,
+    List<String> facilities,
+    List<String> activities,
+    String sort,
+    int page,
+    int pageSize) {
 
   private static final List<String> PARAMETERS =
-      List.of("name", "address", "eircode", "county", "page", "page_size");
+      List.of(
+          "name",
+          "address",
+          "eircode",
+          "county",
+          "care_type",
+          "room_type",
+          "facility",
+          "activity",
+          "sort",
+          "page",
+          "page_size");
+  // The amenity filters take one item name per value, so they may be repeated.
+  private static final List<String> REPEATABLE =
+      List.of("care_type", "room_type", "facility", "activity");
+  private static final List<String> SORTS = List.of("name", "latest_inspection");
   private static final int MAX_TEXT_LENGTH = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final int MAX_PAGE_SIZE = 50;
@@ -59,14 +85,15 @@ record CentreSearchParameters(
           "Wexford",
           "Wicklow");
 
-  static CentreSearchParameters parse(MultiValueMap<String, String> query) {
+  static CentreSearchParameters parse(
+      MultiValueMap<String, String> query, AmenityItemNames itemNames) {
     query.forEach(
         (key, values) -> {
           if (!PARAMETERS.contains(key)) {
             throw badRequest(
                 key + " is not a parameter; use one of " + String.join(", ", PARAMETERS));
           }
-          if (values.size() > 1) {
+          if (values.size() > 1 && !REPEATABLE.contains(key)) {
             throw badRequest(key + " must be given only once");
           }
         });
@@ -75,6 +102,11 @@ record CentreSearchParameters(
         text(query, "address"),
         eircode(query.getFirst("eircode")),
         county(query.getFirst("county")),
+        amenityFilter(query, "care_type", itemNames.careTypes()),
+        amenityFilter(query, "room_type", itemNames.roomTypes()),
+        amenityFilter(query, "facility", itemNames.facilities()),
+        amenityFilter(query, "activity", itemNames.activities()),
+        sort(query.getFirst("sort")),
         positiveInteger(
             query.getFirst("page"),
             1,
@@ -118,6 +150,29 @@ record CentreSearchParameters(
   private static String county(String value) {
     if (value != null && !COUNTIES.contains(value)) {
       throw badRequest("county must be spelt as on the register, such as Dublin");
+    }
+    return value;
+  }
+
+  // Exact names from one amenities-v2 list. A name given twice counts once.
+  private static List<String> amenityFilter(
+      MultiValueMap<String, String> query, String key, List<String> names) {
+    List<String> values = query.getOrDefault(key, List.of());
+    for (String value : values) {
+      if (!names.contains(value)) {
+        throw badRequest(
+            key + " must be an item name from the amenities-v2 list, such as " + names.getFirst());
+      }
+    }
+    return values.stream().distinct().toList();
+  }
+
+  private static String sort(String value) {
+    if (value == null) {
+      return "name";
+    }
+    if (!SORTS.contains(value)) {
+      throw badRequest("sort must be name or latest_inspection");
     }
     return value;
   }

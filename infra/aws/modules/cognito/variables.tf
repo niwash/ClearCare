@@ -28,3 +28,16 @@ variable "deletion_protection" {
     error_message = "deletion_protection must be ACTIVE or INACTIVE."
   }
 }
+
+variable "ses_source_arn" {
+  description = "ARN of the verified SES identity account mail is sent from. Empty keeps Cognito's own sender, which AWS caps at 50 emails a day."
+  type        = string
+  default     = ""
+}
+
+variable "from_email_address" {
+  description = "From address on account mail, when SES sends it. Must belong to the verified identity."
+  type        = string
+  default     = ""
+}
+
