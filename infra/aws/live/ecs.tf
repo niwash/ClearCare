@@ -92,6 +92,10 @@ resource "aws_ecs_task_definition" "web" {
         { name = "API_URL", value = "https://${var.api_hostname}" },
         # The standalone server listens on HOSTNAME; the health check calls it on loopback.
         { name = "HOSTNAME", value = "0.0.0.0" },
+        # The public address for the sign-in URLs Cognito must match. Behind the load balancer a
+        # request's URL carries the container's own address (0.0.0.0:3000), which Auth.js would
+        # otherwise build its callback URLs from.
+        { name = "AUTH_URL", value = "https://${var.site_hostname}" },
         # Public accounts (CCARE-183), empty until the production pool exists. While any of them is
         # missing the account controls stay hidden and the authentication routes answer 503, so the
         # site behaves exactly as it does today.
