@@ -90,12 +90,12 @@ export async function GET(request: Request) {
             : amenities[key].map(({ item }) => item).join("; "),
       ),
     ),
-    row("Read from", ({ amenities }) =>
-      !amenities ? "" : amenities.inspection_date ? `The ${formatDate(amenities.inspection_date)} report` : "An inspection report",
+    row("Report date", ({ amenities }) =>
+      !amenities ? "" : amenities.inspection_date ? formatDate(amenities.inspection_date) : "Not stated",
     ),
     [],
     ["Inspections"],
-    row("Latest report", reported(({ inspections }) => formatDate(inspections.at(-1)!.date))),
+    row("Latest inspection report", reported(({ inspections }) => formatDate(inspections.at(-1)!.date))),
     row("Reports in ClearCare", reported(({ inspections }) => String(inspections.length))),
     row("Not compliant at the latest inspection", judged((reports) => regulationList(notCompliantAtLatest(reports)))),
     row("Not compliant at 2 inspections in a row", judged((reports) => regulationList(repeatedNotCompliant(reports)))),

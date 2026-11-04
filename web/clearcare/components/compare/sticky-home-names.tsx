@@ -3,11 +3,15 @@
 // The comparison grid's frame (CCARE-189): once the grid's own header row has scrolled up out of
 // sight, a bar of the homes' names stays at the top of the window, over their columns, so a row far
 // down still says whose it is. The groups' headings (CollapsibleGroup) stick just under it: the bar
-// sets --names-bar to its height while it shows. The grid always fits the frame's width, rather
+// sets --names-bar to its height while it shows, and pushes each heading up and out as the next one
+// arrives, so only one shows at a time. The grid always fits the frame's width, rather
 // than scrolling sideways, as a box that scrolls would stop those headings sticking to the window.
 // The bar is a copy of the header row for the eye only: screen readers and the keyboard have the
 // real one, so it's hidden from them. It's laid out with the grid's own columns.
 import { useEffect, useRef, useState, type ReactNode } from "react";
+
+// The attribute on each group's heading row (CollapsibleGroup).
+export const GROUP_HEADING = "data-group-heading";
 
 export function StickyHomeNames({
   names,
@@ -46,6 +50,18 @@ export function StickyHomeNames({
         laidOut && head.getBoundingClientRect().bottom < 0 && frame.current.getBoundingClientRect().bottom > barHeight;
       setShown(show);
       frame.current.style.setProperty("--names-bar", show ? `${barHeight}px` : "0px");
+      // A sticky cell sticks for the rest of the table, not just its group, so left alone each
+      // heading would slide over the one before and leave a taller one showing beneath it. Each is
+      // moved up by however far the next heading's row has come into it, from the rows' own places
+      // (a row doesn't stick, only its cells), until it's gone behind the bar.
+      const top = show ? barHeight : 0;
+      const headings = [...frame.current.querySelectorAll<HTMLTableRowElement>(`[${GROUP_HEADING}]`)];
+      headings.forEach((row, i) => {
+        const box = row.getBoundingClientRect();
+        const next = headings[i + 1]?.getBoundingClientRect().top ?? Infinity;
+        const push = Math.max(-box.height, Math.min(0, next - (Math.max(box.top, top) + box.height)));
+        for (const cell of row.cells) cell.style.translate = push ? `0 ${push}px` : "";
+      });
       // A link or button the keyboard moves to scrolls into view below the bar and a group's
       // heading, not under them.
       document.documentElement.style.scrollPaddingTop = laidOut ? `${barHeight + 64}px` : "";

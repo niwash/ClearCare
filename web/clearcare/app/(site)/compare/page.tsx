@@ -79,11 +79,6 @@ const AMENITY_LISTS = [
   { key: "facilities", label: "Facilities" },
 ] as const;
 
-// The centre page's amenity tag (amenityTagClass), a little smaller so five columns of them stay short.
-// The adult-centred design keeps the full size.
-const tagClass =
-  "rounded-full bg-tint-sage px-2 py-0.5 text-[0.8125rem] leading-snug text-on-tint-sage adult:rounded-md adult:text-sm";
-
 // The register's name, or a stand-in for a home that didn't load.
 function columnName(column: Column) {
   return column.status === "found" ? column.centre.centre_name : `Centre ID ${column.id}`;
@@ -301,6 +296,16 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
 
   const latestDate = (column: FoundColumn) => column.reports?.inspections.at(-1)?.date ?? null;
 
+  // Every item these homes' reports mention in one list, the most mentioned first, then A to Z.
+  const amenityItems = (key: (typeof AMENITY_LISTS)[number]["key"]) => {
+    const counts = new Map<string, number>();
+    for (const column of columns) {
+      if (column.status !== "found" || !column.amenities) continue;
+      for (const { item } of column.amenities[key]) counts.set(item, (counts.get(item) ?? 0) + 1);
+    }
+    return [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b));
+  };
+
   // The lowest weekly cost and the latest inspection, each marked as a fact about these homes.
   const lowestPrice = markBest(
     columns.map((column) =>
@@ -312,8 +317,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
     columns.map((column) => (column.status === "found" ? latestDate(column) : null)),
     (a, b) => a > b,
   );
-  const ofThese = (count: number, without: string) =>
-    count === columns.length ? `of these ${count}` : `of the ${count} with ${without}`;
+  // "of these 4", or "of the 3" when a home has no price to compare.
+  const ofThese = (count: number) => (count === columns.length ? `of these ${count}` : `of the ${count}`);
 
   const rows = regulationRows(columns.map((column) => (column.status === "found" ? column.reports : null)));
   const shortfalls = rows.filter((row) => !compliantWhereverJudged(row));
@@ -343,7 +348,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
                 <Value main={formatWeeklyPrice(centre.contract_price)} sub="a week" big />
                 {lowestPrice.marked[columns.findIndex((column) => column.id === id)] && (
                   <Marker>
-                    {lowestPrice.joint ? "Joint lowest" : "Lowest"} weekly cost {ofThese(lowestPrice.count, "a price")}
+                    {lowestPrice.joint ? "Joint lowest" : "Lowest"} weekly cost {ofThese(lowestPrice.count)}
                   </Marker>
                 )}
               </>
@@ -419,35 +424,40 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         </>
       ),
       rows: [
-        ...AMENITY_LISTS.map(
-          ({ key, label }): Row => ({
+        // Each home's own items as plain words, in one order across the homes (the most mentioned
+        // first), so what most of them have sits at the top of every list.
+        ...AMENITY_LISTS.map(({ key, label }): Row => {
+          const items = amenityItems(key);
+          return {
             key,
             label,
             cells: each(({ amenities }) => {
               if (!amenities) return <Muted>Not read from its reports yet</Muted>;
-              if (amenities[key].length === 0) return <Muted>None found in the report</Muted>;
+              const mentioned = new Set(amenities[key].map(({ item }) => item));
+              if (mentioned.size === 0) return <Muted>None found in the report</Muted>;
               return (
-                <ul className="flex flex-wrap gap-1">
-                  {amenities[key].map(({ item }) => (
-                    <li key={item} className={tagClass}>
-                      {item}
-                    </li>
-                  ))}
+                <ul className="list-disc space-y-1 pl-4 text-sm marker:text-ink-muted">
+                  {items
+                    .filter((item) => mentioned.has(item))
+                    .map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
                 </ul>
               );
             }),
-          }),
-        ),
+          };
+        }),
         {
           key: "amenities-report",
-          label: "Read from",
+          // The report these were read from, by its date.
+          label: "Report date",
           cells: each(({ amenities }) =>
             !amenities ? (
               <Muted>–</Muted>
             ) : amenities.inspection_date ? (
-              <Value main={`The ${formatDate(amenities.inspection_date)} report`} />
+              <Value main={formatDate(amenities.inspection_date)} />
             ) : (
-              <Value main="An inspection report" />
+              <Value main="Not stated" muted />
             ),
           ),
         },
@@ -460,7 +470,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       rows: [
         {
           key: "latest",
-          label: "Latest report",
+          label: "Latest inspection report",
           cells: each((column) => {
             if (!column.reports) return <Muted>No reports in ClearCare yet</Muted>;
             const { inspections } = column.reports;
@@ -469,13 +479,12 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             return (
               <>
                 <Value
-                  main={`Inspected ${formatDate(latest.date)}`}
+                  main={formatDate(latest.date)}
                   sub={`${inspections.length} ${inspections.length === 1 ? "report" : "reports"} since ${since}`}
                 />
                 {latestInspection.marked[columns.indexOf(column)] && (
                   <Marker>
-                    {latestInspection.joint ? "Joint most recent" : "Most recent"} inspection{" "}
-                    {ofThese(latestInspection.count, "reports")}
+                    {latestInspection.joint ? "Joint most recently inspected" : "Most recently inspected"}
                   </Marker>
                 )}
               </>
@@ -504,9 +513,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       // No key to the icons: every result says its judgment in words beside its icon.
       intro: (
         <>
-          Each home&apos;s latest judgment, and when. Where a home fell short comes first. Homes are inspected at different
-          times, so check the dates. HIQA checks only some regulations at each inspection: &ldquo;Not assessed&rdquo;
-          means none of the home&apos;s inspections in ClearCare checked it.
+          HIQA checks only some regulations at each inspection: &ldquo;Not assessed&rdquo; means none of the home&apos;s
+          inspections in ClearCare checked it.
         </>
       ),
       rows: [
@@ -552,9 +560,10 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
 const toggleClass =
   "inline-flex min-h-11 items-center justify-center rounded-md border-2 border-primary bg-surface px-4 py-2 text-sm font-semibold text-ink no-underline hover:bg-surface-muted hover:text-ink";
 
-const labelCellClass = "px-3 py-2.5 text-left align-top text-sm font-medium text-ink-muted";
+// No padding above and below: the rows that fold have it inside FoldCell, and the others add it.
+const labelCellClass = "px-3 text-left align-top text-sm font-medium text-ink-muted";
 // Narrow columns break long words with a hyphen rather than anywhere.
-const homeCellClass = "border-l border-line-soft px-3 py-2.5 align-top break-words hyphens-auto";
+const homeCellClass = "border-l border-line px-3 align-top break-words hyphens-auto";
 const labelColClass = "w-32 lg:w-48";
 
 function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group[] }) {
@@ -582,9 +591,9 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
         {/* The site's brand colour, as in the header and footer, with light text on it. */}
         <thead className="brand-band">
           <tr>
-            <td className={`${labelCellClass} text-sm font-normal`}>{corner}</td>
+            <td className={`${labelCellClass} py-2.5 text-sm font-normal`}>{corner}</td>
             {columns.map((column) => (
-              <th key={column.id} scope="col" className={`${homeCellClass} text-left font-normal`}>
+              <th key={column.id} scope="col" className={`${homeCellClass} py-2.5 text-left font-normal`}>
                 <HomeHeading column={column} />
               </th>
             ))}
@@ -595,7 +604,7 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
             key={group.title}
             heading={
               <>
-                <IconCircle path={group.icon} tint={group.tint} />
+                <IconCircle path={group.icon} tint={group.tint} className="bg-surface!" />
                 {group.title}
               </>
             }
@@ -604,19 +613,21 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
             headingCellClass="px-3 py-1.5 text-left align-middle font-heading text-lg font-semibold text-ink"
           >
             {group.rows.map((row) => (
-              <tr key={row.key} className="border-t border-line-soft">
+              <tr key={row.key} className="border-t border-line">
                 <th scope="row" className={labelCellClass}>
-                  {row.label}
-                  {row.hint && <span className="mt-0.5 block text-xs font-normal leading-snug adult:text-sm">{row.hint}</span>}
+                  <FoldCell>
+                    {row.label}
+                    {row.hint && <span className="mt-0.5 block text-xs font-normal leading-snug adult:text-sm">{row.hint}</span>}
+                  </FoldCell>
                 </th>
                 {row.span ? (
                   <td colSpan={columns.length} className={homeCellClass}>
-                    {row.span}
+                    <FoldCell>{row.span}</FoldCell>
                   </td>
                 ) : (
                   row.cells?.map((cell, i) => (
                     <td key={columns[i].id} className={`${homeCellClass} ${row.numeric ? "tabular-nums" : ""}`}>
-                      {cell}
+                      <FoldCell>{cell}</FoldCell>
                     </td>
                   ))
                 )}
@@ -626,11 +637,11 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
         ))}
         <tbody>
           <tr className="border-t-2 border-ink">
-            <th scope="row" className={labelCellClass}>
+            <th scope="row" className={`${labelCellClass} py-2.5`}>
               Next step
             </th>
             {columns.map((column) => (
-              <td key={column.id} className={homeCellClass}>
+              <td key={column.id} className={`${homeCellClass} py-2.5`}>
                 {column.status === "found" && <NextStep centre={column.centre} />}
               </td>
             ))}
@@ -638,6 +649,16 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
         </tbody>
       </table>
     </StickyHomeNames>
+  );
+}
+
+// A cell's content in a group that folds: it slides shut with its group (fold-cell, globals.css), as
+// a table row can't grow from no height itself. The padding is inside, so nothing is left of it.
+function FoldCell({ children }: { children: ReactNode }) {
+  return (
+    <div className="fold-cell">
+      <div className="py-2.5">{children}</div>
+    </div>
   );
 }
 
@@ -650,7 +671,7 @@ function HomeHeading({ column, inline = false }: { column: Column; inline?: bool
       <div className="flex flex-col items-start gap-1">
         {column.status === "found" ? (
           <>
-            <Link href={`/centres/${column.id}`} className="font-heading text-base font-semibold leading-snug text-ink lg:text-xl">
+            <Link href={`/centres/${column.id}`} className="font-heading text-base font-semibold leading-snug text-ink no-underline hover:underline lg:text-xl adult:underline">
               {name}
             </Link>
             <span className="text-sm text-ink-muted">Co. {column.centre.county}</span>
@@ -753,8 +774,8 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
       {groups.map((group) => (
         <details key={group.title} open className="group">
           {/* Stays at the top while its cards scroll by, so it's clear which group they're in. */}
-          <summary className="sticky top-0 z-10 -mx-4 flex min-h-12 cursor-pointer list-none items-center gap-2.5 border-b border-line bg-page px-4 py-1 [&::-webkit-details-marker]:hidden">
-            <IconCircle path={group.icon} tint={group.tint} />
+          <summary className="sticky top-0 z-10 -mx-4 flex min-h-12 cursor-pointer list-none items-center gap-2.5 border-y border-section-line bg-section px-4 py-1 [&::-webkit-details-marker]:hidden">
+            <IconCircle path={group.icon} tint={group.tint} className="bg-surface!" />
             <h3 className="font-heading text-lg font-semibold">{group.title}</h3>
             <ShowHide className="ml-auto" />
           </summary>
@@ -767,11 +788,11 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
                   {row.hint && <p className="text-sm leading-snug text-ink-muted">{row.hint}</p>}
                 </div>
                 {row.span ? (
-                  <div className="border-t border-line-soft px-4 py-2.5">{row.span}</div>
+                  <div className="border-t border-line px-4 py-2.5">{row.span}</div>
                 ) : (
                   <dl>
                     {row.cells?.map((cell, i) => (
-                      <div key={columns[i].id} className="flex flex-col border-t border-line-soft px-4 py-2.5">
+                      <div key={columns[i].id} className="flex flex-col border-t border-line px-4 py-2.5">
                         <dt className="text-sm text-ink-muted">{names[i]}</dt>
                         <dd>{cell}</dd>
                       </div>
@@ -877,11 +898,12 @@ function markBest<T extends string | number>(values: (T | null)[], better: (a: T
   return { marked, joint: marked.filter(Boolean).length > 1, count: known.length };
 }
 
-// A fact about one home among these, such as the lowest weekly cost: in plain words, without a
-// colour or tick that would read as advice. ClearCare doesn't rate or recommend homes.
+// A fact about one home among these, such as the lowest weekly cost: in plain words, in the soft
+// sage so it's easy to spot, but with no tick or bright "success" green that would read as advice.
+// ClearCare doesn't rate or recommend homes.
 function Marker({ children }: { children: ReactNode }) {
   return (
-    <span className="mt-1.5 inline-block rounded-full bg-surface-muted px-2.5 py-0.5 text-sm text-ink-muted adult:rounded-md">
+    <span className="mt-1.5 inline-block rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage adult:rounded-md">
       {children}
     </span>
   );

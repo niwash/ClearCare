@@ -9,11 +9,18 @@
 // rows', since a table can't hold a <details>.
 import { useId, useState, type ReactNode } from "react";
 import { Chevron } from "@/components/ui/chevron";
+import { GROUP_HEADING } from "./sticky-home-names";
 
-// Each cell sticks, as a table row can't, above the rows. Its thin lines above and below are inset
-// shadows, as a collapsed table's borders stay behind when a cell sticks.
-const stuckClass =
-  "sticky top-[var(--names-bar,0px)] z-10 bg-surface-muted shadow-[inset_0_1px_0_var(--color-line),inset_0_-1px_0_var(--color-line)]";
+// Each cell sticks, as a table row can't, above the rows, in warm stone (--section) so it stands out
+// from the rows' background. The border round the heading is drawn as inset shadows, as a collapsed
+// table's borders stay behind when a cell sticks: the label cell takes the left side, the other cell
+// the right, so no line runs between them.
+const stuckClass = "sticky top-[var(--names-bar,0px)] z-10 bg-section";
+// Written out in full so Tailwind finds them.
+const labelEdgeClass =
+  "shadow-[inset_0_1px_0_var(--color-section-line),inset_0_-1px_0_var(--color-section-line),inset_1px_0_0_var(--color-section-line)]";
+const endEdgeClass =
+  "shadow-[inset_0_1px_0_var(--color-section-line),inset_0_-1px_0_var(--color-section-line),inset_-1px_0_0_var(--color-section-line)]";
 
 export function CollapsibleGroup({
   heading,
@@ -33,8 +40,8 @@ export function CollapsibleGroup({
   return (
     <>
       <tbody>
-        <tr>
-          <th scope="colgroup" className={`${headingCellClass} ${stuckClass}`}>
+        <tr {...{ [GROUP_HEADING]: "" }}>
+          <th scope="colgroup" className={`${headingCellClass} ${stuckClass} ${labelEdgeClass}`}>
             <button
               type="button"
               onClick={() => setOpen(!open)}
@@ -45,7 +52,7 @@ export function CollapsibleGroup({
               {heading}
             </button>
           </th>
-          <td colSpan={span} className={`${stuckClass} px-3 py-2 align-middle`}>
+          <td colSpan={span} className={`${stuckClass} ${endEdgeClass} px-3 py-2 align-middle`}>
             <div className="flex items-center gap-4">
               <div className="flex-1 text-sm text-ink-muted">{open && intro}</div>
               {/* A second way to the same button, at the row's far end where the eye looks for it. */}
@@ -63,7 +70,8 @@ export function CollapsibleGroup({
           </td>
         </tr>
       </tbody>
-      <tbody id={id} hidden={!open}>
+      {/* Slides shut and open (fold-rows, globals.css); inert keeps it out of reach while shut. */}
+      <tbody id={id} className="fold-rows" data-open={open} inert={!open}>
         {children}
       </tbody>
     </>
