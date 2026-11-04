@@ -192,7 +192,9 @@
   --surface: var(--support-deep);
   --surface-muted: rgb(255 255 255 / 0.12);
   --ink: #ffffff;
-  --ink-muted: rgb(255 255 255 / 0.88);
+  /* Plain white too, not faded as in brand-band: faded, the line under the heading is 6.6:1 on
+     the light teal, short of 7:1. The heading still stands out by its size and weight. */
+  --ink-muted: #ffffff;
   --line: rgb(255 255 255 / 0.4);
   --focus: #ffffff;
   --primary: #ffffff;
