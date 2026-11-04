@@ -17,8 +17,13 @@ const first = (value: string | null | undefined): string | undefined =>
 
 export function originFrom(headers: IncomingHeaders, authUrl?: string): string {
   // AUTH_URL is set where the headers cannot be relied on (the ECS task): the origin Auth.js signs
-  // in with, so the way out uses the same one.
-  if (authUrl?.trim()) return new URL(authUrl).origin;
+  // in with, so the way out uses the same one. One that isn't a URL falls through to the headers,
+  // so signing out still ends at Cognito's logout rather than an error page.
+  if (authUrl?.trim()) {
+    try {
+      return new URL(authUrl).origin;
+    } catch {}
+  }
 
   const host = first(headers["x-forwarded-host"]) ?? first(headers.host) ?? "localhost:3000";
   const proto =
