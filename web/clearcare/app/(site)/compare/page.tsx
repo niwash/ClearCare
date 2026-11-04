@@ -619,7 +619,7 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
           <tr>
             <td className={`${labelCellClass} py-2.5 text-sm font-normal`}>{corner}</td>
             {columns.map((column) => (
-              <th key={column.id} scope="col" className={`${homeCellClass} py-2.5 text-left font-normal`}>
+              <th key={column.id} scope="col" className={`${homeCellClass} h-px py-2.5 text-left font-normal`}>
                 <HomeHeading column={column} />
               </th>
             ))}
@@ -689,11 +689,13 @@ function FoldCell({ children }: { children: ReactNode }) {
 }
 
 // A home's name and county, or why it didn't load, with its Remove button: atop its column in the
-// grid, and in the list of homes on phones, where Remove sits beside the name to keep the list short.
+// grid, at the foot of the cell (its th is h-px, which still grows to the row but gives h-full a
+// height to fill) so the buttons line up however long the names, and in the list of
+// homes on phones, where Remove sits beside the name to keep the list short.
 function HomeHeading({ column, inline = false }: { column: Column; inline?: boolean }) {
   const name = columnName(column);
   return (
-    <div className={inline ? "flex items-center justify-between gap-3" : "flex flex-col items-start gap-1"}>
+    <div className={inline ? "flex items-center justify-between gap-3" : "flex h-full flex-col items-start justify-between gap-1"}>
       <div className="flex flex-col items-start gap-1">
         {column.status === "found" ? (
           <>
