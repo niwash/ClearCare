@@ -4,7 +4,7 @@
 // Run with: npm test
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { addFindings, excerpt, passage, toTrail } from "../lib/findings.ts";
+import { addFindings, commitment, excerpt, passage, toTrail } from "../lib/findings.ts";
 
 const URL_ = (id) => `https://www.hiqa.ie/report-${id}.pdf`;
 
@@ -90,6 +90,54 @@ test("rebuilds paragraphs and list items from the PDF's lines", () => {
     "• Intumescent strips were painted over.",
     "• Doors were wedged open.",
     "Staff had completed fire training and knew the evacuation procedures in the centre.",
+  ]);
+});
+
+// As the live data has them: the splitter's first commitment can start at the top of the form.
+test("a commitment drops the form's words at the top, and keeps a bullet within it as •", () => {
+  const first =
+    "Regulation 9: Residents' rights\nSubstantially Compliant\nOutline how you are going to come into compliance with Regulation 9: Residents' rights:\nCare plans will be reviewed by 15th September 2026.";
+  assert.equal(commitment(first, "Regulation 9", "Residents' rights"), "Care plans will be reviewed by 15th September 2026.");
+  assert.equal(
+    commitment("Checks will include:\n the call-bell\n the alarm, by May 2026.", "Regulation 9", "Residents' rights"),
+    "Checks will include: • the call-bell • the alarm, by May 2026.",
+  );
+  assert.equal(commitment("Regulation 9: Residents' rights", "Regulation 9", "Residents' rights"), "Regulation 9: Residents' rights");
+});
+
+// As the live data has them: the PDF repeats the form's heading where a response runs over a page,
+// and Word's other bullets (square, tick, dot, diamond) start items too.
+test("a response loses the form's heading where the PDF repeats it, and Word's other bullets start items", () => {
+  const text = [
+    "Regulation 4: Written policies and",
+    "procedures",
+    "Substantially Compliant",
+    "Outline how you are going to come into compliance with Regulation 4: Written policies and procedures:",
+    "All policies are being reviewed.",
+    "Regulation 4: Written policies and procedures Substantially Compliant",
+    `${String.fromCodePoint(0xf0a7)} The fire policy is updated.`,
+    `${String.fromCodePoint(0xf0fc)} The complaints policy is updated.`,
+    // Repeated without its judgment, then the "Outline how" line on its own.
+    "Regulation 4: Written policies and procedures",
+    "Outline how you are going to come into compliance with Regulation 4: Written policies and procedures:",
+    // A bullet with no space after it.
+    `${String.fromCodePoint(0xf0d8)}All staff have read them.`,
+  ].join("\n");
+  assert.deepEqual(passage(text, "Regulation 4", "Written policies and procedures", "response"), [
+    "All policies are being reviewed.",
+    "• The fire policy is updated.",
+    "• The complaints policy is updated.",
+    "• All staff have read them.",
+  ]);
+  // The provider quoting the regulation itself, after the form's words, is their own words, so it stays.
+  const quoting = [
+    "Regulation 4: Written policies and procedures",
+    "Not Compliant",
+    "Outline how you are going to come into compliance with Regulation 4: Written policies and procedures:",
+    "Regulation 4: The registered provider shall prepare policies.",
+  ].join("\n");
+  assert.deepEqual(passage(quoting, "Regulation 4", "Written policies and procedures", "response"), [
+    "Regulation 4: The registered provider shall prepare policies.",
   ]);
 });
 

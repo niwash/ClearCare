@@ -90,9 +90,17 @@ function withoutHeading(text: string, regulation: string, title: string) {
   return text.replace(/^\s*Regulation\s+\d+\s*:[^\n]*/i, "");
 }
 
-// The bullets the reports use: Word's Symbol and Wingdings bullets as extracted (U+F0B7, U+F0D8),
-// "•", "·", and a provider's "- ".
-const BULLET = /^\s*[•·▪●-]\s+/;
+// Word's Symbol and Wingdings bullets as the PDFs extract them, which show as boxes: U+F0B7 (the
+// usual bullet), U+F0D8 (arrow), U+F0A7 (square), U+F0FC (tick), U+F06C (dot) and U+F076 (diamond),
+// all found in the live reports. Built from code points, as the characters themselves are invisible.
+const WORD_BULLETS = String.fromCodePoint(0xf0b7, 0xf0d8, 0xf0a7, 0xf0fc, 0xf06c, 0xf076);
+// Any bullet starting a line: Word's, "•", "·", "▪", "●", or a provider's "- ".
+// Word's may come with no space after them, and a few items have two bullets in a row.
+const BULLET = new RegExp(String.raw`^\s*(?:[${WORD_BULLETS}]\s*|[•·▪●-]\s+)+`);
+// A bullet partway along a line, where two items share one: only glyphs that are never punctuation.
+const INLINE_BULLET = new RegExp(String.raw`\s+([${WORD_BULLETS}]\s*|•\s+)`, "g");
+// Word's bullets within one stretch of text, which becomes one line.
+const INLINE_WORD_BULLET = new RegExp(String.raw`\s*[${WORD_BULLETS}]\s*`, "g");
 // The prefix a list item's paragraph carries, for the page to show it as a list.
 export const LIST_ITEM = "• ";
 
@@ -101,8 +109,8 @@ export const LIST_ITEM = "• ";
 // passage's full width ends its paragraph. A word hyphenated across lines is joined again.
 function paragraphs(body: string): string[] {
   const lines = body
-    // Two items can share a PDF line; the glyphs here are never ordinary punctuation.
-    .replace(/\s+([•])\s+/g, "\n$1 ")
+    // Two items can share a PDF line.
+    .replace(INLINE_BULLET, "\n$1")
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean);
@@ -137,21 +145,41 @@ function paragraphs(body: string): string[] {
   return result;
 }
 
-// One stretch of text on its own, such as a commitment: no bullet, no line breaks.
-export const plain = (text: string) => collapse(text.replace(BULLET, "")).replace(/([A-Za-z])- (?=[a-z])/g, "$1-");
+// One stretch of text on its own: no line breaks, and no bullet at the start. A bullet within it
+// (Word's glyphs, which show as boxes) becomes "•", as one line can't be a list.
+export const plain = (text: string) =>
+  collapse(text.replace(BULLET, "").replace(INLINE_WORD_BULLET, " • ")).replace(/([A-Za-z])- (?=[a-z])/g, "$1-");
+
+// What the response form puts before the provider's own words: the regulation's heading, its
+// judgment, and "Outline how you are going to come into compliance with Regulation N: Title:".
+// The PDF repeats the form's header where a response runs over a page: the heading (when it matches
+// the regulation exactly) with or without its judgment, and the "Outline how" line, so those come
+// off at the start of any line. A sentence of the provider's that names the regulation mid-line stays.
+function withoutFormLead(text: string, regulation: string, title: string) {
+  const outline = new RegExp(String.raw`^[ \t]*Outline how you are going to come into compliance with\s+Regulation\s+\d+\s*:[^:]*:`, "gim");
+  const heading = new RegExp(
+    String.raw`^[ \t]*${words(regulation)}\s*:\s*${words(title)}(?:\s+(?:(?:Not|Substantially)\s+)?Compliant\b)?`,
+    "gim",
+  );
+  return withoutHeading(text, regulation, title)
+    .replace(/^\s*(?:Not|Substantially)?\s*Compliant\b/i, "")
+    .replace(heading, "")
+    .replace(outline, "");
+}
+
+// A commitment, as one line. The first one in a response can start at the top of the form, so
+// the form's words come off it too, unless they're all there is.
+export const commitment = (text: string, regulation: string, title: string) =>
+  plain(withoutFormLead(text, regulation, title)) || plain(text);
 
 // The paragraphs of a passage, without the parts the page already says: the heading and the
-// inspector's "Judgment:" line, or the judgment and form wording at the top of a response.
+// inspector's "Judgment:" line, or the form's words at the top of a response.
 // List items start with LIST_ITEM.
 export function passage(text: string, regulation: string, title: string, kind: "inspector" | "response"): string[] {
-  let body = withoutHeading(text, regulation, title);
-  if (kind === "inspector") {
-    body = body.replace(/\s*Judge?ment\s*:\s*(?:Not compliant|Substantially compliant|Compliant)\s*$/i, "");
-  } else {
-    body = body
-      .replace(/^\s*(?:Not|Substantially)?\s*Compliant\b/i, "")
-      .replace(/^\s*Outline how you are going to come into compliance with\s+Regulation\s+\d+\s*:[^:]*:/i, "");
-  }
+  const body =
+    kind === "inspector"
+      ? withoutHeading(text, regulation, title).replace(/\s*Judge?ment\s*:\s*(?:Not compliant|Substantially compliant|Compliant)\s*$/i, "")
+      : withoutFormLead(text, regulation, title);
   return paragraphs(body);
 }
 
@@ -289,7 +317,7 @@ function promiseNotRejudged(list: Finding[], regulation: Regulation, inspections
       judgement: "not-assessed",
       dates: [finding.inspection_date, latest.date],
       regulation,
-      text: `“${plain(deadline.text)}”`,
+      text: `“${commitment(deadline.text, finding.regulation, finding.title)}”`,
       sources: [`Provider · plan ${pages(deadline.page, deadline.last_page)}`],
       reportUrl: pageUrl(finding.report_url, deadline.page),
     };
@@ -307,7 +335,7 @@ export function toTrail(finding: Finding, regulation: Regulation, inspections: I
   const datesToComply = [...new Set(finding.compliance_items.map((item) => item.date_to_comply).filter((date) => date !== null))];
   const promises = (finding.stated_deadlines ?? []).map((deadline, index) => ({
     label: String.fromCharCode(65 + index), // "A", "B"…
-    quote: plain(deadline.text),
+    quote: commitment(deadline.text, finding.regulation, finding.title),
     due: deadline.stated_deadline_text,
     source: source("plan", finding.report_url, deadline.page, deadline.last_page),
   }));
