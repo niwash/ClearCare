@@ -1,11 +1,11 @@
 // components/centre/centre-contents.tsx
-// The centre page's sections at a glance (CCARE-207). On wide screens, a list down the left that
-// stays in view while the page scrolls, as on Wikipedia, on a soft warm tint. A section's own
-// entries (the "what happened" trails) fold away until the reader is in that section or opens them
-// with the arrow beside it, so the list stays short but nothing is out of reach. Narrower screens
-// have no room beside the record, so they get the guides' row of numbered links at the top instead
-// (ContentsNav), with the top-level sections only.
-import { ContentsNav } from "@/components/guides/step-number";
+// The centre page's sections as a rounded menu of links under the home's name that stays near the
+// top of the window while the page scrolls (CCARE-207). It floats, centred and lifted, rather than
+// running edge to edge, so it isn't taken for a second site header. The section being read is a
+// filled pill (ContentsTracker). A section with entries of its own ("What happened next" and its
+// trails) has an arrow that opens them as a list under the menu; it opens only when asked, since a
+// list that opened by itself would cover the page being read. On narrow screens the links scroll
+// sideways inside the menu.
 import { Chevron } from "@/components/ui/chevron";
 import { ContentsTracker } from "./contents-tracker";
 
@@ -15,78 +15,75 @@ export interface ContentsItem {
   children?: ContentsItem[];
 }
 
-const LABEL = "On this page";
-const SIDEBAR_ID = "centre-contents";
+const BAR_ID = "centre-contents";
 
-// Where the reader is (ContentsTracker sets aria-current): the bar on the left in brand colour,
-// and the link in brand colour and bold, so it isn't shown by colour alone.
-const currentClass = "aria-[current=location]:border-primary aria-[current=location]:font-bold aria-[current=location]:text-primary";
+// Where a jump to a section lands: clear of the menu. Give it to every element the menu links to.
+export const contentsScrollMargin = "scroll-mt-24";
 
-// The sticky list. Its own scroll keeps a long list of trails reachable on a short window. Gold in
-// the standard design; the adult-centred design turns the tint to its band colour and adds an edge.
-export function CentreContentsSidebar({ items }: { items: ContentsItem[] }) {
+// Where the reader is (ContentsTracker sets aria-current): a filled pill with bold text, so it is
+// shown by shape and weight as well as colour.
+const currentPill = "aria-[current=location]:bg-tint-blue aria-[current=location]:font-bold aria-[current=location]:text-on-tint-blue";
+
+export function CentreContentsBar({ items, className = "" }: { items: ContentsItem[]; className?: string }) {
+  const withEntries = items.find((item) => item.children?.length);
   return (
-    <nav
-      id={SIDEBAR_ID}
-      aria-label={LABEL}
-      className="sticky top-6 hidden max-h-[calc(100vh-3rem)] self-start overflow-y-auto rounded-2xl bg-tint-gold px-4 py-4 xl:block adult:rounded-lg adult:border adult:border-line print:hidden"
-    >
-      <ContentsTracker navId={SIDEBAR_ID} />
-      <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-on-tint-gold">{LABEL}</p>
-      <ul className="flex flex-col border-l-2 border-line text-sm">
-        {items.map((item) => (
-          // data-open: the tracker sets it while the reader is in this section or has opened it.
-          <li key={item.id} className="group/entry">
-            <div className="flex items-center">
+    // Sticky a little below the top of the window. The nav itself is only as wide as the page's
+    // column; the menu inside is as wide as its links, centred, and no wider than the column.
+    <nav id={BAR_ID} aria-label="On this page" className={`group/bar sticky top-3 z-20 flex justify-center ${className} print:hidden`}>
+      <ContentsTracker navId={BAR_ID} />
+      <div className="relative max-w-full rounded-full border border-line-soft bg-surface/95 p-1.5 shadow-md supports-[backdrop-filter]:bg-surface/85 supports-[backdrop-filter]:backdrop-blur adult:rounded-lg adult:border-line adult:shadow-none">
+        <ul data-contents-scroller className="flex gap-1 overflow-x-auto rounded-full [scrollbar-width:none] adult:rounded-md [&::-webkit-scrollbar]:hidden">
+          {items.map((item) => (
+            <li key={item.id} className="flex shrink-0 items-center">
               <a
                 href={`#${item.id}`}
                 data-level="1"
-                className={`-ml-0.5 block flex-1 border-l-2 border-transparent py-1.5 pl-3 font-semibold text-ink no-underline hover:text-primary ${currentClass}`}
+                className={`flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold text-ink no-underline hover:bg-surface-muted hover:text-primary adult:rounded-md ${
+                  item.children?.length ? "pr-0.5" : ""
+                } ${currentPill}`}
               >
                 {item.title}
               </a>
-              {item.children && (
+              {item.children?.length ? (
                 <button
                   type="button"
                   data-contents-toggle
                   aria-expanded="false"
                   aria-controls={`${item.id}-entries`}
-                  className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-full text-on-tint-gold hover:bg-surface/60"
+                  // The arrow sits right after the title, so the pair reads as one dropdown, while the
+                  // button stays 44px tall to tap (and 44px wide in the adult-centred design).
+                  className="flex h-11 w-8 shrink-0 cursor-pointer items-center justify-start rounded-r-full pl-0.5 text-primary hover:bg-surface-muted adult:w-11 adult:rounded-md"
                 >
                   <span className="sr-only">
                     {item.children.length} entries under {item.title}
                   </span>
-                  <Chevron className="size-4 group-data-[open=true]/entry:rotate-90" />
+                  <Chevron className="size-4 rotate-90 group-data-[open=true]/bar:-rotate-90" />
                 </button>
-              )}
-            </div>
-            {item.children && (
-              <ul id={`${item.id}-entries`} className="mb-1 hidden flex-col group-data-[open=true]/entry:flex">
-                {item.children.map((child) => (
-                  <li key={child.id}>
-                    <a
-                      href={`#${child.id}`}
-                      data-level="2"
-                      className={`-ml-0.5 block border-l-2 border-transparent py-1 pl-6 leading-snug text-ink-muted no-underline hover:text-primary ${currentClass}`}
-                    >
-                      {child.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
+              ) : null}
+            </li>
+          ))}
+        </ul>
 
-// The row at the top, below xl, where the sidebar is hidden.
-export function CentreContentsRow({ items }: { items: ContentsItem[] }) {
-  return (
-    <div className="xl:hidden print:hidden">
-      <ContentsNav label={LABEL} items={items} />
-    </div>
+        {/* Outside the scrolling list, so it isn't cut off by it. */}
+        {withEntries?.children && (
+          <ul
+            id={`${withEntries.id}-entries`}
+            className="absolute right-0 top-full z-30 mt-2 hidden max-h-[60vh] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-y-auto rounded-2xl border border-line-soft bg-surface p-2 shadow-lg group-data-[open=true]/bar:flex adult:rounded-lg adult:border-line adult:shadow-none"
+          >
+            {withEntries.children.map((child) => (
+              <li key={child.id}>
+                <a
+                  href={`#${child.id}`}
+                  data-level="2"
+                  className={`block rounded-xl px-3 py-2.5 text-sm leading-snug text-ink no-underline hover:bg-surface-muted hover:text-primary adult:rounded-md ${currentPill}`}
+                >
+                  {child.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </nav>
   );
 }

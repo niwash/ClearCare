@@ -1,5 +1,6 @@
 // components/centre/centre-highlights.tsx
 import { formatDate, formatMonth, trailAnchor, type Highlight, type PromiseTrail } from "@/lib/centres";
+import { contentsScrollMargin } from "./centre-contents";
 import { JudgementIcon } from "./judgement-icon";
 import { SectionIcon, sectionCardClass } from "./section-icon";
 
@@ -33,14 +34,14 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
   if (highlights.length === 0) return null;
 
   return (
-    <section id="first" aria-labelledby="first-h" className={`scroll-mt-6 ${sectionCardClass}`}>
+    <section id="first" aria-labelledby="first-h" className={`${contentsScrollMargin} ${sectionCardClass}`}>
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:flex-row md:items-center md:justify-between md:gap-6 md:px-7">
         <h2 id="first-h" className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
           <SectionIcon name="info" tint="gold" />
           What to look at first
         </h2>
         <p className="text-sm text-ink-muted">
-          Chosen by rule, not by score. Every line is the inspector&apos;s or the provider&apos;s own words.
+          Every line is the inspector&apos;s or the provider&apos;s own words.
         </p>
       </div>
 

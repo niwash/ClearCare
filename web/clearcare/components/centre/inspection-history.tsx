@@ -10,6 +10,7 @@ import {
   type PromiseTrail,
   type RegulationHistory,
 } from "@/lib/centres";
+import { contentsScrollMargin } from "./centre-contents";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 import { JudgementsPerInspection } from "./judgements-per-inspection";
@@ -129,7 +130,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
   const years = firstYear === lastYear ? `${firstYear}` : `${firstYear}–${lastYear}`;
 
   return (
-    <section id="history" aria-labelledby="hist-h" className={`scroll-mt-6 ${sectionCardClass}`}>
+    <section id="history" aria-labelledby="hist-h" className={`${contentsScrollMargin} ${sectionCardClass}`}>
       <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-center md:justify-between md:px-7">
         <h2 id="hist-h" className="flex shrink-0 items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
           <SectionIcon name="calendar" tint="blue" />

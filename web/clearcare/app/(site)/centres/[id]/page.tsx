@@ -1,6 +1,6 @@
 // app/centres/[id]/page.tsx
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
-import { CentreContentsRow, CentreContentsSidebar, type ContentsItem } from "@/components/centre/centre-contents";
+import { CentreContentsBar, contentsScrollMargin, type ContentsItem } from "@/components/centre/centre-contents";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { SectionIcon } from "@/components/centre/section-icon";
 import { SectionAccordion } from "@/components/guides/section-accordion";
@@ -87,27 +87,36 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHero centre={centre} />
+      <CentreHero centre={centre} hasReports={Boolean(reports)} />
 
-      {/* The record beside its contents on wide screens, under a row of links to it on narrower ones. */}
-      <div className="flex flex-col gap-6 md:gap-8 xl:grid xl:grid-cols-[13rem_minmax(0,1fr)] xl:items-start xl:gap-10">
-        <CentreContentsSidebar items={contents} />
-        <div className="flex min-w-0 flex-col gap-6 md:gap-8">
-          <CentreContentsRow items={contents} />
+      {/* The section links, near the top of the window as the page scrolls. It overlaps the bottom of
+          the name's band by 1.25rem, within the band's own padding (1.5rem, 2rem from md), so it
+          reads as placed on purpose. A direct child of the page's column, since sticky only holds
+          within its parent. */}
+      <CentreContentsBar items={contents} className="-mt-[2.75rem] md:-mt-[3.25rem]" />
 
+      {/* Each section on its own band of colour, edge to edge, touching the next. */}
+      <div className="-mt-6 flex flex-col md:-mt-8">
+        <Band tint="page">
           <CentreFacts centre={centre} reports={reports} amenities={amenities} />
+        </Band>
 
-          {reports ? (
-            <>
-              <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
+        {reports ? (
+          <>
+            {reports.highlights.length > 0 && (
+              <Band tint="gold">
+                <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
+              </Band>
+            )}
 
-              {reports.visitQuestions.length > 0 && (
-                // On the warm band colour, as the part of the record that turns what HIQA found into what
-                // the family can do next (CCARE-179).
+            {reports.visitQuestions.length > 0 && (
+              <Band tint="page">
+                {/* On the warm band colour, as the part of the record that turns what HIQA found into
+                    what the family can do next (CCARE-179). */}
                 <section
                   id="visit"
                   aria-labelledby="visit-h"
-                  className="grid scroll-mt-6 gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line"
+                  className={`grid ${contentsScrollMargin} gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line`}
                 >
                   <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
                     <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
@@ -121,8 +130,10 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
                     ))}
                   </ul>
                 </section>
-              )}
+              </Band>
+            )}
 
+            <Band tint="stone">
               <InspectionHistory
                 inspections={reports.inspections}
                 history={reports.history}
@@ -130,19 +141,22 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
                 showAll={regulations === "all"}
                 showAllInspections={inspections === "all"}
               />
+            </Band>
 
-              {reports.trails.length > 0 && (
-                // One trail per highlighted regulation, closed to begin with and one open at a time, so
-                // the page stays short; the highlights, the history table and the contents open them.
-                <section id="trails" aria-labelledby="trails-h" className="flex scroll-mt-6 flex-col gap-3">
+            {reports.trails.length > 0 && (
+              <Band tint="sage">
+                {/* One trail per highlighted regulation, closed to begin with so the page stays short.
+                    Any number can be open, so a family can read two together and compare them; the
+                    highlights, the history table and the bar open them. */}
+                <section id="trails" aria-labelledby="trails-h" className={`flex ${contentsScrollMargin} flex-col gap-3`}>
                   <div className="flex flex-col gap-1">
                     <h2 id="trails-h" className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
                       <SectionIcon name="report" tint="rose" />
                       What happened next
                     </h2>
-                    <p className="max-w-3xl text-ink-muted">
-                      For each regulation above: what the inspector found, what the provider said they would do, and when the
-                      regulation was next judged.
+                    <p className="max-w-3xl text-ink">
+                      For each regulation above: what the inspector found, what the provider said they would do, and when
+                      the regulation was next judged.
                     </p>
                   </div>
                   <SectionAccordion />
@@ -150,10 +164,16 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
                     <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} />
                   ))}
                 </section>
-              )}
-            </>
-          ) : (
-            <section id="reports" aria-labelledby="reports-h" className="scroll-mt-6 rounded-2xl border border-line bg-surface p-6 adult:rounded-lg">
+              </Band>
+            )}
+          </>
+        ) : (
+          <Band tint="page">
+            <section
+              id="reports"
+              aria-labelledby="reports-h"
+              className={`${contentsScrollMargin} rounded-2xl border border-line bg-surface p-6 adult:rounded-lg`}
+            >
               <h2 id="reports-h" className="font-heading text-xl font-semibold">
                 Inspection reports
               </h2>
@@ -161,32 +181,19 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
                 We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
               </p>
             </section>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2 text-small leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
-        <p>
-          Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
-          rate or recommend homes.
-        </p>
-        {/* On one line beside the licence from md up; free to wrap on phones, where the
-            adult-centred design's larger text would run past the edge (CCARE-184). */}
-        <p className="md:whitespace-nowrap">
-          Source:{" "}
-          <a href={centre.register_snapshot.url} className="text-ink-muted">
-            HIQA register
-          </a>
-          , downloaded {formatDate(centre.register_snapshot.fetched_at)}
-        </p>
+          </Band>
+        )}
       </div>
 
       {/* So nobody leaves a record unsure what it means or what to do next. */}
+      {/* The negative top margin cancels the page's gap, so it meets the last section's band with no
+          strip of page colour between; the bottom one is the band's own default. */}
       <GuidesBand
         id={HELP_ID}
         title="Making sense of this record"
         intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
         guides={RECORD_GUIDES}
+        className="-mt-6 -mb-6 md:-mt-8 md:-mb-8"
       />
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
@@ -196,6 +203,25 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 }
 
 
+// The tint behind each section, a different one for each so the record reads as stretches of one
+// page. Written out in full so Tailwind finds them; the adult-centred design turns the tints to its
+// band colour (globals.css).
+const BAND_TINTS = {
+  page: "",
+  gold: "bg-tint-gold",
+  stone: "bg-band",
+  sage: "bg-tint-sage",
+} as const;
+
+// A section on its own full-width band of colour, with the page's column inside it.
+function Band({ tint, children }: { tint: keyof typeof BAND_TINTS; children: ReactNode }) {
+  return (
+    <div className={`${fullWidthClass} ${BAND_TINTS[tint]} py-8 md:py-10`}>
+      <div className="page-column px-4 md:px-8">{children}</div>
+    </div>
+  );
+}
+
 // The heading of the guides band at the end, which the contents link to.
 const HELP_ID = "help-h";
 
@@ -203,8 +229,10 @@ const HELP_ID = "help-h";
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
-// home's name on the soft welcome band (welcome-band, globals.css).
-function CentreHero({ centre }: { centre: CentreDetail }) {
+// home's name on the soft welcome band (welcome-band, globals.css), then a line that says what the
+// record is and that the guides at the end explain its terms, so it opens like a welcome rather
+// than a form.
+function CentreHero({ centre, hasReports }: { centre: CentreDetail; hasReports: boolean }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="page-column px-4 py-6 md:px-8 md:py-8">
@@ -220,6 +248,15 @@ function CentreHero({ centre }: { centre: CentreDetail }) {
           <h1 id="centre-h" className="font-heading text-[2rem] leading-tight font-semibold tracking-tight text-ink md:text-[2.5rem]">
             {centre.centre_name}
           </h1>
+          <p className="max-w-2xl leading-relaxed text-ink-muted md:text-lg">
+            {hasReports
+              ? "Everything HIQA's inspectors have reported about this home, in one place. Take your time: "
+              : "This home's details from HIQA's register. We haven't added its inspection reports yet. "}
+            <a href={`#${HELP_ID}`} className="tap-target">
+              {hasReports ? "our guides" : "Our guides"}
+            </a>{" "}
+            explain any terms that are new to you.
+          </p>
         </div>
       </div>
     </section>
@@ -278,7 +315,7 @@ function CentreFacts({
   const phone = centrePhone(centre.centre_phone);
 
   return (
-    <section id="about" aria-labelledby="facts-h" className="flex scroll-mt-6 flex-col gap-3">
+    <section id="about" aria-labelledby="facts-h" className={`flex ${contentsScrollMargin} flex-col gap-3`}>
       <h2 id="facts-h" className="flex items-center gap-3 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
         <SectionIcon name="home" tint="sage" />
         About this home
@@ -380,6 +417,21 @@ function CentreFacts({
             amenities={amenities}
             reportUrl={reports?.inspections.find((inspection) => inspection.id === String(amenities?.report_id))?.reportUrl}
           />
+          {/* Where the record comes from, as the box's footnote: beside the facts it sources, rather
+              than on a strip of its own between the page's coloured bands. */}
+          <div className="flex flex-col gap-1 border-t border-line-soft px-4 py-3 text-small leading-relaxed text-ink-muted adult:border-line">
+            <p>
+              Source:{" "}
+              <a href={centre.register_snapshot.url} className="text-ink-muted">
+                HIQA register
+              </a>
+              , downloaded {formatDate(centre.register_snapshot.fetched_at)}.
+            </p>
+            <p>
+              Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
+              rate or recommend homes.
+            </p>
+          </div>
         </div>
         <CentreActions centre={centre} reports={reports} />
       </div>

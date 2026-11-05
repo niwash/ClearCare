@@ -3,6 +3,7 @@ import { formatDate, formatSource, trailAnchor, type Inspection, type PromiseTra
 import { ShowHide } from "@/components/ui/chevron";
 import { LIST_ITEM } from "@/lib/findings";
 import { JUDGEMENT_LABELS, JudgementIcon, PROMISE_STATUS_LABELS, PromiseStatusIcon } from "./judgement-icon";
+import { contentsScrollMargin } from "./centre-contents";
 import { sectionCardClass } from "./section-icon";
 
 function Source({ source }: { source: SourceRef }) {
@@ -56,10 +57,6 @@ function StepHeading({ step, title, date }: { step: number; title: string; date?
   );
 }
 
-// The trails share a name, so the browser keeps one open at a time, as the guides' sections do,
-// and SectionAccordion keeps an opened one in view.
-export const TRAILS_NAME = "centre-trails";
-
 const inspectionsWord = (count: number) => (count === 1 ? "inspection" : `${count} inspections`);
 
 type PromiseTrailProps = {
@@ -88,12 +85,12 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
       : "no inspection since";
 
   return (
-    // A card that opens, like a guide's section. The id is what the highlights and the history
-    // table link to; SectionAccordion opens it on arrival. "group/section" keeps Show/Hide to it.
+    // A card that opens, like a guide's section, but with no shared name, so opening one leaves the
+    // others as they are. The id is what the highlights, the history table and the contents link
+    // to; SectionAccordion opens it on arrival. "group/section" keeps Show/Hide to it.
     <details
       id={trailAnchor(regulation)}
-      name={TRAILS_NAME}
-      className={`group/section scroll-mt-6 ${sectionCardClass} open:border-primary`}
+      className={`group/section ${contentsScrollMargin} ${sectionCardClass} open:border-primary`}
     >
       {/* A summary may hold a heading but no wrapping block, so its parts are its own grid items. */}
       <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
