@@ -97,7 +97,17 @@ terraform apply
 terraform output -raw client_secret
 ```
 
-The sign-in domain runs the classic hosted UI, managed login version 1. The branded version 2 needs a branding style per app client, which would be a change of its own.
+The sign-in domain runs **managed login version 2**, with one branding style for the app client. Both roots get it, so the development pool and production look the same.
+
+Version 2 is what the branding editor edits. The classic version 1 cannot be branded beyond a logo and a stylesheet, which is why the module moved: sign-in, sign-up, address confirmation and password reset are one set of screens, and branding them covers all four flows at once.
+
+The style is the ClearCare design: a soft gradient on the left two fifths with the form over it, and a solid blue panel on the right three fifths carrying a headline, one line of copy and four points.
+
+Managed login draws one form and no copy of its own, so the two panels and their words are a picture: `modules/cognito/assets/page-background-light.png` and `page-background-dark.png`, sent as the `PAGE_BACKGROUND` asset for each colour mode. The form is set to the start of the page so it sits over the gradient half, the footer is off, the header carries only the wordmark, and the display mode follows the visitor's device. The settings document is Cognito's own merged export with only those values changed, so the wording, the font and the password rules are as Cognito ships them.
+
+The words and colours live in `page-background-light.html` and `page-background-dark.html`; the comment at the top of either file has the command that re-renders both images. The header band above the form is the site's wordmark over its motto (`assets/header-logo.png`, from `assets/header-logo.html`) on the brand band, which is the only branding a phone gets: managed login drops the page background below about 500px, so without it the phone shows a form with nothing saying whose it is.
+
+The split is proportional and the form is a fixed width, so the two only clear each other while the page is wider than the picture's 16:9. On 16:9 and wider, from about 1210px, the card sits wholly on the gradient. On squarer screens the cover scale crops the left edge inwards: at 1280 x 1024 the card crosses onto the panel by about 25px, though the panel copy stays clear of it. Below about 500px managed login drops the page background entirely and the form sits on its own colour, full width.
 
 Cognito serves the discovery document on the pool's issuer, not on the login domain, so ask it there:
 
@@ -109,6 +119,55 @@ curl -s -o /dev/null -w '%{http_code}\n' \
 Callback and logout URLs are matched exactly, so a Vercel preview address has to be registered in `web_origin` before that preview can sign anyone in.
 
 No pool exists in the project account yet. Until one does, development runs against a pool in a personal test account, with its state kept in this folder rather than in the bucket; `account_id` names that account in the operator's own `terraform.tfvars`. Creating the pool in the project account is a one-off apply from this folder once the bucket exists.
+
+### Production pool
+
+`cognito/production` is the same module with four differences: the state key is `cognito-prod/terraform.tfstate`, the URLs come from the public origin, `deletion_protection` is `ACTIVE` so an apply cannot remove the accounts, and account mail goes through SES rather than Cognito's own sender, which AWS caps at 50 emails a day.
+
+| Input | What it is | Who supplies it |
+| --- | --- | --- |
+| `account_id` | Account that owns the pool; the provider refuses to run anywhere else | The project account, once it exists |
+| `web_origin` | The address visitors use, no trailing slash | The deployment |
+| `domain_prefix` | First label of the login domain, global and permanent | Chosen once, kept in `terraform.tfvars` |
+| `ses_domain`, `from_email_address` | Sending domain and the From line | The domain's owner |
+
+Before sign-up works in public, three things have to be true: the DKIM records from `terraform output ses_dkim_tokens` are published and verified in SES, the account is out of the SES sandbox, and `web_origin` matches the address in the browser exactly — Cognito matches callback and logout URLs character for character.
+
+Sign-up abuse is watched by hand for now; `documentations/operations/account_deletion.md` says which signals and how to stop sign-ups without taking sign-in away. The go-live check and the rollback are in `documentations/operations/`.
+
+### Switching public accounts on
+
+The site reaches the pool through its environment, and the web task in `live` owns that. Nothing about the site changes at build time, so the image can ship months before the pool exists: with the variables missing the account controls are hidden and `/api/auth/*` answers 503.
+
+When the pool does exist:
+
+```sh
+cd infra/aws/cognito/production
+terraform output -raw issuer                    # cognito_issuer in live/terraform.tfvars
+terraform output -raw client_id                 # cognito_client_id
+terraform output -raw domain                    # cognito_domain
+terraform output -raw client_secret             # the client secret below, kept out of the shell history
+```
+
+```hcl
+# infra/aws/live/terraform.tfvars
+cognito_issuer     = "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_..."
+cognito_client_id  = "..."
+cognito_domain     = "https://clearcare-prod....auth.eu-north-1.amazoncognito.com"
+accounts_enabled   = true
+```
+
+```sh
+# Both secrets exist from the first apply, with no value. Set them, then deploy.
+aws secretsmanager put-secret-value --secret-id clearcare/auth/session-secret \
+    --secret-string "$(openssl rand -base64 33)"
+aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-secret \
+    --secret-string "<client_secret from the pool>"
+```
+
+`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+
+Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 
 ## Database passwords and roles
 

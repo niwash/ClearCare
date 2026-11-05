@@ -1,3 +1,8 @@
+output "user_pool_id" {
+  description = "Pool identifier, for admin commands such as deleting an account."
+  value       = module.cognito.user_pool_id
+}
+
 output "issuer" {
   description = "Value for AUTH_COGNITO_ISSUER."
   value       = module.cognito.issuer

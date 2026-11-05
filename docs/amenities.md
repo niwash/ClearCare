@@ -22,7 +22,12 @@ Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenitie
 
 ## Extract and load
 
-The pipeline must first store reports and its inspection-reports manifest.
+The pipeline must first ingest parsed reports into PostgreSQL and store the PDFs.
+Configure standard libpq connection settings (PGHOST, PGPORT, PGDATABASE, PGUSER
+and PGPASSWORD or a password file) for the extractor. Database selection uses
+inspection date descending, nulls last, then report ID ascending. Undated-only
+centres are logged and skipped because v2 requires a source inspection date.
+Use --report-source manifest explicitly for offline manifest-based extraction.
 Set ANTHROPIC_API_KEY in the environment or root .env; install extractor dependencies
 from Research/Data Extraction/README.md. From the repository root:
 
@@ -38,7 +43,11 @@ Before writing a file, the extractor checks each quote against the report text
 V2 files live under data/amenities/amenities-v2/<centre_id>/<sha256>.json,
 preserving v1 files and distinct reports. The loader accepts recursive directories
 or one JSON list file. V2 loads need the exact original PDF in the raw store for
-hash/page-bound checks and must match stored centre, inspection date and PDF hash.
+hash/page-bound checks and must match stored centre and PDF hash uniquely.
+A differing inspection date is logged, rather than blocking an exact source
+match. Original output files are retained; the API date comes from the matched
+database report. Ambiguous matches fail the transaction instead of choosing
+arbitrarily.
 The entire load is transactional. Existing report/version rows are never replaced.
 
 The extractor version names the prompt and the schema, not the model, so a run

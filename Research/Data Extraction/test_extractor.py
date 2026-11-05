@@ -377,7 +377,14 @@ class AnthropicTests(unittest.TestCase):
                 (["--provider", "openai"], "openai", "OpenAI"),
             ):
                 fake = SimpleNamespace(**{client_class: Mock()})
-                argv = ["extractor.py", "--data-dir", folder, *options]
+                argv = [
+                    "extractor.py",
+                    "--report-source",
+                    "manifest",
+                    "--data-dir",
+                    folder,
+                    *options,
+                ]
                 with (
                     self.subTest(options=options),
                     patch.dict("sys.modules", {module: fake}),
@@ -385,6 +392,30 @@ class AnthropicTests(unittest.TestCase):
                 ):
                     extractor.main()
                     getattr(fake, client_class).assert_called_once_with()
+
+
+class DatabaseSelectionTests(unittest.TestCase):
+    def test_database_metadata_and_undated_reports(self):
+        from datetime import date
+
+        connection = Mock()
+        connection.execute.return_value = [
+            (
+                "659",
+                date(2026, 1, 9),
+                "a" * 64,
+                "https://example.test/reports/report%20name.pdf",
+            ),
+            ("5307", None, "b" * 64, "https://example.test/undated.pdf"),
+        ]
+        context = Mock()
+        context.__enter__ = Mock(return_value=connection)
+        context.__exit__ = Mock(return_value=False)
+        with patch("psycopg.connect", return_value=context):
+            reports = extractor.database_reports()
+        self.assertEqual(list(reports), ["659"])
+        self.assertEqual(reports["659"]["inspection_date"], "2026-01-09")
+        self.assertEqual(reports["659"]["file_name"], "report name.pdf")
 
 
 def stored_report(root):

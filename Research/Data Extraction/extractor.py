@@ -6,11 +6,11 @@ model's structured outputs: Claude Haiku 5.5 by default, or GPT-4o-mini with
 --provider openai.
 
 The pipeline already downloads and stores every HIQA report, so this script
-does not download anything. It reads the pipeline's manifest to find the
+does not download anything. It reads parsed database reports to find the
 latest report for each home, opens that PDF from the pipeline's raw store,
 and writes one JSON file per home.
 
-    <data-dir>/manifests/inspection-reports.jsonl   which reports exist
+    PostgreSQL inspection_report and source_file  report catalogue
     <data-dir>/raw/sha256/<2 hex>/<digest>          the stored PDFs
     <data-dir>/amenities/amenities-v2/<centre_id>/<sha256>.json           the output
 
@@ -38,6 +38,7 @@ import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
+from urllib.parse import unquote, urlparse
 
 from amenities_v2 import Amenities, AmenitiesResult, EvidenceCheck, ExtractionFile
 from dotenv import load_dotenv
@@ -94,6 +95,32 @@ def latest_reports(manifest_path: Path) -> dict[str, dict]:
                     stored, key=lambda report: report["inspection_date"]
                 )
     return latest
+
+
+def database_reports() -> dict[str, dict]:
+    """Select the latest parsed report per centre using the API's ordering."""
+    import psycopg
+
+    query = """
+        SELECT DISTINCT ON (r.centre_id)
+            r.centre_id, r.inspection_date, s.sha256, s.url
+        FROM clearcare.inspection_report r
+        JOIN clearcare.source_file s USING (source_file_id)
+        ORDER BY r.centre_id, r.inspection_date DESC NULLS LAST, r.id
+    """
+    reports: dict[str, dict] = {}
+    with psycopg.connect() as connection:
+        for centre, date, digest, url in connection.execute(query):
+            if date is None:
+                log.warning("No inspection date for centre %s; skipping", centre)
+                continue
+            reports[centre] = {
+                "inspection_date": date.isoformat(),
+                "sha256": digest,
+                "url": url,
+                "file_name": unquote(Path(urlparse(url).path).name),
+            }
+    return reports
 
 
 def stored_pdf(data_dir: Path, sha256: str) -> Path:
@@ -433,6 +460,12 @@ def main() -> None:
         default="anthropic",
         help="whose model reads the reports (default: anthropic)",
     )
+    parser.add_argument(
+        "--report-source",
+        choices=["database", "manifest"],
+        default="database",
+        help="report catalogue (default: database via libpq)",
+    )
     parser.add_argument("--limit", type=int, help="stop after this many homes")
     parser.add_argument(
         "--force",
@@ -447,7 +480,7 @@ def main() -> None:
     args = parser.parse_args()
 
     manifest_path = args.data_dir / "manifests" / MANIFEST_NAME
-    if not manifest_path.exists():
+    if args.report_source == "manifest" and not manifest_path.exists():
         log.error(
             "No manifest at %s. Run the pipeline's reports download first, "
             "or pass --data-dir.",
@@ -456,7 +489,11 @@ def main() -> None:
         sys.exit(1)
     output_dir = args.output_dir or args.data_dir / "amenities"
 
-    latest = latest_reports(manifest_path)
+    latest = (
+        database_reports()
+        if args.report_source == "database"
+        else latest_reports(manifest_path)
+    )
     wanted = list(args.centre_id)
     if args.centres_file:
         wanted += centre_ids_from_file(args.centres_file)
