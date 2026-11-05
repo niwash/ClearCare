@@ -346,6 +346,113 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres/34/reports
 
+  /centres/{centre_id}/findings:
+    get:
+      operationId: listCentreFindings
+      summary: List a centre's findings, with their report text and re-assessment
+      description: |
+        Returns the findings of the reports ClearCare has loaded for this
+        centre: each regulation a report judged Substantially compliant or Not
+        compliant. Each comes with what the inspector wrote about it, the
+        provider's response, the deadlines the provider stated, and when the
+        regulation was next judged (ADR-0024). Newest inspection first, each
+        report's findings together, by regulation number.
+
+        Text is served verbatim, as extracted at one pinned extractor version:
+        headings, "Judgment:" lines and the words of the response form
+        included. Text that was not extracted at that version is null; that
+        does not mean the report has none. Pages are PDF page positions,
+        counted from the first page, cover included.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no findings gives `"findings": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's findings, newest inspection first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreFindingsResult"
+              example:
+                centre_id: "34"
+                findings:
+                  - report_id: 1
+                    inspection_date: "2024-08-16"
+                    report_url: https://www.hiqa.ie/sites/default/files/2024-10/elm-hall.pdf
+                    regulation: Regulation 28
+                    title: Fire precautions
+                    judgment: Not compliant
+                    compliance_items:
+                      - regulation: Regulation 28(1)(a)
+                        risk_rating: Yellow
+                        date_to_comply: "2024-10-16"
+                    inspector:
+                      text: |
+                        Regulation 28: Fire precautions
+                        The kitchen ductwork had not been cleaned.
+                        Judgment: Not compliant
+                      first_page: 11
+                      last_page: 12
+                    provider_response:
+                      text: |
+                        Regulation 28: Fire precautions Not Compliant
+                        The ductwork will be cleaned by 30/09/2024.
+                      first_page: 18
+                      last_page: 18
+                    stated_deadlines:
+                      - text: The ductwork will be cleaned by 30/09/2024.
+                        stated_deadline: "2024-09-30"
+                        stated_deadline_text: 30/09/2024
+                        deadline_precision: day
+                        page: 18
+                        last_page: 18
+                    re_assessment:
+                      status: re-assessed
+                      report_id: 2
+                      inspection_date: "2025-01-11"
+                      report_url: https://www.hiqa.ie/sites/default/files/2025-02/elm-hall.pdf
+                      judgment: Compliant
+                      reports_between: 0
+                      inspector:
+                        text: |
+                          Regulation 28: Fire precautions
+                          Fire drills were held regularly.
+                          Judgment: Compliant
+                        first_page: 11
+                        last_page: 11
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/findings
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/findings
+
   /centres/{centre_id}/amenities:
     get:
       operationId: getCentreAmenities
@@ -905,6 +1012,226 @@ components:
           type: integer
         compliance_item_count:
           type: integer
+
+    CentreFindingsResult:
+      type: object
+      required: [centre_id, findings]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        findings:
+          type: array
+          description: >
+            The centre's findings, newest inspection first, each report's
+            findings together, by regulation number.
+          items:
+            $ref: "#/components/schemas/Finding"
+
+    Finding:
+      type: object
+      description: >
+        One regulation a report judged Substantially compliant or Not
+        compliant. A regulation the report lists twice is one finding, with
+        the judgment Appendix 1 gives.
+      required:
+        - report_id
+        - inspection_date
+        - report_url
+        - regulation
+        - title
+        - judgment
+        - compliance_items
+        - inspector
+        - provider_response
+        - stated_deadlines
+        - re_assessment
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            The report that made the finding. `GET /reports/{report_id}`
+            returns it in full.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        report_url:
+          type: string
+          format: uri
+          description: The report's PDF, the `report_file.url` of the report.
+        regulation:
+          type: string
+          minLength: 1
+          description: The regulation's number, such as Regulation 28.
+        title:
+          type: string
+          minLength: 1
+          description: Its title, such as Fire precautions.
+        judgment:
+          type: string
+          minLength: 1
+          description: >
+            As the report prints it: Substantially compliant or Not compliant,
+            in any capitalisation.
+        compliance_items:
+          type: array
+          description: >
+            The items of the report's compliance plan under this regulation,
+            such as Regulation 28(1)(a), in the order the report prints them.
+          items:
+            $ref: "#/components/schemas/FindingComplianceItem"
+        inspector:
+          description: What the inspector wrote under this regulation, or null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
+        provider_response:
+          description: >
+            The provider's response to the finding in the compliance plan, or
+            null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
+        stated_deadlines:
+          type: [array, "null"]
+          description: >
+            The commitments in the response that state a deadline the splitter
+            could read, in the order the response gives them. The response's
+            other words are in `provider_response`. `[]` when the response was
+            split and no commitment states such a deadline; null when there is
+            no response, or it has not been split at the pinned splitter
+            version.
+          items:
+            $ref: "#/components/schemas/StatedDeadline"
+        re_assessment:
+          $ref: "#/components/schemas/ReAssessment"
+
+    FindingComplianceItem:
+      type: object
+      description: One item of the compliance plan under a finding's regulation.
+      required: [regulation, risk_rating, date_to_comply]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+          description: The requirement's number, such as Regulation 28(1)(a).
+        risk_rating:
+          type: [string, "null"]
+        date_to_comply:
+          type: [string, "null"]
+          format: date
+
+    ReportText:
+      type: object
+      description: A passage of a report, verbatim, with the pages it spans.
+      required: [text, first_page, last_page]
+      properties:
+        text:
+          type: string
+          minLength: 1
+        first_page:
+          type: integer
+          minimum: 1
+        last_page:
+          type: integer
+          minimum: 1
+          description: At least first_page.
+
+    StatedDeadline:
+      type: object
+      description: >
+        A commitment in the provider's response, with the deadline the
+        provider stated for it (ADR-0017).
+      required:
+        - text
+        - stated_deadline
+        - stated_deadline_text
+        - deadline_precision
+        - page
+        - last_page
+      properties:
+        text:
+          type: string
+          minLength: 1
+          description: >
+            The commitment's words, an exact span of the response. A span can
+            combine actions or carry context, so it is not one promise.
+        stated_deadline:
+          type: string
+          format: date
+          description: >
+            The deadline as a date. With month precision it is the last day of
+            that month, which the provider did not state.
+        stated_deadline_text:
+          type: string
+          minLength: 1
+          description: The deadline as the response prints it.
+        deadline_precision:
+          type: string
+          enum: [day, month]
+        page:
+          type: integer
+          minimum: 1
+        last_page:
+          type: integer
+          minimum: 1
+          description: At least page.
+
+    ReAssessment:
+      type: object
+      description: >
+        When the finding's regulation was next judged: the first later report
+        of the same centre that judges it, with any judgment (ADR-0024). Only
+        loaded reports with an inspection date are later reports.
+      required:
+        - status
+        - report_id
+        - inspection_date
+        - report_url
+        - judgment
+        - reports_between
+        - inspector
+      properties:
+        status:
+          type: string
+          enum: [re-assessed, not re-assessed, no later report, order unknown]
+          description: >
+            `re-assessed`: a later report judged the regulation again, and the
+            other properties describe it. `not re-assessed`: the centre has
+            later reports, and none of them judges the regulation. `no later
+            report`: the finding's report is the centre's latest.
+            `order unknown`: the finding's report has no inspection date, or
+            the centre has two reports on the date the regulation was next
+            judged, so which came first is not known. The other properties are
+            null unless the status is `re-assessed`.
+        report_id:
+          type: [integer, "null"]
+          format: int64
+          description: The report that judged the regulation again.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        report_url:
+          type: [string, "null"]
+          format: uri
+          description: That report's PDF.
+        judgment:
+          type: [string, "null"]
+          description: That report's judgment of the regulation, as printed.
+        reports_between:
+          type: [integer, "null"]
+          minimum: 0
+          description: >
+            The centre's dated reports between the two inspections, none of
+            which judged the regulation.
+        inspector:
+          description: >
+            What that report's inspector wrote under the regulation, or null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
 
     CentreAmenitiesResult:
       type: object
