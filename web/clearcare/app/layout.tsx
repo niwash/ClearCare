@@ -25,7 +25,7 @@ const SHARE_IMAGE = { url: "/logos/og-image.png", width: 1200, height: 630, alt:
 
 export const metadata: Metadata = {
   // The live site, so the social preview image gets the absolute URL it needs.
-  metadataBase: new URL("https://clearcare.intelijake.com"),
+  metadataBase: new URL("https://clearcare.ie"),
   title: "ClearCare",
   icons: {
     icon: [
@@ -35,17 +35,16 @@ export const metadata: Metadata = {
     ],
     apple: "/logos/apple-touch-icon.png",
   },
+  // Only what every page shares: no title or description here, as nested fields aren't merged with
+  // a page's, so these would replace every page's own in a shared link. Each page's title and
+  // description are used instead.
   openGraph: {
     type: "website",
     siteName: "ClearCare",
-    title: "ClearCare",
-    description: "Nursing home inspections, made clear",
     images: [SHARE_IMAGE],
   },
   twitter: {
     card: "summary_large_image",
-    title: "ClearCare",
-    description: "Nursing home inspections, made clear",
     images: [SHARE_IMAGE],
   },
   description: "ClearCare is an interactive web application that makes HIQA nursing home inspection reports easier to search, understand, track, and compare. It ingests publicly available HIQA inspection PDFs, extracts regulation-level compliance judgements, and presents each nursing home’s compliance history in a structured format.",
