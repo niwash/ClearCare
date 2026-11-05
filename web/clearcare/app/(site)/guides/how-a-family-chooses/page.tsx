@@ -15,9 +15,10 @@ export const metadata = guideMetadata(guide);
 // reference, rendered to PNG. The question and document cards below it there aren't shown here.
 // The page shows it without the general guide note (GeneralGuideNote gives it as text); the
 // download has the note drawn in. Both are 2916 x 2060, without the HSE and HIQA logos the
-// reference once had (CCARE-164). A redrawn PNG gets a new file name, so no cache keeps the old one.
-const FLOWCHART = "/guides/how-a-family-chooses-flowchart.png";
-const FLOWCHART_DOWNLOAD = "/guides/how-a-family-chooses-flowchart-with-note.png";
+// reference once had (CCARE-164). A redrawn PNG gets a new file name, so no cache keeps the old one:
+// v2 says "HSE assesses your money" at step 4 (CCARE-208).
+const FLOWCHART = "/guides/how-a-family-chooses-flowchart-v2.png";
+const FLOWCHART_DOWNLOAD = "/guides/how-a-family-chooses-flowchart-with-note-v2.png";
 
 // The same steps as the flowchart, for screen readers and small screens.
 const STEPS: { title: string; detail: string; ifNo?: string }[] = [
@@ -32,7 +33,7 @@ const STEPS: { title: string; detail: string; ifNo?: string }[] = [
     detail: "A nurse or doctor visits the person. Is long-term care needed?",
     ifNo: "Appeal within 8 weeks, or apply again after 6 months, then try again.",
   },
-  { title: "HSE checks your money", detail: "Works out what you pay each week." },
+  { title: "HSE assesses your money", detail: "Works out what you pay each week." },
   {
     title: "Decide what matters most",
     detail: "Area, care needs, daily routine. You can start this after step 2.",
