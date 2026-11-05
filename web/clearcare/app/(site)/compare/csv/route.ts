@@ -17,7 +17,8 @@ import {
   type CentreReports,
   type Regulation,
 } from "@/lib/centres";
-import { latestJudged, notCompliantAtLatest, parseHomesParam, regulationRows, repeatedNotCompliant, toCsv } from "@/lib/compare";
+import { latestJudged, notCompliantAtLatest, parseHomesParam, regulationRows, repeatedNotCompliant } from "@/lib/compare";
+import { toCsv } from "@/lib/csv";
 import { originFrom } from "@/lib/request-origin";
 import { formatEircode } from "@/lib/search";
 

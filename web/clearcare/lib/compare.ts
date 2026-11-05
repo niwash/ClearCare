@@ -145,15 +145,3 @@ export function repeatedNotCompliant(reports: CentreReports): Regulation[] {
 export function compareCsvHref(ids: string[]) {
   return `/compare/csv?homes=${ids.join(",")}`;
 }
-
-// Rows of cells as CSV (RFC 4180): commas, quotes and line breaks quoted, lines ended with CRLF. A
-// cell that a spreadsheet would run as a formula (=, +, -, @) starts with an apostrophe instead, as
-// the homes' names and details come from outside. The byte order mark tells Excel it's UTF-8, so
-// the € and the Irish names' fadas show as they should.
-export function toCsv(rows: string[][]) {
-  const cell = (value: string) => {
-    const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-    return /[",\r\n]/.test(safe) ? `"${safe.replaceAll('"', '""')}"` : safe;
-  };
-  return `﻿${rows.map((row) => row.map(cell).join(",")).join("\r\n")}\r\n`;
-}

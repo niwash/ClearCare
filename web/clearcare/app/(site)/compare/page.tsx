@@ -300,7 +300,8 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
   const latestDate = (column: FoundColumn) => column.reports?.inspections.at(-1)?.date ?? null;
 
   // Every item these homes' reports mention in one list, the most mentioned first, then A to Z.
-  // common: the ones every home whose report was read mentions, when there are 2 or more of them.
+  // common: the ones every home mentions, when there are 2 or more homes and all of their reports
+  // have been read. A home not read yet might have the item too, so nothing is marked then.
   const readHomes = columns.filter((column) => column.status === "found" && column.amenities).length;
   const amenityItems = (key: (typeof AMENITY_LISTS)[number]["key"]) => {
     const counts = new Map<string, number>();
@@ -309,7 +310,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       for (const { item } of column.amenities[key]) counts.set(item, (counts.get(item) ?? 0) + 1);
     }
     const items = [...counts.keys()].sort((a, b) => counts.get(b)! - counts.get(a)! || a.localeCompare(b));
-    const common = new Set(readHomes > 1 ? items.filter((item) => counts.get(item) === readHomes) : []);
+    const common = new Set(readHomes > 1 && readHomes === columns.length ? items.filter((item) => counts.get(item) === readHomes) : []);
     return { items, common };
   };
 
@@ -699,7 +700,7 @@ function HomeHeading({ column, inline = false }: { column: Column; inline?: bool
       <div className="flex flex-col items-start gap-1">
         {column.status === "found" ? (
           <>
-            <Link href={`/centres/${column.id}`} className="font-heading text-base font-semibold leading-snug text-ink no-underline hover:underline lg:text-xl adult:underline">
+            <Link href={`/centres/${column.id}`} className="font-heading text-base font-semibold leading-snug text-ink no-underline hover:underline lg:text-xl adult:text-xl adult:underline">
               {name}
             </Link>
             <span className="text-sm text-ink-muted">Co. {column.centre.county}</span>
@@ -848,7 +849,7 @@ function shortAddress({ centre_name, address, eircode }: CentreDetail) {
 }
 
 function Value({ main, sub, big = false, mono = false, muted = false }: { main: string; sub?: string; big?: boolean; mono?: boolean; muted?: boolean }) {
-  const mainClass = big ? "text-lg font-bold" : mono ? "font-mono" : muted ? "text-ink-muted" : "font-medium";
+  const mainClass = big ? "text-lg font-bold adult:text-xl" : mono ? "font-mono" : muted ? "text-ink-muted" : "font-medium";
   return (
     <>
       <span className={mainClass}>{main}</span>

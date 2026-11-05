@@ -15,8 +15,8 @@ import {
   regulationRows,
   removeHome,
   repeatedNotCompliant,
-  toCsv,
 } from "../lib/compare.ts";
+import { toCsv } from "../lib/csv.ts";
 
 const home = (id) => ({ id, name: `Home ${id}` });
 
@@ -56,11 +56,12 @@ test("writes CSV a spreadsheet opens safely", () => {
     ["", "St. Brigid's, Co. Cork"],
     ['Said "hello"', "line\nbreak"],
     ["=HYPERLINK(1)", "+353 1 234"],
+    ["Change", -3],
   ]);
   assert.ok(csv.startsWith("﻿"));
   assert.equal(
     csv.slice(1),
-    `,"St. Brigid's, Co. Cork"\r\n"Said ""hello""","line\nbreak"\r\n'=HYPERLINK(1),'+353 1 234\r\n`,
+    `,"St. Brigid's, Co. Cork"\r\n"Said ""hello""","line\nbreak"\r\n'=HYPERLINK(1),'+353 1 234\r\nChange,-3\r\n`,
   );
 });
 
