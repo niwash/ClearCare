@@ -94,8 +94,18 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
     >
       {/* A summary may hold a heading but no wrapping block, so its parts are its own grid items. */}
       <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
-        <span className="row-span-2 self-start pt-1.5">
+        {/* What happened, at a glance, in the history table key's icons: the finding, then the next
+            judgment, or "…" when there's none yet or it's unclear. A fixed width, so the regulations
+            line up from one trail to the next. Hidden from screen readers: the line under the
+            heading says the same in words. */}
+        <span aria-hidden className="row-span-2 flex w-14 items-center gap-1 self-start pt-1.5">
           <JudgementIcon judgement={finding.judgement} size={16} />
+          <span className="text-sm text-ink-muted">→</span>
+          {followUp ? (
+            <JudgementIcon judgement={followUp.judgement} size={16} />
+          ) : (
+            <span className="text-sm font-semibold leading-none text-ink-muted">…</span>
+          )}
         </span>
         <h3 className="col-start-2 font-heading text-lg font-semibold md:text-xl">
           Regulation {regulation.number} · {regulation.title}
