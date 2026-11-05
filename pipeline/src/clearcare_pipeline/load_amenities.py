@@ -147,10 +147,9 @@ def _read_file(path: Path, *, single: bool) -> list[Record]:
 
 
 _FIND_V2_REPORT = (
-    "SELECT r.id FROM clearcare.inspection_report r"
+    "SELECT r.id, r.inspection_date FROM clearcare.inspection_report r"
     " JOIN clearcare.source_file s USING (source_file_id)"
-    " WHERE s.sha256 = %s AND r.centre_id = %s"
-    " AND r.inspection_date = %s ORDER BY r.id LIMIT 1"
+    " WHERE s.sha256 = %s AND r.centre_id = %s ORDER BY r.id LIMIT 2"
 )
 _INSERT_V2 = (
     "INSERT INTO clearcare.report_amenities_v2"
@@ -189,10 +188,24 @@ def load(
     with connection.transaction():
         for record in records:
             if isinstance(record, ExtractionFile):
-                row = connection.execute(
-                    _FIND_V2_REPORT,
-                    (record.sha256, record.centre_id, record.inspection_date),
-                ).fetchone()
+                matches = connection.execute(
+                    _FIND_V2_REPORT, (record.sha256, record.centre_id)
+                ).fetchall()
+                if len(matches) > 1:
+                    raise ValueError(
+                        f"Ambiguous stored report for centre {record.centre_id}"
+                        f", hash {record.sha256}"
+                    )
+                row = matches[0] if matches else None
+                if row is not None and str(row[1]) != record.inspection_date:
+                    logger.warning(
+                        "inspection date mismatch for centre %s, hash %s:"
+                        " extraction %s, database %s; matched exact source",
+                        record.centre_id,
+                        record.sha256,
+                        record.inspection_date,
+                        row[1],
+                    )
             else:
                 row = connection.execute(
                     _FIND_REPORT, (record.sha256,)
