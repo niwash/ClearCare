@@ -105,6 +105,23 @@ test("a commitment drops the form's words at the top, and keeps a bullet within 
   assert.equal(commitment("Regulation 9: Residents' rights", "Regulation 9", "Residents' rights"), "Regulation 9: Residents' rights");
 });
 
+// As the live data has them: Word's "o" sub-bullet, at 149 homes.
+test("Word's o sub-bullet starts a list item, and becomes • within one stretch of text", () => {
+  assert.equal(
+    commitment("o Residents guide will be updated by May 2026.", "Regulation 20", "Information for residents"),
+    "Residents guide will be updated by May 2026.",
+  );
+  assert.equal(
+    commitment("Completed on 08/01/2024\no PICS will check the rota.", "Regulation 24", "Contract for the provision of services"),
+    "Completed on 08/01/2024 • PICS will check the rota.",
+  );
+  assert.deepEqual(passage("Doors were opened.\no The call bells were fixed.\no Staff were told.", "Regulation 17", "Premises", "response"), [
+    "Doors were opened.",
+    "• The call bells were fixed.",
+    "• Staff were told.",
+  ]);
+});
+
 // As the live data has them: the PDF repeats the form's heading where a response runs over a page,
 // and Word's other bullets (square, tick, dot, diamond) start items too.
 test("a response loses the form's heading where the PDF repeats it, and Word's other bullets start items", () => {

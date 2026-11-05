@@ -30,7 +30,6 @@ type Cell = {
   judgement: Judgement;
   change?: Change;
   trail?: PromiseTrail; // this inspection made the finding the trail starts from
-  promisesTraced?: { trail: PromiseTrail; count: number }; // this inspection followed the promises up
 };
 
 // Only non-compliant judgements get a "same"/"worse"/"better" note, compared with the
@@ -49,10 +48,6 @@ function buildCells(row: RegulationHistory, inspections: Inspection[], trails: P
     if (result) previous = result;
 
     cell.trail = rowTrails.find((trail) => trail.finding.inspectionId === inspection.id);
-    const followed = rowTrails.find((trail) => trail.followUp?.inspectionId === inspection.id);
-    // Only when the follow-up says what became of the promises; the API doesn't yet.
-    const traced = followed?.followUp?.updates.length ?? 0;
-    if (followed && traced > 0) cell.promisesTraced = { trail: followed, count: traced };
 
     cells.set(inspection.id, cell);
   }
@@ -80,11 +75,6 @@ function JudgementCell({ cell }: { cell: Cell }) {
         {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 tap-target">{label}</a> : label}
         {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
         {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
-        {cell.promisesTraced && (
-          <a href={`#${trailAnchor(cell.promisesTraced.trail.regulation)}`} className="block py-1 text-sm adult:flex adult:min-h-11 adult:items-center">
-            {cell.promisesTraced.count} {cell.promisesTraced.count === 1 ? "promise" : "promises"} traced
-          </a>
-        )}
       </span>
     </span>
   );

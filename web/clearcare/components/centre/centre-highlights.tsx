@@ -11,7 +11,7 @@ function heading(highlight: Highlight) {
     case "not-compliant-latest":
       return "Not compliant at the last inspection";
     case "repeated":
-      return `Found at ${COUNT_WORDS[highlight.dates.length] ?? highlight.dates.length} inspections in a row`;
+      return `Not fully compliant at ${COUNT_WORDS[highlight.dates.length] ?? highlight.dates.length} inspections in a row`;
     case "promise-not-rejudged":
       return "Promised, then not re-judged";
   }

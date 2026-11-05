@@ -94,9 +94,12 @@ function withoutHeading(text: string, regulation: string, title: string) {
 // usual bullet), U+F0D8 (arrow), U+F0A7 (square), U+F0FC (tick), U+F06C (dot) and U+F076 (diamond),
 // all found in the live reports. Built from code points, as the characters themselves are invisible.
 const WORD_BULLETS = String.fromCodePoint(0xf0b7, 0xf0d8, 0xf0a7, 0xf0fc, 0xf06c, 0xf076);
-// Any bullet starting a line: Word's, "•", "·", "▪", "●", or a provider's "- ".
+// Any bullet starting a line: Word's, "•", "·", "▪", "●", Word's "o" sub-bullet, or a provider's "- ".
 // Word's may come with no space after them, and a few items have two bullets in a row.
-const BULLET = new RegExp(String.raw`^\s*(?:[${WORD_BULLETS}]\s*|[•·▪●-]\s+)+`);
+const BULLET = new RegExp(String.raw`^\s*(?:[${WORD_BULLETS}]\s*|[•·▪●o-]\s+)+`);
+// Word's "o" sub-bullet starting a line within one stretch of text. Only at a line's start, where
+// a lone "o" is never a word.
+const LINE_O_BULLET = /\n\s*o\s+/g;
 // A bullet partway along a line, where two items share one: only glyphs that are never punctuation.
 const INLINE_BULLET = new RegExp(String.raw`\s+([${WORD_BULLETS}]\s*|•\s+)`, "g");
 // Word's bullets within one stretch of text, which becomes one line.
@@ -146,9 +149,9 @@ function paragraphs(body: string): string[] {
 }
 
 // One stretch of text on its own: no line breaks, and no bullet at the start. A bullet within it
-// (Word's glyphs, which show as boxes) becomes "•", as one line can't be a list.
+// (Word's glyphs, which show as boxes, or its "o" sub-bullet) becomes "•", as one line can't be a list.
 export const plain = (text: string) =>
-  collapse(text.replace(BULLET, "").replace(INLINE_WORD_BULLET, " • ")).replace(/([A-Za-z])- (?=[a-z])/g, "$1-");
+  collapse(text.replace(BULLET, "").replace(LINE_O_BULLET, " • ").replace(INLINE_WORD_BULLET, " • ")).replace(/([A-Za-z])- (?=[a-z])/g, "$1-");
 
 // What the response form puts before the provider's own words: the regulation's heading, its
 // judgment, and "Outline how you are going to come into compliance with Regulation N: Title:".
@@ -391,7 +394,6 @@ function followUp(finding: Finding, inspections: Inspection[]): Pick<PromiseTrai
               ),
             }),
           ...(reAssessment.reports_between ? { between: reAssessment.reports_between } : {}),
-          updates: [],
         },
       };
     }
@@ -404,7 +406,6 @@ function followUp(finding: Finding, inspections: Inspection[]): Pick<PromiseTrai
           inspectionId: later[0].id,
           judgement: "not-assessed",
           ...(later.length > 1 && { notAssessedSince: later.length - 1 }),
-          updates: [],
         },
       };
     }

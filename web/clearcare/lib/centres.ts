@@ -79,15 +79,6 @@ export interface CompliancePromise {
   source: SourceRef;
 }
 
-export type PromiseStatus = "done" | "in-progress" | "not-done";
-
-export interface PromiseUpdate {
-  promiseLabel: string;
-  status: PromiseStatus;
-  quote: string;
-  source: SourceRef;
-}
-
 export interface PromiseTrail {
   regulation: Regulation;
   finding: {
@@ -111,7 +102,6 @@ export interface PromiseTrail {
     source?: SourceRef;
     between?: number; // inspections in between that didn't assess the regulation
     notAssessedSince?: number; // later inspections that didn't assess it either
-    updates: PromiseUpdate[];
   };
   // Two reports share the date the regulation was next judged, so which came first isn't known.
   orderUnknown?: boolean;

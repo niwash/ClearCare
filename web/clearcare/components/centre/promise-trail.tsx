@@ -2,7 +2,7 @@
 import { formatDate, formatSource, highlightAnchor, trailAnchor, type Inspection, type PromiseTrail as Trail, type SourceRef } from "@/lib/centres";
 import { ShowHide } from "@/components/ui/chevron";
 import { LIST_ITEM } from "@/lib/findings";
-import { JUDGEMENT_LABELS, JudgementIcon, PROMISE_STATUS_LABELS, PromiseStatusIcon } from "./judgement-icon";
+import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { contentsScrollMargin } from "./centre-contents";
 import { sectionCardClass } from "./section-icon";
 
@@ -160,7 +160,7 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
             </>
           )}
           {promises.length === 0 && !response && (
-            <p className="text-sm text-ink-muted">The report has no response from the provider for this regulation.</p>
+            <p className="text-sm text-ink-muted">ClearCare has no response from the provider for this regulation.</p>
           )}
           {datesToComply && (
             <p className="text-small leading-normal text-ink-muted">
@@ -202,26 +202,12 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
                   <Source source={followUp.source} />
                 </>
               )}
-              {followUp.updates.map((update) => {
-                const promise = promises.find((candidate) => candidate.label === update.promiseLabel);
-                return (
-                  <div key={update.promiseLabel} className="flex flex-col gap-1.5 rounded-md border border-line-soft px-3.5 py-3">
-                    <div className="flex items-center gap-2 text-sm font-semibold">
-                      <PromiseStatusIcon status={update.status} />
-                      {update.promiseLabel} · {PROMISE_STATUS_LABELS[update.status]}
-                      {promise?.title && <span className="sr-only">: {promise.title}</span>}
-                    </div>
-                    <p className="text-sm leading-relaxed">“{update.quote}”</p>
-                    <Source source={update.source} />
-                  </div>
-                );
-              })}
             </>
           ) : (
             <p className="text-sm text-ink-muted">
               {orderUnknown
                 ? "Two reports share the date it was next judged, so which came first isn't known. Both are in the history above."
-                : `No inspection since ${promises.length > 0 ? "the promise was made" : "this finding"}.`}
+                : `No report since ${promises.length > 0 ? "the promise was made" : "this finding"}.`}
             </p>
           )}
         </li>

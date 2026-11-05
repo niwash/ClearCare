@@ -19,6 +19,7 @@ export function ContentsTracker({ navId }: { navId: string }) {
     const scroller = nav?.querySelector<HTMLElement>("[data-contents-scroller]");
     const button = nav?.querySelector<HTMLButtonElement>("[data-contents-toggle]");
     if (!nav || !scroller) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const entries = [...nav.querySelectorAll<HTMLAnchorElement>("a[data-level]")].map((link) => ({
       link,
       level: link.dataset.level,
@@ -46,11 +47,13 @@ export function ContentsTracker({ navId }: { navId: string }) {
         else entry.link.removeAttribute("aria-current");
       }
 
-      // On a phone, bring the section's link into the bar's view when it changes.
+      // On a phone, bring the section's link into the bar's view when it changes: smoothly, except
+      // in the adult-centred design or with reduced motion, where it jumps.
       if (section && section !== current) {
         const { offsetLeft, offsetWidth } = section.link;
         if (offsetLeft < scroller.scrollLeft || offsetLeft + offsetWidth > scroller.scrollLeft + scroller.clientWidth) {
-          scroller.scrollTo({ left: offsetLeft - 16, behavior: "smooth" });
+          const smooth = document.documentElement.dataset.design !== "adult-centred" && !reducedMotion.matches;
+          scroller.scrollTo({ left: offsetLeft - 16, behavior: smooth ? "smooth" : "auto" });
         }
       }
       current = section;
