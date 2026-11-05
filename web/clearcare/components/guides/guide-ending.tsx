@@ -40,12 +40,14 @@ type GuidesBandProps = {
 // Guides as small photo cards on a tinted band the full width of the window, like the home page's
 // welcome, so they stand apart from the page above. The default negative bottom margin cancels the
 // page's gap between sections (app/(site)/layout.tsx), so the band meets the contacts banner after it.
+// The heading and cards slide up on the pages that render <SlideUp /> (CCARE-186); elsewhere, such as
+// the centre page, they simply show.
 export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb-8" }: GuidesBandProps) {
   return (
     <section aria-labelledby={id} className={`${fullWidthClass} bg-band py-8 md:py-10 ${className}`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-4 px-4 md:px-8">
-        <div className="flex max-w-3xl flex-col gap-2">
+        <div className="reveal flex max-w-3xl flex-col gap-2">
           {/* scroll-mt clears the centre page's sticky bar of section links, which links here. */}
           <h2 id={id} className="scroll-mt-24 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             {title}
@@ -53,7 +55,7 @@ export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb
           {intro && <p className="text-ink-muted md:text-lg">{intro}</p>}
         </div>
         {/* Three cards fill a row of three; any other number goes four to a row. */}
-        <ul className={`grid gap-3 sm:grid-cols-2 md:gap-4 ${guides.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
+        <ul className={`reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 ${guides.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
           {guides.map((guide) => (
             <OtherGuideCard key={guide.slug} guide={guide} />
           ))}

@@ -2,7 +2,8 @@
 // The top of a guide, flush under the site header like the home page's carousel: the guide's
 // title on a panel of the soft welcome colours whose slanted edge cuts into the guide's photo, the same photo
 // as its card on the resources page. On phones the panel sits under the photo. The words are never
-// over the photo, so it is the same in the adult-centred design.
+// over the photo, so it is the same in the adult-centred design. The guide's slide-ups further down
+// start here (CCARE-186).
 import Image from "next/image";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { DraftLabel, guideTrail } from "@/components/guides/guide-header";
@@ -10,10 +11,14 @@ import type { Guide } from "@/lib/guides";
 import { fullWidthClass } from "@/components/ui/classes";
 import { Suspense } from "react";
 import { ReturnLink } from "@/components/guides/return-link";
+import { SlideUp } from "@/components/ui/slide-up";
 
 export function GuideHero({ guide }: { guide: Guide }) {
   return (
     <>
+      {/* Here so that every guide has it. */}
+      <SlideUp slideOnOpen={false} />
+
       <header className={`${fullWidthClass} -mt-6 md:-mt-10`}>
         {/* Kept short (CCARE-164: less scrolling): half photo and half words, like the home page's
           carousel, and a shallow photo on phones. The words' panel sets the height, at least 18rem
