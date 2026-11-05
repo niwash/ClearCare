@@ -1,6 +1,9 @@
 // app/centres/[id]/page.tsx
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
+import { CentreContentsRow, CentreContentsSidebar, type ContentsItem } from "@/components/centre/centre-contents";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
+import { SectionIcon } from "@/components/centre/section-icon";
+import { SectionAccordion } from "@/components/guides/section-accordion";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistBox } from "@/components/compare/shortlist-box";
 import { InspectionHistory } from "@/components/centre/inspection-history";
@@ -17,13 +20,16 @@ import {
   formatWeeklyPrice,
   getCentre,
   getCentreAmenities,
+  getCentreFindings,
   getCentreReports,
   HOME_TYPE_LABELS,
+  trailAnchor,
   type CentreAmenities,
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
 import { SHORTLIST_FULL_ID } from "@/lib/compare";
+import { addFindings } from "@/lib/findings";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 import Link from "next/link";
@@ -49,61 +55,115 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
   if (lookup.status === "not-found") notFound();
   if (lookup.status === "unavailable") return <CentreUnavailable httpStatus={lookup.httpStatus} />;
   const { centre } = lookup;
-  const [reports, amenities] = await Promise.all([getCentreReports(id), getCentreAmenities(id)]);
+  const [baseReports, amenities, findings] = await Promise.all([
+    getCentreReports(id),
+    getCentreAmenities(id),
+    getCentreFindings(id),
+  ]);
+  // The highlights and promise trails come from the findings (CCARE-207); without them the page
+  // shows the history alone, as before.
+  const reports = baseReports && addFindings(baseReports, findings);
+
+  // The sections the page has, for its contents, in the order they appear.
+  const contents: ContentsItem[] = [
+    { id: "about", title: "About this home" },
+    ...(reports?.highlights.length ? [{ id: "first", title: "What to look at first" }] : []),
+    ...(reports?.visitQuestions.length ? [{ id: "visit", title: "Worth asking on a visit" }] : []),
+    reports ? { id: "history", title: "Inspection history" } : { id: "reports", title: "Inspection reports" },
+    ...(reports?.trails.length
+      ? [
+          {
+            id: "trails",
+            title: "What happened next",
+            children: reports.trails.map((trail) => ({
+              id: trailAnchor(trail.regulation),
+              title: `Regulation ${trail.regulation.number} · ${trail.regulation.title}`,
+            })),
+          },
+        ]
+      : []),
+    { id: HELP_ID, title: "Making sense of this record" },
+  ];
 
   return (
     <>
       <CentreHero centre={centre} />
 
-      <CentreFacts centre={centre} reports={reports} amenities={amenities} />
+      {/* The record beside its contents on wide screens, under a row of links to it on narrower ones. */}
+      <div className="flex flex-col gap-6 md:gap-8 xl:grid xl:grid-cols-[13rem_minmax(0,1fr)] xl:items-start xl:gap-10">
+        <CentreContentsSidebar items={contents} />
+        <div className="flex min-w-0 flex-col gap-6 md:gap-8">
+          <CentreContentsRow items={contents} />
 
-      {reports ? (
-        <>
-          <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
+          <CentreFacts centre={centre} reports={reports} amenities={amenities} />
 
-          {reports.visitQuestions.length > 0 && (
-            // On the warm band colour, as the part of the record that turns what HIQA found into what
-            // the family can do next (CCARE-179).
-            <section
-              aria-labelledby="visit-h"
-              className="grid gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line"
-            >
-              <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
-                <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
-                  <Icon name="talk" className="size-4" />
-                </span>
-                Worth asking on a visit
+          {reports ? (
+            <>
+              <CentreHighlights highlights={reports.highlights} trails={reports.trails} />
+
+              {reports.visitQuestions.length > 0 && (
+                // On the warm band colour, as the part of the record that turns what HIQA found into what
+                // the family can do next (CCARE-179).
+                <section
+                  id="visit"
+                  aria-labelledby="visit-h"
+                  className="grid scroll-mt-6 gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line"
+                >
+                  <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
+                    <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
+                      <Icon name="talk" className="size-4" />
+                    </span>
+                    Worth asking on a visit
+                  </h2>
+                  <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
+                    {reports.visitQuestions.map((question) => (
+                      <li key={question}>{question}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              <InspectionHistory
+                inspections={reports.inspections}
+                history={reports.history}
+                trails={reports.trails}
+                showAll={regulations === "all"}
+                showAllInspections={inspections === "all"}
+              />
+
+              {reports.trails.length > 0 && (
+                // One trail per highlighted regulation, closed to begin with and one open at a time, so
+                // the page stays short; the highlights, the history table and the contents open them.
+                <section id="trails" aria-labelledby="trails-h" className="flex scroll-mt-6 flex-col gap-3">
+                  <div className="flex flex-col gap-1">
+                    <h2 id="trails-h" className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
+                      <SectionIcon name="report" tint="rose" />
+                      What happened next
+                    </h2>
+                    <p className="max-w-3xl text-ink-muted">
+                      For each regulation above: what the inspector found, what the provider said they would do, and when the
+                      regulation was next judged.
+                    </p>
+                  </div>
+                  <SectionAccordion />
+                  {reports.trails.map((trail) => (
+                    <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} />
+                  ))}
+                </section>
+              )}
+            </>
+          ) : (
+            <section id="reports" aria-labelledby="reports-h" className="scroll-mt-6 rounded-2xl border border-line bg-surface p-6 adult:rounded-lg">
+              <h2 id="reports-h" className="font-heading text-xl font-semibold">
+                Inspection reports
               </h2>
-              <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
-                {reports.visitQuestions.map((question) => (
-                  <li key={question}>{question}</li>
-                ))}
-              </ul>
+              <p className="mt-2 text-ink-muted">
+                We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
+              </p>
             </section>
           )}
-
-          <InspectionHistory
-            inspections={reports.inspections}
-            history={reports.history}
-            trails={reports.trails}
-            showAll={regulations === "all"}
-            showAllInspections={inspections === "all"}
-          />
-
-          {reports.trails.map((trail) => (
-            <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} />
-          ))}
-        </>
-      ) : (
-        <section aria-labelledby="reports-h" className="rounded-2xl border border-line bg-surface p-6 adult:rounded-lg">
-          <h2 id="reports-h" className="font-heading text-xl font-semibold">
-            Inspection reports
-          </h2>
-          <p className="mt-2 text-ink-muted">
-            We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
-          </p>
-        </section>
-      )}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-2 text-small leading-relaxed text-ink-muted md:flex-row md:justify-between md:gap-10">
         <p>
@@ -123,7 +183,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
       {/* So nobody leaves a record unsure what it means or what to do next. */}
       <GuidesBand
-        id="help-h"
+        id={HELP_ID}
         title="Making sense of this record"
         intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
         guides={RECORD_GUIDES}
@@ -135,6 +195,9 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
   );
 }
 
+
+// The heading of the guides band at the end, which the contents link to.
+const HELP_ID = "help-h";
 
 // The guides that help most with a record, in the order a family needs them.
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
@@ -215,8 +278,9 @@ function CentreFacts({
   const phone = centrePhone(centre.centre_phone);
 
   return (
-    <section aria-labelledby="facts-h" className="flex flex-col gap-3">
-      <h2 id="facts-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+    <section id="about" aria-labelledby="facts-h" className="flex scroll-mt-6 flex-col gap-3">
+      <h2 id="facts-h" className="flex items-center gap-3 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+        <SectionIcon name="home" tint="sage" />
         About this home
       </h2>
       {/* The details, with the actions beside them on wide screens and under them on narrow ones. */}

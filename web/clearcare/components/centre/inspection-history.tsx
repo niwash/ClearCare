@@ -13,6 +13,7 @@ import {
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 import { JudgementsPerInspection } from "./judgements-per-inspection";
+import { SectionIcon, sectionCardClass } from "./section-icon";
 
 // Rows shown before "Show all".
 const SHORT_LIST = 7;
@@ -48,7 +49,9 @@ function buildCells(row: RegulationHistory, inspections: Inspection[], trails: P
 
     cell.trail = rowTrails.find((trail) => trail.finding.inspectionId === inspection.id);
     const followed = rowTrails.find((trail) => trail.followUp?.inspectionId === inspection.id);
-    if (followed) cell.promisesTraced = { trail: followed, count: followed.promises.length };
+    // Only when the follow-up says what became of the promises; the API doesn't yet.
+    const traced = followed?.followUp?.updates.length ?? 0;
+    if (followed && traced > 0) cell.promisesTraced = { trail: followed, count: traced };
 
     cells.set(inspection.id, cell);
   }
@@ -126,9 +129,10 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
   const years = firstYear === lastYear ? `${firstYear}` : `${firstYear}–${lastYear}`;
 
   return (
-    <section id="history" aria-labelledby="hist-h" className="rounded-lg border border-line bg-surface">
-      <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-baseline md:justify-between md:px-7">
-        <h2 id="hist-h" className="shrink-0 font-heading text-xl font-semibold md:text-2xl">
+    <section id="history" aria-labelledby="hist-h" className={`scroll-mt-6 ${sectionCardClass}`}>
+      <div className="flex flex-col gap-3 px-4 pb-4 pt-5 md:flex-row md:items-center md:justify-between md:px-7">
+        <h2 id="hist-h" className="flex shrink-0 items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
+          <SectionIcon name="calendar" tint="blue" />
           Inspection history
         </h2>
         <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">

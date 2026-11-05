@@ -4,6 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the history table and the promise trails) is derived, not sent.
 import { cache } from "react";
+import { toJudgement, type CentreFindingsResult, type Finding } from "./findings";
 import { apiUrl, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
@@ -30,10 +31,11 @@ export interface Regulation {
   title: string;
 }
 
-// Where a line came from, e.g. "Inspector · report p. 10".
+// Where a line came from, e.g. "Inspector · report p. 10" or "report pp. 10–11".
 export interface SourceRef {
   document: "report" | "plan";
   page: number;
+  lastPage?: number; // when the passage runs onto later pages
   context?: string;
   url?: string;
 }
@@ -68,9 +70,10 @@ export interface Highlight {
   reportUrl?: string;
 }
 
+// A commitment in the provider's response that states a deadline, as written (lib/findings.ts).
 export interface CompliancePromise {
   label: string; // "A", "B"…
-  title: string;
+  title?: string;
   quote: string;
   due: string; // as written in the plan: "25 Jul 2025", "Q2 2026"
   source: SourceRef;
@@ -95,12 +98,23 @@ export interface PromiseTrail {
     source: SourceRef;
   };
   promises: CompliancePromise[];
-  planNote?: string;
+  // The provider's whole response, when no commitment in it states a deadline.
+  response?: { quotes: string[]; source: SourceRef };
+  datesToComply?: ISODate[]; // from the compliance plan's own table
+  // When the regulation was next judged (ADR-0024), or the first later inspection when none did.
   followUp?: {
     inspectionId: string;
+    date?: ISODate; // for a report that isn't on the timeline
     judgement: Judgement;
+    printedJudgement?: string; // as printed, when it isn't one of HIQA's three
+    quotes?: string[];
+    source?: SourceRef;
+    between?: number; // inspections in between that didn't assess the regulation
+    notAssessedSince?: number; // later inspections that didn't assess it either
     updates: PromiseUpdate[];
   };
+  // Two reports share the date the regulation was next judged, so which came first isn't known.
+  orderUnknown?: boolean;
 }
 
 // "public" for a public nursing home, "private" for a private or voluntary one (CCARE-133).
@@ -158,8 +172,9 @@ export function centrePhone(printed: string | null | undefined): { text: string;
 }
 
 // What the inspection reports say, built from GET /centres/{centre_id}/reports and
-// GET /reports/{report_id}. The API has no quoted text yet, so from it highlights,
-// visitQuestions and trails are empty; only the sample reports fill them.
+// GET /reports/{report_id}. getCentreReports leaves highlights and trails empty; the centre page
+// adds them from getCentreFindings with addFindings (lib/findings.ts). visitQuestions stays
+// empty: nothing in the API says what to ask.
 export interface CentreReports {
   inspections: Inspection[]; // oldest first
   history: RegulationHistory[];
@@ -206,19 +221,6 @@ interface ReportResult {
     report_file: { url: string };
     regulations: { regulation: string; title: string; judgment: string }[];
   };
-}
-
-// The reports serve judgments as the PDFs print them, in either case ("Not compliant",
-// "Not Compliant"). Anything else counts as not assessed.
-function toJudgement(judgment: string): Exclude<Judgement, "not-assessed"> | undefined {
-  switch (judgment.trim().toLowerCase().replace(/\s+/g, " ")) {
-    case "compliant":
-      return "compliant";
-    case "substantially compliant":
-      return "substantially-compliant";
-    case "not compliant":
-      return "not-compliant";
-  }
 }
 
 async function fetchJson<T>(url: string): Promise<T | null> {
@@ -285,6 +287,16 @@ export const getCentreReports = cache(async (id: string): Promise<CentreReports 
   return { inspections, history, highlights: [], visitQuestions: [], trails: [] };
 });
 
+// GET /centres/{centre_id}/findings (CCARE-206): each finding with the inspector's and the
+// provider's words and when the regulation was next judged. null when it can't be read, including
+// from an API without the endpoint; the page then shows no highlights or trails, as before.
+export const getCentreFindings = cache(async (id: string): Promise<Finding[] | null> => {
+  const url = apiUrl();
+  if (!url) return null;
+  const result = await fetchJson<CentreFindingsResult>(`${url}/centres/${id}/findings`);
+  return Array.isArray(result?.findings) ? result.findings : null;
+});
+
 // A passage of the report that supports an amenity: its exact words, as the AI tool quoted them
 // (not checked), and the pages it spans, counted from the PDF's first page, cover included.
 export interface AmenityEvidence {
@@ -343,8 +355,9 @@ export function formatMonth(date: ISODate) {
   return MONTH.format(new Date(date)).replace("Sept", "Sep");
 }
 
-export function formatSource({ document, page, context }: SourceRef) {
-  return `${context ? `${context} · ` : ""}${document} p. ${page}`;
+export function formatSource({ document, page, lastPage, context }: SourceRef) {
+  const pages = lastPage && lastPage > page ? `pp. ${page}–${lastPage}` : `p. ${page}`;
+  return `${context ? `${context} · ` : ""}${document} ${pages}`;
 }
 
 export function trailAnchor(regulation: Regulation) {
