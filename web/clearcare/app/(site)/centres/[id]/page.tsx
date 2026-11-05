@@ -2,12 +2,12 @@
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentreContentsBar, contentsScrollMargin, type ContentsItem } from "@/components/centre/centre-contents";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
-import { SectionIcon } from "@/components/centre/section-icon";
 import { SectionAccordion } from "@/components/guides/section-accordion";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistBox } from "@/components/compare/shortlist-box";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { PromiseTrail } from "@/components/centre/promise-trail";
+import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
@@ -87,7 +87,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
 
   return (
     <>
-      <CentreHero centre={centre} hasReports={Boolean(reports)} />
+      <CentreHero centre={centre} />
 
       {/* The section links, near the top of the window as the page scrolls. It overlaps the bottom of
           the name's band by 1.25rem, within the band's own padding (1.5rem, 2rem from md), so it
@@ -150,8 +150,7 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
                     highlights, the history table and the bar open them. */}
                 <section id="trails" aria-labelledby="trails-h" className={`flex ${contentsScrollMargin} flex-col gap-3`}>
                   <div className="flex flex-col gap-1">
-                    <h2 id="trails-h" className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
-                      <SectionIcon name="report" tint="rose" />
+                    <h2 id="trails-h" className={sectionHeadingClass}>
                       What happened next
                     </h2>
                     <p className="max-w-3xl text-ink">
@@ -169,15 +168,12 @@ export default async function CentrePage({ params, searchParams }: CentrePagePro
           </>
         ) : (
           <Band tint="page">
-            <section
-              id="reports"
-              aria-labelledby="reports-h"
-              className={`${contentsScrollMargin} rounded-2xl border border-line bg-surface p-6 adult:rounded-lg`}
-            >
-              <h2 id="reports-h" className="font-heading text-xl font-semibold">
+            {/* The heading on the band and the message in a card, as the other sections have. */}
+            <section id="reports" aria-labelledby="reports-h" className={`${contentsScrollMargin} flex flex-col gap-3`}>
+              <h2 id="reports-h" className={sectionHeadingClass}>
                 Inspection reports
               </h2>
-              <p className="mt-2 text-ink-muted">
+              <p className={`${sectionCardClass} p-6 text-ink-muted`}>
                 We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
               </p>
             </section>
@@ -229,10 +225,8 @@ const HELP_ID = "help-h";
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
 // The top of the page, flush under the header as on the resources page: the breadcrumb and the
-// home's name on the soft welcome band (welcome-band, globals.css), then a line that says what the
-// record is and that the guides at the end explain its terms, so it opens like a welcome rather
-// than a form.
-function CentreHero({ centre, hasReports }: { centre: CentreDetail; hasReports: boolean }) {
+// home's name on the soft welcome band (welcome-band, globals.css).
+function CentreHero({ centre }: { centre: CentreDetail }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="page-column px-4 py-6 md:px-8 md:py-8">
@@ -248,15 +242,6 @@ function CentreHero({ centre, hasReports }: { centre: CentreDetail; hasReports: 
           <h1 id="centre-h" className="font-heading text-[2rem] leading-tight font-semibold tracking-tight text-ink md:text-[2.5rem]">
             {centre.centre_name}
           </h1>
-          <p className="max-w-2xl leading-relaxed text-ink-muted md:text-lg">
-            {hasReports
-              ? "Everything HIQA's inspectors have reported about this home, in one place. Take your time: "
-              : "This home's details from HIQA's register. We haven't added its inspection reports yet. "}
-            <a href={`#${HELP_ID}`} className="tap-target">
-              {hasReports ? "our guides" : "Our guides"}
-            </a>{" "}
-            explain any terms that are new to you.
-          </p>
         </div>
       </div>
     </section>
@@ -316,8 +301,7 @@ function CentreFacts({
 
   return (
     <section id="about" aria-labelledby="facts-h" className={`flex ${contentsScrollMargin} flex-col gap-3`}>
-      <h2 id="facts-h" className="flex items-center gap-3 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-        <SectionIcon name="home" tint="sage" />
+      <h2 id="facts-h" className={sectionHeadingClass}>
         About this home
       </h2>
       {/* The details, with the actions beside them on wide screens and under them on narrow ones. */}

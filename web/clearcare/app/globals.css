@@ -235,6 +235,19 @@
   background: var(--accent);
 }
 
+/* A section's heading on the centre page (CCARE-207): the same mark as under each page's main
+   heading, standing upright before it. The heading is a flex row, so the mark sits at its left,
+   centred on the first line. Left out of the adult-centred design, as that mark is. */
+:root:not([data-design="adult-centred"]) .accent-heading::before {
+  content: "";
+  flex: none;
+  align-self: center;
+  width: 0.25rem;
+  height: 1.15em;
+  border-radius: 9999px;
+  background: var(--accent);
+}
+
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);

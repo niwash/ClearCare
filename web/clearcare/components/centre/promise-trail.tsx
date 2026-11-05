@@ -1,5 +1,5 @@
 // components/centre/promise-trail.tsx
-import { formatDate, formatSource, trailAnchor, type Inspection, type PromiseTrail as Trail, type SourceRef } from "@/lib/centres";
+import { formatDate, formatSource, highlightAnchor, trailAnchor, type Inspection, type PromiseTrail as Trail, type SourceRef } from "@/lib/centres";
 import { ShowHide } from "@/components/ui/chevron";
 import { LIST_ITEM } from "@/lib/findings";
 import { JUDGEMENT_LABELS, JudgementIcon, PROMISE_STATUS_LABELS, PromiseStatusIcon } from "./judgement-icon";
@@ -216,6 +216,14 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
           )}
         </li>
       </ol>
+
+      {/* Back up to the regulation's highlight, so nobody has to scroll to find where they came from.
+          Every trail has one: trails are only made for highlighted regulations. */}
+      <div className="border-t border-line-soft px-4 py-3 text-sm font-semibold md:px-6">
+        <a href={`#${highlightAnchor(regulation)}`} className="inline-flex min-h-11 items-center gap-1.5 tap-target">
+          <span aria-hidden>↑</span> Back to What to look at first
+        </a>
+      </div>
     </details>
   );
 }

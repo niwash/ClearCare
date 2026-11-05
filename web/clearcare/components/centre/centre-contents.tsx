@@ -23,6 +23,10 @@ export const contentsScrollMargin = "scroll-mt-24";
 // Where the reader is (ContentsTracker sets aria-current): a filled pill with bold text, so it is
 // shown by shape and weight as well as colour.
 const currentPill = "aria-[current=location]:bg-tint-blue aria-[current=location]:font-bold aria-[current=location]:text-on-tint-blue";
+// In the menu the fill is on the item, not the link, so a section with an arrow ("What happened
+// next") is filled as one pill, the arrow included; the link only turns bold.
+const currentItem = "rounded-full has-aria-[current=location]:bg-tint-blue adult:rounded-md";
+const currentText = "aria-[current=location]:font-bold aria-[current=location]:text-on-tint-blue";
 
 export function CentreContentsBar({ items, className = "" }: { items: ContentsItem[]; className?: string }) {
   const withEntries = items.find((item) => item.children?.length);
@@ -34,13 +38,13 @@ export function CentreContentsBar({ items, className = "" }: { items: ContentsIt
       <div className="relative max-w-full rounded-full border border-line-soft bg-surface/95 p-1.5 shadow-md supports-[backdrop-filter]:bg-surface/85 supports-[backdrop-filter]:backdrop-blur adult:rounded-lg adult:border-line adult:shadow-none">
         <ul data-contents-scroller className="flex gap-1 overflow-x-auto rounded-full [scrollbar-width:none] adult:rounded-md [&::-webkit-scrollbar]:hidden">
           {items.map((item) => (
-            <li key={item.id} className="flex shrink-0 items-center">
+            <li key={item.id} className={`flex shrink-0 items-center ${currentItem}`}>
               <a
                 href={`#${item.id}`}
                 data-level="1"
                 className={`flex min-h-11 items-center whitespace-nowrap rounded-full px-4 text-sm font-semibold text-ink no-underline hover:bg-surface-muted hover:text-primary adult:rounded-md ${
                   item.children?.length ? "pr-0.5" : ""
-                } ${currentPill}`}
+                } ${currentText}`}
               >
                 {item.title}
               </a>

@@ -363,3 +363,8 @@ export function formatSource({ document, page, lastPage, context }: SourceRef) {
 export function trailAnchor(regulation: Regulation) {
   return `reg-${regulation.number}`;
 }
+
+// A regulation's highlight in "What to look at first", which its trail links back up to.
+export function highlightAnchor(regulation: Regulation) {
+  return `first-reg-${regulation.number}`;
+}
