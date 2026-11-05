@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { AccountControls } from "@/components/auth/account-controls";
@@ -29,6 +30,22 @@ export const NAV_ITEMS: NavEntry[] = [
   { label: "Survey", href: "/survey" },
 ];
 
+// The ClearCare logo (CCARE-185), the link home, for the header and footer's blue brand band: the
+// house from the logo files, and the name as text in the site's heading font, so it matches the
+// rest of the site (site-logo-mark, globals.css). className sets the size, by font size, and the
+// layout. The house is decorative: the name gives the link its name. unoptimized: an SVG is served
+// as it is.
+export function SiteLogo({ className }: { className: string }) {
+  return (
+    <Link href="/" className={`${className} font-heading font-semibold text-ink no-underline hover:text-ink`}>
+      <Image src="/logos/clearcare-mark-for-blue.svg" alt="" width={64} height={64} unoptimized className="site-logo-mark" />
+      <span>
+        Clear<span className="site-logo-care">Care</span>
+      </span>
+    </Link>
+  );
+}
+
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
   const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
   if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
@@ -55,13 +72,12 @@ export function SiteHeader() {
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="page-column flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
-          {/* The name, and under it the motto: what the site is, in one line, on every page (CCARE-179).
-              Only the name is the link home. */}
-          <div className="flex flex-col">
-            <Link href="/" className="w-fit font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
-              ClearCare
-            </Link>
-            <p className="text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
+          {/* The logo, and under it the motto: what the site is, in one line, on every page (CCARE-179).
+              Only the logo is the link home. A grid, so the motto starts under the name, not the
+              house: the logo's subgrid shares the columns. */}
+          <div className="grid grid-cols-[auto_1fr] items-center">
+            <SiteLogo className="col-span-2 grid grid-cols-subgrid items-center text-2xl md:text-3xl lg:text-4xl adult:min-h-11" />
+            <p className="col-start-2 text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
           </div>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
