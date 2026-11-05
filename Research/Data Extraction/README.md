@@ -45,7 +45,9 @@ standard libpq PGHOST, PGPORT, PGDATABASE, PGUSER and password settings. Centres
 with only undated reports are logged and skipped; v2 requires a date. Reports
 that never ingested cannot displace a stored parsed report. Selection does not
 require intro text, and an unreadable selected PDF still fails explicitly.
-For the offline manifest catalogue use `--report-source manifest`. PDFs live under
+For the offline manifest catalogue use `--report-source manifest`. It can select
+a report that has not been ingested and that the loader cannot match; use the
+default database source for extraction intended for loading. PDFs live under
 `<data-dir>/raw/sha256/<first two hash characters>/<hash>`. The data directory
 defaults to `CLEARCARE_DATA_DIR` or `./data`. The stored PDF hash is checked
 before sending text to the model. Metadata must exist and be valid; none is
