@@ -7,6 +7,7 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass, linkCardClass, stretchedActionClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
+import { SlideUp } from "@/components/ui/slide-up";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -68,15 +69,18 @@ const OFFICIAL_LINKS: OfficialLink[] = [
 export default function ResourcesPage() {
   return (
     <>
+      {/* The headings and cards further down slide up as they come into view (CCARE-186). */}
+      <SlideUp slideOnOpen={false} />
+
       <ResourcesHero />
 
       <section aria-labelledby="guides-h" className="flex flex-col gap-6">
-        <div className="flex max-w-3xl flex-col gap-2">
+        <div className="reveal flex max-w-3xl flex-col gap-2">
           <h2 id="guides-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Our Guides
           </h2>
         </div>
-        <ul className="grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
+        <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
           {GUIDES.map((guide, index) => (
             // The first card's photo is the largest thing near the top of the page, so it loads first.
             <GuideCard key={guide.slug} guide={guide} priority={index === 0} />
@@ -166,7 +170,7 @@ function OfficialInformation() {
     >
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-        <div className="flex max-w-3xl flex-col gap-2">
+        <div className="reveal flex max-w-3xl flex-col gap-2">
           <h2 id="official-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Official Information
           </h2>
@@ -177,7 +181,7 @@ function OfficialInformation() {
             These organisations do not endorse ClearCare.
           </p>
         </div>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {OFFICIAL_LINKS.map((link) => {
             const isPdf = link.href.toLowerCase().endsWith(".pdf");
             return (
