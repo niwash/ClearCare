@@ -48,7 +48,8 @@ export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-4 px-4 md:px-8">
         <div className="reveal flex max-w-3xl flex-col gap-2">
-          <h2 id={id} className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+          {/* scroll-mt clears the centre page's sticky bar of section links, which links here. */}
+          <h2 id={id} className="scroll-mt-24 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             {title}
           </h2>
           {intro && <p className="text-ink-muted md:text-lg">{intro}</p>}
