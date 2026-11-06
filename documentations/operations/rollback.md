@@ -35,6 +35,12 @@ aws cognito-idp list-users --user-pool-id "$(terraform output -raw user_pool_id)
     --query 'Users[].[Username,UserStatus,UserCreateDate]' --output table
 ```
 
+Destroying the pool leaves the database's own rows behind, and they are the ones a signed-in visitor's
+account owned: `clearcare.users`, one row per account that ever saved a search, and the saved searches
+that follow them. Nothing identifies them once the pool is gone, so clear them in the same operation
+if the pool is not coming back — `DELETE FROM clearcare.users` as `clearcare_owner` — or keep them if
+the pool will be recreated and the rows are still wanted.
+
 ## What a rollback does not fix
 
 The site's own sessions are cookies with a seven-day idle limit; taking the variables away makes
