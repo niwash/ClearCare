@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { NAV_ITEMS, SiteLogo } from "@/components/layout/site-header";
+import { LastSearchLink } from "@/components/search/last-search";
 
 // The header's pages, then the ones only the footer links to. Unfinished pages are left out.
 const FOOTER_LINKS = [
-  ...NAV_ITEMS.flatMap((item) => (item.href ? [{ label: item.label, href: item.href }] : [])),
+  ...NAV_ITEMS.flatMap((item) => (item.href ? [{ label: item.label, href: item.href, search: item.search }] : [])),
   { label: "Privacy notice", href: "/privacy" },
 ];
 
@@ -33,9 +34,14 @@ export function SiteFooter() {
             <ul className="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-3">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="inline-block py-1 tap-target">
-                    {link.label}
-                  </Link>
+                  {/* Search for Homes goes back to the last search on this visit, as in the header. */}
+                  {"search" in link && link.search ? (
+                    <LastSearchLink className="inline-block py-1 tap-target">{link.label}</LastSearchLink>
+                  ) : (
+                    <Link href={link.href} className="inline-block py-1 tap-target">
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

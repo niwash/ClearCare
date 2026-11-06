@@ -99,7 +99,8 @@ const TOUR_STEPS: TourStep[] = [
     ),
     // The navigation bar's link, on every page, rather than the search box on the home page.
     places: [
-      { selector: '[data-tour="nav"] a[href="/search"]' },
+      // href^=: the link carries the visitor's last search when there is one (CCARE-214).
+      { selector: '[data-tour="nav"] a[href^="/search"]' },
       {
         selector: MENU,
         body: (

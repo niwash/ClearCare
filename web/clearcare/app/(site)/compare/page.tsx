@@ -18,6 +18,7 @@ import { CompareButton } from "@/components/compare/compare-button";
 import { CompareSync } from "@/components/compare/compare-sync";
 import { StickyHomeNames } from "@/components/compare/sticky-home-names";
 import { GuidesBand } from "@/components/guides/guide-ending";
+import { LastSearchLink } from "@/components/search/last-search";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
@@ -243,8 +244,6 @@ type Group = { title: string; icon: string; tint: Tint; intro?: ReactNode; rows:
 function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAllRegulations: boolean }) {
   const groups = buildGroups(columns, showAllRegulations);
   const room = MAX_COMPARED - columns.length;
-  // The first home's county, for "Search in Co. …".
-  const county = columns.find((column): column is FoundColumn => column.status === "found")?.centre.county;
 
   return (
     <section aria-labelledby="grid-h" className="flex flex-col gap-4">
@@ -259,7 +258,7 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
       <div className="hidden flex-col gap-3 md:flex lg:flex-row">
         {room > 0 && (
           <div className="lg:hidden">
-            <AddMore room={room} county={county} />
+            <AddMore room={room} />
           </div>
         )}
         <div className="min-w-0 flex-1">
@@ -267,13 +266,13 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
         </div>
         {room > 0 && (
           <div className="hidden w-56 shrink-0 lg:flex">
-            <AddMore room={room} county={county} side />
+            <AddMore room={room} side />
           </div>
         )}
       </div>
       <div className="flex flex-col gap-4 md:hidden">
         <PhoneHomes columns={columns} />
-        {room > 0 && <AddMore room={room} county={county} />}
+        {room > 0 && <AddMore room={room} />}
         <PhoneComparison columns={columns} groups={groups} />
       </div>
 
@@ -283,9 +282,7 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
           reports and register data under the Irish PSI licence (CC BY 4.0), and the HSE&apos;s Fair Deal price lists.
         </p>
         {room > 0 && (
-          <Link href="/search" className="font-semibold tap-target">
-            Add another home in Search
-          </Link>
+          <LastSearchLink className="font-semibold tap-target">Add another home in Search</LastSearchLink>
         )}
       </div>
     </section>
@@ -751,7 +748,7 @@ function NextStep({ centre }: { centre: CentreDetail }) {
 
 // The space for more homes: a slim panel on the grid's right (side), or a strip above the cards on
 // phones.
-function AddMore({ room, county, side = false }: { room: number; county?: string; side?: boolean }) {
+function AddMore({ room, side = false }: { room: number; side?: boolean }) {
   return (
     // A dashed outline marks the free place on the list, in the soft blue; the adult-centred design
     // keeps its 3:1 field colour and plain fill.
@@ -771,15 +768,12 @@ function AddMore({ room, county, side = false }: { room: number; county?: string
           </p>
         </div>
       </div>
-      <div className={side ? "flex w-full flex-col gap-2" : "flex flex-wrap gap-2.5"}>
-        {county && (
-          <Link href={`/search?${new URLSearchParams({ county })}`} className={actionLinkClass}>
-            Search in Co. {county}
-          </Link>
-        )}
-        <Link href="/search" className={secondaryLinkClass}>
-          Search all homes
-        </Link>
+      {/* Back to the visitor's last search on this visit, with its filters (CCARE-214), or to an
+          empty search when there is none. */}
+      <div className={side ? "flex w-full flex-col" : "flex"}>
+        <LastSearchLink className={`${actionLinkClass} ${side ? "justify-center text-center" : ""}`}>
+          Search for other homes
+        </LastSearchLink>
       </div>
     </div>
   );
