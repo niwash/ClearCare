@@ -47,3 +47,12 @@ resource "aws_secretsmanager_secret" "cognito_client_secret" {
   description             = "App client secret of the Cognito pool that holds public accounts"
   recovery_window_in_days = 7
 }
+
+# The token the site's server and the API share when they read or write a visitor's saved search
+# (ADR-0025). Both tasks read it, so both execution roles are granted it (iam.tf). One value, set
+# once, in both places: generate it with openssl rand -base64 33.
+resource "aws_secretsmanager_secret" "site_token" {
+  name                    = "${local.name}/site/token"
+  description             = "Token the site's server and the API share for everything the site asks for on a visitor's behalf; generate with openssl rand -base64 33"
+  recovery_window_in_days = 7
+}

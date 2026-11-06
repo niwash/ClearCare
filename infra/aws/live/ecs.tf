@@ -108,6 +108,9 @@ resource "aws_ecs_task_definition" "web" {
       secrets = var.accounts_enabled ? [
         { name = "AUTH_COGNITO_SECRET", valueFrom = aws_secretsmanager_secret.cognito_client_secret.arn },
         { name = "AUTH_SECRET", valueFrom = aws_secretsmanager_secret.auth_session.arn },
+        # What the API is sent when it keeps a signed-in visitor's saved search (ADR-0025). Without
+        # it the bar on the search page never appears.
+        { name = "SITE_TOKEN", valueFrom = aws_secretsmanager_secret.site_token.arn },
       ] : []
       # The image has node but no curl.
       healthCheck = {
@@ -158,9 +161,15 @@ resource "aws_ecs_task_definition" "api" {
         { name = "SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE", value = "5" },
         { name = "SPRING_DATASOURCE_HIKARI_MINIMUMIDLE", value = "1" },
       ]
-      secrets = [
-        { name = "CLEARCARE_API_PASSWORD", valueFrom = aws_secretsmanager_secret.database["api"].arn },
-      ]
+      secrets = concat(
+        [{ name = "CLEARCARE_API_PASSWORD", valueFrom = aws_secretsmanager_secret.database["api"].arn }],
+        # The token a saved search is written with (ADR-0025). Injected only once accounts are on,
+        # and so only once it has a value: an ECS container cannot start with an empty secret. Until
+        # then /preferences answers 503 and the site offers no saved search.
+        var.accounts_enabled ? [
+          { name = "SITE_TOKEN", valueFrom = aws_secretsmanager_secret.site_token.arn },
+        ] : [],
+      )
       healthCheck = {
         command     = ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/actuator/health"]
         interval    = 30

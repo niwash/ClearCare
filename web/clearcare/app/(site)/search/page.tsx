@@ -11,6 +11,7 @@ import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import { formatDate } from "@/lib/centres";
 import {
+  filtersClearedHref,
   formatEircode,
   hasSearch,
   looksLikeEircode,
@@ -74,7 +75,11 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
-  const search = readSearch(await searchParams);
+  const params = await searchParams;
+  const search = readSearch(params);
+  // The visitor emptied the form on purpose (lib/search-filters.tsx, apply()): this page is where
+  // "Clear all" lands, so their saved search is not opened over it.
+  const filtersCleared = params.filtersCleared === "true";
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
@@ -98,7 +103,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           with the care and amenity filters, there are too many kinds of filter for a bar above the
           results (Baymard). Below md, a Filters button opens them in a sheet. */}
       <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} />
+        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} cleared={filtersCleared} />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -197,7 +202,7 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           {filters.map((filter) => (
             <Link
               key={filter.id}
-              href={searchHref({ ...search, selection: filter.without })}
+              href={filtersClearedHref({ ...search, selection: filter.without })}
               scroll={false}
               aria-label={`Remove filter: ${filter.label}`}
               className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-primary bg-surface pl-3 pr-2.5 text-[0.8125rem] font-medium text-ink no-underline hover:bg-surface-muted adult:rounded-md"
@@ -208,7 +213,7 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
               </svg>
             </Link>
           ))}
-          <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className="inline-flex min-h-8 shrink-0 items-center px-1.5 text-[0.8125rem]">
+          <Link href={filtersClearedHref({ ...search, selection: NO_FILTERS })} scroll={false} className="inline-flex min-h-8 shrink-0 items-center px-1.5 text-[0.8125rem]">
             Clear all
           </Link>
         </div>
@@ -282,7 +287,7 @@ function NoMatches({ search }: { search: PageSearch }) {
         No homes match all {count} {count === 1 ? "filter" : "filters"}
       </h3>
       <p className="text-ink-muted">Remove the filter that is ruling out the most homes, or clear them and start again.</p>
-      <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
+      <Link href={filtersClearedHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
         Clear all filters
       </Link>
     </div>
