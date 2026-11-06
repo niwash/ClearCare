@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DocumentTitle } from "@/components/layout/document-title";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
-import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass, linkCardClass, secondaryLinkClass, stretchedActionClass } from "@/components/ui/classes";
 
 // The 404 page (CCARE-214), for an address that matches no page and for a home's page whose centre
 // ID isn't known (notFound() in centres/[id]). In the root app folder, so it catches both: it
@@ -13,9 +13,9 @@ import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/component
 
 // The pages most people are looking for, so a mistyped address still leads somewhere useful.
 const PLACES = [
-  { label: "Fair Deal Explained", href: "/guides/fair-deal", hint: "How the HSE helps pay for nursing home care." },
-  { label: "Resources", href: "/resources", hint: "Our guides, and official information from the HSE and HIQA." },
-  { label: "Contacts", href: "/contacts", hint: "Who to call about nursing home care and Fair Deal." },
+  { label: "Fair Deal Explained", href: "/guides/fair-deal", hint: "How the HSE helps pay for nursing home care.", action: "Read the guide" },
+  { label: "Resources", href: "/resources", hint: "Our guides, and official information from the HSE and HIQA.", action: "See resources" },
+  { label: "Contacts", href: "/contacts", hint: "Who to call about nursing home care and Fair Deal.", action: "See contacts" },
 ];
 
 export default function NotFound() {
@@ -51,11 +51,15 @@ export default function NotFound() {
           </h2>
           <ul className="grid gap-3 md:grid-cols-3">
             {PLACES.map((place) => (
-              <li key={place.href} className="rounded-2xl border border-line bg-surface p-5 adult:rounded-lg">
-                <Link href={place.href} className="font-semibold">
-                  {place.label}
+              // The whole card is the link (WCAG 2.5.5): its button's link stretches over it, as on
+              // the guide cards.
+              <li key={place.href} className={`${linkCardClass} relative flex flex-col items-start gap-1 p-5`}>
+                <h3 className="font-semibold text-ink">{place.label}</h3>
+                <p className="flex-1 text-sm text-ink-muted">{place.hint}</p>
+                <Link href={place.href} className={`${stretchedActionClass} mt-3 text-sm`}>
+                  {place.action}
+                  <span aria-hidden>→</span>
                 </Link>
-                <p className="mt-1 text-sm text-ink-muted">{place.hint}</p>
               </li>
             ))}
           </ul>

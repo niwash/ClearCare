@@ -5,6 +5,7 @@
 import Link from "next/link";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { ShowAnotherHome } from "@/components/home/show-another-home";
+import { actionLinkClass } from "@/components/ui/classes";
 import { formatDate } from "@/lib/centres";
 import { getSampleCentre } from "@/lib/sample-centre";
 
@@ -27,7 +28,8 @@ export async function SampleCentre({ total }: { total: number | null }) {
       <div className="flex flex-col gap-1 border-b border-line-soft px-4 pb-4 pt-5 md:px-7">
         <p className="text-xs uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">Randomly picked centre</p>
         <h3 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
-          <Link href={`/centres/${centre.centre_id}`} className="text-ink tap-target">
+          {/* Underlined on hover only in the standard design (CCARE-214); always in Easier to read. */}
+          <Link href={`/centres/${centre.centre_id}`} className="text-ink no-underline tap-target hover:underline adult:underline">
             {centre.centre_name}
           </Link>
         </h3>
@@ -87,8 +89,12 @@ export async function SampleCentre({ total }: { total: number | null }) {
         )}
       </div>
 
-      <div className="flex flex-col gap-2 border-t border-line-soft px-4 py-3.5 text-sm md:flex-row md:justify-between md:px-7">
-        <Link href={`/centres/${centre.centre_id}`} className="tap-target">See full record<span className="sr-only"> for {centre.centre_name}</span> →</Link>
+      <div className="flex flex-col items-start gap-3 border-t border-line-soft px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between md:px-7">
+        {/* The card's call to action, as a button (CCARE-214). */}
+        <Link href={`/centres/${centre.centre_id}`} className={`${actionLinkClass} text-sm`}>
+          See full record<span className="sr-only"> for {centre.centre_name}</span>
+          <span aria-hidden>→</span>
+        </Link>
         {/* Picks again on the server without reloading the page, so the reader keeps their place. */}
         <ShowAnotherHome currentName={centre.centre_name} />
       </div>
