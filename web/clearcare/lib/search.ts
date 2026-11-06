@@ -2,7 +2,12 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
+import { ANY_COUNTY, COUNTIES } from "./counties.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
+
+// The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
+// value are in lib/counties.ts: the saved-search tests load them without this file's API call.
+export { ANY_COUNTY, COUNTIES };
 
 export interface CentreSummary {
   centre_id: string;
@@ -68,13 +73,6 @@ export type SearchResult =
 
 // The longest name or address the API accepts.
 export const MAX_TEXT_LENGTH = 100;
-
-// The County enum in api/openapi.yaml. The API is case-sensitive, so these are the only values to send.
-export const COUNTIES = [
-  "Carlow", "Cavan", "Clare", "Cork", "Donegal", "Dublin", "Galway", "Kerry", "Kildare",
-  "Kilkenny", "Laois", "Leitrim", "Limerick", "Longford", "Louth", "Mayo", "Meath", "Monaghan",
-  "Offaly", "Roscommon", "Sligo", "Tipperary", "Waterford", "Westmeath", "Wexford", "Wicklow",
-];
 
 // The API's base URL, or null if it isn't set.
 export function apiUrl() {
@@ -151,9 +149,6 @@ function first(params: PageParams, key: string) {
   return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
 }
 
-// The county list's "Any county" value. It means no county, as a blank does.
-export const ANY_COUNTY = "any";
-
 export function readSearch(params: PageParams): PageSearch {
   const name = first(params, "name");
   const place = first(params, "place") || first(params, "address") || first(params, "eircode");
@@ -188,4 +183,13 @@ export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" 
   if (page > 1) params.set("page", String(page));
   const text = params.toString();
   return text ? `/search?${text}` : "/search";
+}
+
+// The address for a search that has just been emptied — "Clear all", or the last filter tag removed
+// — which is the one page where a saved search must not open itself again. It says so in the address
+// (?filtersCleared=true, read in app/(site)/search/page.tsx) so that leaving and coming back keeps it
+// emptied.
+export function filtersClearedHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">) {
+  const href = searchHref(search);
+  return href === "/search" ? "/search?filtersCleared=true" : href;
 }

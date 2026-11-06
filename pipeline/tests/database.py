@@ -29,6 +29,7 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V12__report_amenities_v2.sql",
     REPOSITORY / "db" / "V13__pipeline_run.sql",
     REPOSITORY / "db" / "V14__finding_re_assessment.sql",
+    REPOSITORY / "db" / "V15__user_preferences.sql",
 )
 POSTGRES_IMAGE = "postgres:18.6"
 SUPERUSER = "postgres"

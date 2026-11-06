@@ -158,14 +158,18 @@ accounts_enabled   = true
 ```
 
 ```sh
-# Both secrets exist from the first apply, with no value. Set them, then deploy.
+# All three secrets exist from the first apply, with no value. Set them, then deploy.
 aws secretsmanager put-secret-value --secret-id clearcare/auth/session-secret \
     --secret-string "$(openssl rand -base64 33)"
 aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-secret \
     --secret-string "<client_secret from the pool>"
+# One value, read by the site and the API: it is how the API knows a saved search is the site's own
+# (ADR-0025).
+aws secretsmanager put-secret-value --secret-id clearcare/site/token \
+    --secret-string "$(openssl rand -base64 33)"
 ```
 
-`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the three are injected only once they have been set. The web task's execution role can read nothing else.
 
 Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 

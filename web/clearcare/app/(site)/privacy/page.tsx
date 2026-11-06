@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "3 November 2026";
+const LAST_UPDATED = "5 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -89,6 +89,14 @@ export default function PrivacyPage() {
               read it, and it expires after 7 days without a visit. A few others last only while you sign in, to
               keep the sign-in itself secure. None of them needs your consent, because signing in can&apos;t work
               without them.
+            </li>
+            {/* The saved search (ADR-0025): clearcare.user_preference, keyed by the account's Cognito
+                subject, holding the county, the order and the ticked filter options only. */}
+            <li>
+              A search you ask us to remember: the county, the order and the care and amenity options you chose.
+              It&apos;s kept with your account so it&apos;s there on your next visit, on any device, and what you
+              type into the search boxes isn&apos;t kept. You can forget it on the search page at any time, and
+              it goes when your account does.
             </li>
             <li>We keep your account until you delete it, or ask us to by email.</li>
           </ul>

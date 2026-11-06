@@ -13,7 +13,10 @@
 import { Chevron } from "@/components/ui/chevron";
 import { textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
-import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, searchHref, type Facets, type PageSearch } from "@/lib/search";
+import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
+import { loadSavedSearch, useSavedSearch } from "@/components/preferences/saved-search-store";
+import { hasSavedChoices, savedSearchFrom, savedSearchHref } from "@/lib/preferences";
+import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, filtersClearedHref, searchHref, type Facets, type PageSearch } from "@/lib/search";
 import {
   filterCount,
   FILTER_GROUPS,
@@ -43,11 +46,15 @@ export function SearchFilters({
   facets,
   total,
   sortShown,
+  cleared = false,
 }: {
   search: FilterState;
   facets: Facets | null;
   total: number | null; // null before anything is searched for
   sortShown: boolean;
+  // The visitor emptied the form on purpose (the address says ?filtersCleared=true), so their saved search is
+  // not applied here: an empty search page is where "Clear all" has to be able to land.
+  cleared?: boolean;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -65,6 +72,32 @@ export function SearchFilters({
   const [fetched, setFetched] = useState<{ total: number | null; facets: Facets | null } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const draftHref = searchHref(draft);
+  // What "Save My Preferences" keeps: the choices in the form, not the words typed into the search
+  // boxes (lib/preferences.ts). It sits under the Search button, so it saves what is about to be
+  // searched for, and applies it once stored.
+  const savedFromDraft = savedSearchFrom(draft);
+
+  // The account's saved choices. Read once per page load; the button under Search reports them, and
+  // a page that carries no search of its own opens them at once, so a returning visitor arrives on
+  // the search they kept (ADR-0025). Not after "Clear all", which the address marks with
+  // ?filtersCleared=true: that page exists so an emptied form can stay emptied.
+  const { status: savedStatus, saved } = useSavedSearch();
+  useEffect(loadSavedSearch, []);
+  useEffect(() => {
+    if (cleared) return;
+    if (savedStatus !== "ready" || !saved || !hasSavedChoices(saved)) return;
+    if (applied !== "/search") return;
+    startTransition(() => router.replace(savedSearchHref(saved)));
+  }, [cleared, savedStatus, saved, applied, router]);
+
+  // Forgetting empties the page as well as the account: the choices on screen are gone from the
+  // table, so they should not stay in front of the visitor as if they were still kept. The sheet
+  // closes too, so a phone is not left looking at an empty form.
+  function startOver() {
+    sheet.current?.close();
+    setDraft({ ...EMPTY, sort: draft.sort });
+    startTransition(() => router.replace("/search"));
+  }
   // The page's own counts while the draft is what's applied; otherwise the last ones fetched for it,
   // which lag a moment behind the ticks.
   const draftCount = draftHref === applied || !fetched ? { total, facets } : fetched;
@@ -95,7 +128,10 @@ export function SearchFilters({
 
   function apply() {
     sheet.current?.close();
-    startTransition(() => router.push(draftHref, { scroll: false }));
+    // A search with every field emptied goes to the page that says so (?filtersCleared=true) rather than to
+    // /search, which is the arrival that opens the visitor's saved search again. Without this,
+    // "Clear all" followed by Search would put the cleared filters straight back.
+    startTransition(() => router.push(filtersClearedHref(draft), { scroll: false }));
   }
 
   const showLabel = draftCount.total === null ? "Search" : `Show ${draftCount.total} ${noun(draftCount.total)}`;
@@ -117,10 +153,16 @@ export function SearchFilters({
           footer={
             // Kept in view at the bottom of the window while the column is taller than it, with
             // "Clear all" under the button once something is set.
-            <div className={`sticky bottom-0 flex flex-col items-center gap-1 rounded-b-2xl border-t border-line bg-surface px-5 pt-3.5 adult:rounded-b-lg ${canClear ? "pb-2" : "pb-3.5"}`}>
+            <div className={`sticky bottom-0 flex flex-col items-center gap-2 rounded-b-2xl border-t border-line bg-surface px-5 pt-3.5 adult:rounded-b-lg ${canClear ? "pb-2" : "pb-3.5"}`}>
               <button type="submit" aria-live="polite" className="min-h-12 w-full rounded-full bg-primary px-4 font-bold text-on-primary hover:bg-primary-hover">
                 {showLabel}
               </button>
+              {/* Under the Search button: the choices are made here, so this is where they are
+                  kept (ADR-0025). It applies them once saved, so the results on screen are the ones
+                  the account remembers. */}
+              <div className="w-full">
+                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+              </div>
               {canClear && (
                 <button type="button" onClick={() => setDraft({ ...EMPTY, sort: draft.sort })} className="min-h-11 px-2 text-sm text-primary underline">
                   Clear all
@@ -187,6 +229,9 @@ export function SearchFilters({
               <button type="button" onClick={apply} className="min-h-13 w-full rounded-full bg-primary text-[17px] font-bold text-on-primary">
                 {showLabel}
               </button>
+              <div className="mt-2 w-full">
+                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+              </div>
             </div>
           </div>
         )}

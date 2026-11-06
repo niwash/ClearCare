@@ -7,8 +7,8 @@ locals {
   task_families = toset(["web", "api", "pipeline", "migrate", "restore"])
   # Family => the secrets its execution role may read.
   execution_secrets = {
-    web      = [aws_secretsmanager_secret.auth_session.arn, aws_secretsmanager_secret.cognito_client_secret.arn]
-    api      = [aws_secretsmanager_secret.database["api"].arn]
+    web      = [aws_secretsmanager_secret.auth_session.arn, aws_secretsmanager_secret.cognito_client_secret.arn, aws_secretsmanager_secret.site_token.arn]
+    api      = [aws_secretsmanager_secret.database["api"].arn, aws_secretsmanager_secret.site_token.arn]
     pipeline = [aws_secretsmanager_secret.database["pipeline"].arn, aws_secretsmanager_secret.anthropic.arn]
     migrate  = [aws_secretsmanager_secret.database["migrator"].arn]
     restore  = [local.admin_secret_arn]
