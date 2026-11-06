@@ -38,6 +38,10 @@ With any of them missing the account controls disappear and the authentication r
 an empty header is the symptom of a missing variable rather than a broken pool. That is also why the
 site can be deployed before the pool exists.
 
+The task also sets `AUTH_URL` to `https://<site_hostname>`, because behind the load balancer the
+server would otherwise build Cognito's callback and logout URLs from the container's own address. It
+is not one of the five: without it the controls still show, and Cognito answers `redirect_mismatch`.
+
 ## 4. The four journeys, in a browser
 
 | Journey | Expected |

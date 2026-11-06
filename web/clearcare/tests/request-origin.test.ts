@@ -1,6 +1,7 @@
 // tests/request-origin.test.ts
 // The origin a URL is built from has to be the one the browser used. Behind the load balancer the
-// server's own address is the container's, which is why the forwarded headers decide.
+// server's own address is the container's, which is why AUTH_URL decides where it is set and the
+// forwarded headers otherwise.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
@@ -18,6 +19,20 @@ describe("public origin", () => {
       }),
       "https://clearcare.ie",
     );
+  });
+
+  test("AUTH_URL, where it is set, wins over every header", () => {
+    assert.equal(
+      originFrom({ "x-forwarded-host": "elsewhere.example", host: "0.0.0.0:3000" }, "https://clearcare.ie/"),
+      "https://clearcare.ie",
+    );
+  });
+
+  test("an AUTH_URL that is blank or not a URL falls back to the headers", () => {
+    const headers = { "x-forwarded-host": "clearcare.ie", "x-forwarded-proto": "https" };
+    assert.equal(originFrom(headers, "  "), "https://clearcare.ie");
+    assert.equal(originFrom(headers, "https://"), "https://clearcare.ie");
+    assert.equal(originFrom(headers, "clearcare.ie"), "https://clearcare.ie");
   });
 
   test("the first value is used when a proxy appends its own", () => {
