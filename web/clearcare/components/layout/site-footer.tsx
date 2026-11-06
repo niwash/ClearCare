@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NAV_ITEMS } from "@/components/layout/site-header";
+import { NAV_ITEMS, SiteLogo } from "@/components/layout/site-header";
 
 // The header's pages, then the ones only the footer links to. Unfinished pages are left out.
 const FOOTER_LINKS = [
@@ -21,9 +21,7 @@ export function SiteFooter() {
       <div className="page-column flex flex-col gap-6 px-4 py-10 md:px-8 [body:has([data-tour-offer])_&]:pb-80 [body:has([data-tour-offer])_&]:adult:pb-96">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
-            <Link href="/" className="w-fit font-heading text-xl font-semibold text-ink no-underline hover:text-ink tap-target">
-              ClearCare
-            </Link>
+            <SiteLogo className="flex w-fit items-center text-xl tap-target" />
             <p className="text-ink-muted">
               HIQA nursing home inspection reports, made easier to search, understand and compare.
             </p>
