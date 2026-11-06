@@ -81,9 +81,6 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
-  // The visitor emptied the form on purpose (lib/search-filters.tsx, apply()): this page is where
-  // "Clear all" lands, so their saved search is not opened over it.
-  const filtersCleared = params.filtersCleared === "true";
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
@@ -103,9 +100,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         : ("unavailable" as const),
     saved,
   };
-  // A returning visitor who has asked for nothing, and has not just cleared the filters, opens the
-  // search they kept. A page with a search of its own is theirs, not the stored one's.
-  if (!searched && !filtersCleared && saved && hasSavedChoices(saved)) redirect(savedSearchHref(saved));
+  // A returning visitor who has asked for nothing opens the search they kept. "Nothing" is an
+  // address with no query at all, not an address the API finds no search in: ?sort=latest_inspection
+  // is somewhere a visitor arrived on purpose (Clear all with a changed order, or the last tag
+  // removed), and opening the saved search over it would undo what they did. It would also loop when
+  // the order is the only thing saved, since that is exactly the address it redirects to.
+  if (Object.keys(params).length === 0 && saved && hasSavedChoices(saved)) redirect(savedSearchHref(saved));
   // page_size isn't added to the query itself, so it stays out of the page links.
   const result = searched
     ? await searchCentres({ ...search.query, page_size: search.query.page_size ?? RESULTS_PER_PAGE }, apiFilterParams(search.selection))

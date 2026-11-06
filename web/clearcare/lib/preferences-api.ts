@@ -1,8 +1,9 @@
 // lib/preferences-api.ts
 // The saved search as the API holds it (ADR-0025), called from the Next server only. The browser
-// never holds the token that says a request is the site's own, so the route handler under
-// app/api/preferences is the only caller: it reads the account from the session cookie and sends
-// it, with the token, from here.
+// never holds the token that says a request is the site's own: the search page reads the saved
+// search with it on every render, and the route handler under app/api/preferences writes and
+// deletes one, reading the account from the session cookie and sending it, with the token, from
+// here.
 //
 // Nothing here throws on the API being down or unset: a saved search is a convenience, and a page
 // that cannot reach it renders as it did before there were any.
