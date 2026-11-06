@@ -9,7 +9,11 @@ import { SearchFilters, SortSelect } from "@/components/search/search-filters";
 import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
+import { authRuntime } from "@/lib/auth";
+import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
+import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
+import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
 import {
   filtersClearedHref,
   formatEircode,
@@ -83,6 +87,25 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
+
+  // The account's saved search, read here rather than in the browser (ADR-0025). A visitor with no
+  // account makes no request at all, and one who keeps a search is sent straight to it below, so
+  // they never see the prompt render and then be replaced. The filters panel is told what was found,
+  // so it shows the button and "Forget my preferences" without asking again.
+  const signedIn = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
+  const kept = signedIn && preferencesConfigured() ? await readSavedSearch(signedIn) : null;
+  const saved: SavedSearch | null = kept?.ok ? kept.saved : null;
+  const initialSaved = {
+    status: !signedIn
+      ? ("signed_out" as const)
+      : kept?.ok
+        ? ("ready" as const)
+        : ("unavailable" as const),
+    saved,
+  };
+  // A returning visitor who has asked for nothing, and has not just cleared the filters, opens the
+  // search they kept. A page with a search of its own is theirs, not the stored one's.
+  if (!searched && !filtersCleared && saved && hasSavedChoices(saved)) redirect(savedSearchHref(saved));
   // page_size isn't added to the query itself, so it stays out of the page links.
   const result = searched
     ? await searchCentres({ ...search.query, page_size: search.query.page_size ?? RESULTS_PER_PAGE }, apiFilterParams(search.selection))
@@ -103,7 +126,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           with the care and amenity filters, there are too many kinds of filter for a bar above the
           results (Baymard). Below md, a Filters button opens them in a sheet. */}
       <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} cleared={filtersCleared} />
+        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} initialSaved={initialSaved} />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">

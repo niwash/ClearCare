@@ -109,7 +109,7 @@ resource "aws_ecs_task_definition" "web" {
         { name = "AUTH_COGNITO_SECRET", valueFrom = aws_secretsmanager_secret.cognito_client_secret.arn },
         { name = "AUTH_SECRET", valueFrom = aws_secretsmanager_secret.auth_session.arn },
         # What the API is sent when it keeps a signed-in visitor's saved search (ADR-0025). Without
-        # it the bar on the search page never appears.
+        # it the save controls on the search page never appear.
         { name = "SITE_TOKEN", valueFrom = aws_secretsmanager_secret.site_token.arn },
       ] : []
       # The image has node but no curl.

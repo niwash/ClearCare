@@ -704,7 +704,7 @@ paths:
 
         The account is named by the site's own server, not by the browser: the
         site reads its session cookie (ADR-0020), takes the account's Cognito
-        subject and sends it with a token the site and the API share (ADR-0024).
+        subject and sends it with a token the site and the API share (ADR-0025).
         A request without that token is refused with 401, and these paths answer
         503 while no token is configured, so a deployment without one keeps
         working as it did.

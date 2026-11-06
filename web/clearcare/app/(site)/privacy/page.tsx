@@ -90,13 +90,14 @@ export default function PrivacyPage() {
               keep the sign-in itself secure. None of them needs your consent, because signing in can&apos;t work
               without them.
             </li>
-            {/* The saved search (ADR-0025): clearcare.user_preference, keyed by the account's Cognito
-                subject, holding the county, the order and the ticked filter options only. */}
+            {/* The saved search (ADR-0025): clearcare.user_preferences, keyed on the account's id in
+                clearcare.users, holding the county, the order and the ticked filter options only. */}
             <li>
               A search you ask us to remember: the county, the order and the care and amenity options you chose.
               It&apos;s kept with your account so it&apos;s there on your next visit, on any device, and what you
-              type into the search boxes isn&apos;t kept. You can forget it on the search page at any time, and
-              it goes when your account does.
+              type into the search boxes isn&apos;t kept. Saving one also keeps a number for your account, which
+              the search is filed against. You can forget the search on the search page at any time; that leaves
+              your account as it is, and if you ask us by email we remove the saved search along with the account.
             </li>
             <li>We keep your account until you delete it, or ask us to by email.</li>
           </ul>

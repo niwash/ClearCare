@@ -22,8 +22,8 @@ CREATE TABLE clearcare.users (
 -- filter options the visitor saved, so they do not have to tick them again on
 -- their next visit.
 --
--- This is the only table clearcare_api writes, and it is written for a visitor's
--- own choosing rather than for HIQA data, which is the boundary ADR-0010 keeps:
+-- This and `users` are the only tables clearcare_api writes, and both are written for a
+-- visitor's own choosing rather than for HIQA data, which is the boundary ADR-0010 keeps:
 -- the pipeline still owns everything read from a report or a register.
 --
 -- One document rather than a column per filter: the site's filter options change

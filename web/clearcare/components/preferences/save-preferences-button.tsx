@@ -1,7 +1,7 @@
 "use client";
 
 // components/preferences/save-preferences-button.tsx
-// "Save My Preferences", under the Search button in the filters panel (ADR-0025): the choices are
+// "Save my preferences", under the Search button in the filters panel (ADR-0025): the choices are
 // made here, so this is where they are kept — and, now that nothing sits above the results, this is
 // also where a visitor hears how it went.
 //
@@ -12,17 +12,15 @@
 //
 // The save is answered in the button itself — "Saved" for a few seconds, where the visitor is
 // already looking, with the same words announced in a live region — and the way out ("Forget my
-// preferences") is beside it, since the bar that used to carry it is gone.
+// preferences") is beside it.
+//
+// On a phone the sheet closes as the save is applied, which takes the button with it, so the same
+// confirmation is also given by PreferencesNotice, outside the sheet and hidden from md up.
 import { useEffect, useState } from "react";
 
 import { hasSavedChoices, type SavedSearch } from "@/lib/preferences";
 
-import {
-  forgetPreferences,
-  loadSavedSearch,
-  savePreferences,
-  useSavedSearch,
-} from "./saved-search-store";
+import { forgetPreferences, savePreferences, useSavedSearch } from "./saved-search-store";
 
 // How long "Saved" stays before the button offers to save again.
 const SAVED_FOR = 3000;
@@ -38,8 +36,6 @@ export function SavePreferencesButton({
 }) {
   const { status, saved, error, busy } = useSavedSearch();
   const [justSaved, setJustSaved] = useState(false);
-
-  useEffect(loadSavedSearch, []);
 
   useEffect(() => {
     if (!justSaved) return;
@@ -67,7 +63,7 @@ export function SavePreferencesButton({
             : "border-primary bg-surface text-ink enabled:hover:bg-surface-muted"
         }`}
       >
-        {justSaved ? "Saved" : "Save My Preferences"}
+        {justSaved ? "Saved" : "Save my preferences"}
       </button>
 
       {/* The same answer for a screen reader, which does not see the label change. */}

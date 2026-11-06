@@ -8,13 +8,19 @@ import { describe, test } from "node:test";
 
 import {
   hasSavedChoices,
-  NO_SAVED_SEARCH,
   parseSavedSearch,
-  sameSavedSearch,
   savedSearchDocument,
   savedSearchFrom,
   savedSearchHref,
+  type SavedSearch,
 } from "../lib/preferences.ts";
+
+// The search with nothing in it: what a visitor who has made no choice would leave.
+const NO_SAVED_SEARCH: SavedSearch = {
+  county: "",
+  sort: "name",
+  selection: { care: [], room: [], fac: [], act: [] },
+};
 
 describe("what is worth saving", () => {
   test("the default search leaves nothing behind", () => {
@@ -139,18 +145,3 @@ describe("the page address of a saved search", () => {
   });
 });
 
-describe("comparing two searches", () => {
-  test("the same choices are the same saved search", () => {
-    const one = { county: "Cork", sort: "name" as const, selection: { ...NO_SAVED_SEARCH.selection, care: ["dementia"] } };
-
-    assert.equal(sameSavedSearch(one, { ...one, selection: { ...one.selection } }), true);
-  });
-
-  test("a different county, order or option is not", () => {
-    const one = { county: "Cork", sort: "name" as const, selection: { ...NO_SAVED_SEARCH.selection, care: ["dementia"] } };
-
-    assert.equal(sameSavedSearch(one, { ...one, county: "Kerry" }), false);
-    assert.equal(sameSavedSearch(one, { ...one, sort: "latest_inspection" }), false);
-    assert.equal(sameSavedSearch(one, { ...one, selection: { ...one.selection, care: [] } }), false);
-  });
-});
