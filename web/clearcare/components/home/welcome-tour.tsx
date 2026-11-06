@@ -369,8 +369,8 @@ export function WelcomeTour() {
       {/* Asked, not started (CCARE-164). In the bottom-left corner, clear of the Menu button.
           Straight into <body> (CCARE-184): inside the welcome band it was fixed to the band's
           fade-in animation rather than to the window (an animated translate makes a containing
-          block), so it stayed hidden until the band scrolled in. It floats over the footer, which
-          keeps its height (CCARE-211).
+          block), so it stayed hidden until the band scrolled in. The footer makes room for it, sized
+          to the box at each width (CCARE-211).
           TODO: If the user is logged in, remove the box entirely. */}
       {hydrated &&
         !dismissed &&
