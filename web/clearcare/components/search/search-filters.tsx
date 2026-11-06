@@ -95,6 +95,20 @@ export function SearchFilters({
     setDraft({ ...EMPTY, sort: draft.sort });
     startTransition(() => router.replace("/search"));
   }
+
+  // The browser's Back button can restore this page from its own cache, without asking the server:
+  // it comes back exactly as it was, including "Forget my preferences" for a search that has since
+  // been forgotten. A restored page is loaded again, so what it shows is what is stored.
+  //
+  // router.refresh() is not enough here: on a restored page it is answered from the router's own
+  // cache with the payload the page was built from, which is the stale one. Reloading asks the server.
+  useEffect(() => {
+    const askAgain = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
+    };
+    window.addEventListener("pageshow", askAgain);
+    return () => window.removeEventListener("pageshow", askAgain);
+  }, []);
   // The page's own counts while the draft is what's applied; otherwise the last ones fetched for it,
   // which lag a moment behind the ticks.
   const draftCount = draftHref === applied || !fetched ? { total, facets } : fetched;

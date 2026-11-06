@@ -1,6 +1,6 @@
 // tests/preferences-route.test.ts
-// The route under app/api/preferences is the one place a saved search is read or written, and the
-// one place the API's token is used. It imports next-auth and next/server, so no runner here can
+// The route under app/api/preferences is where a saved search is written or deleted, and, with the
+// search page, one of the two places the API's token is used. It imports next-auth and next/server, so no runner here can
 // hold it: the decisions are read as source, and a curl against a running server is what proves the
 // response (as with sign-out, tests/cognito-logout.test.ts).
 // Run with: npm test
@@ -53,8 +53,9 @@ describe("the saved-search route", () => {
     assert.match(route, /savedSearchDocument\(result\.saved\)/);
   });
 
-  test("offers all three things a visitor can do with a saved search", () => {
-    assert.match(route, /export async function GET/);
+  // Two things, not three: reading is the page's job, on the server (app/(site)/search/page.tsx).
+  test("offers the two things a visitor can change about a saved search", () => {
+    assert.doesNotMatch(route, /export async function GET/);
     assert.match(route, /export async function PUT/);
     assert.match(route, /export async function DELETE/);
     assert.match(route, /forgetSavedSearch\(/);
@@ -62,8 +63,8 @@ describe("the saved-search route", () => {
 });
 
 describe("the token behind the API call", () => {
-  // A component runs in the browser, so the token must not be reachable from one. Only the route
-  // handler, on the server, imports the module that reads it.
+  // A component runs in the browser, so the token must not be reachable from one. Only server code —
+  // the page and the route handler — imports the module that reads it.
   test("is read on the server only", () => {
     const offenders = sourceFiles("components").filter(
       (file) =>

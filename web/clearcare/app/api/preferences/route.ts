@@ -1,8 +1,10 @@
 // app/api/preferences/route.ts
-// The signed-in visitor's saved search (ADR-0025): GET it, PUT one, DELETE it.
+// The signed-in visitor's saved search (ADR-0025): PUT one, DELETE it.
 //
-// The browser talks to this route with its session cookie and nothing else. The route takes the
-// account's subject claim out of the session and forwards the request to the API with the token
+// Reading it is not here: the search page reads it on the server (app/(site)/search/page.tsx), so a
+// GET would have no caller and one more way in to keep guarded. What remains is what the browser
+// does change, and it talks to this route with its session cookie and nothing else. The route takes
+// the account's subject claim out of the session and forwards the request to the API with the token
 // that proves it is the site's, so no token and no account id ever comes from the page: a caller
 // cannot name another account's saved search, only its own.
 import { authRuntime } from "@/lib/auth";
@@ -11,7 +13,6 @@ import { parseSavedSearch, savedSearchDocument } from "@/lib/preferences";
 import {
   forgetSavedSearch,
   preferencesConfigured,
-  readSavedSearch,
   saveSavedSearch,
   type SavedSearchAnswer,
 } from "@/lib/preferences-api";
@@ -55,21 +56,13 @@ function answer(result: SavedSearchAnswer): Response {
   return Response.json({ error: "preferences_unavailable", message: result.detail }, { status: 502 });
 }
 
-export async function GET(): Promise<Response> {
-  const caller = await account();
-  if (caller instanceof Response) return caller;
-  if (!preferencesConfigured()) return unconfigured();
-
-  return answer(await readSavedSearch(caller.sub));
-}
-
 export async function PUT(request: Request): Promise<Response> {
   const caller = await account();
   if (caller instanceof Response) return caller;
   if (!preferencesConfigured()) return unconfigured();
 
-  // The page sends the document it read from this route's GET; anything else is a mistake rather
-  // than something to store.
+  // The page sends the document the server read for it, in the API's own shape; anything else is a
+  // mistake rather than something to store.
   const body: unknown = await request.json().catch(() => null);
   const saved = parseSavedSearch(body);
   if (!saved) {
