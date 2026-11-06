@@ -68,13 +68,16 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
 
   const wrapper =
     variant === "header" ? "hidden sm:block" : variant === "menu" ? "" : "flex items-center";
+  // In the nav band they stay on one line with its links: wrapping there stacked them, and the band
+  // grew to three rows' height with nothing but white space under the links.
+  const row = variant === "nav" ? "flex items-center gap-2" : "flex flex-wrap items-center gap-2";
 
   if (state.status === "loading" || state.status === "unconfigured") return null;
 
   if (state.status === "signed-in") {
     return (
       <div className={wrapper}>
-        <div className={inMenu ? "flex flex-col" : "flex flex-wrap items-center gap-2"}>
+        <div className={inMenu ? "flex flex-col" : row}>
           <span
             className={
               inMenu
@@ -99,7 +102,7 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
 
   return (
     <div className={wrapper}>
-      <div className={inMenu ? "flex flex-col" : "flex flex-wrap items-center gap-2"}>
+      <div className={inMenu ? "flex flex-col" : row}>
         <form action={startSignIn}>
           <button type="submit" className={inMenu ? `${menuRow} text-left` : secondaryClass}>
             Log in

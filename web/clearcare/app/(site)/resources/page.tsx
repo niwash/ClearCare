@@ -144,10 +144,8 @@ function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boole
         {comingSoon ? (
           <span className="mt-1 font-semibold text-ink-muted">Coming soon</span>
         ) : (
-          <Link
-            href={`/guides/${guide.slug}`}
-            className="mt-1 inline-flex items-center gap-1.5 font-semibold no-underline after:absolute after:inset-0 hover:underline"
-          >
+          // The same button as the guide cards elsewhere and the official sites below (CCARE-214).
+          <Link href={`/guides/${guide.slug}`} className={`${stretchedActionClass} mt-2`}>
             Read guide<span className="sr-only">: {guide.title}</span>
             <span aria-hidden>→</span>
           </Link>
