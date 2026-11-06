@@ -92,7 +92,7 @@ function OtherGuideCard({ guide }: { guide: Guide }) {
             2.5.5): the button's link stretches over it, as on Resources. flex-1 on the summary
             keeps the buttons of a row level. */}
         {!comingSoon && (
-          <Link href={`/guides/${guide.slug}`} className={`${stretchedActionClass} mt-2 text-sm`}>
+          <Link href={`/guides/${guide.slug}`} className={`${stretchedActionClass} mt-2`}>
             Read guide<span className="sr-only">: {guide.title}</span>
             <span aria-hidden>→</span>
           </Link>

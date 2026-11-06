@@ -56,7 +56,7 @@ export default function NotFound() {
               <li key={place.href} className={`${linkCardClass} relative flex flex-col items-start gap-1 p-5`}>
                 <h3 className="font-semibold text-ink">{place.label}</h3>
                 <p className="flex-1 text-sm text-ink-muted">{place.hint}</p>
-                <Link href={place.href} className={`${stretchedActionClass} mt-3 text-sm`}>
+                <Link href={place.href} className={`${stretchedActionClass} mt-2`}>
                   {place.action}
                   <span aria-hidden>→</span>
                 </Link>

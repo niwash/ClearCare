@@ -91,7 +91,7 @@ export async function SampleCentre({ total }: { total: number | null }) {
 
       <div className="flex flex-col items-start gap-3 border-t border-line-soft px-4 py-4 text-sm sm:flex-row sm:items-center sm:justify-between md:px-7">
         {/* The card's call to action, as a button (CCARE-214). */}
-        <Link href={`/centres/${centre.centre_id}`} className={`${actionLinkClass} text-sm`}>
+        <Link href={`/centres/${centre.centre_id}`} className={actionLinkClass}>
           See full record<span className="sr-only"> for {centre.centre_name}</span>
           <span aria-hidden>→</span>
         </Link>
