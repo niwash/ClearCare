@@ -1,7 +1,7 @@
 "use client";
 
 // The shortlist button for one home (CCARE-127). "toggle", on its page and its search result: "+ Add
-// to shortlist", then a filled "✓ Added to shortlist" that takes it off again; once three homes are
+// to shortlist", then a filled "✓ Added to shortlist" that takes it off again; once five homes are
 // saved, a dashed button with a note on how to make room. "remove", on Compare Homes and in
 // Your shortlist: "✕ Remove", or the ✕ alone where space is short. "result", on the search results:
 // "+ Add to shortlist" and "✓ Added to shortlist" as a pill; full, "Shortlist full", which opens the
