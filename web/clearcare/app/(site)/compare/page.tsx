@@ -252,14 +252,21 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
         Your homes side by side
       </h2>
 
-      {/* From md up: the grid, with a slim panel for more homes on its right, as tall as the grid,
-          marking the free places. On phones: the cards, with the panel as a strip above them. */}
-      <div className="hidden gap-3 md:flex">
+      {/* From lg up: the grid, with a slim panel for more homes on its right, as tall as the grid,
+          marking the free places. On tablets (md to lg) the panel is the strip above the grid, as on
+          phones: beside it, it took a quarter of the width and squeezed the homes' columns until
+          words broke in the middle (CCARE-214). On phones: the cards, with the strip above them. */}
+      <div className="hidden flex-col gap-3 md:flex lg:flex-row">
+        {room > 0 && (
+          <div className="lg:hidden">
+            <AddMore room={room} county={county} />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <ComparisonTable columns={columns} groups={groups} />
         </div>
         {room > 0 && (
-          <div className="flex w-48 shrink-0 lg:w-56">
+          <div className="hidden w-56 shrink-0 lg:flex">
             <AddMore room={room} county={county} side />
           </div>
         )}
@@ -631,13 +638,15 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
             key={group.title}
             heading={
               <>
-                <IconCircle path={group.icon} tint={group.tint} className="bg-surface!" />
+                {/* Left out below lg, where the label column is w-32: the icon and a one-word title
+                    such as "Inspections" don't fit side by side there, and the title was cut off. */}
+                <IconCircle path={group.icon} tint={group.tint} className="bg-surface! max-lg:hidden" />
                 {group.title}
               </>
             }
             intro={group.intro}
             span={columns.length}
-            headingCellClass="px-3 py-1.5 text-left align-middle font-heading text-lg font-semibold text-ink"
+            headingCellClass="px-3 py-1.5 text-left align-middle font-heading text-base font-semibold text-ink lg:text-lg"
           >
             {group.rows.map((row) => (
               <tr key={row.key} className="border-t border-line">
