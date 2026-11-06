@@ -186,7 +186,7 @@ const STAGES: Stage[] = [
             HIQA, the Health Information and Quality Authority, is the independent body that registers and inspects
             nursing homes in Ireland and publishes a report after each inspection. ClearCare brings a home&apos;s
             reports together on one page, where we have them.{" "}
-            <Link href="/guides/reading-inspection-reports">How to read a report →</Link>
+            <Link href="/guides/reading-inspection-reports">How to read a report and use what it found →</Link>
           </>
         ),
       },
