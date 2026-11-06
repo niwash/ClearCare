@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           <p>You don&apos;t need an account to use ClearCare. If you create one, this is what we hold:</p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
             {/* The pool signs in by email and asks for nothing else (infra/aws/modules/cognito/main.tf):
-                no name is collected. If that changes, so does this (ADR-0026). */}
+                no name is collected. If that changes, this changes in the same pull request. */}
             <li>
               Your email address, held by Amazon Cognito in the EU. We use it to sign you in and to contact you about
               your account. The legal basis is providing the service you asked for.
@@ -210,7 +210,7 @@ export default function PrivacyPage() {
 
         <PrivacySection id="changes" title="Changes to this notice">
           <p>
-            {/* ADR-0026: a change to the data ClearCare handles updates this page in the same pull request. */}
+            {/* A change to the data ClearCare handles updates this page in the same pull request. */}
             We&apos;ll update this page whenever ClearCare changes how it uses data. Last updated {LAST_UPDATED}.
           </p>
         </PrivacySection>
