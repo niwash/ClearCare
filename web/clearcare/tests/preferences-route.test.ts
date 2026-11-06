@@ -73,11 +73,16 @@ describe("the token behind the API call", () => {
     assert.deepEqual(offenders, [], "only app/ and lib/ may reach the API's token");
   });
 
-  test("a page never calls the API itself", () => {
-    const offenders = sourceFiles("app/(site)").filter((file) =>
-      /preferences-api/.test(read(file)),
-    );
+  // The page reads the saved search on the server now (app/(site)/search/page.tsx), so what has to
+  // hold is the rule that made the old version of this test pass: nothing that runs in the browser
+  // may reach the module that holds the token. A client component is one that says so on its first
+  // line; everything else here is a server component and is allowed to.
+  test("a page reads it on the server, never from a client component", () => {
+    const callers = sourceFiles("app/(site)").filter((file) => /preferences-api/.test(read(file)));
 
-    assert.deepEqual(offenders, [], "the saved search is read through app/api/preferences");
+    assert.notDeepEqual(callers, [], "the page reads the saved search itself, on the server");
+    for (const file of callers) {
+      assert.doesNotMatch(read(file), /^\s*["']use client["']/, `${file} runs in the browser`);
+    }
   });
 });

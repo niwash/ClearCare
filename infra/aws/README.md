@@ -171,7 +171,16 @@ aws secretsmanager put-secret-value --secret-id clearcare/site/token \
 
 `accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the three are injected only once they have been set. The web task's execution role can read nothing else.
 
-Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
+That switch is already on in the live account, so a plain `terraform apply` is no longer a safe first step: it registers task definitions carrying `SITE_TOKEN` before the secret has a value, and the new tasks cannot start. Bring the secret up on its own first:
+
+```sh
+terraform apply -target=aws_secretsmanager_secret.site_token
+aws secretsmanager put-secret-value --secret-id clearcare/site/token \
+    --secret-string "$(openssl rand -base64 33)"
+terraform apply
+```
+
+Then run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 
 ## Database passwords and roles
 

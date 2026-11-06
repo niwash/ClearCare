@@ -15,7 +15,6 @@
 import { COUNTIES } from "./counties.ts";
 import {
   FILTER_GROUPS,
-  NO_FILTERS,
   selectionParams,
   SORTS,
   type FilterSelection,
@@ -43,8 +42,6 @@ export interface SavedSearchDocument {
   activities: string[];
   sort_by: SortValue;
 }
-
-export const NO_SAVED_SEARCH: SavedSearch = { county: "", sort: "name", selection: NO_FILTERS };
 
 // Whether there is a choice in here worth keeping. A search by name, or by an Eircode, leaves
 // nothing behind, and neither does one whose only order is the default.
@@ -105,12 +102,7 @@ export function parseSavedSearch(value: unknown): SavedSearch | null {
   };
 }
 
-export function sameSavedSearch(one: SavedSearch, other: SavedSearch) {
-  if (one.county !== other.county || one.sort !== other.sort) return false;
-  return FILTER_GROUPS.every((group) => one.selection[group.key].join() === other.selection[group.key].join());
-}
-
-// The page address of a saved search: ?county=Cork&care=dementia&sort=latest_inspection. Built here
+// The address of a saved search: ?county=Cork&care=dementia&sort=latest_inspection. Built here
 // rather than with searchHref (lib/search.ts), which a test cannot load.
 export function savedSearchHref(saved: SavedSearch) {
   const params = new URLSearchParams();

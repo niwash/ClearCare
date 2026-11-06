@@ -13,9 +13,10 @@
 import { Chevron } from "@/components/ui/chevron";
 import { textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
+import { PreferencesNotice } from "@/components/preferences/preferences-notice";
 import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
-import { loadSavedSearch, useSavedSearch } from "@/components/preferences/saved-search-store";
-import { hasSavedChoices, savedSearchFrom, savedSearchHref } from "@/lib/preferences";
+import { hydrateSavedSearch, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
+import { savedSearchFrom } from "@/lib/preferences";
 import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, filtersClearedHref, searchHref, type Facets, type PageSearch } from "@/lib/search";
 import {
   filterCount,
@@ -46,15 +47,16 @@ export function SearchFilters({
   facets,
   total,
   sortShown,
-  cleared = false,
+  initialSaved,
 }: {
   search: FilterState;
   facets: Facets | null;
   total: number | null; // null before anything is searched for
   sortShown: boolean;
-  // The visitor emptied the form on purpose (the address says ?filtersCleared=true), so their saved search is
-  // not applied here: an empty search page is where "Clear all" has to be able to land.
-  cleared?: boolean;
+  // What the page read from the account on the server (ADR-0025): whether there is a saved search,
+  // and whether one could be read at all. Handed down rather than fetched here, so a visitor with no
+  // account sends no request, and the page has already opened a kept search before it renders.
+  initialSaved: SavedSearchInitial;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -72,23 +74,18 @@ export function SearchFilters({
   const [fetched, setFetched] = useState<{ total: number | null; facets: Facets | null } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const draftHref = searchHref(draft);
-  // What "Save My Preferences" keeps: the choices in the form, not the words typed into the search
+  // What "Save my preferences" keeps: the choices in the form, not the words typed into the search
   // boxes (lib/preferences.ts). It sits under the Search button, so it saves what is about to be
   // searched for, and applies it once stored.
   const savedFromDraft = savedSearchFrom(draft);
 
-  // The account's saved choices. Read once per page load; the button under Search reports them, and
-  // a page that carries no search of its own opens them at once, so a returning visitor arrives on
-  // the search they kept (ADR-0025). Not after "Clear all", which the address marks with
-  // ?filtersCleared=true: that page exists so an emptied form can stay emptied.
-  const { status: savedStatus, saved } = useSavedSearch();
-  useEffect(loadSavedSearch, []);
+  // The account's saved choices, as the page read them on the server. The button under Search
+  // reports them, and a kept search was applied before this page rendered (app/(site)/search),
+  // so there is nothing to fetch and nothing to redirect from here.
+  const { status: savedStatus, saved: savedAtLoad } = initialSaved;
   useEffect(() => {
-    if (cleared) return;
-    if (savedStatus !== "ready" || !saved || !hasSavedChoices(saved)) return;
-    if (applied !== "/search") return;
-    startTransition(() => router.replace(savedSearchHref(saved)));
-  }, [cleared, savedStatus, saved, applied, router]);
+    hydrateSavedSearch({ status: savedStatus, saved: savedAtLoad });
+  }, [savedStatus, savedAtLoad]);
 
   // Forgetting empties the page as well as the account: the choices on screen are gone from the
   // table, so they should not stay in front of the visitor as if they were still kept. The sheet
@@ -144,6 +141,8 @@ export function SearchFilters({
   return (
     <>
       {/* From md up: the column beside the results. */}
+        <PreferencesNotice />
+
       <aside aria-label="Filters" className="hidden md:block">
         <FilterPanel
           state={draft}

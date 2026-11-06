@@ -53,7 +53,7 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/clearcare
       CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see .env.example}
-      # The token this API and the web server share for a visitor's saved search (ADR-0024). Left
+      # The token this API and the web server share for a visitor's saved search (ADR-0025). Left
       # out, /preferences answers 503 and the site offers no saved search, so an older .env still
       # runs: set it in both places to try the feature.
       SITE_TOKEN: ${SITE_TOKEN:-}

@@ -64,10 +64,10 @@ public record SavedSearch(
         throw refused("each list must hold at most %d options".formatted(MAX_OPTIONS));
       }
       given += options.size();
+      // No null check here: List.copyOf in the constructor has already refused a null element
+      // (which the request then fails as a 400), so every option is a string by now.
       for (String option : options) {
-        if (option == null
-            || option.length() > MAX_SLUG_LENGTH
-            || !SLUG.matcher(option).matches()) {
+        if (option.length() > MAX_SLUG_LENGTH || !SLUG.matcher(option).matches()) {
           throw refused(
               "each option must be a slug of lower-case letters, digits and hyphens, such as"
                   + " en-suite");
