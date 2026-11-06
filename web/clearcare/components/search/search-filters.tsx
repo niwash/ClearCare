@@ -337,8 +337,8 @@ function Count({ n }: { n: number }) {
 }
 
 // One folding group of checkboxes: its title, how many are ticked, and the options, the ones
-// families ask about most first. Past the first few, the list folds behind "Show all"; the rarer
-// options (more) go without counts, to keep the long lists quiet.
+// families ask about most first, each with how many homes it would find. Past the first few, the
+// list folds behind "Show all", with the options asked about less (more) after them.
 function FilterGroupSection({
   idPrefix,
   group,
@@ -408,14 +408,11 @@ function FilterGroupSection({
                       onChange={() => onToggle(option.slug)}
                       className="mt-0.5 size-[18px] shrink-0 accent-primary"
                     />
-                    <span className="flex flex-1 flex-col gap-0.5">
-                      {/* Greyed when ticking it would find nothing. */}
-                      <span className={`leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
-                        {option.label}
-                      </span>
-                      {option.help && <span className="text-sm leading-snug text-ink-muted">{option.help}</span>}
+                    {/* Greyed when ticking it would find nothing. */}
+                    <span className={`flex-1 leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
+                      {option.label}
                     </span>
-                    {!option.more && <Count n={n} />}
+                    <Count n={n} />
                   </label>
                 );
               })}

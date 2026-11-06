@@ -64,6 +64,12 @@
   /* The contacts banner's band in the adult-centred design; the default design draws it in deep
      teal (support-band, below). */
   --support: var(--band);
+  /* Compare Homes' group headings (CCARE-189): a warm stone a step off the grid's rows, so a
+     heading doesn't blend into them. Muted text keeps 5.7:1 on it, and links 6.0:1. */
+  --section: light-dark(#e5dfd2, #2a3542);
+  /* The border round a heading: the grid's own line colour is lighter than --section, so it wouldn't
+     show on it. */
+  --section-line: light-dark(#bdb3a0, #475565);
   /* A soft blue for the home page's invitation to the survey (CCARE-191). Muted text keeps 6.1:1
      on it, and links 6.4:1. */
   --invite: light-dark(#e1e8f3, #1d2738);
@@ -145,6 +151,8 @@
   --on-accent: var(--on-primary);
   --warm: var(--band);
   --invite: var(--band);
+  --section: var(--band);
+  --section-line: var(--line);
   --welcome-from: var(--band);
   --welcome-to: var(--band);
 }
@@ -289,6 +297,8 @@
   --color-warm: var(--warm);
   --color-support: var(--support);
   --color-invite: var(--invite);
+  --color-section: var(--section);
+  --color-section-line: var(--section-line);
   --radius-md: var(--radius-control);
   --radius-lg: var(--radius-card);
   --font-heading: var(--heading-font);
@@ -498,6 +508,34 @@
     transition:
       grid-template-rows 0.3s ease,
       opacity 0.25s ease;
+  }
+}
+
+/* The same slide for a group of table rows that folds, as on Compare Homes' grid
+   (collapsible-group.tsx). A table row can't grow from no height, so each cell's content does
+   (fold-cell). Its height goes between auto and 0 (interpolate-size, above), as the 0fr/1fr grid
+   of fold snaps inside a table cell. The rows' lines fade so they don't stack up while shut.
+   Browsers without interpolate-size open and shut it at once. */
+.fold-cell {
+  overflow: clip;
+  overflow-clip-margin: 0.5rem;
+}
+
+.fold-rows[data-open="false"] .fold-cell {
+  height: 0;
+}
+
+.fold-rows[data-open="false"] > tr {
+  border-color: transparent;
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  :root:not([data-design="adult-centred"]) .fold-cell {
+    transition: height 0.3s ease;
+  }
+
+  :root:not([data-design="adult-centred"]) .fold-rows > tr {
+    transition: border-color 0.3s ease;
   }
 }
 
