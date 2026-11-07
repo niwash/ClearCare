@@ -1,6 +1,7 @@
-# A real PostgreSQL for the database tests: infra/postgres/roles.sql runs from
-# the image's init scripts and the migrations create the schema. These tests
-# need Docker; leave them out with `uv run pytest -m "not database"`.
+# A real PostgreSQL for the database tests: the image's init scripts install
+# PostGIS and run infra/postgres/roles.sql, and the migrations create the
+# schema. These tests need Docker; leave them out with
+# `uv run pytest -m "not database"`.
 
 import secrets
 from collections.abc import Generator
@@ -30,8 +31,13 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V13__pipeline_run.sql",
     REPOSITORY / "db" / "V14__finding_re_assessment.sql",
     REPOSITORY / "db" / "V15__user_preferences.sql",
+    REPOSITORY / "db" / "V16__centre_location.sql",
 )
-POSTGRES_IMAGE = "postgres:18.6"
+# The same image as compose.yaml, which says why it is this one.
+POSTGRES_IMAGE = (
+    "postgis/postgis:18-3.6"
+    "@sha256:530bb81ad6c5993ae870ea66095d9dc758ef5866007186833f31fb2bebdd5791"
+)
 SUPERUSER = "postgres"
 MIGRATOR = "clearcare_migrator"
 PIPELINE = "clearcare_pipeline"
