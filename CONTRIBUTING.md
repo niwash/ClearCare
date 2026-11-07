@@ -50,6 +50,15 @@ The database is `clearcare` on `127.0.0.1`, port 5432. If another PostgreSQL alr
 
 To start again from an empty database, run `docker compose down -v`, which deletes the volume and all local data, then `docker compose up migrate`.
 
+V16 needs PostGIS ([ADR-0026](docs/adr/0026-centre-locations-as-postgis-points.md)). A new volume gets it from the image; for a volume created before V16, run:
+
+```sh
+docker compose pull db
+docker compose up -d --wait db
+docker compose exec db psql -U postgres -d clearcare -c 'CREATE EXTENSION postgis'
+docker compose up migrate
+```
+
 If `roles.sql` fails on the first run, the `db` log shows the error and Flyway cannot log in. The image runs `roles.sql` only when it starts on an empty volume, so restarting does not retry it. Delete the volume as above, or keep it and fix the cause: run `docker compose up -d db` so the container picks up any change to `.env`, then run `roles.sql` again as the superuser and apply the migrations:
 
 ```sh

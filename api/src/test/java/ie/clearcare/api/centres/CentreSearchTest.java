@@ -40,6 +40,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+import ie.clearcare.api.DatabaseImage;
+
 /**
  * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
  * repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
@@ -207,7 +209,7 @@ class CentreSearchTest {
   // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
   static final PostgreSQLContainer database =
-      new PostgreSQLContainer("postgres:18.6")
+      new PostgreSQLContainer(DatabaseImage.POSTGIS)
           .withDatabaseName("clearcare")
           .withCopyFileToContainer(
               MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
