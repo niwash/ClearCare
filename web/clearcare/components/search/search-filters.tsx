@@ -75,8 +75,8 @@ export function SearchFilters({
   const [sheetOpen, setSheetOpen] = useState(false);
   const draftHref = searchHref(draft);
   // What "Save my preferences" keeps: the choices in the form, not the words typed into the search
-  // boxes (lib/preferences.ts). It sits under the Search button, so it saves what is about to be
-  // searched for, and applies it once stored.
+  // boxes, except a county typed as the place (lib/preferences.ts). It sits under the Search button,
+  // so it saves what is about to be searched for, and applies it once stored.
   const savedFromDraft = savedSearchFrom(draft);
 
   // The account's saved choices, as the page read them on the server. The button under Search

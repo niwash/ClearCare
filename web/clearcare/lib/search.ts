@@ -2,7 +2,7 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
-import { ANY_COUNTY, COUNTIES } from "./counties.ts";
+import { ANY_COUNTY, COUNTIES, countyNamed } from "./counties.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
 
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
@@ -151,8 +151,12 @@ function first(params: PageParams, key: string) {
 
 export function readSearch(params: PageParams): PageSearch {
   const name = first(params, "name");
-  const place = first(params, "place") || first(params, "address") || first(params, "eircode");
-  const countyValue = first(params, "county");
+  const typed = first(params, "place") || first(params, "address") || first(params, "eircode");
+  // A county typed as the place applies the county filter: as an address it misses homes whose
+  // address leaves the county out.
+  const typedCounty = countyNamed(typed);
+  const place = typedCounty ? "" : typed;
+  const countyValue = typedCounty ?? first(params, "county");
   const county = countyValue === ANY_COUNTY ? "" : countyValue;
   const sortValue = first(params, "sort");
   const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;
