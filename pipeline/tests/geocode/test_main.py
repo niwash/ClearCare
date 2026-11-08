@@ -219,6 +219,7 @@ def test_centres_with_no_point_or_one_23_calendar_days_old_are_geocoded(
         (found(latitude=math.nan), "location"),
         (found(longitude=math.inf), "location"),
         (found(postal_code="A65 F4E3"), "eircode"),
+        (http(200), "malformed"),
     ],
 )
 def test_an_answer_that_breaks_a_rule_leaves_the_centre_unresolved(
@@ -266,16 +267,20 @@ def test_an_address_found_in_another_county_is_not_accepted(
 
 
 @pytest.mark.parametrize(
-    "refusal", ["REQUEST_DENIED", "INVALID_REQUEST", "OVER_DAILY_LIMIT"]
+    "refusal",
+    [
+        status("REQUEST_DENIED"),
+        status("INVALID_REQUEST"),
+        status("OVER_DAILY_LIMIT"),
+        http(403),
+    ],
 )
 def test_a_refused_key_or_request_stops_the_stage(
-    database: Database, refusal: str
+    database: Database, refusal: Answer
 ) -> None:
     _publish(database, GALWAY, LIMERICK)
     _store_point(database, LIMERICK, days_ago=30, at=EARLY)
-    google = FakeGoogle(
-        {"A65 F4E2": [status(refusal)], "V94 X2Y4": [status(refusal)]}
-    )
+    google = FakeGoogle({"A65 F4E2": [refusal], "V94 X2Y4": [refusal]})
 
     assert _geocode(google) == EXIT_FAILED
 
@@ -290,6 +295,7 @@ def test_a_refused_key_or_request_stops_the_stage(
         status("OVER_QUERY_LIMIT"),
         status("UNKNOWN_ERROR"),
         http(503),
+        http(429),
         FetchError("timed out"),
     ],
 )
@@ -314,6 +320,39 @@ def test_a_transient_error_is_retried_then_left_for_the_next_run(
     # A refresh that failed keeps the point it had.
     assert points[LIMERICK.centre_id] == OLD_POINT
     assert _logged(caplog, LIMERICK.centre_id, "unreachable")
+
+
+def test_a_run_stops_at_the_request_cap_and_is_left_incomplete(
+    database: Database, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr("clearcare_pipeline.geocode.__main__.MAX_REQUESTS", 1)
+    _publish(database, GALWAY, LIMERICK)
+    google = FakeGoogle(
+        {"A65 F4E2": [found()], "V94 X2Y4": [found(postal_code="V94 X2Y4")]}
+    )
+
+    assert _geocode(google) == EXIT_RETRY
+
+    assert google.addresses == ["A65 F4E2"]
+    assert list(_points(database)) == [GALWAY.centre_id]
+
+
+def test_after_five_centres_in_a_row_go_unanswered_no_more_are_asked(
+    database: Database,
+) -> None:
+    centres = [
+        Centre(f"20{n}", f"{n} Test Road, Galway", "Galway", f"H91X2Y{n}")
+        for n in range(1, 7)
+    ]
+    _publish(database, *centres)
+    google = FakeGoogle(
+        {f"H91 X2Y{n}": [FetchError("timed out")] * 4 for n in range(1, 7)}
+    )
+
+    assert _geocode(google) == EXIT_RETRY
+
+    assert len(google.queries) == 5 * 4
+    assert "H91 X2Y6" not in google.addresses
 
 
 def test_the_key_never_appears_in_the_logs(

@@ -28,7 +28,7 @@ STARTUP = [
     "extract_text",
     "split_commitments",
 ]
-REGISTER_JOB = ["snapshots", "upload", "load_register"]
+REGISTER_JOB = ["snapshots", "upload", "load_register", "geocode"]
 PRICES_JOB = ["price_lists", "upload", "load_contract_prices"]
 REPORTS_JOB = [
     "reports",

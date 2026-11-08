@@ -92,6 +92,7 @@ def status(name: str) -> FetchResult:
 
 
 def http(code: int) -> FetchResult:
+    """An answer with this status and an HTML page, not JSON, for a body."""
     return FetchResult(
         status=code,
         content_type="text/html",
