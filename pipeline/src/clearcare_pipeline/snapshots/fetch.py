@@ -61,18 +61,25 @@ class UrllibFetcher:
         """Returns the response, including error statuses such as 503.
 
         Raises:
-            FetchError: If no HTTP response was received.
+            FetchError: If no HTTP response was received, or its body could
+                not be read.
         """
         request = urllib.request.Request(
             url, headers={"User-Agent": self._user_agent}
         )
+        # An error raised inside the HTTPError handler, such as a timeout
+        # while reading a 5xx body, skips the handlers beside it, so OSError
+        # is caught one level out.
         try:
-            with self._opener.open(request, timeout=self._timeout) as response:
-                return _result(
-                    response.status, response.headers, response.read()
-                )
-        except urllib.error.HTTPError as error:
-            return _result(error.code, error.headers, error.read())
+            try:
+                with self._opener.open(
+                    request, timeout=self._timeout
+                ) as response:
+                    return _result(
+                        response.status, response.headers, response.read()
+                    )
+            except urllib.error.HTTPError as error:
+                return _result(error.code, error.headers, error.read())
         except OSError as error:
             raise FetchError(str(error)) from error
 
