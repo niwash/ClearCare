@@ -190,33 +190,24 @@ def _store_location(
     )
 
 
-def test_the_pipeline_replaces_and_deletes_locations_the_api_reads(
+def test_the_pipeline_replaces_and_deletes_locations(
     database: Database,
 ) -> None:
     # Unlike the tables that hold what HIQA published, a point is replaced or
-    # deleted before it is 30 days old (db/V16). One transaction that switches
-    # roles, as above.
+    # deleted before it is 30 days old (db/V16).
     regeocoded_at = datetime(2026, 11, 30, 6, 0, tzinfo=UTC)
-    with _rolled_back(database, SUPERUSER) as connection:
-        connection.execute("SET ROLE clearcare_pipeline")
+    with _rolled_back(database, PIPELINE) as connection:
         _store_location(connection, "first-place", PUBLISHED_AT)
         _store_location(connection, "second-place", regeocoded_at)
         stored = connection.execute(
             "SELECT place_id, geocoded_at FROM clearcare.centre_location"
         ).fetchall()
-        connection.execute("SET ROLE clearcare_api")
-        read = connection.execute(
-            "SELECT centre_id, place_id FROM clearcare.centre_location"
-        ).fetchall()
-        connection.execute("SET ROLE clearcare_pipeline")
         connection.execute("DELETE FROM clearcare.centre_location")
-        connection.execute("SET ROLE clearcare_api")
         after_delete = connection.execute(
             "SELECT centre_id FROM clearcare.centre_location"
         ).fetchall()
 
     assert stored == [("second-place", regeocoded_at)]
-    assert read == [("34", "second-place")]
     assert after_delete == []
 
 
@@ -246,15 +237,7 @@ def test_the_pipeline_replaces_and_deletes_locations_the_api_reads(
         (API, "SELECT * FROM clearcare.contract_price"),
         (API, "SELECT * FROM clearcare.report_amenities"),
         (API, "SELECT * FROM clearcare.report_amenities_v2"),
-        # It reads centre locations and never writes them.
-        (
-            API,
-            "INSERT INTO clearcare.centre_location"
-            " (centre_id, point, place_id, geocoded_at)"
-            " VALUES ('34', 'POINT(-6.54 53.34)', 'place', now())",
-        ),
-        (API, "UPDATE clearcare.centre_location SET place_id = 'x'"),
-        (API, "DELETE FROM clearcare.centre_location"),
+        (API, "SELECT * FROM clearcare.centre_location"),
     ],
 )
 def test_role_is_refused(

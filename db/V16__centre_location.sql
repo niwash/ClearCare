@@ -38,7 +38,5 @@ GRANT SELECT, INSERT, UPDATE, DELETE
 ON clearcare.centre_location
 TO clearcare_pipeline;
 
--- The first reader of the points must ignore expired ones.
-GRANT SELECT
-ON clearcare.centre_location
-TO clearcare_api;
+-- No grant to clearcare_api. The migration that brings its first query of the
+-- points gives it a view of those under 30 days old, never this table.
