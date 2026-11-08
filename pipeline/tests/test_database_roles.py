@@ -176,6 +176,41 @@ def test_api_reads_where_the_published_snapshot_came_from(
     assert rows == [(PUBLISHED_AT, PUBLISHED_SHA256, REGISTER_URL)]
 
 
+def _store_location(
+    connection: Connection, place_id: str, geocoded_at: datetime
+) -> None:
+    connection.execute(
+        "INSERT INTO clearcare.centre_location"
+        " (centre_id, point, place_id, geocoded_at)"
+        " VALUES ('34', 'POINT(-6.54 53.34)', %s, %s)"
+        " ON CONFLICT (centre_id) DO UPDATE"
+        " SET point = excluded.point, place_id = excluded.place_id,"
+        " geocoded_at = excluded.geocoded_at",
+        (place_id, geocoded_at),
+    )
+
+
+def test_the_pipeline_replaces_and_deletes_locations(
+    database: Database,
+) -> None:
+    # Unlike the tables that hold what HIQA published, a point is replaced or
+    # deleted before it is 30 days old (db/V16).
+    regeocoded_at = datetime(2026, 11, 30, 6, 0, tzinfo=UTC)
+    with _rolled_back(database, PIPELINE) as connection:
+        _store_location(connection, "first-place", PUBLISHED_AT)
+        _store_location(connection, "second-place", regeocoded_at)
+        stored = connection.execute(
+            "SELECT place_id, geocoded_at FROM clearcare.centre_location"
+        ).fetchall()
+        connection.execute("DELETE FROM clearcare.centre_location")
+        after_delete = connection.execute(
+            "SELECT centre_id FROM clearcare.centre_location"
+        ).fetchall()
+
+    assert stored == [("second-place", regeocoded_at)]
+    assert after_delete == []
+
+
 @pytest.mark.parametrize(
     ("role", "statement"),
     [
@@ -202,6 +237,7 @@ def test_api_reads_where_the_published_snapshot_came_from(
         (API, "SELECT * FROM clearcare.contract_price"),
         (API, "SELECT * FROM clearcare.report_amenities"),
         (API, "SELECT * FROM clearcare.report_amenities_v2"),
+        (API, "SELECT * FROM clearcare.centre_location"),
     ],
 )
 def test_role_is_refused(

@@ -351,6 +351,12 @@ function FilterPanel({
         <>
           <div className="border-t border-line px-5 pb-1.5 pt-4.5">
             <SectionHeading>Care &amp; living</SectionHeading>
+            {/* Every group below is filled from the amenities an AI tool read from the reports
+                (centre_amenities_v2), so it says so here as the result cards and centre page do.
+                Drop "We're now checking" when CCARE-192 and -193 are done. */}
+            <p className="mt-1.5 text-xs text-ink-muted">
+              Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these.
+            </p>
           </div>
           {FILTER_GROUPS.map((group) => (
             <FilterGroupSection

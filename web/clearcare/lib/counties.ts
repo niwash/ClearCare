@@ -10,3 +10,11 @@ export const COUNTIES = [
 
 // The county list's "Any county" value. It means no county, as a blank does.
 export const ANY_COUNTY = "any";
+
+// The county that text typed into a search box names, as the API spells it, or null. "co cavan" and
+// "County Cavan" are Cavan; "Cavan Town" isn't. "Co" needs a dot or a space after it, so that Cork
+// keeps its "Co".
+export function countyNamed(text: string) {
+  const bare = text.trim().replace(/^(co\.|co\s|county\s)\s*/i, "").toLowerCase();
+  return COUNTIES.find((county) => county.toLowerCase() === bare) ?? null;
+}

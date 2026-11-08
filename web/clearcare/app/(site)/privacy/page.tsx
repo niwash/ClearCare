@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "5 November 2026";
+const LAST_UPDATED = "6 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -74,13 +74,14 @@ export default function PrivacyPage() {
         </PrivacySection>
 
         <PrivacySection id="accounts" title="If you create an account">
-          <p>
-            Accounts aren&apos;t open yet. When they are, this is what we&apos;ll hold:
-          </p>
+          {/* Accounts are live since CCARE-183 wired the production pool into the deployment. */}
+          <p>You don&apos;t need an account to use ClearCare. If you create one, this is what we hold:</p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
+            {/* The pool signs in by email and asks for nothing else (infra/aws/modules/cognito/main.tf):
+                no name is collected. If that changes, this changes in the same pull request. */}
             <li>
-              Your email address, and your name if you give it, held by Amazon Cognito in the EU. We use them to sign
-              you in and to contact you about your account. The legal basis is providing the service you asked for.
+              Your email address, held by Amazon Cognito in the EU. We use it to sign you in and to contact you about
+              your account. The legal basis is providing the service you asked for.
             </li>
             {/* Auth.js (PR #107) sets the session cookie, and short-lived state, PKCE and CSRF cookies
                 while you sign in. */}
@@ -99,7 +100,12 @@ export default function PrivacyPage() {
               the search is filed against. You can forget the search on the search page at any time; that leaves
               your account as it is, and if you ask us by email we remove the saved search along with the account.
             </li>
-            <li>We keep your account until you delete it, or ask us to by email.</li>
+            {/* There's no delete route yet: an operator follows documentations/operations/account_deletion.md.
+                The database's automatic backups are kept for 7 days (infra/aws/live/rds.tf). */}
+            <li>
+              We keep your account until you ask us by email to delete it. Once we have, copies left in our database
+              backups are gone within 7 days.
+            </li>
           </ul>
         </PrivacySection>
 
@@ -204,8 +210,8 @@ export default function PrivacyPage() {
 
         <PrivacySection id="changes" title="Changes to this notice">
           <p>
-            We&apos;ll update this page when ClearCare changes how it uses data, such as when accounts open.
-            Last updated {LAST_UPDATED}.
+            {/* A change to the data ClearCare handles updates this page in the same pull request. */}
+            We&apos;ll update this page whenever ClearCare changes how it uses data. Last updated {LAST_UPDATED}.
           </p>
         </PrivacySection>
       </div>
