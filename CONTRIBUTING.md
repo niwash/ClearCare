@@ -9,7 +9,7 @@ Each part of the project has its own top-level folder:
 | `pipeline/` | Python pipeline |
 | `db/` | SQL migrations, applied by Flyway ([ADR-0010](docs/adr/0010-schema-in-sql-migrations.md)) |
 | `infra/` | VM setup: the Compose file for the VM, the deploy script and install notes |
-| `infra/postgres/` | Database roles, created once before the first migration |
+| `infra/postgres/` | PostGIS and the database roles, set up once before the first migration |
 | `web/` | Next.js site |
 | `api/` | Spring Boot API |
 
@@ -50,13 +50,19 @@ The database is `clearcare` on `127.0.0.1`, port 5432. If another PostgreSQL alr
 
 To start again from an empty database, run `docker compose down -v`, which deletes the volume and all local data, then `docker compose up migrate`.
 
-V16 needs PostGIS ([ADR-0026](docs/adr/0026-centre-locations-as-postgis-points.md)). A new volume gets it from the image; for a volume created before V16, run:
+V16 needs PostGIS ([ADR-0026](docs/adr/0026-centre-locations-as-postgis-points.md)). A new volume gets it from `infra/postgres/postgis.sh`; for a volume created before V16, run:
 
 ```sh
 docker compose pull db
 docker compose up -d --wait db
 docker compose exec db psql -U postgres -d clearcare -c 'CREATE EXTENSION postgis'
 docker compose up migrate
+```
+
+A volume first started with the image's own PostGIS script, before `postgis.sh` replaced it, also has three extensions that RDS lacks, and a dump of it fails to restore there. Drop them:
+
+```sh
+docker compose exec db psql -U postgres -d clearcare -c 'DROP EXTENSION postgis_tiger_geocoder, postgis_topology, fuzzystrmatch; DROP SCHEMA tiger, topology'
 ```
 
 If `roles.sql` fails on the first run, the `db` log shows the error and Flyway cannot log in. The image runs `roles.sql` only when it starts on an empty volume, so restarting does not retry it. Delete the volume as above, or keep it and fix the cause: run `docker compose up -d db` so the container picks up any change to `.env`, then run `roles.sql` again as the superuser and apply the migrations:

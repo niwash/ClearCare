@@ -2,7 +2,7 @@ package ie.clearcare.api;
 
 import org.testcontainers.utility.DockerImageName;
 
-/** The database image, shared with compose.yaml and the pipeline tests. */
+/** The same database image as compose.yaml and the pipeline tests, written out in each place. */
 public final class DatabaseImage {
 
   // postgis/postgis:18-3.6 for linux/amd64. Testcontainers refuses a tag and a digest together, so

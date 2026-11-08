@@ -20,6 +20,8 @@ services:
       - 127.0.0.1:${CLEARCARE_DB_PORT:-5432}:5432
     volumes:
       - db-data:/var/lib/postgresql
+      # In place of the image's own script; postgis.sh says why.
+      - ./infra/postgres/postgis.sh:/docker-entrypoint-initdb.d/10_postgis.sh:ro
       - ./infra/postgres/roles.sql:/docker-entrypoint-initdb.d/roles.sql:ro
     healthcheck:
       # Over TCP: while the init scripts run, the server listens only on its
