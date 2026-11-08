@@ -303,11 +303,13 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
         return ()
     county = () if crawl == "all" else ("--county", crawl)
     return (
+        # Geocoding here as well as at start, as a long-running pipeline
+        # (Compose) runs the startup stages only once.
         Job(
             name="register",
             scope="all",
             download=("snapshots",),
-            then=("load_register",),
+            then=("load_register", "geocode"),
             wait_after_success=timedelta(days=1),
         ),
         # HSE republishes the lists about once a month.

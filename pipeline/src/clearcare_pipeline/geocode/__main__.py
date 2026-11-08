@@ -31,6 +31,9 @@ KEY_VARIABLE = "GOOGLE_GEOCODING_API_KEY"
 # Checked per centre: a run asks about each of the 547 centres at most once,
 # plus retries, so a few over at most. Google gives 10,000 free a month.
 MAX_REQUESTS = 600
+# Unanswered, a centre takes 4 tries of 10 s and 7 s of pauses, about 47 s:
+# the 150 centres the cap allows would hold the run up for two hours.
+MAX_UNREACHED_IN_A_ROW = 5
 
 logger = logging.getLogger(__name__)
 
@@ -76,9 +79,16 @@ def _run(
         key, fetcher or UrllibFetcher(timeout=TIMEOUT_SECONDS), sleep
     )
     due = due_centres(connection)
-    stored = refused = unreached = 0
+    stored = refused = unreached = unreached_in_a_row = 0
     for centre in due:
         if geocoder.requests >= MAX_REQUESTS:
+            break
+        if unreached_in_a_row >= MAX_UNREACHED_IN_A_ROW:
+            logger.warning(
+                "Google did not answer about %d centres in a row; the rest"
+                " wait for the next run",
+                unreached_in_a_row,
+            )
             break
         try:
             answer = geocoder.locate(centre)
@@ -89,30 +99,32 @@ def _run(
                 refusal,
             )
             return EXIT_FAILED
+        # Any answer, accepted or refused, ends a run of unanswered centres.
         if isinstance(answer, Location):
             store(connection, centre.centre_id, answer)
             stored += 1
+            unreached_in_a_row = 0
             continue
         logger.warning(
             "centre %s unresolved: %s", centre.centre_id, answer.reason
         )
         if answer.reached:
             refused += 1
+            unreached_in_a_row = 0
         else:
             unreached += 1
+            unreached_in_a_row += 1
     left = len(due) - stored - refused - unreached
     logger.info(
-        "%d centres due: %d stored, %d refused, %d not reached, %d left at"
-        " the cap of %d requests",
+        "%d centres due: %d stored, %d refused, %d not reached, %d not asked",
         len(due),
         stored,
         refused,
         unreached,
         left,
-        MAX_REQUESTS,
     )
     # Every centre without a point is asked again on the next run. Only those
-    # Google never answered, or the cap left out, make this run incomplete: a
+    # Google never answered, or this run did not ask, make it incomplete: a
     # refused answer is logged, and asking again soon is unlikely to change it.
     return EXIT_RETRY if unreached or left else EXIT_DONE
 

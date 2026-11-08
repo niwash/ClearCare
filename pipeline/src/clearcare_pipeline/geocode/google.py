@@ -117,7 +117,7 @@ class GoogleGeocoder:
 
         Raises:
             RequestRefusedError: If Google refused the key or the request, or
-                answered with an HTTP status that is neither 200 nor 5xx.
+                answered with an HTTP status other than 200, 429 or 5xx.
         """
         # The URL holds the key, so it is never logged or put in an error.
         url = _request_url(centre, self._key)
@@ -129,7 +129,8 @@ class GoogleGeocoder:
                 result = self._fetcher.fetch(url)
             except FetchError:
                 continue
-            if result.status >= 500:
+            # Too Many Requests, like a server error, may pass.
+            if result.status == 429 or result.status >= 500:
                 continue
             if result.status != 200:
                 raise RequestRefusedError(f"HTTP status {result.status}")
