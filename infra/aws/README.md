@@ -214,6 +214,19 @@ aws secretsmanager put-secret-value --secret-id clearcare/anthropic --secret-str
 
 A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`. The apply that adds the secret registers a pipeline revision that reads it, but the schedules keep the one recorded in `/clearcare/release/pipeline`: run the deploy workflow for the running commit afterwards, so they start the new one.
 
+Before the deploy that brings V16, install PostGIS once in `clearcare` as the RDS administrator, through the restore task:
+
+```sh
+aws ecs run-task --cluster clearcare --task-definition clearcare-restore \
+    --launch-type FARGATE --platform-version 1.4.0 \
+    --network-configuration "$(aws ssm get-parameter --name /clearcare/network/restore --query Parameter.Value --output text)" \
+    --overrides '{"containerOverrides": [{"name": "download", "command": ["true"]},
+      {"name": "pg_restore", "command": ["psql", "-v", "ON_ERROR_STOP=1", "-d", "clearcare", "-c", "CREATE EXTENSION postgis"]}]}'
+aws logs tail /clearcare/restore --since 15m
+```
+
+Once the task has stopped, its log ends with `CREATE EXTENSION`. RDS PostgreSQL 18.6 offers PostGIS 3.6.3. Without the extension, the migration stops at V16 and the deploy fails ([ADR-0026](../../docs/adr/0026-centre-locations-as-postgis-points.md)).
+
 ## Plan and apply
 
 ```sh
@@ -352,7 +365,7 @@ A task cannot delete, and writes a checkpoint only after a successful upload, so
 
 ## Dumps and restore
 
-The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first (Database passwords and roles). Upload the dump, then run the restore:
+The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first (Database passwords and roles). Make the dump with `pg_dump -Fc --exclude-extension=postgis`. `pg_restore` sets its role to `clearcare_owner`, which cannot create PostGIS, so install it in the new database first, as in Database passwords and roles. Upload the dump, then run the restore:
 
 ```sh
 aws s3 cp clearcare.dump "s3://clearcare-dumps-$ACCOUNT_ID/restore/clearcare.dump"
