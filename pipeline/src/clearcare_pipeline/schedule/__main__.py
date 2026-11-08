@@ -23,6 +23,7 @@ from clearcare_pipeline.contract_prices.__main__ import (
 )
 from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.extract_text import main as extract_text
+from clearcare_pipeline.geocode.__main__ import main as geocode
 from clearcare_pipeline.ingest_reports.__main__ import main as ingest_reports
 from clearcare_pipeline.load_register.__main__ import main as load_register
 from clearcare_pipeline.load_report_files.__main__ import (
@@ -52,6 +53,8 @@ STAGES: Mapping[str, Stage] = {
     "snapshots": snapshots,
     "upload": upload,
     "load_register": load_register,
+    # It reads only the database and Google, so it takes no data directory.
+    "geocode": lambda _: geocode([]),
     "price_lists": price_lists,
     "load_contract_prices": load_contract_prices,
     "reports": reports,
@@ -244,10 +247,11 @@ def _run_due(
     if bucket:
         _run_stage(stages, ("upload",), data_dir, attempt)
     # The centres first, as a report or a price is loaded only for a stored
-    # centre. Text extraction then writes only what this pipeline version
-    # lacks.
+    # centre, and the geocoder reads the served register. Text extraction then
+    # writes only what this pipeline version lacks.
     for name in (
         "load_register",
+        "geocode",
         "load_contract_prices",
         "load_report_files",
         "ingest_reports",

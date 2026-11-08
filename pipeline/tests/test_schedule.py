@@ -21,6 +21,7 @@ BUCKET = {
 STARTUP = [
     "upload",
     "load_register",
+    "geocode",
     "load_contract_prices",
     "load_report_files",
     "ingest_reports",
