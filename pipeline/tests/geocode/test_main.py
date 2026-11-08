@@ -219,6 +219,7 @@ def test_centres_with_no_point_or_one_23_calendar_days_old_are_geocoded(
         (found(latitude=math.nan), "location"),
         (found(longitude=math.inf), "location"),
         (found(postal_code="A65 F4E3"), "eircode"),
+        (found(place_id=None), "malformed"),
         (http(200), "malformed"),
     ],
 )
@@ -270,6 +271,7 @@ def test_an_address_found_in_another_county_is_not_accepted(
     "refusal",
     [
         status("REQUEST_DENIED"),
+        status("REQUEST_DENIED", results=False),
         status("INVALID_REQUEST"),
         status("OVER_DAILY_LIMIT"),
         http(403),

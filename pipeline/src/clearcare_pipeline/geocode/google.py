@@ -60,8 +60,11 @@ class _Result(_Google):
     place_id: str = Field(min_length=1)
 
 
-class _Answer(_Google):
+class _Status(_Google):
     status: str
+
+
+class _Answer(_Status):
     # Empty, but present, when the status is not OK.
     results: list[_Result]
 
@@ -134,14 +137,21 @@ class GoogleGeocoder:
                 continue
             if result.status != 200:
                 raise RequestRefusedError(f"HTTP status {result.status}")
+            # The status is read before the results, so that a refusal is
+            # not taken for a malformed answer however its results look.
             try:
-                answer = _Answer.model_validate(json.loads(result.body))
+                body = json.loads(result.body)
+                status = _Status.model_validate(body).status
             except (ValueError, ValidationError):
                 return Unresolved("malformed")
-            if answer.status in _TRANSIENT_STATUSES:
+            if status in _REFUSED_STATUSES:
+                raise RequestRefusedError(status)
+            if status in _TRANSIENT_STATUSES:
                 continue
-            if answer.status in _REFUSED_STATUSES:
-                raise RequestRefusedError(answer.status)
+            try:
+                answer = _Answer.model_validate(body)
+            except ValidationError:
+                return Unresolved("malformed")
             return _accept(answer, centre)
         return Unresolved("unreachable", reached=False)
 

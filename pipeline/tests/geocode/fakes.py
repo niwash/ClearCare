@@ -42,11 +42,11 @@ def found(
     longitude: float = -9.0568,
     postal_code: str = "A65 F4E2",
     county: str = "County Galway",
-    place_id: str = "ChIJ-fake-place",
+    place_id: str | None = "ChIJ-fake-place",
     partial_match: bool = False,
     location: bool = True,
 ) -> FetchResult:
-    """An OK answer whose first result has these parts."""
+    """An OK answer whose first result has these parts; None leaves one out."""
     result: dict[str, object] = {
         "address_components": [
             {
@@ -67,9 +67,10 @@ def found(
         ],
         "formatted_address": "Formatted Street, Somewhere, Ireland",
         "geometry": {"location_type": "ROOFTOP"},
-        "place_id": place_id,
         "types": ["street_address"],
     }
+    if place_id is not None:
+        result["place_id"] = place_id
     if location:
         result["geometry"] = {
             "location": {"lat": latitude, "lng": longitude},
@@ -80,15 +81,18 @@ def found(
     return _json({"results": [result], "status": "OK"})
 
 
-def status(name: str) -> FetchResult:
-    """An answer with no results, as Google sends for every status but OK."""
-    return _json(
-        {
-            "error_message": "Formatted Street is not a message to log.",
-            "results": [],
-            "status": name,
-        }
-    )
+def status(name: str, *, results: bool = True) -> FetchResult:
+    """An answer with no results, as Google sends for every status but OK.
+
+    With results False the empty results list is left out as well.
+    """
+    body: dict[str, object] = {
+        "error_message": "Formatted Street is not a message to log.",
+        "status": name,
+    }
+    if results:
+        body["results"] = []
+    return _json(body)
 
 
 def http(code: int) -> FetchResult:
