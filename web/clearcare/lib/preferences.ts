@@ -9,10 +9,10 @@
 // register does not have, an option the site no longer offers or an order it does not show is
 // dropped rather than stored, and an old saved search still opens as the search it can still make.
 //
-// Only type imports from lib/search-filters and what lib/counties holds, both named with their
+// Only type imports from lib/search-filters and constants from lib/counties, both named with their
 // extension: the tests load this file as it is (tests/preferences.test.ts), and lib/search.ts reads
 // the API (next/server), so it cannot be one of them.
-import { COUNTIES, countyNamed } from "./counties.ts";
+import { COUNTIES } from "./counties.ts";
 import {
   FILTER_GROUPS,
   selectionParams,
@@ -49,10 +49,9 @@ export function hasSavedChoices(saved: SavedSearch) {
   return saved.county !== "" || saved.sort !== "name" || FILTER_GROUPS.some((group) => saved.selection[group.key].length > 0);
 }
 
-// The part of a search worth remembering. A county typed as the place wins over the listed one, as
-// in readSearch (lib/search.ts), so what is saved is the search about to be shown.
-export function savedSearchFrom(search: Pick<SavedSearch, "county" | "sort" | "selection"> & { place?: string }): SavedSearch {
-  return { county: countyNamed(search.place ?? "") ?? search.county, sort: search.sort, selection: search.selection };
+// The part of a search worth remembering, taken from the applied one.
+export function savedSearchFrom(search: Pick<SavedSearch, "county" | "sort" | "selection">): SavedSearch {
+  return { county: search.county, sort: search.sort, selection: search.selection };
 }
 
 export function savedSearchDocument(saved: SavedSearch): SavedSearchDocument {

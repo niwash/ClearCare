@@ -36,9 +36,9 @@ export function HomeHero() {
             how a home is doing and talk through the choice together.
           </p>
 
-          {/* Name or Eircode here; the search page works out which. It has address and county too. A
-              visible label, not a faded hint in the box: people read one as already filled in
-              (CCARE-164). */}
+          {/* A name, a county or an Eircode here. The search page takes a county as the County filter,
+              an Eircode as the place and anything else as a name (lib/home-search.ts). A visible
+              label, not a faded hint in the box: people read one as already filled in (CCARE-164). */}
           <form
             action="/search"
             method="GET"
@@ -48,7 +48,7 @@ export function HomeHero() {
           >
             <label htmlFor="start-search" className="font-semibold">
               Check a nursing home&apos;s record
-              <span className="block text-sm font-normal text-ink-muted">Nursing home name or Eircode</span>
+              <span className="block text-sm font-normal text-ink-muted">Nursing home name, county or Eircode</span>
             </label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
@@ -65,7 +65,7 @@ export function HomeHero() {
               </button>
             </div>
             <p className="text-sm">
-              <Link href="/search" className="tap-target">Search by address or county instead →</Link>
+              <Link href="/search" className="tap-target">Search by town or area instead →</Link>
             </p>
           </form>
 
