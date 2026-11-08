@@ -1,5 +1,6 @@
 """Fetching files over HTTP."""
 
+import http.client
 import urllib.error
 import urllib.request
 from dataclasses import dataclass
@@ -24,7 +25,7 @@ class FetchResult:
 
 
 class FetchError(Exception):
-    """The request failed before any HTTP response arrived."""
+    """The request got no valid HTTP response, or its body was cut short."""
 
 
 class Fetcher(Protocol):
@@ -61,15 +62,16 @@ class UrllibFetcher:
         """Returns the response, including error statuses such as 503.
 
         Raises:
-            FetchError: If no HTTP response was received, or its body could
-                not be read.
+            FetchError: If no valid HTTP response was received, or its body
+                could not be read in full.
         """
         request = urllib.request.Request(
             url, headers={"User-Agent": self._user_agent}
         )
         # An error raised inside the HTTPError handler, such as a timeout
-        # while reading a 5xx body, skips the handlers beside it, so OSError
-        # is caught one level out.
+        # while reading a 5xx body, skips the handlers beside it, so errors
+        # are caught one level out. http.client's own errors, such as
+        # IncompleteRead for a body cut short, are not OSErrors.
         try:
             try:
                 with self._opener.open(
@@ -80,7 +82,7 @@ class UrllibFetcher:
                     )
             except urllib.error.HTTPError as error:
                 return _result(error.code, error.headers, error.read())
-        except OSError as error:
+        except (OSError, http.client.HTTPException) as error:
             raise FetchError(str(error)) from error
 
 
