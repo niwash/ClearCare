@@ -44,14 +44,6 @@ describe("what is worth saving", () => {
 
     assert.equal(hasSavedChoices(saved), false);
   });
-
-  test("a county typed as the place is the county kept, as the search shows it", () => {
-    for (const listed of ["Meath", ""]) {
-      const saved = savedSearchFrom({ county: listed, place: "Cavan", sort: "name", selection: NO_SAVED_SEARCH.selection });
-
-      assert.equal(saved.county, "Cavan", `county listed: "${listed}"`);
-    }
-  });
 });
 
 describe("the document the API stores", () => {

@@ -12,14 +12,14 @@ import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import { countyNamed } from "@/lib/counties";
+import { looksLikeEircode } from "@/lib/eircode";
+import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
 import {
   filtersClearedHref,
   formatEircode,
   hasSearch,
-  looksLikeEircode,
   readSearch,
   searchCentres,
   searchHref,
@@ -60,17 +60,11 @@ async function sentEmpty(searchParams: SearchPageProps["searchParams"]) {
   return ["name", "place", "county"].some((key) => key in params);
 }
 
-// The home page box sends q. The API has no combined search, so send it on as the county if it
-// names one, as a place if it looks like an Eircode, otherwise as a name. An empty box goes on as an
-// empty name, so it gets the same "Please enter something" as an empty search here.
+// The home page box sends q. It goes on to the search homeSearchHref makes of it (lib/home-search.ts).
 async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
   const value = (await searchParams).q;
   if (value === undefined) return;
-  const q = (Array.isArray(value) ? value[0] : value)?.trim();
-  if (!q) redirect("/search?name=");
-  const county = countyNamed(q);
-  if (county) redirect(`/search?${new URLSearchParams({ county })}`);
-  redirect(`/search?${new URLSearchParams({ [looksLikeEircode(q) ? "place" : "name"]: q })}`);
+  redirect(homeSearchHref((Array.isArray(value) ? value[0] : value) ?? ""));
 }
 
 export async function generateMetadata({ searchParams }: SearchPageProps) {

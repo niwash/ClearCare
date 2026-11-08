@@ -2,7 +2,8 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
-import { ANY_COUNTY, COUNTIES, countyNamed } from "./counties.ts";
+import { ANY_COUNTY, COUNTIES } from "./counties.ts";
+import { looksLikeEircode } from "./eircode.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
 
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
@@ -115,15 +116,6 @@ async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSea
   return { ok: false, status: response.status, detail: body?.detail ?? response.statusText };
 }
 
-const ROUTING_KEY = /^([AC-FHKNPRTV-Y]\d{2}|D6W)$/;
-const FULL_EIRCODE = /^([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}$/;
-
-// "D06", "w23 p6ex" and "W23P6EX" are Eircodes; "Elm Hall" isn't.
-export function looksLikeEircode(text: string) {
-  const compact = text.replace(/\s+/g, "").toUpperCase();
-  return ROUTING_KEY.test(compact) || FULL_EIRCODE.test(compact);
-}
-
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.
 export function formatEircode(eircode: string) {
   return eircode.length === 7 ? `${eircode.slice(0, 3)} ${eircode.slice(3)}` : eircode;
@@ -151,12 +143,8 @@ function first(params: PageParams, key: string) {
 
 export function readSearch(params: PageParams): PageSearch {
   const name = first(params, "name");
-  const typed = first(params, "place") || first(params, "address") || first(params, "eircode");
-  // A county typed as the place applies the county filter: as an address it misses homes whose
-  // address leaves the county out.
-  const typedCounty = countyNamed(typed);
-  const place = typedCounty ? "" : typed;
-  const countyValue = typedCounty ?? first(params, "county");
+  const place = first(params, "place") || first(params, "address") || first(params, "eircode");
+  const countyValue = first(params, "county");
   const county = countyValue === ANY_COUNTY ? "" : countyValue;
   const sortValue = first(params, "sort");
   const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;

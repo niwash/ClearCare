@@ -1,6 +1,6 @@
 // tests/counties.test.ts
-// Which text typed into a search box names a county (CCARE-219): that text applies the county
-// filter, and any other text is searched as before.
+// Which text typed into the home page box names a county (CCARE-219): that text applies the county
+// filter (tests/home-search.test.ts), and any other text is searched as before.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { test } from "node:test";
