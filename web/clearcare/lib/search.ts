@@ -3,8 +3,8 @@
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
 import { ANY_COUNTY, COUNTIES } from "./counties.ts";
-import { asEircode } from "./eircode.ts";
-import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
+import type { SearchQuery } from "./page-search.ts";
+import type { SortValue } from "./search-filters";
 
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
 // value are in lib/counties.ts: the saved-search tests load them without this file's API call.
@@ -57,18 +57,6 @@ export interface SearchResponse {
 
 export type Facets = Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
 
-// Straight from the URL, so the API does the validating, apart from eircode, which asEircode has
-// already read from the place.
-export interface SearchQuery {
-  name?: string;
-  address?: string;
-  county?: string;
-  eircode?: string;
-  page?: string;
-  page_size?: string;
-  sort?: string;
-}
-
 export type SearchResult =
   | { ok: true; data: SearchResponse }
   | { ok: false; status: number; detail: string };
@@ -120,71 +108,4 @@ async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSea
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.
 export function formatEircode(eircode: string) {
   return eircode.length === 7 ? `${eircode.slice(0, 3)} ${eircode.slice(3)}` : eircode;
-}
-
-// The search as the page address holds it: the name, one "Town, area or Eircode" field (place), the
-// county, the care and amenity filters, the order and the page. place goes to the API as an Eircode
-// if it looks like one, otherwise as an address; links from before it, with address or eircode,
-// still work.
-export interface PageSearch {
-  query: SearchQuery; // for GET /centres, with the filters sent separately (apiFilterParams)
-  name: string;
-  place: string;
-  county: string; // "" for any county
-  selection: FilterSelection;
-  sort: SortValue;
-}
-
-type PageParams = Record<string, string | string[] | undefined>;
-
-function first(params: PageParams, key: string) {
-  const value = params[key];
-  return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
-}
-
-export function readSearch(params: PageParams): PageSearch {
-  const name = first(params, "name");
-  const place = first(params, "place") || first(params, "address") || first(params, "eircode");
-  const countyValue = first(params, "county");
-  const county = countyValue === ANY_COUNTY ? "" : countyValue;
-  const sortValue = first(params, "sort");
-  const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;
-
-  const query: SearchQuery = {};
-  if (name) query.name = name;
-  const eircode = asEircode(place);
-  if (eircode) query.eircode = eircode;
-  else if (place) query.address = place;
-  if (county) query.county = county;
-  if (sort !== "name") query.sort = sort;
-  for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);
-
-  return { query, name, place, county, selection: readSelection(params), sort };
-}
-
-// Something to search for: a name, a place, a county or a filter.
-export function hasSearch(search: Pick<PageSearch, "name" | "place" | "county" | "selection">) {
-  return Boolean(search.name || search.place || search.county || filterCount(search.selection) > 0);
-}
-
-// The page address for a search, leaving out what's empty, so a shared link stays short.
-export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">, page = 1) {
-  const params = new URLSearchParams();
-  if (search.name) params.set("name", search.name);
-  if (search.place) params.set("place", search.place);
-  if (search.county) params.set("county", search.county);
-  for (const [key, value] of selectionParams(search.selection)) params.set(key, value);
-  if (search.sort !== "name") params.set("sort", search.sort);
-  if (page > 1) params.set("page", String(page));
-  const text = params.toString();
-  return text ? `/search?${text}` : "/search";
-}
-
-// The address for a search that has just been emptied — "Clear all", or the last filter tag removed
-// — which is the one page where a saved search must not open itself again. It says so in the address
-// (?filtersCleared=true, read in app/(site)/search/page.tsx) so that leaving and coming back keeps it
-// emptied.
-export function filtersClearedHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">) {
-  const href = searchHref(search);
-  return href === "/search" ? "/search?filtersCleared=true" : href;
 }
