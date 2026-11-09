@@ -1,14 +1,14 @@
 // app/centres/[id]/page.tsx
-// A home's record: the overview (CCARE-212). The facts, what the home offers and what to ask on a
-// visit, the things a family needs before anything else. What to look at first, the inspection
-// history and what happened next have pages of their own (look-first/, inspections/, next-steps/),
-// with the tabs in the layout.
+// A home's record: the overview (CCARE-212). The facts and what the home offers, the things a family
+// needs before anything else, and a pointer to what to ask on a visit. What to look at first, what
+// happened next, the inspection history and what to ask have pages of their own (look-first/,
+// next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
-import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "@/components/centre/section-icon";
+import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
 import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
@@ -45,7 +45,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
         <CentreFacts centre={centre} reports={reports} />
       </Band>
 
-      {/* On a band of its own, between the facts and the visit questions (CCARE-212). */}
+      {/* On a band of its own, between the facts and the pointer to What to ask (CCARE-212). */}
       <Band tint="stone">
         <CentreAmenitiesSection
           amenities={amenities}
@@ -53,29 +53,32 @@ export default async function CentrePage({ params }: CentrePageProps) {
         />
       </Band>
 
-      {reports && reports.visitQuestions.length > 0 && (
-        <Band tint="page">
-          {/* On the warm band colour, as the part of the record that turns what HIQA found into what
-              the family can do next (CCARE-179). */}
-          <section
-            id="visit"
-            aria-labelledby="visit-h"
-            className={`grid ${sectionScrollMargin} gap-3 rounded-2xl bg-warm p-5 md:grid-cols-[15rem_minmax(0,1fr)] md:gap-7 md:p-7 adult:rounded-lg adult:border adult:border-line`}
+      {/* What to ask has a tab of its own (CCARE-212); the overview points to it, as the step to take
+          once the facts are read. */}
+      <Band tint="page">
+        <section
+          aria-labelledby="visit-h"
+          className="flex flex-col gap-4 rounded-2xl bg-tint-blue p-5 text-on-tint-blue sm:flex-row sm:items-center sm:justify-between md:p-7 adult:rounded-lg adult:border adult:border-line"
+        >
+          <div className="flex items-start gap-3">
+            <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-ink">
+              <Icon name="talk" className="size-4" />
+            </span>
+            <div className="flex flex-col gap-1">
+              <h2 id="visit-h" className="font-heading text-xl font-semibold">
+                Planning a visit?
+              </h2>
+              <p>We&apos;ve put together what to ask this home, from what its inspections found.</p>
+            </div>
+          </div>
+          <Link
+            href={centrePath(centre.centre_id, "questions")}
+            className="inline-flex min-h-11 shrink-0 items-center gap-1.5 self-start rounded-full bg-surface px-5 font-semibold text-ink no-underline hover:text-ink sm:self-center adult:rounded-md adult:underline"
           >
-            <h2 id="visit-h" className="flex items-start gap-3 font-heading text-xl font-semibold">
-              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-rose text-on-tint-rose adult:bg-surface">
-                <Icon name="talk" className="size-4" />
-              </span>
-              Worth asking on a visit
-            </h2>
-            <ul className="flex list-disc flex-col gap-2 pl-5 leading-normal">
-              {reports.visitQuestions.map((question) => (
-                <li key={question}>{question}</li>
-              ))}
-            </ul>
-          </section>
-        </Band>
-      )}
+            See what to ask <span aria-hidden>→</span>
+          </Link>
+        </section>
+      </Band>
     </>
   );
 }

@@ -1,103 +1,174 @@
 // components/centre/centre-highlights.tsx
-import { formatDate, formatMonth, highlightAnchor, trailAnchor, type Highlight, type PromiseTrail } from "@/lib/centres";
-import { JudgementIcon } from "./judgement-icon";
-import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
+// What to look at first (CCARE-207, CCARE-212): the regulations a family should read about before
+// anything else, each as an open block rather than a row of a table, so it reads as something
+// found at the home rather than a record. Each has the judgement as a chip and why it's here in
+// plain words, the inspector's or provider's own words as a quote, and a line saying what happened
+// next with how it ended, which links to the full story on What happened next.
+import {
+  formatDate,
+  formatMonth,
+  highlightAnchor,
+  trailAnchor,
+  type Highlight,
+  type Inspection,
+  type PromiseTrail,
+} from "@/lib/centres";
+import Link from "next/link";
+import { inspectionDate, JudgementChip, OutcomePill, Quotes, SourceLink, trailOutcome } from "./finding-bits";
+import { JUDGEMENT_LABELS } from "./judgement-icon";
+import { sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 
-const COUNT_WORDS = ["", "one", "two", "three", "four", "five"];
+const COUNT_WORDS = ["", "one", "two", "three", "four", "five", "six"];
 
-function heading(highlight: Highlight) {
-  switch (highlight.rule) {
+// Why the regulation is here, in plain words.
+function reason({ rule, dates }: Highlight) {
+  switch (rule) {
     case "not-compliant-latest":
-      return "Not compliant at the last inspection";
+      return `At the latest inspection, ${formatDate(dates[0])}`;
     case "repeated":
-      return `Not fully compliant at ${COUNT_WORDS[highlight.dates.length] ?? highlight.dates.length} inspections in a row`;
+      // With the span they cover, oldest to latest, so "in a row" has dates to go by.
+      return `Not fully put right at ${COUNT_WORDS[dates.length] ?? dates.length} inspections in a row · ${formatMonth(dates[0])} – ${formatMonth(dates.at(-1)!)}`;
     case "promise-not-rejudged":
-      return "Promised, then not re-judged";
+      return `Promised in ${formatMonth(dates[0])}, not checked since`;
   }
-}
-
-function dateLine({ rule, dates }: Highlight) {
-  if (rule === "promise-not-rejudged" && dates.length === 2) {
-    return `Promised ${formatMonth(dates[0])} · not assessed ${formatMonth(dates[1])}`;
-  }
-  const formatted = dates.map(formatDate);
-  return formatted.length > 1 ? `${formatted.slice(0, -1).join(", ")} and ${formatted.at(-1)}` : formatted[0];
 }
 
 type CentreHighlightsProps = {
   highlights: Highlight[];
   trails: PromiseTrail[];
+  inspections: Inspection[];
   // The page the trails are on, What happened next (CCARE-212).
   trailsHref: string;
+  // The inspection history, where every regulation is (CCARE-212).
+  inspectionsHref: string;
 };
 
-export function CentreHighlights({ highlights, trails, trailsHref }: CentreHighlightsProps) {
+export function CentreHighlights({ highlights, trails, inspections, trailsHref, inspectionsHref }: CentreHighlightsProps) {
   if (highlights.length === 0) return null;
+  const count = COUNT_WORDS[highlights.length] ?? String(highlights.length);
 
   return (
-    // The heading and its note on the section's band, above the card, as "About this home" has; the
-    // highlights themselves in the card.
-    <section id="first" aria-labelledby="first-h" className={`${sectionScrollMargin} flex flex-col gap-3`}>
-      <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-6">
-        <h2 id="first-h" className={sectionHeadingClass}>
-          What to look at first
-        </h2>
-        <p className="text-sm text-ink-muted">
-          Every line is the inspector&apos;s or the provider&apos;s own words.
+    <section id="first" aria-labelledby="first-h" className={`${sectionScrollMargin} flex flex-col gap-6`}>
+      <div className="flex flex-col gap-1.5">
+        {/* Every regulation is on the inspection history, for anyone who wants more than these. */}
+        <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+          <h2 id="first-h" className={sectionHeadingClass}>
+            What to look at first
+          </h2>
+          <Link
+            href={inspectionsHref}
+            className="inline-flex min-h-11 items-center gap-1.5 self-center rounded-full border border-line bg-surface px-4 text-sm font-semibold whitespace-nowrap text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:underline"
+          >
+            See all regulations <span aria-hidden>→</span>
+          </Link>
+        </div>
+        <p className="max-w-3xl text-ink">
+          {highlights.length === 1 ? "One thing" : `${count[0].toUpperCase()}${count.slice(1)} things`} from this
+          home&apos;s reports worth reading in full, in the inspector&apos;s or the home&apos;s own words.
         </p>
       </div>
 
-      <ul className={`${sectionCardClass} divide-y divide-line-soft`}>
+      <ul className="flex flex-col gap-4">
         {highlights.map((highlight) => {
-          const hasTrail = trails.some((trail) => trail.regulation.number === highlight.regulation.number);
-          const anchor = `${trailsHref}#${trailAnchor(highlight.regulation)}`;
+          const trail = trails.find((candidate) => candidate.regulation.number === highlight.regulation.number);
+          const quoted = highlight.sources.length > 0;
+          const text = quoted && !highlight.text.startsWith("“") ? `“${highlight.text}”` : highlight.text;
 
           return (
             // The id is what the regulation's trail links back up to.
             <li
               key={`${highlight.rule}-${highlight.regulation.number}`}
               id={highlightAnchor(highlight.regulation)}
-              className={`grid ${sectionScrollMargin} gap-3 px-4 py-5 md:grid-cols-[15rem_minmax(0,1fr)_12rem] md:gap-7 md:px-7`}
+              className={`${sectionScrollMargin} flex flex-col gap-4 rounded-2xl bg-surface p-5 shadow-sm md:p-7 adult:rounded-lg adult:border adult:border-line adult:shadow-none`}
             >
-              <div className="flex items-start gap-2.5">
-                <span className="mt-1">
-                  <JudgementIcon judgement={highlight.judgement} size={16} />
-                </span>
-                <div>
-                  <div className="font-semibold">{heading(highlight)}</div>
-                  <div className="mt-0.5 text-sm text-ink-muted">{dateLine(highlight)}</div>
+              {/* What it is first, as the block's heading, then how it was judged and when, both in
+                  full ink so neither is missed. */}
+              <div className="flex flex-col gap-2.5">
+                <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                  <span className="font-heading text-xl font-semibold text-ink md:text-2xl">{highlight.regulation.title}</span>
+                  <span className="text-sm font-medium text-ink-muted">Regulation {highlight.regulation.number}</span>
+                </h3>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                  <JudgementChip judgement={highlight.judgement} />
+                  <span className="font-semibold text-ink">{reason(highlight)}</span>
                 </div>
               </div>
 
-              <div>
-                <div className="font-semibold">
-                  Regulation {highlight.regulation.number} · {highlight.regulation.title}
-                </div>
-                <p className="mt-1.5 max-w-3xl leading-relaxed">
-                  {highlight.text}
-                  {hasTrail && (
-                    <>
-                      {" "}
-                      <a href={anchor}>See what happened</a>
-                    </>
+              <figure className="flex flex-col gap-2 border-l-2 border-line pl-4 md:pl-5">
+                <blockquote className={quoted ? "max-w-3xl text-lg leading-relaxed text-ink" : "text-ink-muted"}>
+                  {text}
+                </blockquote>
+                {/* The whole passage, when the quote is only its opening: closed until asked for, so
+                    the page stays easy to scan. */}
+                {highlight.passage && /…”?$/.test(highlight.text) ? (
+                  <details className="group/passage">
+                    <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-hover [&::-webkit-details-marker]:hidden">
+                      <span className="group-open/passage:hidden">Read the full passage</span>
+                      <span className="hidden group-open/passage:inline">Hide the full passage</span>
+                      <svg aria-hidden viewBox="0 0 24 24" className="size-4 transition-transform group-open/passage:rotate-180" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M6 9l6 6 6-6" />
+                      </svg>
+                    </summary>
+                    {/* On its own tinted, rounded panel, so the whole passage reads as set apart from
+                        the quote above rather than as more of it. */}
+                    <div className="mt-2 max-w-3xl rounded-xl bg-surface-muted px-4 py-3.5 adult:rounded-md adult:border adult:border-line">
+                      <Quotes quotes={highlight.passage} bare />
+                    </div>
+                  </details>
+                ) : null}
+                <figcaption>
+                  {highlight.sources.map((source) => (
+                    <SourceLink key={source} source={source} href={highlight.reportUrl} />
+                  ))}
+                  {!quoted && highlight.reportUrl && (
+                    <a href={highlight.reportUrl} className="text-small">
+                      Open the report
+                    </a>
                   )}
-                </p>
-              </div>
+                </figcaption>
+              </figure>
 
-              <div className="text-sm leading-relaxed text-ink-muted">
-                {highlight.sources.map((source) => (
-                  <div key={source}>{source}</div>
-                ))}
-                {hasTrail ? (
-                  <a href={anchor} className="tap-target">See what happened next</a>
-                ) : (
-                  highlight.reportUrl && <a href={highlight.reportUrl} className="tap-target">Read in the report</a>
-                )}
-              </div>
+              {trail && <NextLine trail={trail} inspections={inspections} href={`${trailsHref}#${trailAnchor(highlight.regulation)}`} />}
             </li>
           );
         })}
       </ul>
     </section>
+  );
+}
+
+// What happened next, in a line: what the home promised, or else what the next inspection found,
+// with how it ended and a link to the whole story.
+function NextLine({ trail, inspections, href }: { trail: PromiseTrail; inspections: Inspection[]; href: string }) {
+  const promise = trail.promises[0];
+  const { followUp } = trail;
+  const followUpDate = followUp && inspectionDate(inspections, followUp.inspectionId, followUp.date);
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl bg-surface-muted px-4 py-3 sm:flex-row sm:items-center sm:justify-between adult:rounded-md">
+      <p className="line-clamp-2 min-w-0 text-sm leading-relaxed">
+        {promise ? (
+          <>
+            <span className="font-semibold">The home promised{promise.due ? ` by ${promise.due}` : ""}:</span>{" "}
+            <span className="text-ink-muted">“{promise.quote}”</span>
+          </>
+        ) : followUp && followUp.judgement !== "not-assessed" ? (
+          <>
+            <span className="font-semibold">Next inspection{followUpDate ? `, ${followUpDate}` : ""}:</span>{" "}
+            <span className="text-ink-muted">{followUp.printedJudgement ?? JUDGEMENT_LABELS[followUp.judgement]}</span>
+          </>
+        ) : !followUp && !trail.orderUnknown ? (
+          <span className="text-ink-muted">Found at the latest inspection, so it hasn&apos;t been checked again yet.</span>
+        ) : (
+          <span className="text-ink-muted">See how this was followed up.</span>
+        )}
+      </p>
+      <div className="flex shrink-0 items-center gap-3">
+        <OutcomePill outcome={trailOutcome(trail)} />
+        <a href={href} className="text-sm font-semibold whitespace-nowrap tap-target">
+          Full story <span aria-hidden>→</span>
+        </a>
+      </div>
+    </div>
   );
 }

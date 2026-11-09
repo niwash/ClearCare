@@ -31,12 +31,13 @@ export default async function CentreLayout({ children, params }: { children: Rea
   // it says why (NothingToFlag, and the inspections page's own message when there are no reports).
   // Each tab is coloured like the band its page starts with, so the current one runs into it.
   // What happened next follows What to look at first, as it follows up the same regulations; the
-  // full inspection history comes last.
+  // full inspection history after them, and What to ask last, as what the family can do with it all.
   const tabs: CentreTab[] = [
     { href: centrePath(id), label: "Overview", band: "bg-page" },
     { href: centrePath(id, "look-first"), label: CENTRE_SECTION_TITLES["look-first"], band: "bg-tint-gold" },
     { href: centrePath(id, "next-steps"), label: CENTRE_SECTION_TITLES["next-steps"], band: "bg-tint-sage" },
     { href: centrePath(id, "inspections"), label: CENTRE_SECTION_TITLES.inspections, band: "bg-band" },
+    { href: centrePath(id, "questions"), label: CENTRE_SECTION_TITLES.questions, band: "bg-tint-blue" },
   ];
 
   return (

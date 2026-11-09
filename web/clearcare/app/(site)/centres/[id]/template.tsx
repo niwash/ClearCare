@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
 
 // The tabs' order, by the end of the path, as in the layout.
-const ORDER = ["", "look-first", "next-steps", "inspections"];
+const ORDER = ["", "look-first", "next-steps", "inspections", "questions"];
 
 function place(pathname: string) {
   const match = pathname.match(/^\/centres\/([^/]+)\/?([^/]*)/);

@@ -66,6 +66,8 @@ export interface Highlight {
   dates: ISODate[];
   regulation: Regulation;
   text: string; // the inspector's or the provider's own words
+  // The inspector's whole passage, when text is the opening of it, for reading in full.
+  passage?: string[];
   sources: string[];
   reportUrl?: string;
 }
