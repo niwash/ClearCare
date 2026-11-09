@@ -295,7 +295,8 @@ function CentreFacts({
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
-  // Most register addresses already end with the Eircode, so it only gets its own row when missing.
+  // Most register addresses already end with the Eircode, so it only gets its own row when missing
+  // or printed with an O for 0 (A98 C2CO), since the row is then the only place it shows right.
   const addressHasEircode = Boolean(centre.eircode && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode));
   const phone = centrePhone(centre.centre_phone);
 
