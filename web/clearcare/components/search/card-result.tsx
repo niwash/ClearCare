@@ -92,7 +92,7 @@ export function CardResult({ centre, selection }: CardResultProps) {
             <strong className="text-ink">{inspection.date ? formatDate(inspection.date) : "date not given"}</strong>
           </span>
         )}
-        <Link href={`${href}#history`} className="font-semibold md:ml-auto">
+        <Link href={`${href}/inspections`} className="font-semibold md:ml-auto">
           View inspections →
         </Link>
       </div>

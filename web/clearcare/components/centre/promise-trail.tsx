@@ -3,8 +3,7 @@ import { formatDate, formatSource, highlightAnchor, trailAnchor, type Inspection
 import { ShowHide } from "@/components/ui/chevron";
 import { LIST_ITEM } from "@/lib/findings";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
-import { contentsScrollMargin } from "./centre-contents";
-import { sectionCardClass } from "./section-icon";
+import { sectionCardClass, sectionScrollMargin } from "./section-icon";
 
 function Source({ source }: { source: SourceRef }) {
   return (
@@ -62,9 +61,11 @@ const inspectionsWord = (count: number) => (count === 1 ? "inspection" : `${coun
 type PromiseTrailProps = {
   trail: Trail;
   inspections: Inspection[];
+  // What to look at first, where the regulation's highlight is (CCARE-212).
+  highlightsHref: string;
 };
 
-export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
+export function PromiseTrail({ trail, inspections, highlightsHref }: PromiseTrailProps) {
   const { regulation, finding, promises, response, datesToComply, followUp, orderUnknown } = trail;
   const dateOf = (id: string, fallback?: string) => {
     const date = inspections.find((candidate) => candidate.id === id)?.date ?? fallback;
@@ -86,11 +87,11 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
 
   return (
     // A card that opens, like a guide's section, but with no shared name, so opening one leaves the
-    // others as they are. The id is what the highlights, the history table and the contents link
-    // to; SectionAccordion opens it on arrival. "group/section" keeps Show/Hide to it.
+    // others as they are. The id is what the highlights and the history table link to, from their
+    // own pages (CCARE-212); SectionAccordion opens it on arrival. "group/section" keeps Show/Hide to it.
     <details
       id={trailAnchor(regulation)}
-      className={`group/section ${contentsScrollMargin} ${sectionCardClass} open:border-primary`}
+      className={`group/section ${sectionScrollMargin} ${sectionCardClass} open:border-primary`}
     >
       {/* A summary may hold a heading but no wrapping block, so its parts are its own grid items. */}
       <summary className="grid cursor-pointer list-none grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
@@ -213,10 +214,10 @@ export function PromiseTrail({ trail, inspections }: PromiseTrailProps) {
         </li>
       </ol>
 
-      {/* Back up to the regulation's highlight, so nobody has to scroll to find where they came from.
-          Every trail has one: trails are only made for highlighted regulations. */}
+      {/* Back to the regulation's highlight on What to look at first, so nobody has to look for
+          where they came from. Every trail has one: trails are only made for highlighted regulations. */}
       <div className="border-t border-line-soft px-4 py-3 text-sm font-semibold md:px-6">
-        <a href={`#${highlightAnchor(regulation)}`} className="inline-flex min-h-11 items-center gap-1.5 tap-target">
+        <a href={`${highlightsHref}#${highlightAnchor(regulation)}`} className="inline-flex min-h-11 items-center gap-1.5 tap-target">
           <span aria-hidden>↑</span> Back to What to look at first
         </a>
       </div>

@@ -1,9 +1,10 @@
 // components/centre/centre-amenities.tsx
-// What the home offers, the last part of the details box on the centre page (CCARE-163). The values
+// What the home offers (CCARE-163), a section of the record's overview of its own (CCARE-212). The values
 // are what an AI tool read from one inspection report and are still being checked, so it says so,
 // links to the report they came from, and shows the passages each one was read from: on hover or tap
 // in the standard design (AmenityTags), in an accordion in the easier-to-read design.
 import { ShowHide } from "@/components/ui/chevron";
+import { sectionCardClass, sectionHeadingClass } from "./section-icon";
 import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centres";
 import type { ReactNode } from "react";
 import { AmenityIcon } from "./amenity-icon";
@@ -18,13 +19,15 @@ type CentreAmenitiesProps = {
   reportUrl?: string;
 };
 
-// A section of the details box (CentreFacts), under a line, rather than a box of its own: one record.
+// A section of the overview of its own (CCARE-212): its heading and note on the band, the lists in a
+// card, as the record's other sections have. It was the last part of the details box, which made
+// that box long beside the photo and the actions.
 export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenitiesProps) {
   if (!amenities) {
     return (
-      <section aria-labelledby="amenities-h" className="flex flex-col gap-1 border-t border-line-soft px-4 py-4">
+      <section id="offers" aria-labelledby="amenities-h" className="flex flex-col gap-3">
         <Heading />
-        <p className="text-ink-muted">
+        <p className={`${sectionCardClass} p-6 text-ink-muted`}>
           We haven&apos;t read this home&apos;s care types and amenities from its reports yet. Ask the home what it
           offers.
         </p>
@@ -42,65 +45,65 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
   const found = lists.filter(({ items }) => items.length > 0);
 
   return (
-    <section aria-labelledby="amenities-h" className="border-t border-line-soft py-2">
-      <div className="flex flex-col gap-1 px-4 pb-2 pt-2">
-        <Heading />
-        {/* Said before the values, so nobody takes them as the home's own list; the first sentence is
-            the disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays. How to see
-            the passages depends on the design, since each shows them its own way. */}
-        <p className="text-small text-ink-muted">
-          Read by an AI tool from {reportUrl ? <a href={reportUrl}>{report}</a> : report}. We&apos;re now checking
-          these against the report, and the home may offer more than the report mentions, so always call the home
-          to confirm anything that matters to you.
-          {found.length > 0 && (
-            <>
-              {" "}
-              <span className="adult:hidden">Hover over or tap an item to see where the report says it.</span>
-              <span className="hidden adult:inline">
-                Open &ldquo;Where the report says this&rdquo; to see the passage each one was read from.
-              </span>
-            </>
-          )}
-        </p>
+    <section id="offers" aria-labelledby="amenities-h" className="flex flex-col gap-3">
+      <Heading />
+      {/* Said before the values, so nobody takes them as the home's own list; the first sentence is
+          the disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays. How to see
+          the passages depends on the design, since each shows them its own way. */}
+      <p className="max-w-3xl text-ink">
+        Read by an AI tool from {reportUrl ? <a href={reportUrl}>{report}</a> : report}. We&apos;re now checking
+        these against the report, and the home may offer more than the report mentions, so always call the home
+        to confirm anything that matters to you.
+        {found.length > 0 && (
+          <>
+            {" "}
+            <span className="adult:hidden">Hover over or tap an item to see where the report says it.</span>
+            <span className="hidden adult:inline">
+              Open &ldquo;Where the report says this&rdquo; to see the passage each one was read from.
+            </span>
+          </>
+        )}
+      </p>
+      <div className={`${sectionCardClass} py-2`}>
+        <dl>
+          {lists.map(({ label, items }) => (
+            <Row key={label} label={label}>
+              {items.length === 0 ? (
+                // Nothing the report clearly supports, which doesn't mean the home has none.
+                <span className="text-ink-muted">None found in the report</span>
+              ) : (
+                <>
+                  <div className="adult:hidden">
+                    <AmenityTags items={items} reportUrl={reportUrl} />
+                  </div>
+                  <ul className="hidden flex-wrap gap-1.5 adult:flex">
+                    {items.map(({ item }) => (
+                      <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
+                        <AmenityIcon item={item} />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </Row>
+          ))}
+        </dl>
+        {found.length > 0 && <Evidence lists={found} reportUrl={reportUrl} />}
       </div>
-      <dl>
-        {lists.map(({ label, items }) => (
-          <Row key={label} label={label}>
-            {items.length === 0 ? (
-              // Nothing the report clearly supports, which doesn't mean the home has none.
-              <span className="text-ink-muted">None found in the report</span>
-            ) : (
-              <>
-                <div className="adult:hidden">
-                  <AmenityTags items={items} reportUrl={reportUrl} />
-                </div>
-                <ul className="hidden flex-wrap gap-1.5 adult:flex">
-                  {items.map(({ item }) => (
-                    <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
-                      <AmenityIcon item={item} />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            )}
-          </Row>
-        ))}
-      </dl>
-      {found.length > 0 && <Evidence lists={found} reportUrl={reportUrl} />}
     </section>
   );
 }
 
 function Heading() {
   return (
-    <h3 id="amenities-h" className="font-semibold text-ink">
+    <h2 id="amenities-h" className={sectionHeadingClass}>
       What the home offers
-    </h3>
+    </h2>
   );
 }
 
-// Laid out like the details' rows above it (Fact, centres/[id]/page.tsx), without the icons.
+// Laid out like the rows of the details box above it (Fact, centres/[id]/page.tsx), without the icons.
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid gap-1 px-4 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">

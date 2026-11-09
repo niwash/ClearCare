@@ -1,8 +1,7 @@
 // components/centre/centre-highlights.tsx
 import { formatDate, formatMonth, highlightAnchor, trailAnchor, type Highlight, type PromiseTrail } from "@/lib/centres";
-import { contentsScrollMargin } from "./centre-contents";
 import { JudgementIcon } from "./judgement-icon";
-import { sectionCardClass, sectionHeadingClass } from "./section-icon";
+import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 
 const COUNT_WORDS = ["", "one", "two", "three", "four", "five"];
 
@@ -28,15 +27,17 @@ function dateLine({ rule, dates }: Highlight) {
 type CentreHighlightsProps = {
   highlights: Highlight[];
   trails: PromiseTrail[];
+  // The page the trails are on, What happened next (CCARE-212).
+  trailsHref: string;
 };
 
-export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) {
+export function CentreHighlights({ highlights, trails, trailsHref }: CentreHighlightsProps) {
   if (highlights.length === 0) return null;
 
   return (
     // The heading and its note on the section's band, above the card, as "About this home" has; the
     // highlights themselves in the card.
-    <section id="first" aria-labelledby="first-h" className={`${contentsScrollMargin} flex flex-col gap-3`}>
+    <section id="first" aria-labelledby="first-h" className={`${sectionScrollMargin} flex flex-col gap-3`}>
       <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between md:gap-6">
         <h2 id="first-h" className={sectionHeadingClass}>
           What to look at first
@@ -49,14 +50,14 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
       <ul className={`${sectionCardClass} divide-y divide-line-soft`}>
         {highlights.map((highlight) => {
           const hasTrail = trails.some((trail) => trail.regulation.number === highlight.regulation.number);
-          const anchor = `#${trailAnchor(highlight.regulation)}`;
+          const anchor = `${trailsHref}#${trailAnchor(highlight.regulation)}`;
 
           return (
             // The id is what the regulation's trail links back up to.
             <li
               key={`${highlight.rule}-${highlight.regulation.number}`}
               id={highlightAnchor(highlight.regulation)}
-              className={`grid ${contentsScrollMargin} gap-3 px-4 py-5 md:grid-cols-[15rem_minmax(0,1fr)_12rem] md:gap-7 md:px-7`}
+              className={`grid ${sectionScrollMargin} gap-3 px-4 py-5 md:grid-cols-[15rem_minmax(0,1fr)_12rem] md:gap-7 md:px-7`}
             >
               <div className="flex items-start gap-2.5">
                 <span className="mt-1">
@@ -88,7 +89,7 @@ export function CentreHighlights({ highlights, trails }: CentreHighlightsProps) 
                   <div key={source}>{source}</div>
                 ))}
                 {hasTrail ? (
-                  <a href={anchor} className="tap-target">See the trail below</a>
+                  <a href={anchor} className="tap-target">See what happened next</a>
                 ) : (
                   highlight.reportUrl && <a href={highlight.reportUrl} className="tap-target">Read in the report</a>
                 )}
