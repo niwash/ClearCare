@@ -16,10 +16,12 @@ const FOOTER_LINKS = [
 export function SiteFooter() {
   return (
     <footer className="brand-band brand-band-deep text-sm">
-      {/* The welcome tour's offer floats over the bottom of the footer rather than the footer
-          growing to make room for it, which left a large empty band under it (CCARE-214). It can
-          be dismissed, and is gone for the rest of the visit. */}
-      <div className="page-column flex flex-col gap-6 px-4 py-10 md:px-8">
+      {/* While the welcome tour's offer is in the corner, on phones the footer is taller at the
+          bottom by the box's measured height (--tour-offer-room, set in welcome-tour.tsx), so the
+          box doesn't cover the links or the licence line. 20rem until it is measured. From md up
+          the box floats over the bottom of the footer, which it covers much less of: room sized
+          for it there left a large empty band (CCARE-211, CCARE-214). */}
+      <div className="page-column flex flex-col gap-6 px-4 py-10 md:px-8 max-md:[body:has([data-tour-offer])_&]:pb-[var(--tour-offer-room,20rem)]">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
             <SiteLogo className="flex w-fit items-center text-xl tap-target" />
