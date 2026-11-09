@@ -10,11 +10,10 @@ import {
   type PromiseTrail,
   type RegulationHistory,
 } from "@/lib/centres";
-import { contentsScrollMargin } from "./centre-contents";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 import { JudgementsPerInspection } from "./judgements-per-inspection";
-import { sectionCardClass, sectionHeadingClass } from "./section-icon";
+import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 
 // Rows shown before "Show all".
 const SHORT_LIST = 7;
@@ -57,7 +56,7 @@ function buildCells(row: RegulationHistory, inspections: Inspection[], trails: P
 // Inspections shown before "Show all inspections": the most recent, which fit with full labels.
 const LATEST_INSPECTIONS = 4;
 
-function JudgementCell({ cell }: { cell: Cell }) {
+function JudgementCell({ cell, trailsHref }: { cell: Cell; trailsHref: string }) {
   const label = (
     <>
       {SHORT_LABELS[cell.judgement]}
@@ -72,7 +71,7 @@ function JudgementCell({ cell }: { cell: Cell }) {
         <JudgementIcon judgement={cell.judgement} />
       </span>
       <span>
-        {cell.trail ? <a href={`#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 tap-target">{label}</a> : label}
+        {cell.trail ? <a href={`${trailsHref}#${trailAnchor(cell.trail.regulation)}`} className="inline-block py-1 tap-target">{label}</a> : label}
         {/* On their own line, so a wrapped label doesn't leave a "·" hanging. */}
         {cell.change && <span className="block text-sm text-ink-muted">{cell.change}</span>}
       </span>
@@ -86,6 +85,8 @@ type InspectionHistoryProps = {
   trails: PromiseTrail[];
   showAll: boolean;
   showAllInspections: boolean;
+  // The page the trails are on, What happened next (CCARE-212).
+  trailsHref: string;
 };
 
 // Column widths. With every inspection shown, each inspection column is wide enough for full
@@ -109,7 +110,7 @@ function historyHref({ regulations, inspections }: { regulations: boolean; inspe
   return `?${params}#history`;
 }
 
-export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections }: InspectionHistoryProps) {
+export function InspectionHistory({ inspections, history, trails, showAll, showAllInspections, trailsHref }: InspectionHistoryProps) {
   const rows = showAll ? history : history.slice(0, SHORT_LIST);
   // Cells are still built from every inspection, so "worse" and "better" compare with the right one.
   const shown = showAllInspections ? inspections : inspections.slice(-LATEST_INSPECTIONS);
@@ -122,7 +123,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
   return (
     // The heading on the section's band, above the card, as "About this home" has; the key, the
     // chart and the table in the card.
-    <section id="history" aria-labelledby="hist-h" className={`${contentsScrollMargin} flex flex-col gap-3`}>
+    <section id="history" aria-labelledby="hist-h" className={`${sectionScrollMargin} flex flex-col gap-3`}>
       <h2 id="hist-h" className={sectionHeadingClass}>
         Inspection history
       </h2>
@@ -184,7 +185,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                             </a>
                           </dt>
                           <dd className="min-w-0">
-                            <JudgementCell cell={cell} />
+                            <JudgementCell cell={cell} trailsHref={trailsHref} />
                           </dd>
                         </div>
                       );
@@ -236,7 +237,7 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                       if (cell) {
                         return (
                           <td key={inspection.id} className="px-4 py-3">
-                            <JudgementCell cell={cell} />
+                            <JudgementCell cell={cell} trailsHref={trailsHref} />
                           </td>
                         );
                       }
