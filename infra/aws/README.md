@@ -272,6 +272,12 @@ Changing a hostname replaces the certificate. To change them from `infra/aws/liv
 5. Run the AWS deploy workflow for the running commit, so the site's tasks get the new `API_URL`.
 6. Set `API_URL` for the Vercel previews to the new API hostname, then redeploy the preview of `main`: a changed variable reaches only new deployments.
 
+## Place suggestions
+
+The search page's place suggestions use Google's Maps JavaScript and Places APIs, with a browser key limited in Google Cloud to the site's hostname. Set it as `google_maps_browser_key` in `terraform.tfvars`, apply, and run the AWS deploy workflow for the running commit so that new tasks get it. Without the key, the place box is a plain text box ([web/clearcare/README.md](../../web/clearcare/README.md)).
+
+The Vercel previews need `GOOGLE_MAPS_BROWSER_KEY` set to the same key in the Vercel project's settings, and their address added to the key's referrers.
+
 ## Deploy
 
 Every push to `main` deploys itself once deploys are enabled. After the Checks workflow passes, AWS build pushes the four images, tagged `sha-<commit>`, and calls AWS deploy for the commit the checks ran on. If `main` has moved on by then, the deploy skips that commit, because the newer commit's own build deploys it. The VM deploy is a workflow of its own, so the AWS build no longer depends on it. AWS deploy runs `infra/aws/bin/deploy`:
