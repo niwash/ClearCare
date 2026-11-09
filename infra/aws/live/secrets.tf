@@ -1,4 +1,5 @@
-# One secret per database login (ADR-0010), and the pipeline's Anthropic key.
+# One secret per database login (ADR-0010), and the pipeline's Anthropic and
+# Google keys.
 # Terraform creates the secrets but not their values, so no password or key
 # is in the state or in a plan; README.md shows how to set them. The
 # administrator's secret belongs to RDS (rds.tf). Each task's execution role
@@ -29,6 +30,13 @@ locals {
 resource "aws_secretsmanager_secret" "anthropic" {
   name                    = "${local.name}/anthropic"
   description             = "Anthropic API key of the pipeline, as plain text"
+  recovery_window_in_days = 7
+}
+
+# The pipeline's Google key, for the geocode stage (ADR-0027).
+resource "aws_secretsmanager_secret" "google_geocoding" {
+  name                    = "${local.name}/google/geocoding-key"
+  description             = "Google server key of the pipeline, limited to the Geocoding API, as plain text"
   recovery_window_in_days = 7
 }
 

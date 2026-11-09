@@ -25,6 +25,12 @@ class _Handler(BaseHTTPRequestHandler):
             self.send_header("Location", "/register.csv")
             self.send_header("Content-Length", "0")
             self.end_headers()
+        elif self.path == "/cut-off":
+            # Promises more body than it sends; the connection then closes.
+            self.send_response(503)
+            self.send_header("Content-Length", "100")
+            self.end_headers()
+            self.wfile.write(b"<html>Serv")
         else:
             self._reply(503, "text/html", b"<html>Browser Verification</html>")
 
@@ -73,6 +79,11 @@ def test_http_error_status_is_returned_not_raised(server: str) -> None:
 
     assert result.status == 503
     assert b"Browser Verification" in result.body
+
+
+def test_error_body_cut_off_raises_fetch_error(server: str) -> None:
+    with pytest.raises(FetchError):
+        UrllibFetcher().fetch(f"{server}/cut-off")
 
 
 def test_unreachable_host_raises_fetch_error() -> None:
