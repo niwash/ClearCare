@@ -42,11 +42,15 @@ paths:
         `centre_id` as a number. `sort=latest_inspection` orders them by the
         inspection date of their newest loaded report, newest first; centres
         whose newest report has no date come last, together with centres
-        without a report, and ties are in name order. Results are not ranked.
+        without a report, and ties are in name order. `sort=distance` orders
+        them by `distance_m`, nearest first, and needs `near`; centres without
+        a distance come last, and ties are in name order. Results are not
+        ranked.
 
-        An unknown parameter, an unknown item name or sort, or a parameter
-        other than the four filters given more than once, is refused with
-        400. A filter value given twice counts once.
+        An unknown parameter, an unknown item name or sort, `sort=distance`
+        without `near`, or a parameter other than the four filters given more
+        than once, is refused with 400. A filter value given twice counts
+        once.
       parameters:
         - name: name
           in: query
@@ -127,12 +131,25 @@ paths:
             items:
               $ref: "#/components/schemas/ActivityItem"
           example: ["Bingo"]
+        - name: near
+          in: query
+          description: >
+            Where each centre's `distance_m` is measured from: a latitude from
+            -90 to 90 and a longitude from -180 to 180, in degrees on WGS 84,
+            separated by a comma. Each has at most two decimal places, which
+            is about 1 km: round a visitor's location before sending it, as
+            more are refused. `near` filters nothing: every matching centre is
+            returned, in the order `sort` asks for.
+          schema:
+            type: string
+            pattern: "^-?[0-9]{1,3}(\\.[0-9]{1,2})?,-?[0-9]{1,3}(\\.[0-9]{1,2})?$"
+          example: "53.35,-6.26"
         - name: sort
           in: query
           description: The order of the results, as described above.
           schema:
             type: string
-            enum: [name, latest_inspection]
+            enum: [name, latest_inspection, distance]
             default: name
         - name: page
           in: query
@@ -178,6 +195,7 @@ paths:
                     fair_deal: true
                     latest_inspection:
                       date: "2026-01-15"
+                    distance_m: null
                 page: 1
                 page_size: 20
                 total: 1
@@ -196,7 +214,8 @@ paths:
           description: >
             A parameter is unknown, given more than once where it may not be,
             too long, out of range, not of the expected type or shape, or an
-            item name or sort the API does not know.
+            item name or sort the API does not know, or `sort=distance` is
+            given without `near`.
           content:
             application/problem+json:
               schema:
@@ -893,7 +912,7 @@ components:
           $ref: "#/components/schemas/Facets"
         sort:
           type: string
-          enum: [name, latest_inspection]
+          enum: [name, latest_inspection, distance]
           description: The order applied to the results.
 
     CentreSummary:
@@ -903,7 +922,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [amenities, fair_deal, latest_inspection]
+          required: [amenities, fair_deal, latest_inspection, distance_m]
           properties:
             amenities:
               description: >
@@ -936,6 +955,13 @@ components:
                         The inspection date; null when the report does not
                         give one.
                 - type: "null"
+            distance_m:
+              type: [integer, "null"]
+              description: >
+                How far the centre is from `near`, in whole metres in a
+                straight line on the WGS 84 spheroid. null when `near` is not
+                given, or when ClearCare has no location for the centre under
+                30 days old.
 
     MentionedAmenities:
       type: object
