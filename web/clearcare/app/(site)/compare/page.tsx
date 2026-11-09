@@ -469,15 +469,16 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
                       return (
                         <li key={item} className={common.has(item) || pictured ? "-ml-4 list-none" : undefined}>
                           {common.has(item) ? (
-                            // On a green highlight in place of the bullet.
-                            <span className={`${commonClass} inline-flex items-center gap-1.5`}>
+                            // On a green highlight in place of the bullet. items-start keeps the icon
+                            // beside the first line when a long item wraps, rather than between two.
+                            <span className={`${commonClass} inline-flex items-start gap-1.5`}>
                               <AmenityIcon item={item} />
                               {item}
                               <span className="sr-only"> (in every home)</span>
                             </span>
                           ) : pictured ? (
                             // px-2, as the highlight's, so its words line up with a highlighted item's.
-                            <span className="inline-flex items-center gap-1.5 px-2">
+                            <span className="inline-flex items-start gap-1.5 px-2">
                               <AmenityIcon item={item} className="size-5 text-ink-muted adult:size-6" />
                               {item}
                             </span>
