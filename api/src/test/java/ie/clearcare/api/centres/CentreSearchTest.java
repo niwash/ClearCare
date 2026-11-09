@@ -462,9 +462,12 @@ class CentreSearchTest {
         arguments(
             "eircode=W2",
             "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
-        // A word with no digit: its Os are not read as 0.
+        // Words with no digit in their first three characters: their Os are not read as 0.
         arguments(
             "eircode=Doonane",
+            "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
+        arguments(
+            "eircode=Doonan1",
             "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
         arguments("page_size=51", "page_size must be between 1 and 50"),
         arguments(

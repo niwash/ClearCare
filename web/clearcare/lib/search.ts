@@ -57,7 +57,8 @@ export interface SearchResponse {
 
 export type Facets = Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
 
-// Straight from the URL, so the API does the validating.
+// Straight from the URL, so the API does the validating, apart from eircode, which asEircode has
+// already read from the place.
 export interface SearchQuery {
   name?: string;
   address?: string;

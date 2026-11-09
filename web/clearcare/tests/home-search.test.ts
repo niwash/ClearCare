@@ -16,6 +16,7 @@ test("a county's name goes to the county filter, as the API spells it", () => {
 test("an Eircode goes to the place, with or without its space", () => {
   assert.equal(homeSearchHref("W23 P6EX"), "/search?place=W23+P6EX");
   assert.equal(homeSearchHref("W23P6EX"), "/search?place=W23P6EX");
+  assert.equal(homeSearchHref("DO6"), "/search?place=DO6");
 });
 
 test("anything else goes to the name", () => {
