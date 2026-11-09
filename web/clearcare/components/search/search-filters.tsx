@@ -17,8 +17,9 @@ import { PreferencesNotice } from "@/components/preferences/preferences-notice";
 import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
 import { hydrateSavedSearch, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
 import { forgetLastSearch } from "@/components/search/last-search";
+import { filtersClearedHref, searchHref, type PageSearch } from "@/lib/page-search";
 import { savedSearchFrom } from "@/lib/preferences";
-import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, filtersClearedHref, searchHref, type Facets, type PageSearch } from "@/lib/search";
+import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, type Facets } from "@/lib/search";
 import {
   filterCount,
   FILTER_GROUPS,

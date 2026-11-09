@@ -15,18 +15,9 @@ import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
 import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
+import { filtersClearedHref, hasSearch, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
-import {
-  filtersClearedHref,
-  formatEircode,
-  hasSearch,
-  readSearch,
-  searchCentres,
-  searchHref,
-  unavailableMessage,
-  type PageSearch,
-  type SearchResponse,
-} from "@/lib/search";
+import { formatEircode, searchCentres, unavailableMessage, type SearchResponse } from "@/lib/search";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import Link from "next/link";
 import { redirect } from "next/navigation";
