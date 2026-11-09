@@ -31,15 +31,17 @@ export default async function CentreLayout({ children, params }: { children: Rea
   // are no reports yet. What to look at first and What happened next have one only when there is
   // something on them: a highlighted regulation, and a trail for it.
   // Each tab is coloured like the band its page starts with, so the current one runs into it.
+  // What happened next follows What to look at first, as it follows up the same regulations; the
+  // full inspection history comes last.
   const tabs: CentreTab[] = [
     { href: centrePath(id), label: "Overview", band: "bg-page" },
     ...(reports?.highlights.length
       ? [{ href: centrePath(id, "look-first"), label: CENTRE_SECTION_TITLES["look-first"], band: "bg-tint-gold" }]
       : []),
-    { href: centrePath(id, "inspections"), label: CENTRE_SECTION_TITLES.inspections, band: "bg-band" },
     ...(reports?.trails.length
       ? [{ href: centrePath(id, "next-steps"), label: CENTRE_SECTION_TITLES["next-steps"], band: "bg-tint-sage" }]
       : []),
+    { href: centrePath(id, "inspections"), label: CENTRE_SECTION_TITLES.inspections, band: "bg-band" },
   ];
 
   return (
@@ -68,6 +70,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
 
 // The top of every page of the record, flush under the header as on the resources page: the
 // breadcrumb, the home's name and the tabs on the soft welcome band (welcome-band, globals.css).
+// It stays still between tabs, since the layout is kept while they change.
 function CentreHero({ centre, tabs }: { centre: CentreDetail; tabs: CentreTab[] }) {
   return (
     <section aria-labelledby="centre-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
