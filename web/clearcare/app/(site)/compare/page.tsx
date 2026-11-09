@@ -52,6 +52,7 @@ import {
   repeatedNotCompliant,
   type LatestResult,
 } from "@/lib/compare";
+import { asEircode } from "@/lib/eircode";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
@@ -842,12 +843,14 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
 }
 
 // The register's address without what the grid already shows: the home's name, which often starts
-// it, and the Eircode, which often ends it and has a row of its own.
+// it, and the Eircode, which often ends it and has a row of its own. The ending is compared as
+// asEircode reads it: the register prints two Eircodes with a letter O for 0 (A98 C2CO), and the
+// row shows them with the 0.
 function shortAddress({ centre_name, address, eircode }: CentreDetail) {
   let short = address;
   if (short.toLowerCase().startsWith(`${centre_name},`.toLowerCase())) short = short.slice(centre_name.length + 1).trim();
-  const formatted = eircode ? formatEircode(eircode) : null;
-  if (formatted && short.endsWith(formatted)) short = short.slice(0, -formatted.length).replace(/,\s*$/, "");
+  const lastComma = short.lastIndexOf(",");
+  if (eircode && asEircode(short.slice(lastComma + 1)) === eircode) short = short.slice(0, Math.max(lastComma, 0));
   return short;
 }
 
