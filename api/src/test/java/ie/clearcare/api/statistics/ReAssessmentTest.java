@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 import ie.clearcare.api.DatabaseImage;
 
@@ -109,17 +108,8 @@ class ReAssessmentTest {
       VALUES (5, 'Regulation 9', 'Residents'' rights', 'Compliant');
       """;
 
-  // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
-  static final PostgreSQLContainer database =
-      new PostgreSQLContainer(DatabaseImage.POSTGIS)
-          .withDatabaseName("clearcare")
-          .withCopyFileToContainer(
-              MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
-              "/docker-entrypoint-initdb.d/roles.sql")
-          .withEnv("CLEARCARE_MIGRATOR_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_PIPELINE_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_API_PASSWORD", PASSWORD);
+  static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
   // The user name comes from application.properties.
   @DynamicPropertySource
