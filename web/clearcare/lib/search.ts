@@ -22,6 +22,9 @@ export interface CentreSummary {
   fair_deal: boolean; // the API has an HSE contract price for it, so it takes part in Fair Deal
   // The newest loaded report, or null when it has none; date is null when the report gives none.
   latest_inspection: { date: string | null } | null;
+  // How far it is from near, in whole metres in a straight line (CCARE-226); null without near, or
+  // when ClearCare has no location for it.
+  distance_m: number | null;
 }
 
 // What a home's latest read report mentions (MentionedAmenities in api/openapi.yaml), item names only:

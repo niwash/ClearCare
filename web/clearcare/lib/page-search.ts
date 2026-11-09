@@ -4,28 +4,32 @@
 // is (tests/page-search.test.ts), so its imports are named with their extension.
 import { ANY_COUNTY } from "./counties.ts";
 import { asEircode } from "./eircode.ts";
+import { readNear } from "./near.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters.ts";
 
 // Straight from the URL, so the API does the validating, apart from eircode, which asEircode has
-// already read from the place.
+// already read from the place, and near, which readNear has rounded.
 export interface SearchQuery {
   name?: string;
   address?: string;
   county?: string;
   eircode?: string;
+  near?: string;
   page?: string;
   page_size?: string;
   sort?: string;
 }
 
-// The search as the page address holds it: the name, one "Town, area or Eircode" field (place), the
-// county, the care and amenity filters, the order and the page. place goes to the API as an Eircode
-// if it looks like one, otherwise as an address; links from before it, with address or eircode,
-// still work.
+// The name, one "Town, area or Eircode" field (place), the point distances are measured from (near),
+// the county, the care and amenity filters, the order and the page. Without near, place goes to the
+// API as an Eircode if it looks like one, otherwise as an address; links from before it, with address
+// or eircode, still work. With near, place is only the name of the point (CCARE-228): near filters
+// nothing, so a place picked from the suggestions finds every home, nearest first.
 export interface PageSearch {
   query: SearchQuery; // for GET /centres, with the filters sent separately (apiFilterParams)
   name: string;
   place: string;
+  near: string; // "53.35,-6.26", or "" for none
   county: string; // "" for any county
   selection: FilterSelection;
   sort: SortValue;
@@ -41,33 +45,45 @@ function first(params: PageParams, key: string) {
 export function readSearch(params: PageParams): PageSearch {
   const name = first(params, "name");
   const place = first(params, "place") || first(params, "address") || first(params, "eircode");
+  const near = readNear(first(params, "near"));
   const countyValue = first(params, "county");
   const county = countyValue === ANY_COUNTY ? "" : countyValue;
   const sortValue = first(params, "sort");
-  const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;
+  const known = SORTS.some((option) => option.value === sortValue) && (sortValue !== "distance" || near);
+  const sort = (known ? sortValue : "name") as SortValue;
 
   const query: SearchQuery = {};
   if (name) query.name = name;
   const eircode = asEircode(place);
-  if (eircode) query.eircode = eircode;
+  if (near) query.near = near;
+  else if (eircode) query.eircode = eircode;
   else if (place) query.address = place;
   if (county) query.county = county;
   if (sort !== "name") query.sort = sort;
   for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);
 
-  return { query, name, place, county, selection: readSelection(params), sort };
+  return { query, name, place, near, county, selection: readSelection(params), sort };
 }
 
-// Something to search for: a name, a place, a county or a filter.
-export function hasSearch(search: Pick<PageSearch, "name" | "place" | "county" | "selection">) {
-  return Boolean(search.name || search.place || search.county || filterCount(search.selection) > 0);
+export function hasSearch(search: Pick<PageSearch, "name" | "place" | "near" | "county" | "selection">) {
+  return Boolean(search.name || search.place || search.near || search.county || filterCount(search.selection) > 0);
 }
+
+// Whether the search can leave any home out, so that its count says something. A point (near) only
+// orders the homes: with nothing else, every home in the register is listed, and "547 nursing homes"
+// would read to someone who has just said where they are as if the place did nothing (CCARE-228).
+export function leavesHomesOut(search: Pick<PageSearch, "name" | "place" | "near" | "county" | "selection">) {
+  return Boolean(search.name || (search.place && !search.near) || search.county || filterCount(search.selection) > 0);
+}
+
+type LinkedSearch = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort">;
 
 // The page address for a search, leaving out what's empty, so a shared link stays short.
-export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">, page = 1) {
+export function searchHref(search: LinkedSearch, page = 1) {
   const params = new URLSearchParams();
   if (search.name) params.set("name", search.name);
   if (search.place) params.set("place", search.place);
+  if (search.near) params.set("near", search.near);
   if (search.county) params.set("county", search.county);
   for (const [key, value] of selectionParams(search.selection)) params.set(key, value);
   if (search.sort !== "name") params.set("sort", search.sort);
@@ -80,7 +96,7 @@ export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" 
 // — which is the one page where a saved search must not open itself again. It says so in the address
 // (?filtersCleared=true, read in app/(site)/search/page.tsx) so that leaving and coming back keeps it
 // emptied.
-export function filtersClearedHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">) {
+export function filtersClearedHref(search: LinkedSearch) {
   const href = searchHref(search);
   return href === "/search" ? "/search?filtersCleared=true" : href;
 }

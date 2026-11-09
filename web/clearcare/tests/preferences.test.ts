@@ -44,6 +44,15 @@ describe("what is worth saving", () => {
 
     assert.equal(hasSavedChoices(saved), false);
   });
+
+  // A place is never saved (CCARE-228), and the distance order needs one: the API's sort_by has no
+  // distance on purpose.
+  test("a search ordered by distance is saved in name order", () => {
+    const saved = savedSearchFrom({ county: "Cork", sort: "distance", selection: NO_SAVED_SEARCH.selection });
+
+    assert.equal(saved.sort, "name");
+    assert.equal(savedSearchDocument(saved).sort_by, "name");
+  });
 });
 
 describe("the document the API stores", () => {
@@ -103,6 +112,7 @@ describe("a saved search the site no longer offers", () => {
   test("falls back to name order", () => {
     assert.equal(parseSavedSearch({ sort_by: "newest" })?.sort, "name");
     assert.equal(parseSavedSearch({ sort_by: "latest_inspection" })?.sort, "latest_inspection");
+    assert.equal(parseSavedSearch({ sort_by: "distance" })?.sort, "name");
   });
 
   test("is no saved search at all when it is not a document", () => {
