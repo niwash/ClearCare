@@ -39,7 +39,9 @@ function write(query: string | null) {
   listeners.forEach((listener) => listener());
 }
 
-// For "Forget my preferences", which empties the search without going through ?filtersCleared.
+// For "Forget my preferences", which empties the search without going through ?filtersCleared:
+// SavePreferencesButton calls its onForgotten once forgetPreferences() succeeds, and SearchFilters
+// passes startOver, which calls this.
 export function forgetLastSearch() {
   write(null);
 }
