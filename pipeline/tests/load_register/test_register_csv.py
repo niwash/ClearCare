@@ -70,10 +70,8 @@ def test_register_is_read_in_file_order() -> None:
             "Elm Hall Nursing Home, Loughlinstown Road, Celbridge",
             id="town",
         ),
-        pytest.param(
-            "Elm Hall Nursing Home, Loughlinstown Road, Co. Kildare",
-            id="county with an O",
-        ),
+        # Seven letters that read as an Eircode once O is taken for 0.
+        pytest.param("Main Street, Doonane", id="townland with Os"),
     ],
 )
 def test_address_without_an_eircode_has_none(address: str) -> None:
