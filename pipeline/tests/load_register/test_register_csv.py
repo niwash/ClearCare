@@ -63,11 +63,43 @@ def test_register_is_read_in_file_order() -> None:
     )
 
 
-def test_address_without_an_eircode_has_none() -> None:
-    address = "Elm Hall Nursing Home, Loughlinstown Road, Celbridge"
+@pytest.mark.parametrize(
+    "address",
+    [
+        pytest.param(
+            "Elm Hall Nursing Home, Loughlinstown Road, Celbridge",
+            id="town",
+        ),
+        # Seven letters that read as an Eircode once O is taken for 0.
+        pytest.param("Main Street, Doonane", id="townland with Os"),
+    ],
+)
+def test_address_without_an_eircode_has_none(address: str) -> None:
     register = register_csv(centre("34", Centre_Address=address))
 
     assert read_register(register)[0].eircode is None
+
+
+# The addresses of centres 8793 and 9276, as HIQA prints them.
+@pytest.mark.parametrize(
+    ("address", "eircode"),
+    [
+        pytest.param(
+            "Kilmacanogue South, Kilmacanogue, A98 C2CO",
+            "A98C2C0",
+            id="centre 8793",
+        ),
+        pytest.param(
+            "Finisklin Road, Sligo, F91 PPHO", "F91PPH0", id="centre 9276"
+        ),
+    ],
+)
+def test_letter_o_in_an_eircode_is_read_as_zero(
+    address: str, eircode: str
+) -> None:
+    register = register_csv(centre("34", Centre_Address=address))
+
+    assert read_register(register)[0].eircode == eircode
 
 
 # The register does not always print one number, and the value is kept as it

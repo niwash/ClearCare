@@ -225,6 +225,7 @@ resource "aws_ecs_task_definition" "pipeline" {
       secrets = [
         { name = "PGPASSWORD", valueFrom = aws_secretsmanager_secret.database["pipeline"].arn },
         { name = "ANTHROPIC_API_KEY", valueFrom = aws_secretsmanager_secret.anthropic.arn },
+        { name = "GOOGLE_GEOCODING_API_KEY", valueFrom = aws_secretsmanager_secret.google_geocoding.arn },
       ]
       # Passes the stop signal on to Python, which ignores it as process 1,
       # as init: true does in compose.yaml.

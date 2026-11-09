@@ -306,7 +306,7 @@ export default function ContactsPage() {
           so it meets the footer. */}
       <GuidesBand
         id="contacts-guides-h"
-        title="Before you call"
+        title="Know what to ask"
         intro="Our guides explain Fair Deal and inspection reports, and what to ask a nursing home."
         guides={CONTACTS_GUIDES}
         className="-mb-6 md:-mb-10"
