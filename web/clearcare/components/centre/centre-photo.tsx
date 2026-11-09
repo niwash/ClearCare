@@ -5,7 +5,8 @@
 // placeholder of the same size, so the layout doesn't jump when photos arrive.
 //
 // TODO (photos task): take the home's photo(s) as a prop and show them here, with alt text that
-// says what each shows. Keep the 4:3 frame, so a missing photo and a real one take the same room.
+// says what each shows. Keep the frame (4:3, or the free height beside the details on wide screens)
+// and fill it with object-cover, so a missing photo and a real one take the same room.
 import { Icon } from "@/components/ui/icons";
 
 export function CentrePhoto({ className = "" }: { className?: string }) {

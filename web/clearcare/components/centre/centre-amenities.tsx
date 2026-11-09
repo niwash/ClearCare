@@ -2,8 +2,10 @@
 // What the home offers (CCARE-163), a section of the record's overview of its own (CCARE-212). The values
 // are what an AI tool read from one inspection report and are still being checked, so it says so,
 // links to the report they came from, and shows the passages each one was read from: on hover or tap
-// in the standard design (AmenityTags), in an accordion in the easier-to-read design.
+// in the standard design (AmenityTags), in an accordion in the easier-to-read design. Each list is
+// a card of its own.
 import { ShowHide } from "@/components/ui/chevron";
+import { Icon } from "@/components/ui/icons";
 import { sectionCardClass, sectionHeadingClass } from "./section-icon";
 import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centres";
 import type { ReactNode } from "react";
@@ -19,8 +21,8 @@ type CentreAmenitiesProps = {
   reportUrl?: string;
 };
 
-// A section of the overview of its own (CCARE-212): its heading and note on the band, the lists in a
-// card, as the record's other sections have. It was the last part of the details box, which made
+// A section of the overview of its own (CCARE-212): its heading and note on the band, each list on a
+// card of its own, as in "About this home". It was the last part of the details box, which made
 // that box long beside the photo and the actions.
 export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenitiesProps) {
   if (!amenities) {
@@ -36,11 +38,13 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
   }
 
   const report = amenities.inspection_date ? `the ${formatDate(amenities.inspection_date)} inspection report` : "an inspection report";
+  // Each list's card heading has a picture: one of the list's own amenity icons, or the home for the
+  // types of care, which have no icons yet.
   const lists = [
-    { label: "Types of care", items: amenities.care_types },
-    { label: "Rooms", items: amenities.room_types },
-    { label: "Activities", items: amenities.activities },
-    { label: "Facilities", items: amenities.facilities },
+    { label: "Types of care", items: amenities.care_types, icon: <Icon name="home" className="size-4" /> },
+    { label: "Rooms", items: amenities.room_types, icon: <AmenityIcon item="Single room" className="size-4" /> },
+    { label: "Activities", items: amenities.activities, icon: <AmenityIcon item="Music and singing" className="size-4" /> },
+    { label: "Facilities", items: amenities.facilities, icon: <AmenityIcon item="Lounge/day room" className="size-4" /> },
   ];
   const found = lists.filter(({ items }) => items.length > 0);
 
@@ -64,33 +68,32 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
           </>
         )}
       </p>
-      <div className={`${sectionCardClass} py-2`}>
-        <dl>
-          {lists.map(({ label, items }) => (
-            <Row key={label} label={label}>
-              {items.length === 0 ? (
-                // Nothing the report clearly supports, which doesn't mean the home has none.
-                <span className="text-ink-muted">None found in the report</span>
-              ) : (
-                <>
-                  <div className="adult:hidden">
-                    <AmenityTags items={items} reportUrl={reportUrl} />
-                  </div>
-                  <ul className="hidden flex-wrap gap-1.5 adult:flex">
-                    {items.map(({ item }) => (
-                      <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
-                        <AmenityIcon item={item} />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </Row>
-          ))}
-        </dl>
-        {found.length > 0 && <Evidence lists={found} reportUrl={reportUrl} />}
+      {/* A card for each list, two to a row from md up, like the cards of "About this home". */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {lists.map(({ label, items, icon }) => (
+          <ListCard key={label} label={label} icon={icon}>
+            {items.length === 0 ? (
+              // Nothing the report clearly supports, which doesn't mean the home has none.
+              <span className="text-ink-muted">None found in the report</span>
+            ) : (
+              <>
+                <div className="adult:hidden">
+                  <AmenityTags items={items} reportUrl={reportUrl} />
+                </div>
+                <ul className="hidden flex-wrap gap-1.5 adult:flex">
+                  {items.map(({ item }) => (
+                    <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
+                      <AmenityIcon item={item} />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </ListCard>
+        ))}
       </div>
+      {found.length > 0 && <Evidence lists={found} reportUrl={reportUrl} />}
     </section>
   );
 }
@@ -103,13 +106,19 @@ function Heading() {
   );
 }
 
-// Laid out like the rows of the details box above it (Fact, centres/[id]/page.tsx), without the icons.
-function Row({ label, children }: { label: string; children: ReactNode }) {
+// One list on a card of its own, with the same heading as the cards of "About this home" above it
+// (FactCard, centres/[id]/page.tsx).
+function ListCard({ label, icon, children }: { label: string; icon: ReactNode; children: ReactNode }) {
   return (
-    <div className="grid gap-1 px-4 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="font-medium text-ink-muted">{label}</dt>
-      <dd>{children}</dd>
-    </div>
+    <section aria-label={label} className={`${sectionCardClass} flex flex-col gap-3 p-4 md:p-5`}>
+      <h3 className="flex items-center gap-2 font-semibold text-ink">
+        <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-sage text-on-tint-sage adult:bg-surface-muted adult:text-ink">
+          {icon}
+        </span>
+        {label}
+      </h3>
+      <div>{children}</div>
+    </section>
   );
 }
 
@@ -117,7 +126,7 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
 // same <details> pattern as the judgements chart (judgements-per-inspection.tsx).
 function Evidence({ lists, reportUrl }: { lists: { label: string; items: AmenityItem[] }[]; reportUrl?: string }) {
   return (
-    <details className="group mt-2 hidden border-t border-line-soft adult:block">
+    <details className={`${sectionCardClass} group hidden adult:block`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span className="font-medium text-ink">Where the report says this</span>
         <ShowHide />
