@@ -6,6 +6,7 @@
 import { ShowHide } from "@/components/ui/chevron";
 import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centres";
 import type { ReactNode } from "react";
+import { AmenityIcon } from "./amenity-icon";
 import { AmenityTags, Passages } from "./amenity-tags";
 
 // Shared with Compare Homes, so an item looks the same in both places.
@@ -75,7 +76,8 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
                 </div>
                 <ul className="hidden flex-wrap gap-1.5 adult:flex">
                   {items.map(({ item }) => (
-                    <li key={item} className={amenityTagClass}>
+                    <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
+                      <AmenityIcon item={item} />
                       {item}
                     </li>
                   ))}
