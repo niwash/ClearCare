@@ -35,7 +35,7 @@ class HealthTest {
 
   @Container
   static final PostgreSQLContainer database =
-      new PostgreSQLContainer("postgres:18.6")
+      new PostgreSQLContainer(DatabaseImage.POSTGIS)
           .withDatabaseName("clearcare")
           .withCopyFileToContainer(
               MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
