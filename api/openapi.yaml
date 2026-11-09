@@ -1951,6 +1951,9 @@ components:
         sort_by:
           type: string
           enum: [name, latest_inspection]
+          description: >
+            `distance` cannot be saved, because it needs `near` and a place is
+            never stored.
 
     SavedSearchResult:
       type: object

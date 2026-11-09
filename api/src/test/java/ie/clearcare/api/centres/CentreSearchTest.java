@@ -12,8 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -217,19 +219,17 @@ class CentreSearchTest {
           + " most two decimal places, such as 53.35,-6.26";
 
   // The points the geocoder stores (db/V16), longitude first. Áras is 0.01° of latitude north of
-  // NEAR, which is 1,113 m. St Joseph's in Dublin was geocoded 29 calendar days ago, early in the
-  // day, and St Joseph's in Cork 30, late in the day: whatever the time now, Dublin's point may be
-  // over 29 times 24 hours old and Cork's under 30 times 24. Stella Maris has no point.
+  // NEAR, which is 1,113 m. St Joseph's in Cork's point is 60 days old, long past the 30 the view
+  // allows, and Stella Maris has no point.
   private static final String LOCATIONS =
       """
       INSERT INTO clearcare.centre_location (centre_id, point, place_id, geocoded_at)
       VALUES
           ('456', ST_SetSRID(ST_MakePoint(-6.26, 53.36), 4326), 'aras', now()),
           ('34', ST_SetSRID(ST_MakePoint(-6.54, 53.34), 4326), 'elm-hall', now()),
-          ('10', ST_SetSRID(ST_MakePoint(-6.30, 53.31), 4326), 'st-josephs-dublin',
-           ((now() AT TIME ZONE 'UTC')::date - 29 + time '00:01') AT TIME ZONE 'UTC'),
+          ('10', ST_SetSRID(ST_MakePoint(-6.30, 53.31), 4326), 'st-josephs-dublin', now()),
           ('9', ST_SetSRID(ST_MakePoint(-8.47, 51.90), 4326), 'st-josephs-cork',
-           ((now() AT TIME ZONE 'UTC')::date - 30 + time '23:59') AT TIME ZONE 'UTC');
+           now() - interval '60 days');
       """;
 
   @Container
@@ -426,16 +426,41 @@ class CentreSearchTest {
         .andExpect(jsonPath("$.sort").value("name"));
   }
 
-  // Counted in UTC calendar days, as the geocoder deletes them (ADR-0027): St Joseph's in Dublin's
-  // point is 29 days old and St Joseph's in Cork's 30.
+  // Counted in UTC calendar days, as the geocoder deletes them (ADR-0027). St Joseph's in Dublin's
+  // point is stamped 29 days ago early in the day, and St Joseph's in Cork's 30 days ago late in
+  // the day: whatever the time now, Dublin's may be over 29 times 24 hours old and Cork's under 30
+  // times 24. One transaction stamps them and reads the view, so now() is the same for both, and
+  // rolling it back leaves the fixture as it was.
   @Test
-  void usesOnlyPointsUnder30CalendarDaysOld() throws Exception {
-    search("eircode=D6W&near=" + NEAR)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.centres[0].distance_m").isNumber());
-    search("county=Cork&near=" + NEAR)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.centres[0].distance_m").value(nullValue()));
+  void servesOnlyPointsUnder30CalendarDaysOld() throws Exception {
+    try (Connection connection = database.createConnection("");
+        Statement statement = connection.createStatement()) {
+      connection.setAutoCommit(false);
+      try {
+        statement.execute(
+            """
+            UPDATE clearcare.centre_location
+            SET geocoded_at =
+                ((now() AT TIME ZONE 'UTC')::date - 29 + time '00:01') AT TIME ZONE 'UTC'
+            WHERE centre_id = '10';
+            UPDATE clearcare.centre_location
+            SET geocoded_at =
+                ((now() AT TIME ZONE 'UTC')::date - 30 + time '23:59') AT TIME ZONE 'UTC'
+            WHERE centre_id = '9';
+            """);
+        List<String> served = new ArrayList<>();
+        try (ResultSet row =
+            statement.executeQuery(
+                "SELECT centre_id FROM clearcare.centre_point WHERE centre_id IN ('10', '9')")) {
+          while (row.next()) {
+            served.add(row.getString("centre_id"));
+          }
+        }
+        assertThat(served).containsExactly(ST_JOSEPHS_DUBLIN);
+      } finally {
+        connection.rollback();
+      }
+    }
   }
 
   // near measures the centres, and orders them if asked, but leaves none of them out.
