@@ -1,7 +1,7 @@
 // tests/amenity-icons.test.mjs
 // The amenity pictures in lib/amenity-icons.ts (CCARE-225). They are keyed by the API's item names,
-// so a renamed item would quietly lose its picture; these check every room type has one, and that
-// no picture is keyed by a name the vocabulary doesn't have. Run with: npm test
+// so a renamed item would quietly lose its picture; these check every room type and activity has
+// one, and that no picture is keyed by a name the vocabulary doesn't have. Run with: npm test
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { AMENITY_ICON_PATHS } from "../lib/amenity-icons.ts";
@@ -11,6 +11,10 @@ const items = (key) => FILTER_GROUPS.find((group) => group.key === key).options.
 
 test("every room type has a picture", () => {
   for (const item of items("room")) assert.ok(AMENITY_ICON_PATHS[item], `no picture for "${item}"`);
+});
+
+test("every activity has a picture", () => {
+  for (const item of items("act")) assert.ok(AMENITY_ICON_PATHS[item], `no picture for "${item}"`);
 });
 
 test("every picture belongs to an item in the vocabulary", () => {

@@ -473,7 +473,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
                           ) : pictured ? (
                             // px-2, as the highlight's, so its words line up with a highlighted item's.
                             <span className="inline-flex items-center gap-1.5 px-2">
-                              <AmenityIcon item={item} className="size-4 text-ink-muted adult:size-5" />
+                              <AmenityIcon item={item} className="size-5 text-ink-muted adult:size-6" />
                               {item}
                             </span>
                           ) : (
