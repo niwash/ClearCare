@@ -14,12 +14,14 @@ export const metadata = guideMetadata(guide);
 
 // The site is still changing, so the guide says when it was last checked against it. Update this
 // whenever the steps change.
-const LAST_UPDATED = { iso: "2026-10-29", label: "29 October 2026" };
+const LAST_UPDATED = { iso: "2026-11-06", label: "6 November 2026" };
 
 // The "How to use the ClearCare website" flowchart, rendered to PNG at 2.5x. 3120 x 2925. Its third
-// row has Compare homes as step 5 (CCARE-179).
+// row has Compare homes as step 5 (CCARE-179); the optional guide is Making Sense of a HIQA
+// Inspection Report, and Compare shows up to 5 homes (CCARE-214). The drawing is the inline SVG in
+// the "Adult-centred User Design" artifact, with that third row added.
 // A new name when the drawing changes, so no cached copy of the old one is shown.
-const FLOWCHART = "/guides/using-clearcare-flowchart-compare.png";
+const FLOWCHART = "/guides/using-clearcare-flowchart-making-sense.png";
 
 // One route through the site, in the flowchart's order. An optional step has a question instead of
 // a number: the reader decides whether they need it.
@@ -59,10 +61,10 @@ const STEPS: Step[] = [
     link: { href: "/guides/choosing-a-nursing-home", label: "Open Questions to Ask" },
   },
   {
-    question: "Do you want to learn how to read inspection reports?",
-    title: "Read How to Read a HIQA Inspection Report",
-    detail: "What each part of a report means, and how ClearCare shows it.",
-    link: { href: "/guides/reading-inspection-reports", label: "Open How to Read a HIQA Inspection Report" },
+    question: "Do you want to make sense of inspection reports?",
+    title: "Read Making Sense of a HIQA Inspection Report",
+    detail: "How to use what HIQA found to compare homes and ask informed questions, and how ClearCare shows it.",
+    link: { href: "/guides/reading-inspection-reports", label: "Open Making Sense of a HIQA Inspection Report" },
   },
   {
     title: "Search for the home",

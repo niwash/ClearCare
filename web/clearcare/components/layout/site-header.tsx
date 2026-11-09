@@ -5,18 +5,20 @@ import { AccountControls } from "@/components/auth/account-controls";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { LastSearchLink } from "@/components/search/last-search";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
-// Compare Homes link, which shows how many homes are saved (CCARE-127).
-type NavEntry = { label: string; href: string | null; compare?: true };
+// Compare Homes link, which shows how many homes are saved (CCARE-127). "search" marks Search for
+// Homes, which goes back to the visitor's last search on this visit (CCARE-214).
+type NavEntry = { label: string; href: string | null; compare?: true; search?: true };
 
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
   // First, as well as the ClearCare name, which not everyone knows leads home (CCARE-186).
   { label: "Home", href: "/" },
-  { label: "Search for Homes", href: "/search" },
+  { label: "Search for Homes", href: "/search", search: true },
   { label: "Compare Homes", href: "/compare", compare: true },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
@@ -49,6 +51,7 @@ export function SiteLogo({ className }: { className: string }) {
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
   const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
   if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
+  if (item.search) return <LastSearchLink className={linkClass}>{item.label}</LastSearchLink>;
   return item.href ? (
     <Link href={item.href} className={linkClass}>
       {item.label}

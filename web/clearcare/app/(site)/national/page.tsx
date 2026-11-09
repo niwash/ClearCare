@@ -95,7 +95,7 @@ function NationalHero() {
         <p className="text-sm text-ink-muted">
           New to inspection reports?{" "}
           <Link href="/guides/reading-inspection-reports" className="text-ink tap-target">
-            Learn how to read a HIQA inspection report →
+            Learn how to read one and use what it found →
           </Link>
         </p>
       </div>

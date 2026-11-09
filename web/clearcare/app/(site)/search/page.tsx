@@ -5,6 +5,7 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
+import { RememberSearch } from "@/components/search/last-search";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
 import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
@@ -117,6 +118,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <>
+      {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
+      <RememberSearch />
       <SearchHero />
 
       {/* From md up, the filters in a column on the left and the results on the right (CCARE-189):
