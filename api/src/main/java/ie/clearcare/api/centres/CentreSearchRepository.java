@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Reads centres from the views the clearcare_api role can read (db/V1, db/V3, db/V7, db/V10,
- * db/V12).
+ * db/V12, db/V17).
  */
 @Repository
 class CentreSearchRepository {
@@ -121,13 +121,22 @@ class CentreSearchRepository {
       """
           .formatted(MATCHING);
 
+  // distance_m is in whole metres in a straight line, from near to the centre's point: on
+  // geography, ST_Distance measures on the WGS 84 spheroid (ADR-0026). It is null without near,
+  // since a point made of nulls is null, and for a centre with no point in centre_point (db/V17).
+  // Only the page needs the points, so COUNTS and FACETS do not join them.
   private static final String PAGE =
       """
       %s
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
           amenities_report_id, amenities_inspection_date, care_types, room_types, activities,
-          facilities, fair_deal, latest_report_id, latest_inspection_date
+          facilities, fair_deal, latest_report_id, latest_inspection_date,
+          CAST(round(ST_Distance(
+              centre_point.point,
+              CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography)))
+              AS integer) AS distance_m
       FROM matching
+      LEFT JOIN clearcare.centre_point USING (centre_id)
       ORDER BY %s
       LIMIT :limit OFFSET :offset
       """;
@@ -140,6 +149,11 @@ class CentreSearchRepository {
   // A centre whose newest report has no date sorts with those that have no report.
   private static final String PAGE_BY_LATEST_INSPECTION =
       PAGE.formatted(MATCHING, "latest_inspection_date DESC NULLS LAST, " + BY_NAME);
+
+  // Nearest first, by the whole metres the result gives, so centres that show the same distance
+  // are in name order. Centres without a point come last.
+  private static final String PAGE_BY_DISTANCE =
+      PAGE.formatted(MATCHING, "distance_m NULLS LAST, " + BY_NAME);
 
   // How many centres would match with each item added. An item added to care_type, facility or
   // activity keeps the matching centres that mention it. An item added to room_type widens it: the
@@ -209,7 +223,11 @@ class CentreSearchRepository {
     SqlParameterSource sqlParameters = sqlParameters(parameters);
     Counts counts = jdbc.sql(COUNTS).paramSource(sqlParameters).query(Counts.class).single();
     String page =
-        parameters.sort().equals("latest_inspection") ? PAGE_BY_LATEST_INSPECTION : PAGE_BY_NAME;
+        switch (parameters.sort()) {
+          case "latest_inspection" -> PAGE_BY_LATEST_INSPECTION;
+          case "distance" -> PAGE_BY_DISTANCE;
+          default -> PAGE_BY_NAME;
+        };
     List<CentreSummary> centres =
         jdbc.sql(page)
             .paramSource(sqlParameters)
@@ -288,9 +306,10 @@ class CentreSearchRepository {
     return counts;
   }
 
-  // The text parameters are typed so that PostgreSQL knows their type when they are null. The
-  // item names go as arrays, which the queries cast to text[].
+  // The text and coordinate parameters are typed so that PostgreSQL knows their type when they are
+  // null. The item names go as arrays, which the queries cast to text[].
   private SqlParameterSource sqlParameters(CentreSearchParameters parameters) {
+    CentreSearchParameters.Coordinates near = parameters.near();
     return new MapSqlParameterSource()
         .addValue("name", parameters.name(), Types.VARCHAR)
         .addValue("address", parameters.address(), Types.VARCHAR)
@@ -301,6 +320,8 @@ class CentreSearchRepository {
         .addValue("facilities", parameters.facilities().toArray(String[]::new))
         .addValue("activities", parameters.activities().toArray(String[]::new))
         .addValue("room_type_names", itemNames.roomTypes().toArray(String[]::new))
+        .addValue("latitude", near == null ? null : near.latitude(), Types.DOUBLE)
+        .addValue("longitude", near == null ? null : near.longitude(), Types.DOUBLE)
         .addValue("limit", parameters.pageSize())
         .addValue("offset", (long) (parameters.page() - 1) * parameters.pageSize());
   }
@@ -316,7 +337,8 @@ class CentreSearchRepository {
         row.getString("hiqa_url"),
         mentionedAmenities(row),
         row.getBoolean("fair_deal"),
-        latestInspection(row));
+        latestInspection(row),
+        row.getObject("distance_m", Integer.class));
   }
 
   private static MentionedAmenities mentionedAmenities(ResultSet row) throws SQLException {

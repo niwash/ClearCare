@@ -3,6 +3,7 @@ package ie.clearcare.api.centres;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
@@ -11,6 +12,8 @@ import org.springframework.web.server.ResponseStatusException;
 /**
  * The checked parameters of GET /centres. A null field is a parameter that was not given, and an
  * empty list an amenity filter that was not given.
+ *
+ * <p>near is where distances are measured from; sort=distance needs it.
  *
  * <p>name and address are not folded here: the query passes them to clearcare.search_key, so the
  * folding rule is written once, in db/V1.
@@ -24,9 +27,13 @@ record CentreSearchParameters(
     List<String> roomTypes,
     List<String> facilities,
     List<String> activities,
+    Coordinates near,
     String sort,
     int page,
     int pageSize) {
+
+  /** A latitude and longitude in degrees on WGS 84, as centre_location holds its points. */
+  record Coordinates(double latitude, double longitude) {}
 
   private static final List<String> PARAMETERS =
       List.of(
@@ -38,13 +45,14 @@ record CentreSearchParameters(
           "room_type",
           "facility",
           "activity",
+          "near",
           "sort",
           "page",
           "page_size");
   // The amenity filters take one item name per value, so they may be repeated.
   private static final List<String> REPEATABLE =
       List.of("care_type", "room_type", "facility", "activity");
-  private static final List<String> SORTS = List.of("name", "latest_inspection");
+  private static final List<String> SORTS = List.of("name", "latest_inspection", "distance");
   private static final int MAX_TEXT_LENGTH = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final int MAX_PAGE_SIZE = 50;
@@ -55,6 +63,12 @@ record CentreSearchParameters(
   // first three characters hold a digit.
   private static final Pattern EIRCODE =
       Pattern.compile("([AC-FHKNPRTV-Y][0-9]{2}|D6W)([0-9AC-FHKNPRTV-Y]{4})?");
+
+  // Latitude,longitude, each with at most two decimal places. Two places are about 1 km, which is
+  // as exact as ordering centres by distance needs. More are refused, so that no client is built
+  // to send a visitor's exact location, which would stay in page addresses and logs.
+  private static final Pattern NEAR =
+      Pattern.compile("(-?[0-9]{1,3}(?:\\.[0-9]{1,2})?),(-?[0-9]{1,3}(?:\\.[0-9]{1,2})?)");
 
   // As spelt in the County column of the register.
   private static final Set<String> COUNTIES =
@@ -98,6 +112,11 @@ record CentreSearchParameters(
             throw badRequest(key + " must be given only once");
           }
         });
+    Coordinates near = near(query.getFirst("near"));
+    String sort = sort(query.getFirst("sort"));
+    if (sort.equals("distance") && near == null) {
+      throw badRequest("sort=distance needs near, such as near=53.35,-6.26");
+    }
     return new CentreSearchParameters(
         text(query, "name"),
         text(query, "address"),
@@ -107,7 +126,8 @@ record CentreSearchParameters(
         amenityFilter(query, "room_type", itemNames.roomTypes()),
         amenityFilter(query, "facility", itemNames.facilities()),
         amenityFilter(query, "activity", itemNames.activities()),
-        sort(query.getFirst("sort")),
+        near,
+        sort,
         positiveInteger(
             query.getFirst("page"),
             1,
@@ -158,6 +178,23 @@ record CentreSearchParameters(
     return eircode;
   }
 
+  private static Coordinates near(String value) {
+    if (value == null) {
+      return null;
+    }
+    Matcher matcher = NEAR.matcher(value);
+    if (matcher.matches()) {
+      double latitude = Double.parseDouble(matcher.group(1));
+      double longitude = Double.parseDouble(matcher.group(2));
+      if (Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
+        return new Coordinates(latitude, longitude);
+      }
+    }
+    throw badRequest(
+        "near must be a latitude from -90 to 90 and a longitude from -180 to 180 in degrees, with"
+            + " at most two decimal places, such as 53.35,-6.26");
+  }
+
   private static String county(String value) {
     if (value != null && !COUNTIES.contains(value)) {
       throw badRequest("county must be spelt as on the register, such as Dublin");
@@ -183,7 +220,7 @@ record CentreSearchParameters(
       return "name";
     }
     if (!SORTS.contains(value)) {
-      throw badRequest("sort must be name or latest_inspection");
+      throw badRequest("sort must be name, latest_inspection or distance");
     }
     return value;
   }
