@@ -188,9 +188,12 @@ def _eircode(address: str) -> str | None:
     # HIQA puts the Eircode, when there is one, after the last comma.
     candidate = "".join(address.rsplit(",", 1)[-1].split()).upper()
     # Eircodes leave out the letter O so that it cannot be confused with a
-    # zero, so an O in an Eircode can only be a zero typed as a letter. Every
-    # Eircode has a digit, which keeps a seven-letter place name a word.
-    if any(character.isdigit() for character in candidate):
+    # zero, so an O in an Eircode can only be a zero typed as a letter. It is
+    # read so only when the routing key, the first three characters, already
+    # holds a digit. Every routing key has a digit that is not 0 (W23, D06,
+    # D6W), so an Eircode with O for 0 still shows one there, while a place
+    # name that starts with a letter and two Os stays a word.
+    if DIGITS.search(candidate[:3]):
         candidate = candidate.replace("O", "0")
     return candidate if EIRCODE.match(candidate) else None
 
