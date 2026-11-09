@@ -8,7 +8,7 @@ import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
-import { sectionHeadingClass, sectionScrollMargin } from "@/components/centre/section-icon";
+import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "@/components/centre/section-icon";
 import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
@@ -86,8 +86,7 @@ const outlineButtonClass = `${actionButtonClass} border border-line bg-surface t
 
 function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   return (
-    <div className="flex flex-col gap-2.5 lg:w-80 lg:shrink-0">
-      <CentrePhoto className="mb-2 hidden lg:flex" />
+    <div className="flex flex-col gap-2.5">
       {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
           Taken out until then (CCARE-164). */}
       {/* Once the list is full, the button says so under itself: the shortlist is in a panel that
@@ -119,6 +118,8 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
   );
 }
 
+// The facts in small cards by what a family asks about them, rather than one long box of rows
+// (CCARE-212): how to reach the home beside the photo, then its size, its cost and its inspections.
 function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
@@ -127,141 +128,153 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
   // or printed with an O for 0 (A98 C2CO), since the row is then the only place it shows right.
   const addressHasEircode = Boolean(centre.eircode && centre.address.replaceAll(" ", "").toUpperCase().includes(centre.eircode));
   const phone = centrePhone(centre.centre_phone);
+  const phoneLink = phone?.tel ? (
+    <a href={`tel:${phone.tel}`} className="tap-target">
+      {phone.text}
+    </a>
+  ) : (
+    phone?.text
+  );
 
   return (
-    <section id="about" aria-labelledby="facts-h" className="flex flex-col gap-3">
+    <section id="about" aria-labelledby="facts-h" className="flex flex-col gap-4">
       <h2 id="facts-h" className={sectionHeadingClass}>
         About this home
       </h2>
-      {/* The details, with the photo and actions beside them on wide screens. On narrow ones the photo
-          comes first and the actions after the details. Only one of the two photos is shown at a time,
-          so screen readers meet it once. */}
-      <CentrePhoto className="max-w-2xl lg:hidden" />
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-10">
-        {/* One box of label and value rows, like the centre details on hiqa.ie. What the home offers
-            is the next section, on a band of its own. White on the page background in the standard
-            design; the adult-centred design adds a 3:1 edge. */}
-        <div className="w-full max-w-2xl rounded-2xl border border-line-soft bg-surface shadow-sm adult:rounded-lg adult:border-line adult:shadow-none">
-          <dl className="py-2">
-            <Fact label="HIQA centre ID" icon="id">
-              <span className="font-mono">{centre.centre_id}</span>
-            </Fact>
-            <Fact label="County" icon="county">Co. {centre.county}</Fact>
+
+      {/* The photo takes most of the width, as the first thing a family looks at. Beside it on wide
+          screens, how to reach the home and the actions, in a wider column than the buttons need so the
+          photo is not too big; it is as tall as that column, so the two end level. On narrow screens
+          they follow the photo. */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
+        <CentrePhoto className="lg:aspect-auto lg:h-full lg:min-h-80" />
+        <div className="flex flex-col gap-4">
+          <FactCard title="Contact" icon="address">
             {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
-            <Fact label="Address" icon="address">{centre.address}</Fact>
+            <Fact label="Address">{centre.address}</Fact>
             {eircode && !addressHasEircode && (
-              <Fact label="Eircode" icon="eircode">
+              <Fact label="Eircode">
                 <span className="font-mono">{eircode}</span>
               </Fact>
             )}
-            {/* After the address, as on hiqa.ie. Only a single number gets a tap-to-call link. */}
-            {phone && (
-              <Fact label="Phone" icon="phone">
-                {phone.tel ? (
-                  <a href={`tel:${phone.tel}`} className="tap-target">
-                    {phone.text}
-                  </a>
-                ) : (
-                  phone.text
-                )}
-              </Fact>
-            )}
-            <Fact label="Registered for" icon="beds">
-              {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
-              {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
-                  the question comes up, rather than on the search page (CCARE-179). */}
-              <span className="block text-small text-ink-muted">HIQA&apos;s limit, not free beds.</span>
-              <span className="block text-small text-ink-muted">
-                To ask about a free bed, contact the home
-                {phone?.tel ? (
-                  <>
-                    {" "}
-                    on{" "}
-                    <a href={`tel:${phone.tel}`} className="tap-target">
-                      {phone.text}
-                    </a>
-                  </>
-                ) : (
-                  " directly"
-                )}
-                .
-              </span>
-            </Fact>
-            {/* From the HSE price list the price came from. No row when there's no list for the home. */}
-            {centre.home_type && <Fact label="Type of home" icon="home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
-            {/* No row from an API without prices (undefined); "Not available" when it has none for this home. */}
-            {centre.contract_price !== undefined && (
-              <Fact label="Full weekly cost" icon="cost">
-                {centre.contract_price !== null ? (
-                  <>
-                    {formatWeeklyPrice(centre.contract_price)} per week
-                    <span className="block text-small text-ink-muted">
-                      This does not include extra charges,{" "}
-                      <Link href="/guides/fair-deal#what-does-fair-deal-cover" className="tap-target">
-                        see here
-                      </Link>
-                      .
-                    </span>
-                    <span className="block text-small text-ink-muted">
-                      With Fair Deal you pay your own contribution.{" "}
-                      <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
-                        How much will you pay?
-                      </Link>
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    Not available
-                    <span className="block text-small text-ink-muted">Ask the home</span>
-                  </>
-                )}
-              </Fact>
-            )}
-            {latest && first && (
-              <Fact label="Latest report" icon="report">
-                Inspected {formatDate(latest.date)}
-                <span className="block text-small text-ink-muted">
-                  {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
-                  {reports.inspections.length}{" "}
-                  {reports.inspections.length === 1 ? "report" : "reports"} since {new Date(first.date).getUTCFullYear()}
-                </span>
-                <Link href={centrePath(centre.centre_id, "inspections")} className="tap-target">
-                  See the inspection history
-                </Link>
-              </Fact>
-            )}
-          </dl>
-          {/* Where the record comes from, as the box's footnote: beside the facts it sources, rather
-              than on a strip of its own between the page's coloured bands. */}
-          <div className="flex flex-col gap-1 border-t border-line-soft px-4 py-3 text-small leading-relaxed text-ink-muted adult:border-line">
-            <p>
-              Source:{" "}
-              <a href={centre.register_snapshot.url} className="text-ink-muted">
-                HIQA register
-              </a>
-              , downloaded {formatDate(centre.register_snapshot.fetched_at)}.
-            </p>
-            <p>
-              Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
-              rate or recommend homes.
-            </p>
-          </div>
+            {/* Only a single number gets a tap-to-call link. */}
+            {phone && <Fact label="Phone">{phoneLink}</Fact>}
+            <Fact label="County">Co. {centre.county}</Fact>
+          </FactCard>
+          <CentreActions centre={centre} reports={reports} />
         </div>
-        <CentreActions centre={centre} reports={reports} />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <FactCard title="Size and type" icon="beds">
+          <Fact label="Registered for">
+            {centre.maximum_occupancy !== null ? `Up to ${centre.maximum_occupancy} residents` : "Not stated"}
+            {/* The most residents HIQA allows, not free beds. Where to ask about those is said here, where
+                the question comes up, rather than on the search page (CCARE-179). */}
+            <Note>HIQA&apos;s limit, not free beds.</Note>
+            <Note>
+              To ask about a free bed, contact the home
+              {phone?.tel ? <> on {phoneLink}</> : " directly"}.
+            </Note>
+          </Fact>
+          {/* From the HSE price list the price came from. No row when there's no list for the home. */}
+          {centre.home_type && <Fact label="Type of home">{HOME_TYPE_LABELS[centre.home_type]}</Fact>}
+        </FactCard>
+
+        {/* No card from an API without prices (undefined); "Not available" when it has none for this home. */}
+        {centre.contract_price !== undefined && (
+          <FactCard title="Cost" icon="cost">
+            <Fact label="Full weekly cost">
+              {centre.contract_price !== null ? (
+                <>
+                  {formatWeeklyPrice(centre.contract_price)} per week
+                  <Note>
+                    This does not include extra charges,{" "}
+                    <Link href="/guides/fair-deal#what-does-fair-deal-cover" className="tap-target">
+                      see here
+                    </Link>
+                    .
+                  </Note>
+                  <Note>
+                    With Fair Deal you pay your own contribution.{" "}
+                    <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
+                      How much will you pay?
+                    </Link>
+                  </Note>
+                </>
+              ) : (
+                <>
+                  Not available
+                  <Note>Ask the home</Note>
+                </>
+              )}
+            </Fact>
+          </FactCard>
+        )}
+
+        <FactCard title="Inspections" icon="report">
+          {latest && first && (
+            <Fact label="Latest report">
+              Inspected {formatDate(latest.date)}
+              <Note>
+                {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
+                {reports.inspections.length} {reports.inspections.length === 1 ? "report" : "reports"} since{" "}
+                {new Date(first.date).getUTCFullYear()}
+              </Note>
+              <Link href={centrePath(centre.centre_id, "inspections")} className="tap-target">
+                See the inspection history
+              </Link>
+            </Fact>
+          )}
+          <Fact label="HIQA centre ID">
+            <span className="font-mono">{centre.centre_id}</span>
+          </Fact>
+        </FactCard>
+      </div>
+
+      {/* Where the record comes from, under the facts it sources. */}
+      <div className="flex max-w-3xl flex-col gap-1 text-small leading-relaxed text-ink-muted">
+        <p>
+          Source:{" "}
+          <a href={centre.register_snapshot.url} className="text-ink-muted">
+            HIQA register
+          </a>
+          , downloaded {formatDate(centre.register_snapshot.fetched_at)}.
+        </p>
+        <p>
+          Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0). ClearCare does not
+          rate or recommend homes.
+        </p>
       </div>
     </section>
   );
 }
 
-// One row of the details. The icon helps the eye find a row; the label says the same in words.
-function Fact({ label, icon, children }: { label: string; icon: IconName; children: ReactNode }) {
+// One card of facts: a heading with an icon, then label-over-value rows, which fit a narrow card
+// better than label-beside-value. The icon helps the eye find a card; the heading says it in words.
+function FactCard({ title, icon, children }: { title: string; icon: IconName; children: ReactNode }) {
   return (
-    <div className="grid gap-0.5 px-4 py-2 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-4">
-      <dt className="flex items-center gap-2 font-medium text-ink-muted">
-        <Icon name={icon} />
-        {label}
-      </dt>
+    <div className={`${sectionCardClass} flex flex-col gap-3 p-4 md:p-5`}>
+      <h3 className="flex items-center gap-2 font-semibold text-ink">
+        <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-tint-sage text-on-tint-sage adult:bg-surface-muted adult:text-ink">
+          <Icon name={icon} className="size-4" />
+        </span>
+        {title}
+      </h3>
+      <dl className="flex flex-col gap-3">{children}</dl>
+    </div>
+  );
+}
+
+function Fact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-small font-medium text-ink-muted">{label}</dt>
       <dd>{children}</dd>
     </div>
   );
+}
+
+function Note({ children }: { children: ReactNode }) {
+  return <span className="block text-small text-ink-muted">{children}</span>;
 }
