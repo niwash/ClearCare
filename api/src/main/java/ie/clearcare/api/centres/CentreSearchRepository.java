@@ -122,18 +122,19 @@ class CentreSearchRepository {
           .formatted(MATCHING);
 
   // distance_m is in whole metres in a straight line, from near to the centre's point: on
-  // geography, ST_Distance measures on the WGS 84 spheroid (ADR-0026). It is null without near,
-  // since a point made of nulls is null, and for a centre with no point in centre_point (db/V17).
-  // Only the page needs the points, so COUNTS and FACETS do not join them.
+  // geography, ST_Distance measures on the WGS 84 spheroid (ADR-0026), and the cast to integer
+  // rounds it to the nearest metre. It is null without near, since a point made of nulls is null,
+  // and for a centre with no point in centre_point (db/V17). Only the page needs the points, so
+  // COUNTS and FACETS do not join them.
   private static final String PAGE =
       """
       %s
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
           amenities_report_id, amenities_inspection_date, care_types, room_types, activities,
           facilities, fair_deal, latest_report_id, latest_inspection_date,
-          CAST(round(ST_Distance(
+          CAST(ST_Distance(
               centre_point.point,
-              CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography)))
+              CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography))
               AS integer) AS distance_m
       FROM matching
       LEFT JOIN clearcare.centre_point USING (centre_id)

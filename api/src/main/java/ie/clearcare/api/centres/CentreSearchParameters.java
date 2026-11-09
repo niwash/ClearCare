@@ -112,32 +112,32 @@ record CentreSearchParameters(
             throw badRequest(key + " must be given only once");
           }
         });
-    Coordinates near = near(query.getFirst("near"));
-    String sort = sort(query.getFirst("sort"));
-    if (sort.equals("distance") && near == null) {
+    CentreSearchParameters parameters =
+        new CentreSearchParameters(
+            text(query, "name"),
+            text(query, "address"),
+            eircode(query.getFirst("eircode")),
+            county(query.getFirst("county")),
+            amenityFilter(query, "care_type", itemNames.careTypes()),
+            amenityFilter(query, "room_type", itemNames.roomTypes()),
+            amenityFilter(query, "facility", itemNames.facilities()),
+            amenityFilter(query, "activity", itemNames.activities()),
+            near(query.getFirst("near")),
+            sort(query.getFirst("sort")),
+            positiveInteger(
+                query.getFirst("page"),
+                1,
+                Integer.MAX_VALUE,
+                "page must be a whole number of 1 or more"),
+            positiveInteger(
+                query.getFirst("page_size"),
+                DEFAULT_PAGE_SIZE,
+                MAX_PAGE_SIZE,
+                "page_size must be between 1 and " + MAX_PAGE_SIZE));
+    if (parameters.sort().equals("distance") && parameters.near() == null) {
       throw badRequest("sort=distance needs near, such as near=53.35,-6.26");
     }
-    return new CentreSearchParameters(
-        text(query, "name"),
-        text(query, "address"),
-        eircode(query.getFirst("eircode")),
-        county(query.getFirst("county")),
-        amenityFilter(query, "care_type", itemNames.careTypes()),
-        amenityFilter(query, "room_type", itemNames.roomTypes()),
-        amenityFilter(query, "facility", itemNames.facilities()),
-        amenityFilter(query, "activity", itemNames.activities()),
-        near,
-        sort,
-        positiveInteger(
-            query.getFirst("page"),
-            1,
-            Integer.MAX_VALUE,
-            "page must be a whole number of 1 or more"),
-        positiveInteger(
-            query.getFirst("page_size"),
-            DEFAULT_PAGE_SIZE,
-            MAX_PAGE_SIZE,
-            "page_size must be between 1 and " + MAX_PAGE_SIZE));
+    return parameters;
   }
 
   private static String text(MultiValueMap<String, String> query, String key) {
