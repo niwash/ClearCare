@@ -51,7 +51,7 @@ record CentreSearchParameters(
 
   // A routing key (W23, or D6W for Dublin 6W), optionally followed by the four characters that
   // make it a full Eircode. The letters are the ones Eircodes use, as in the CHECK on
-  // register_entry.eircode in db/V1. O is not one of them, and is not read as 0.
+  // register_entry.eircode in db/V1. O is not one of them: eircode() reads it as 0.
   private static final Pattern EIRCODE =
       Pattern.compile("([AC-FHKNPRTV-Y][0-9]{2}|D6W)([0-9AC-FHKNPRTV-Y]{4})?");
 
@@ -134,12 +134,18 @@ record CentreSearchParameters(
     return value;
   }
 
-  // Stored Eircodes are upper case without spaces.
+  // Stored Eircodes are upper case without spaces. Eircodes leave the letter O out so that it
+  // cannot be confused with a zero, so an O can only be a 0 typed as a letter. Only text with a
+  // digit is read so, which keeps a word such as Doonane a word. The register load does the same
+  // (_eircode in pipeline/src/clearcare_pipeline/load_register/register_csv.py).
   private static String eircode(String value) {
     if (value == null) {
       return null;
     }
     String eircode = value.replace(" ", "").toUpperCase(Locale.ROOT);
+    if (eircode.chars().anyMatch(Character::isDigit)) {
+      eircode = eircode.replace('O', '0');
+    }
     if (!EIRCODE.matcher(eircode).matches()) {
       throw badRequest(
           "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX");

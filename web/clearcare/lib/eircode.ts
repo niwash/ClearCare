@@ -5,8 +5,12 @@
 const ROUTING_KEY = /^([AC-FHKNPRTV-Y]\d{2}|D6W)$/;
 const FULL_EIRCODE = /^([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}$/;
 
-// "D06", "w23 p6ex" and "W23P6EX" are Eircodes; "Elm Hall" isn't.
-export function looksLikeEircode(text: string) {
-  const compact = text.replace(/\s+/g, "").toUpperCase();
-  return ROUTING_KEY.test(compact) || FULL_EIRCODE.test(compact);
+// "w23 p6ox" → "W23P60X", "D06" → "D06", "Elm Hall" → null. Eircodes have no letter O, so an O
+// is read as 0, but only when the text has a digit, which keeps a place name such as Doonane a
+// word. The register load does the same (_eircode in
+// pipeline/src/clearcare_pipeline/load_register/register_csv.py).
+export function asEircode(text: string) {
+  let compact = text.replace(/\s+/g, "").toUpperCase();
+  if (/\d/.test(compact)) compact = compact.replaceAll("O", "0");
+  return ROUTING_KEY.test(compact) || FULL_EIRCODE.test(compact) ? compact : null;
 }

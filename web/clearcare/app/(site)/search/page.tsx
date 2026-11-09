@@ -13,7 +13,7 @@ import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import { looksLikeEircode } from "@/lib/eircode";
+import { asEircode } from "@/lib/eircode";
 import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
@@ -47,9 +47,10 @@ function noun(count: number) {
 
 // "matching “aras” in Co. Mayo", for the results heading and the page title.
 function describe({ name, place, county }: Pick<PageSearch, "name" | "place" | "county">) {
+  const eircode = asEircode(place);
   const parts = [
     name && `matching “${name}”`,
-    place && (looksLikeEircode(place) ? `near ${formatEircode(place.replace(/\s+/g, "").toUpperCase())}` : `in “${place}”`),
+    place && (eircode ? `near ${formatEircode(eircode)}` : `in “${place}”`),
     county && `in Co. ${county}`,
   ].filter(Boolean);
   return parts.join(" ");
