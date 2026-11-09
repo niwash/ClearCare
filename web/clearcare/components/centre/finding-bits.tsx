@@ -92,13 +92,14 @@ export function SourceLink({ source, href }: { source: SourceRef | string; href?
     <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-small text-ink-muted">
       <PageIcon />
       {text}
+      {/* A link can't be followed on paper, where the page number above says where to look. */}
       {url && (
-        <>
+        <span className="contents print:hidden">
           <span aria-hidden>·</span>
           <a href={url} className="font-semibold tap-target">
             Open the page
           </a>
-        </>
+        </span>
       )}
     </p>
   );

@@ -18,7 +18,7 @@ export function HistoryScroller({ scrolls, children }: { scrolls: boolean; child
     <div
       ref={ref}
       {...(scrolls && { tabIndex: 0, role: "region", "aria-label": "Inspection history table, scrolls sideways" })}
-      className="relative hidden overflow-x-auto border-t border-line-soft focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink lg:block"
+      className="relative hidden overflow-x-auto border-t border-line-soft focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ink lg:block print:block print:overflow-visible"
     >
       {children}
     </div>

@@ -1,4 +1,5 @@
 // components/centre/inspection-history.tsx
+import { RecordPrintButton } from "@/components/centre/record-print";
 import Link from "next/link";
 import {
   changeFrom,
@@ -124,9 +125,12 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
     // The heading on the section's band, above the card, as "About this home" has; the key, the
     // chart and the table in the card.
     <section id="history" aria-labelledby="hist-h" className={`${sectionScrollMargin} flex flex-col gap-3`}>
-      <h2 id="hist-h" className={sectionHeadingClass}>
-        Inspection history
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <h2 id="hist-h" className={sectionHeadingClass}>
+          Inspection history
+        </h2>
+        <RecordPrintButton />
+      </div>
       <div className={sectionCardClass}>
         <div className="px-4 pb-4 pt-5 md:px-7">
           <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
@@ -140,7 +144,10 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
         </div>
 
         {/* Inside this section so it shares the key above and follows the same inspections toggle. */}
-        <JudgementsPerInspection inspections={inspections} shown={shown} history={history} />
+        {/* The table says the same, and prints better. */}
+        <div className="print:hidden">
+          <JudgementsPerInspection inspections={inspections} shown={shown} history={history} />
+        </div>
 
         {/* Its own heading, so the table (or the cards on narrow screens) isn't read as part of the
             chart above. */}
@@ -150,8 +157,8 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
         </div>
 
         {/* Phones and tablets, where the table's columns don't fit: one card per regulation,
-            listing each inspection's result. */}
-        <div className="lg:hidden">
+            listing each inspection's result. Paper gets the table instead, which fits a page. */}
+        <div className="lg:hidden print:hidden">
           {shown
             .filter((inspection) => !inspection.regulationJudgements)
             .map((inspection) => (
@@ -199,11 +206,12 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
 
         <HistoryScroller scrolls={scrolls}>
           <table
-            className="w-full min-w-[48rem] table-fixed text-left text-base"
+            className="w-full min-w-[48rem] table-fixed text-left text-base print:min-w-0 print:text-sm"
             style={scrolls ? { width: `${REGULATION_COLUMN_REM + shown.length * SCROLLING_COLUMN_REM}rem` } : undefined}
           >
             <colgroup>
-              <col style={{ width: `${REGULATION_COLUMN_REM}rem` }} />
+              {/* Narrower on paper, so the inspections' columns have room for their words. */}
+              <col style={{ width: `${REGULATION_COLUMN_REM}rem` }} className="print:w-40!" />
             </colgroup>
             <thead className="bg-surface-muted">
               <tr className="border-b-2 border-line">
@@ -272,11 +280,11 @@ export function InspectionHistory({ inspections, history, trails, showAll, showA
                 ? `All ${inspections.length} inspections, ${years}.`
                 : `Latest ${shown.length} of ${inspections.length} inspections, ${years}.`}
               {/* Only the table scrolls sideways; the phone cards stack instead. */}
-              {scrolls && <span className="hidden lg:inline"> Scroll sideways for older inspections.</span>}
+              {scrolls && <span className="hidden lg:inline print:hidden"> Scroll sideways for older inspections.</span>}
             </p>
           )}
           {(inspections.length > LATEST_INSPECTIONS || history.length > SHORT_LIST) && (
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap print:hidden">
               {inspections.length > LATEST_INSPECTIONS && (
                 <Link
                   href={historyHref({ regulations: showAll, inspections: !showAllInspections })}

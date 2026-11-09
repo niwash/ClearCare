@@ -61,8 +61,8 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
         {found.length > 0 && (
           <>
             {" "}
-            <span className="adult:hidden">Hover over or tap an item to see where the report says it.</span>
-            <span className="hidden adult:inline">
+            <span className="adult:hidden print:hidden">Hover over or tap an item to see where the report says it.</span>
+            <span className="hidden adult:inline print:hidden">
               Open &ldquo;Where the report says this&rdquo; to see the passage each one was read from.
             </span>
           </>
@@ -77,10 +77,11 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
               <span className="text-ink-muted">None found in the report</span>
             ) : (
               <>
-                <div className="adult:hidden">
+                {/* On paper, the plain list rather than the tags that open on hover or tap. */}
+                <div className="adult:hidden print:hidden">
                   <AmenityTags items={items} reportUrl={reportUrl} />
                 </div>
-                <ul className="hidden flex-wrap gap-1.5 adult:flex">
+                <ul className="hidden flex-wrap gap-1.5 adult:flex print:flex">
                   {items.map(({ item }) => (
                     <li key={item} className={`${amenityTagClass} inline-flex items-center gap-1.5`}>
                       <AmenityIcon item={item} />
@@ -126,7 +127,7 @@ function ListCard({ label, icon, children }: { label: string; icon: ReactNode; c
 // same <details> pattern as the judgements chart (judgements-per-inspection.tsx).
 function Evidence({ lists, reportUrl }: { lists: { label: string; items: AmenityItem[] }[]; reportUrl?: string }) {
   return (
-    <details className={`${sectionCardClass} group hidden adult:block`}>
+    <details className={`${sectionCardClass} group hidden adult:block print:hidden`}>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <span className="font-medium text-ink">Where the report says this</span>
         <ShowHide />

@@ -3,6 +3,7 @@
 // its own (CCARE-212). "Show all" for regulations and inspections stays in the address
 // (?regulations=all, ?inspections=all), as it was on the one long page.
 import { Band } from "@/components/centre/centre-band";
+import { RecordPrintButton } from "@/components/centre/record-print";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
@@ -39,9 +40,12 @@ export default async function InspectionsPage({ params, searchParams }: Inspecti
       ) : (
         // The heading on the band and the message in a card, as the other sections have.
         <section aria-labelledby="reports-h" className="flex flex-col gap-3">
-          <h2 id="reports-h" className={sectionHeadingClass}>
-            Inspection reports
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <h2 id="reports-h" className={sectionHeadingClass}>
+              Inspection reports
+            </h2>
+            <RecordPrintButton />
+          </div>
           <p className={`${sectionCardClass} p-6 text-ink-muted`}>
             We haven&apos;t added this home&apos;s reports yet. Read them on <a href={centre.hiqa_url}>hiqa.ie</a>.
           </p>

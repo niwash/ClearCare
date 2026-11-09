@@ -3,6 +3,7 @@
 // the inspector's or the provider's own words (CCARE-207), on a page of its own (CCARE-212). Each
 // links to its trail on What happened next, which links back here.
 import { Band } from "@/components/centre/centre-band";
+import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { emptyReason, NothingToFlag } from "@/components/centre/nothing-to-flag";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
@@ -37,9 +38,12 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
       ) : (
         // The tab is always there, so the page says why it's empty (NothingToFlag).
         <section aria-labelledby="first-h" className="flex flex-col gap-3">
-          <h2 id="first-h" className={sectionHeadingClass}>
-            What to look at first
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <h2 id="first-h" className={sectionHeadingClass}>
+              What to look at first
+            </h2>
+            <RecordPrintButton />
+          </div>
           <NothingToFlag
             reason={emptyReason(Boolean(reports?.inspections.length), findingsRead)}
             page="look-first"

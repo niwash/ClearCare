@@ -6,10 +6,10 @@
 // the guide for more. The record otherwise ends on judgements; this page
 // ends it on what the family can do.
 import { Band } from "@/components/centre/centre-band";
+import { RecordPrintButton } from "@/components/centre/record-print";
 import { askTheHome, inspectionDate, OutcomePill, trailOutcome, type Outcome } from "@/components/centre/finding-bits";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
-import { PrintButton } from "@/components/ui/print-button";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
 import { trailAnchor, type Judgement, type PromiseTrail } from "@/lib/centres";
 import Link from "next/link";
@@ -74,12 +74,12 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
             <h2 id="questions-h" className={sectionHeadingClass}>
               What to ask
             </h2>
-            <p className="text-ink">
-              Questions to take with you when you visit or call {centre.centre_name}. Print them, or keep this page open
-              on your phone.
+            <p className="text-ink print:hidden">
+              Questions to take with you when you visit or call {centre.centre_name}. Print them, with room for notes, or
+              keep this page open on your phone.
             </p>
           </div>
-          <PrintButton />
+          <RecordPrintButton />
         </div>
 
         {about.length > 0 && (
@@ -87,7 +87,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
             <h3 className="font-heading text-xl font-semibold text-ink">About what the inspectors found</h3>
             <ol className="mt-3 flex flex-col divide-y divide-line-soft">
               {about.map(({ outcome, question, trails }, index) => (
-                <li key={question} className="flex gap-4 py-5 first:pt-1 last:pb-0">
+                <li key={question} className="flex gap-4 py-5 break-inside-avoid first:pt-1 last:pb-0">
                   <span aria-hidden className="w-6 shrink-0 pt-0.5 font-heading text-lg font-semibold text-ink-muted">
                     {index + 1}
                   </span>
@@ -112,6 +112,8 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
                         );
                       })}
                     </div>
+                    {/* On paper, room to write the answer. */}
+                    <div aria-hidden className="hidden h-14 border-b border-dotted border-black print:block" />
                   </div>
                 </li>
               ))}
@@ -131,7 +133,9 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
           <ul className="mt-3 flex flex-col gap-3">
             {ANY_HOME.map((question) => (
               <li key={question} className="flex items-start gap-3 leading-relaxed text-ink">
-                <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-ink-muted" />
+                <span aria-hidden className="mt-2.5 size-1.5 shrink-0 rounded-full bg-ink-muted print:hidden" />
+                {/* On paper, a box to tick once it's asked. */}
+                <span aria-hidden className="mt-1 hidden size-4 shrink-0 border border-black print:block" />
                 {question}
               </li>
             ))}

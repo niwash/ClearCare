@@ -154,7 +154,7 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
                 </svg>
                 <span>
                   <span className="font-semibold">Worth asking the home:</span> {question}{" "}
-                  <a href={questionsHref} className="font-semibold whitespace-nowrap text-on-tint-blue">
+                  <a href={questionsHref} className="font-semibold whitespace-nowrap text-on-tint-blue print:hidden">
                     All questions <span aria-hidden>→</span>
                   </a>
                 </span>
@@ -165,7 +165,7 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
 
         {/* Back to the regulation's highlight on What to look at first, so nobody has to look for
             where they came from. Every trail has one: trails are only made for highlighted regulations. */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 print:hidden">
           <a
             href={`${highlightsHref}#${highlightAnchor(regulation)}`}
             className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold tap-target"
