@@ -27,7 +27,13 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
   return (
     <Band tint="gold">
       {reports && reports.highlights.length > 0 ? (
-        <CentreHighlights highlights={reports.highlights} trails={reports.trails} trailsHref={centrePath(id, "next-steps")} />
+        <CentreHighlights
+          highlights={reports.highlights}
+          trails={reports.trails}
+          inspections={reports.inspections}
+          trailsHref={centrePath(id, "next-steps")}
+          inspectionsHref={centrePath(id, "inspections")}
+        />
       ) : (
         // The tab is always there, so the page says why it's empty (NothingToFlag).
         <section aria-labelledby="first-h" className="flex flex-col gap-3">
@@ -38,7 +44,7 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
             reason={emptyReason(Boolean(reports?.inspections.length), findingsRead)}
             page="look-first"
             inspectionsHref={centrePath(id, "inspections")}
-            visitHref={reports?.visitQuestions.length ? `${centrePath(id)}#visit` : undefined}
+            visitHref={centrePath(id, "questions")}
             hiqaUrl={centre.hiqa_url}
           />
         </section>

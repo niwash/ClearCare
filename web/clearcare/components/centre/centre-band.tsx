@@ -11,6 +11,7 @@ const BAND_TINTS = {
   gold: "bg-tint-gold",
   stone: "bg-band",
   sage: "bg-tint-sage",
+  blue: "bg-tint-blue",
 } as const;
 
 export function Band({ tint, children }: { tint: keyof typeof BAND_TINTS; children: ReactNode }) {

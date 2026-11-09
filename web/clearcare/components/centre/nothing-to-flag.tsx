@@ -34,7 +34,7 @@ type NothingToFlagProps = {
   reason: EmptyReason;
   page: "look-first" | "next-steps";
   inspectionsHref: string;
-  // The overview's visit questions, when the home has any.
+  // What to ask, the questions to take on a visit.
   visitHref?: string;
   hiqaUrl: string;
 };

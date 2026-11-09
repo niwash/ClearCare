@@ -31,21 +31,21 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
     <Band tint="sage">
       {/* One trail per highlighted regulation, closed to begin with so the page stays short. Any
           number can be open, so a family can read two together and compare them. */}
-      <section aria-labelledby="trails-h" className="flex flex-col gap-3">
-        <div className="flex flex-col gap-1">
+      <section aria-labelledby="trails-h" className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
           <h2 id="trails-h" className={sectionHeadingClass}>
             What happened next
           </h2>
           <p className="max-w-3xl text-ink">
-            For each regulation in What to look at first: what the inspector found, what the provider said they would
-            do, and when the regulation was next judged.
+            The story behind each thing in What to look at first: what the inspector found, what the home said it
+            would do, and what happened at the next inspection.
           </p>
         </div>
         {reports && trails.length > 0 ? (
           <>
             <SectionAccordion />
             {trails.map((trail) => (
-              <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} highlightsHref={centrePath(id, "look-first")} />
+              <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} highlightsHref={centrePath(id, "look-first")} questionsHref={centrePath(id, "questions")} />
             ))}
           </>
         ) : (
@@ -54,7 +54,7 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
             reason={emptyReason(Boolean(reports?.inspections.length), findingsRead)}
             page="next-steps"
             inspectionsHref={centrePath(id, "inspections")}
-            visitHref={reports?.visitQuestions.length ? `${centrePath(id)}#visit` : undefined}
+            visitHref={centrePath(id, "questions")}
             hiqaUrl={centre.hiqa_url}
           />
         )}

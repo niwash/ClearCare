@@ -48,12 +48,13 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
 });
 
 // The record's pages: the overview, and a subpage for each long section.
-export type CentreSection = "look-first" | "inspections" | "next-steps";
+export type CentreSection = "look-first" | "inspections" | "next-steps" | "questions";
 
 export const CENTRE_SECTION_TITLES: Record<CentreSection, string> = {
   "look-first": "What to look at first",
   inspections: "Inspection history",
   "next-steps": "What happened next",
+  questions: "What to ask",
 };
 
 export function centrePath(id: string, section?: CentreSection) {
