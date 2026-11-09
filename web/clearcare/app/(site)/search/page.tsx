@@ -5,6 +5,7 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
+import { RememberSearch } from "@/components/search/last-search";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
 import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
@@ -12,7 +13,6 @@ import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import { looksLikeEircode } from "@/lib/eircode";
 import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
@@ -45,10 +45,10 @@ function noun(count: number) {
 }
 
 // "matching “aras” in Co. Mayo", for the results heading and the page title.
-function describe({ name, place, county }: Pick<PageSearch, "name" | "place" | "county">) {
+function describe({ name, place, county, query }: Pick<PageSearch, "name" | "place" | "county" | "query">) {
   const parts = [
     name && `matching “${name}”`,
-    place && (looksLikeEircode(place) ? `near ${formatEircode(place.replace(/\s+/g, "").toUpperCase())}` : `in “${place}”`),
+    place && (query.eircode ? `near ${formatEircode(query.eircode)}` : `in “${place}”`),
     county && `in Co. ${county}`,
   ].filter(Boolean);
   return parts.join(" ");
@@ -117,6 +117,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <>
+      {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
+      <RememberSearch />
       <SearchHero />
 
       {/* From md up, the filters in a column on the left and the results on the right (CCARE-189):

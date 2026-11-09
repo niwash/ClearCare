@@ -19,6 +19,7 @@ import { CompareSync } from "@/components/compare/compare-sync";
 import { StickyHomeNames } from "@/components/compare/sticky-home-names";
 import { AmenityIcon } from "@/components/centre/amenity-icon";
 import { GuidesBand } from "@/components/guides/guide-ending";
+import { LastSearchLink } from "@/components/search/last-search";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
@@ -53,6 +54,7 @@ import {
   type LatestResult,
 } from "@/lib/compare";
 import { AMENITY_ICON_PATHS } from "@/lib/amenity-icons";
+import { asEircode } from "@/lib/eircode";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
@@ -245,8 +247,6 @@ type Group = { title: string; icon: string; tint: Tint; intro?: ReactNode; rows:
 function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAllRegulations: boolean }) {
   const groups = buildGroups(columns, showAllRegulations);
   const room = MAX_COMPARED - columns.length;
-  // The first home's county, for "Search in Co. …".
-  const county = columns.find((column): column is FoundColumn => column.status === "found")?.centre.county;
 
   return (
     <section aria-labelledby="grid-h" className="flex flex-col gap-4">
@@ -254,21 +254,28 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
         Your homes side by side
       </h2>
 
-      {/* From md up: the grid, with a slim panel for more homes on its right, as tall as the grid,
-          marking the free places. On phones: the cards, with the panel as a strip above them. */}
-      <div className="hidden gap-3 md:flex">
+      {/* From lg up: the grid, with a slim panel for more homes on its right, as tall as the grid,
+          marking the free places. On tablets (md to lg) the panel is the strip above the grid, as on
+          phones: beside it, it took a quarter of the width and squeezed the homes' columns until
+          words broke in the middle (CCARE-214). On phones: the cards, with the strip above them. */}
+      <div className="hidden flex-col gap-3 md:flex lg:flex-row">
+        {room > 0 && (
+          <div className="lg:hidden">
+            <AddMore room={room} />
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <ComparisonTable columns={columns} groups={groups} />
         </div>
         {room > 0 && (
-          <div className="flex w-48 shrink-0 lg:w-56">
-            <AddMore room={room} county={county} side />
+          <div className="hidden w-56 shrink-0 lg:flex">
+            <AddMore room={room} side />
           </div>
         )}
       </div>
       <div className="flex flex-col gap-4 md:hidden">
         <PhoneHomes columns={columns} />
-        {room > 0 && <AddMore room={room} county={county} />}
+        {room > 0 && <AddMore room={room} />}
         <PhoneComparison columns={columns} groups={groups} />
       </div>
 
@@ -278,9 +285,7 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
           reports and register data under the Irish PSI licence (CC BY 4.0), and the HSE&apos;s Fair Deal price lists.
         </p>
         {room > 0 && (
-          <Link href="/search" className="font-semibold tap-target">
-            Add another home in Search
-          </Link>
+          <LastSearchLink className="font-semibold tap-target">Add another home in Search</LastSearchLink>
         )}
       </div>
     </section>
@@ -644,13 +649,15 @@ function ComparisonTable({ columns, groups }: { columns: Column[]; groups: Group
             key={group.title}
             heading={
               <>
-                <IconCircle path={group.icon} tint={group.tint} className="bg-surface!" />
+                {/* Left out below lg, where the label column is w-32: the icon and a one-word title
+                    such as "Inspections" don't fit side by side there, and the title was cut off. */}
+                <IconCircle path={group.icon} tint={group.tint} className="bg-surface! max-lg:hidden" />
                 {group.title}
               </>
             }
             intro={group.intro}
             span={columns.length}
-            headingCellClass="px-3 py-1.5 text-left align-middle font-heading text-lg font-semibold text-ink"
+            headingCellClass="px-3 py-1.5 text-left align-middle font-heading text-base font-semibold text-ink lg:text-lg"
           >
             {group.rows.map((row) => (
               <tr key={row.key} className="border-t border-line">
@@ -755,7 +762,7 @@ function NextStep({ centre }: { centre: CentreDetail }) {
 
 // The space for more homes: a slim panel on the grid's right (side), or a strip above the cards on
 // phones.
-function AddMore({ room, county, side = false }: { room: number; county?: string; side?: boolean }) {
+function AddMore({ room, side = false }: { room: number; side?: boolean }) {
   return (
     // A dashed outline marks the free place on the list, in the soft blue; the adult-centred design
     // keeps its 3:1 field colour and plain fill.
@@ -775,15 +782,12 @@ function AddMore({ room, county, side = false }: { room: number; county?: string
           </p>
         </div>
       </div>
-      <div className={side ? "flex w-full flex-col gap-2" : "flex flex-wrap gap-2.5"}>
-        {county && (
-          <Link href={`/search?${new URLSearchParams({ county })}`} className={actionLinkClass}>
-            Search in Co. {county}
-          </Link>
-        )}
-        <Link href="/search" className={secondaryLinkClass}>
-          Search all homes
-        </Link>
+      {/* Back to the visitor's last search on this visit, with its filters (CCARE-214), or to an
+          empty search when there is none. */}
+      <div className={side ? "flex w-full flex-col" : "flex"}>
+        <LastSearchLink className={`${actionLinkClass} ${side ? "justify-center text-center" : ""}`}>
+          Search for other homes
+        </LastSearchLink>
       </div>
     </div>
   );
@@ -852,12 +856,14 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
 }
 
 // The register's address without what the grid already shows: the home's name, which often starts
-// it, and the Eircode, which often ends it and has a row of its own.
+// it, and the Eircode, which often ends it and has a row of its own. The ending is compared as
+// asEircode reads it: the register prints two Eircodes with a letter O for 0 (A98 C2CO), and the
+// row shows them with the 0.
 function shortAddress({ centre_name, address, eircode }: CentreDetail) {
   let short = address;
   if (short.toLowerCase().startsWith(`${centre_name},`.toLowerCase())) short = short.slice(centre_name.length + 1).trim();
-  const formatted = eircode ? formatEircode(eircode) : null;
-  if (formatted && short.endsWith(formatted)) short = short.slice(0, -formatted.length).replace(/,\s*$/, "");
+  const lastComma = short.lastIndexOf(",");
+  if (eircode && asEircode(short.slice(lastComma + 1)) === eircode) short = short.slice(0, Math.max(lastComma, 0));
   return short;
 }
 

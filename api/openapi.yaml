@@ -70,8 +70,10 @@ paths:
           description: >
             A routing key (`W23`, `D6W`) finds every Eircode that starts with
             it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
-            removed and letters made upper case first. Only the letters and
-            digits used in Eircodes are accepted, and `O` is not read as `0`.
+            removed, letters made upper case and `O` read as `0` when the
+            first three characters hold a digit, since Eircodes have no
+            letter O. Only the letters and digits used in Eircodes are
+            accepted.
           schema:
             type: string
           example: W23

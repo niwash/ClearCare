@@ -109,8 +109,8 @@ class CentreSearchTest {
            NULL, 40, NULL, 'https://www.hiqa.ie/test/456', now(), 'test', NULL),
           (1, '9', 3, 'St Joseph''s Nursing Home', 'Main Street, Cork', 'Cork',
            NULL, NULL, NULL, 'https://www.hiqa.ie/test/9', now(), 'test', NULL),
-          (1, '10', 4, 'St Joseph''s Nursing Home', 'Main Street, Dublin 6W, D6W FR27', 'Dublin',
-           'D6WFR27', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test', NULL),
+          (1, '10', 4, 'St Joseph''s Nursing Home', 'Main Street, Dublin 6W, D6W FR07', 'Dublin',
+           'D6WFR07', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test', NULL),
           (1, '77', 5, 'Stella Maris Nursing Home', 'Main Street, Galway', 'Galway',
            NULL, 25, NULL, 'https://www.hiqa.ie/test/77', now(), 'test', NULL);
       """;
@@ -339,6 +339,8 @@ class CentreSearchTest {
         arguments("eircode=w23 p6ex", List.of(ELM_HALL)),
         arguments("eircode=W23", List.of(ELM_HALL)),
         arguments("eircode=D6W", List.of(ST_JOSEPHS_DUBLIN)),
+        // Eircodes have no letter O, so an O is read as 0.
+        arguments("eircode=d6w fro7", List.of(ST_JOSEPHS_DUBLIN)),
         arguments("county=Dublin", List.of(ARAS, ST_JOSEPHS_DUBLIN)),
         // A centre must match every parameter given.
         arguments("name=st joseph&county=Dublin", List.of(ST_JOSEPHS_DUBLIN)),
@@ -459,6 +461,13 @@ class CentreSearchTest {
     return Stream.of(
         arguments(
             "eircode=W2",
+            "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
+        // Words with no digit in their first three characters: their Os are not read as 0.
+        arguments(
+            "eircode=Doonane",
+            "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
+        arguments(
+            "eircode=Doonan1",
             "eircode must be a routing key such as W23 or a full Eircode such as W23 P6EX"),
         arguments("page_size=51", "page_size must be between 1 and 50"),
         arguments(

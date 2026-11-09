@@ -56,7 +56,11 @@ export function CentreContentsBar({ items, className = "" }: { items: ContentsIt
                   aria-controls={`${item.id}-entries`}
                   // The arrow sits right after the title, so the pair reads as one dropdown, while the
                   // button stays 44px tall to tap (and 44px wide in the adult-centred design).
-                  className="flex h-11 w-8 shrink-0 cursor-pointer items-center justify-start rounded-r-full pl-0.5 text-primary hover:bg-surface-muted adult:w-11 adult:rounded-md"
+                  // relative: holds its sr-only label (position: absolute) inside the scrolling list.
+                  // Without it the label was placed against the outer menu, outside the list's
+                  // clipping, and where the links ran off screen it widened the page on phones, which
+                  // then zoomed out (CCARE-214, seen on /centres/465).
+                  className="relative flex h-11 w-8 shrink-0 cursor-pointer items-center justify-start rounded-r-full pl-0.5 text-primary hover:bg-surface-muted adult:w-11 adult:rounded-md"
                 >
                   <span className="sr-only">
                     {item.children.length} entries under {item.title}

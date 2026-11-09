@@ -3,7 +3,7 @@
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
 import { ANY_COUNTY, COUNTIES } from "./counties.ts";
-import { looksLikeEircode } from "./eircode.ts";
+import { asEircode } from "./eircode.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
 
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
@@ -57,7 +57,8 @@ export interface SearchResponse {
 
 export type Facets = Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
 
-// Straight from the URL, so the API does the validating.
+// Straight from the URL, so the API does the validating, apart from eircode, which asEircode has
+// already read from the place.
 export interface SearchQuery {
   name?: string;
   address?: string;
@@ -151,7 +152,9 @@ export function readSearch(params: PageParams): PageSearch {
 
   const query: SearchQuery = {};
   if (name) query.name = name;
-  if (place) query[looksLikeEircode(place) ? "eircode" : "address"] = place;
+  const eircode = asEircode(place);
+  if (eircode) query.eircode = eircode;
+  else if (place) query.address = place;
   if (county) query.county = county;
   if (sort !== "name") query.sort = sort;
   for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);

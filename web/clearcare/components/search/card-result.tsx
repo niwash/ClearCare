@@ -5,7 +5,8 @@
 // before that, the card has the name, place and size.
 import { CompareButton } from "@/components/compare/compare-button";
 import { formatDate } from "@/lib/centres";
-import { formatEircode, type CentreSummary } from "@/lib/search";
+import { asEircode } from "@/lib/eircode";
+import type { CentreSummary } from "@/lib/search";
 import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
 import Link from "next/link";
 
@@ -16,15 +17,15 @@ interface CardResultProps {
 
 // The town: the register has no field for it, so it's the address's last part that isn't the
 // Eircode or the county. The address usually starts with the centre's name, which the card already
-// shows.
+// shows. A part that asEircode reads as the centre's Eircode is its Eircode: the register prints
+// two with a letter O for 0 (A98 C2CO), and the database holds them with the 0.
 function town({ centre_name, address, eircode, county }: CentreSummary) {
   const prefix = `${centre_name},`.toLowerCase();
   const rest = address.toLowerCase().startsWith(prefix) ? address.slice(prefix.length) : address;
-  const formatted = eircode ? formatEircode(eircode) : null;
   const parts = rest
     .split(",")
     .map((part) => part.trim())
-    .filter((part) => part && part !== formatted && part.replace(/\s/g, "") !== eircode && !new RegExp(`^(co\\.?|county)\\s+${county}$`, "i").test(part) && part.toLowerCase() !== county.toLowerCase());
+    .filter((part) => part && !(eircode && asEircode(part) === eircode) && !new RegExp(`^(co\\.?|county)\\s+${county}$`, "i").test(part) && part.toLowerCase() !== county.toLowerCase());
   return parts.at(-1) ?? null;
 }
 

@@ -72,6 +72,8 @@ def test_register_is_read_in_file_order() -> None:
         ),
         # Seven letters that read as an Eircode once O is taken for 0.
         pytest.param("Main Street, Doonane", id="townland with Os"),
+        # Reads as one too, but its routing key, DOO, has no digit.
+        pytest.param("Main Street, Doonan 1", id="word with Os and a digit"),
     ],
 )
 def test_address_without_an_eircode_has_none(address: str) -> None:
