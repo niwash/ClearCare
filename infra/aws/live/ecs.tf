@@ -15,9 +15,9 @@ resource "aws_ecs_cluster" "main" {
 
 locals {
   # Images that CI does not build, from ECR Public by digest, so a task runs
-  # the same bytes every time. The same PostgreSQL as compose.yaml, for
-  # pg_restore. Each digest names the multi-platform index, which has
-  # linux/arm64.
+  # the same bytes every time. The restore task needs only pg_restore and psql
+  # of the same major version as RDS. Each digest names the multi-platform
+  # index, which has linux/arm64.
   postgres_image = "public.ecr.aws/docker/library/postgres:18.6@sha256:edb0c08dc33befd0262ab3b5cf1c4f3f8cfd8b09e88c05b45adee29d6761ddb6"
   aws_cli_image  = "public.ecr.aws/aws-cli/aws-cli:2.38.5@sha256:c8156a0e74e13929a42d7e60f0d4e14e7d28d980cd21822505d4bff80e5460c1"
   busybox_image  = "public.ecr.aws/docker/library/busybox:1.37.0@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e"
@@ -225,6 +225,7 @@ resource "aws_ecs_task_definition" "pipeline" {
       secrets = [
         { name = "PGPASSWORD", valueFrom = aws_secretsmanager_secret.database["pipeline"].arn },
         { name = "ANTHROPIC_API_KEY", valueFrom = aws_secretsmanager_secret.anthropic.arn },
+        { name = "GOOGLE_GEOCODING_API_KEY", valueFrom = aws_secretsmanager_secret.google_geocoding.arn },
       ]
       # Passes the stop signal on to Python, which ignores it as process 1,
       # as init: true does in compose.yaml.

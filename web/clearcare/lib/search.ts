@@ -3,6 +3,7 @@
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
 import { ANY_COUNTY, COUNTIES } from "./counties.ts";
+import { looksLikeEircode } from "./eircode.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
 
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
@@ -113,15 +114,6 @@ async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSea
 
   const body = await response.json().catch(() => null);
   return { ok: false, status: response.status, detail: body?.detail ?? response.statusText };
-}
-
-const ROUTING_KEY = /^([AC-FHKNPRTV-Y]\d{2}|D6W)$/;
-const FULL_EIRCODE = /^([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}$/;
-
-// "D06", "w23 p6ex" and "W23P6EX" are Eircodes; "Elm Hall" isn't.
-export function looksLikeEircode(text: string) {
-  const compact = text.replace(/\s+/g, "").toUpperCase();
-  return ROUTING_KEY.test(compact) || FULL_EIRCODE.test(compact);
 }
 
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.

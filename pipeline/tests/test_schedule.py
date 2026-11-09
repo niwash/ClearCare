@@ -21,13 +21,14 @@ BUCKET = {
 STARTUP = [
     "upload",
     "load_register",
+    "geocode",
     "load_contract_prices",
     "load_report_files",
     "ingest_reports",
     "extract_text",
     "split_commitments",
 ]
-REGISTER_JOB = ["snapshots", "upload", "load_register"]
+REGISTER_JOB = ["snapshots", "upload", "load_register", "geocode"]
 PRICES_JOB = ["price_lists", "upload", "load_contract_prices"]
 REPORTS_JOB = [
     "reports",

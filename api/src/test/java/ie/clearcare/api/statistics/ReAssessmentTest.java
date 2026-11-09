@@ -26,6 +26,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+import ie.clearcare.api.DatabaseImage;
+
 /**
  * GET /statistics/re-assessment against PostgreSQL with the roles and schema from this repository,
  * logged in as clearcare_api. The expected counts are worked out by hand from SEED.
@@ -110,7 +112,7 @@ class ReAssessmentTest {
   // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
   static final PostgreSQLContainer database =
-      new PostgreSQLContainer("postgres:18.6")
+      new PostgreSQLContainer(DatabaseImage.POSTGIS)
           .withDatabaseName("clearcare")
           .withCopyFileToContainer(
               MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
