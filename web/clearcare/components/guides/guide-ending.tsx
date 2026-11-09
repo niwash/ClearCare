@@ -35,6 +35,8 @@ type GuidesBandProps = {
   intro?: string;
   guides: readonly Guide[];
   className?: string; // its bottom margin, for what comes after it
+  // Added to each guide's address, such as the way back to a home's record (lib/return-to-centre.ts).
+  linkQuery?: string;
 };
 
 // Guides as small photo cards on a tinted band the full width of the window, like the home page's
@@ -42,7 +44,7 @@ type GuidesBandProps = {
 // page's gap between sections (app/(site)/layout.tsx), so the band meets the contacts banner after it.
 // The heading and cards slide up on the pages that render <SlideUp /> (CCARE-186); elsewhere, such as
 // the centre page, they simply show.
-export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb-8" }: GuidesBandProps) {
+export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb-8", linkQuery }: GuidesBandProps) {
   return (
     <section aria-labelledby={id} className={`${fullWidthClass} bg-band py-8 md:py-10 ${className}`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
@@ -57,7 +59,7 @@ export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb
         {/* Three cards fill a row of three; any other number goes four to a row. */}
         <ul className={`reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 ${guides.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
           {guides.map((guide) => (
-            <OtherGuideCard key={guide.slug} guide={guide} />
+            <OtherGuideCard key={guide.slug} guide={guide} linkQuery={linkQuery} />
           ))}
         </ul>
       </div>
@@ -65,7 +67,7 @@ export function GuidesBand({ id, title, intro, guides, className = "-mb-6 md:-mb
   );
 }
 
-function OtherGuideCard({ guide }: { guide: Guide }) {
+function OtherGuideCard({ guide, linkQuery }: { guide: Guide; linkQuery?: string }) {
   const comingSoon = guide.status === "coming-soon";
 
   return (
@@ -92,7 +94,7 @@ function OtherGuideCard({ guide }: { guide: Guide }) {
             2.5.5): the button's link stretches over it, as on Resources. flex-1 on the summary
             keeps the buttons of a row level. */}
         {!comingSoon && (
-          <Link href={`/guides/${guide.slug}`} className={`${stretchedActionClass} mt-2`}>
+          <Link href={`/guides/${guide.slug}${linkQuery ? `?${linkQuery}` : ""}`} className={`${stretchedActionClass} mt-2`}>
             Read guide<span className="sr-only">: {guide.title}</span>
             <span aria-hidden>→</span>
           </Link>

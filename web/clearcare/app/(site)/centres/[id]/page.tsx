@@ -20,6 +20,7 @@ import {
   type CentreReports,
 } from "@/lib/centres";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { returnQuery } from "@/lib/return-to-centre";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -199,14 +200,14 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
                   {formatWeeklyPrice(centre.contract_price)} per week
                   <Note>
                     This does not include extra charges,{" "}
-                    <Link href="/guides/fair-deal#what-does-fair-deal-cover" className="tap-target">
+                    <Link href={`/guides/fair-deal?${returnQuery(centre.centre_id)}#what-does-fair-deal-cover`} className="tap-target">
                       see here
                     </Link>
                     .
                   </Note>
                   <Note>
                     With Fair Deal you pay your own contribution.{" "}
-                    <Link href="/guides/fair-deal#how-much-will-you-pay" className="tap-target">
+                    <Link href={`/guides/fair-deal?${returnQuery(centre.centre_id)}#how-much-will-you-pay`} className="tap-target">
                       How much will you pay?
                     </Link>
                   </Note>

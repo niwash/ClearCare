@@ -2,7 +2,7 @@
 // What to ask (CCARE-212): the questions to take on a visit, in one list a family can print or keep
 // on a phone. First those about this home, from how each story on What happened next ended
 // (askTheHome): one question for the stories that ended the same way, with their topics under it,
-// each linked to its story so it keeps its context; then a few that are good to ask any home, with
+// each with its latest judgement so it keeps its context; then a few that are good to ask any home, with
 // the guide for more. The record otherwise ends on judgements; this page
 // ends it on what the family can do.
 import { Band } from "@/components/centre/centre-band";
@@ -10,8 +10,9 @@ import { RecordPrintButton } from "@/components/centre/record-print";
 import { askTheHome, inspectionDate, OutcomePill, trailOutcome, type Outcome } from "@/components/centre/finding-bits";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
-import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
-import { trailAnchor, type Judgement, type PromiseTrail } from "@/lib/centres";
+import { centreMetadata, getCentreRecord } from "@/lib/centre-record";
+import { type Judgement, type PromiseTrail } from "@/lib/centres";
+import { returnQuery } from "@/lib/return-to-centre";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -93,25 +94,29 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
                   </span>
                   <div className="flex min-w-0 flex-1 flex-col gap-2.5">
                     <p className="text-lg leading-relaxed text-ink">{question}</p>
-                    {/* The topics it's about, each to its story, with how they ended. */}
-                    <div className="flex flex-wrap items-center gap-2">
+                    {/* How they ended, then the topics it's about in a grid, one card each with its
+                        latest judgement. */}
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
                       <OutcomePill outcome={outcome} />
-                      <span className="text-sm text-ink-muted">about</span>
+                      {trails.length > 1 ? `${trails.length} topics` : "1 topic"}
+                    </div>
+                    <ul className="grid gap-2 sm:grid-cols-2">
                       {trails.map((trail) => {
                         const judgement = latestJudgement(trail);
                         return (
-                          <Link
+                          <li
                             key={trail.regulation.number}
-                            href={`${centrePath(id, "next-steps")}#${trailAnchor(trail.regulation)}`}
-                            className="inline-flex min-h-9 items-center gap-2 rounded-full border border-line bg-surface px-3 text-sm text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:underline print:min-h-0 print:border-0 print:px-0"
+                            className="flex h-full items-center gap-3 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-ink adult:rounded-md print:rounded-none print:border-0 print:border-b print:px-0"
                           >
-                            <JudgementIcon judgement={judgement} size={13} />
-                            <span className="font-semibold">{trail.regulation.title}</span>
-                            <span className="text-ink-muted">{JUDGEMENT_LABELS[judgement]}</span>
-                          </Link>
+                            <JudgementIcon judgement={judgement} size={14} />
+                            <span className="flex min-w-0 flex-1 flex-col">
+                              <span className="font-semibold">{trail.regulation.title}</span>
+                              <span className="text-sm text-ink-muted">{JUDGEMENT_LABELS[judgement]}</span>
+                            </span>
+                          </li>
                         );
                       })}
-                    </div>
+                    </ul>
                     {/* On paper, room to write the answer. */}
                     <div aria-hidden className="hidden h-14 border-b border-dotted border-black print:block" />
                   </div>
@@ -140,7 +145,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
               </li>
             ))}
           </ul>
-          <Link href="/guides/choosing-a-nursing-home" className="mt-4 self-start text-sm font-semibold tap-target print:hidden">
+          <Link href={`/guides/choosing-a-nursing-home?${returnQuery(id, "questions")}`} className="mt-4 self-start text-sm font-semibold tap-target print:hidden">
             More questions in our guide <span aria-hidden>→</span>
           </Link>
         </div>
