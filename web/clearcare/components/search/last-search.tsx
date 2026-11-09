@@ -46,13 +46,16 @@ export function forgetLastSearch() {
   write(null);
 }
 
-// The search's address without its page number, so a return starts at the first page of results.
-function withoutPage(query: string): string {
+// The search worth going back to: without its page number, so a return starts at the first page of
+// results, and without empty fields. Pressing Search on the home page with nothing typed lands on
+// ?name=, which the search page answers with "Please enter something to search for"; remembered,
+// it sent every link to search there too. A search with nothing left is not noted, and the last
+// real one stays.
+function worthKeeping(query: string): string {
   const params = new URLSearchParams(query);
   params.delete("page");
-  params.delete(CLEARED_PARAM);
-  const rest = params.toString();
-  return rest ? `${SEARCH_PATH}?${rest}` : SEARCH_PATH;
+  for (const [key, value] of [...params]) if (!value.trim()) params.delete(key);
+  return params.toString();
 }
 
 // On the search page: notes the search each time it changes, and forgets it when it is cleared.
@@ -60,9 +63,11 @@ export function RememberSearch() {
   const params = useSearchParams();
   const query = params.toString();
   useEffect(() => {
-    const current = new URLSearchParams(query);
-    if (current.has(CLEARED_PARAM)) write(null);
-    else if (query) write(query);
+    if (new URLSearchParams(query).has(CLEARED_PARAM)) write(null);
+    else {
+      const kept = worthKeeping(query);
+      if (kept) write(kept);
+    }
   }, [query]);
   return null;
 }
@@ -70,7 +75,7 @@ export function RememberSearch() {
 function readLastSearch(): string {
   try {
     const query = sessionStorage.getItem(LAST_SEARCH_KEY);
-    return query ? withoutPage(query) : SEARCH_PATH;
+    return query ? `${SEARCH_PATH}?${query}` : SEARCH_PATH;
   } catch {
     return SEARCH_PATH;
   }
