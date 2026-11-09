@@ -14,12 +14,12 @@
 // tried too, but at 16px a single looked like a door. They are our own drawings, not copies of
 // another site's icons. None is a circle, so none looks like a judgement mark (judgement-icon.tsx).
 //
-// Rooms and activities so far; care types and facilities to follow.
+// Rooms, activities and facilities so far; care types to follow.
 
 // evenodd: the solid part has holes cut in it, such as the eyes and mouths of the theatre masks.
 export type AmenityIconPaths = { stroke: string; fill: string; evenodd?: true };
 
-export const AMENITY_ICON_PATHS: Record<string, AmenityIconPaths> = {
+const DRAWINGS: Record<string, AmenityIconPaths> = {
   // Rooms
   // A bed with one pillow
   "Single room": {
@@ -231,4 +231,137 @@ export const AMENITY_ICON_PATHS: Record<string, AmenityIconPaths> = {
     stroke: "M8.5 21v-3.5l-3.2-3.8a1.5 1.5 0 0 1 2.2-2l1.5 1.5V5.5a1.5 1.5 0 0 1 3 0v5.5V4a1.5 1.5 0 0 1 3 0v7V5.5a1.5 1.5 0 0 1 3 0v6V8a1.5 1.5 0 0 1 3 0v8c0 3-2.2 5-5 5zM2.5 8c-1 2.2-1 4.6 0 6.8",
     fill: "",
   },
+  // Facilities with icons of their own. The rest have their activity's (FACILITY_REUSES).
+  // Two flowers in pots, one taller than the other
+  "Garden": {
+    stroke: "M7.5 14.5V9M17.5 14.5v-1.5",
+    fill: "M3.5 14.5h8l-1 7h-6zM5.75 2.6a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0zM8.22 4.4a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0zM7.28 7.3a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0zM4.22 7.3a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0zM3.28 4.4a1.75 1.75 0 1 0 3.5 0a1.75 1.75 0 1 0 -3.5 0zM14.5 16.5h6l-1 5h-4zM15.34 9.28l1.08 1.08 1.08 -1.92 1.08 1.92 1.08 -1.08v1.92a2.16 2.16 0 0 1 -4.32 0z",
+  },
+  // A parking sign
+  "Visitor parking": {
+    stroke: "M6 3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12a3 3 0 0 1 3 -3zM9.5 17V7h3.5a3 3 0 0 1 0 6H9.5",
+    fill: "",
+  },
+  // A cup of coffee
+  "Café/coffee dock": {
+    stroke: "M4 10h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 11.5h1.5a2.5 2.5 0 0 1 0 5H16M7.5 2.5c-.8 1 .8 2 0 3.5M11.5 2.5c-.8 1 .8 2 0 3.5M3 22h14",
+    fill: "",
+  },
+  // The Wi-Fi symbol
+  "Resident internet/Wi-Fi": {
+    stroke: "M2 8.8a15 15 0 0 1 20 0M5.2 12.4a10 10 0 0 1 13.6 0M8.5 15.9a5 5 0 0 1 7 0",
+    fill: "M10.4 19.5a1.6 1.6 0 1 0 3.2 0a1.6 1.6 0 1 0 -3.2 0z",
+  },
+  // A tree in the open space between two buildings
+  "Courtyard": {
+    stroke: "M1.5 21.5V9.5L4.5 7l3 2.5v12M16.5 21.5v-12l3-2.5 3 2.5v12M1 21.5h22M12 21.5v-4",
+    fill: "M3.7 12h1.6v2H3.7zM18.7 12h1.6v2h-1.6zM12 9c-1.4 0-2.5 1-2.7 2.3a2.4 2.4 0 0 0-.5 4c.4.6 1.1 1 1.9 1h2.6c.8 0 1.5-.4 1.9-1a2.4 2.4 0 0 0-.5-4C14.5 10 13.4 9 12 9z",
+  },
+  // A sun lounger in the sunshine
+  "Patio/terrace": {
+    stroke: "M5 17.5v3M14 17.5v3M9.9 6L11.2 6M8.76 8.76L9.68 9.68M6 9.9L6 11.2M3.24 8.76L2.32 9.68M2.1 6L0.8 6M3.24 3.24L2.32 2.32M6 2.1L6 0.8M8.76 3.24L9.68 2.32",
+    fill: "M2.5 13.8h11.9l4.4-6.2a1.6 1.6 0 0 1 2.7 1.8l-5 7.1a1.4 1.4 0 0 1-1.2.6H2.5a1.2 1.2 0 0 1-1.2-1.2v-.9a1.2 1.2 0 0 1 1.2-1.2zM3.6 6a2.4 2.4 0 1 0 4.8 0a2.4 2.4 0 1 0 -4.8 0z",
+  },
+  // A door with a knob, opening onto a railing
+  "Balcony": {
+    stroke: "M7 13.5V4.5A2.5 2.5 0 0 1 9.5 2h5A2.5 2.5 0 0 1 17 4.5v9M2 13.5h20M3.5 13.5v7.5h17v-7.5M7.5 13.5V21M12 13.5V21M16.5 13.5V21",
+    fill: "M13.3 8.6a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0z",
+  },
+  // A park bench: a backrest on two posts, a seat, two legs
+  "Outdoor space, type unspecified": {
+    stroke: "M5.2 4h13.6a1.2 1.2 0 0 1 1.2 1.2v3.1a1.2 1.2 0 0 1 -1.2 1.2h-13.6a1.2 1.2 0 0 1 -1.2 -1.2v-3.1a1.2 1.2 0 0 1 1.2 -1.2zM7 9.5v3M17 9.5v3M3.2 12.5h17.6a1.2 1.2 0 0 1 1.2 1.2v1.1a1.2 1.2 0 0 1 -1.2 1.2h-17.6a1.2 1.2 0 0 1 -1.2 -1.2v-1.1a1.2 1.2 0 0 1 1.2 -1.2zM5 16v4.5M19 16v4.5",
+    fill: "M6.1 6.75a0.9 0.9 0 1 0 1.8 0a0.9 0.9 0 1 0 -1.8 0zM16.1 6.75a0.9 0.9 0 1 0 1.8 0a0.9 0.9 0 1 0 -1.8 0z",
+  },
+  // A sofa
+  "Lounge/day room": {
+    stroke: "M5 11V8a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v3M5 19v1.5M19 19v1.5",
+    fill: "M2.5 11a2 2 0 0 1 4 0v2.5h11V11a2 2 0 0 1 4 0V18a1 1 0 0 1-1 1h-17a1 1 0 0 1-1-1z",
+  },
+  // A fork and a spoon, their handles shaped and widening to a rounded end rather than plain sticks
+  "Dining room": {
+    stroke: "M4.75 2.5v4.5M7.5 2.5v4.5M10.25 2.5v4.5",
+    fill: "M3.75 6.5h7.5v1.6a3.6 3.6 0 0 1-2.75 3.5V12.5h-2v-.9a3.6 3.6 0 0 1-2.75-3.5zM6.5 12.3h2l.75 8a1.75 1.75 0 0 1-3.5 0zM13.3 7a3.7 4.8 0 1 1 7.4 0a3.7 4.8 0 1 1 -7.4 0zM16 10.5h2l.75 9.8a1.75 1.75 0 0 1-3.5 0z",
+  },
+  // Two people
+  "Private visitors/family room": {
+    stroke: "M2 21v-2a5 5 0 0 1 10 0v2M12.5 21v-1.5a4.25 4.25 0 0 1 8.5 0V21",
+    fill: "M3.8 7.5a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0 -6.4 0zM14.05 10a2.7 2.7 0 1 0 5.4 0a2.7 2.7 0 1 0 -5.4 0z",
+  },
+  // A glass house, and the sun
+  "Conservatory/sun room": {
+    stroke: "M3 21V11l9-5 9 5v10zM3 21h18M12 6v15M3 15.5h18M7.5 8.5V21M16.5 8.5V21",
+    fill: "M17.5 3.5a2 2 0 1 0 4 0a2 2 0 1 0 -4 0z",
+  },
+  // A candle
+  "Prayer/reflection room": {
+    stroke: "M9.5 10h5a1 1 0 0 1 1 1v9.5a1 1 0 0 1 -1 1h-5a1 1 0 0 1 -1 -1v-9.5a1 1 0 0 1 1 -1zM6 21.5h12",
+    fill: "M12 2.5s-2.4 2.6-2.4 4.4a2.4 2.4 0 0 0 4.8 0c0-1.8-2.4-4.4-2.4-4.4z",
+  },
+  // A shopping bag
+  "Shop": {
+    stroke: "M5 8h14l-1 13H6zM9 10V6.5a3 3 0 0 1 6 0V10",
+    fill: "",
+  },
+  // A cigarette
+  "Designated smoking area": {
+    stroke: "M15.5 9c0-1.5 1.5-2 1.5-3.5S15.5 3.5 15.5 2M19 9c0-1.5 1.5-2 1.5-3.5S19 3.5 19 2",
+    fill: "M3 12.5h12a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-12a1 1 0 0 1 -1 -1v-2a1 1 0 0 1 1 -1zM17.5 12.5h1a0.5 0.5 0 0 1 0.5 0.5v3a0.5 0.5 0 0 1 -0.5 0.5h-1a0.5 0.5 0 0 1 -0.5 -0.5v-3a0.5 0.5 0 0 1 0.5 -0.5zM20.5 12.5h1a0.5 0.5 0 0 1 0.5 0.5v3a0.5 0.5 0 0 1 -0.5 0.5h-1a0.5 0.5 0 0 1 -0.5 -0.5v-3a0.5 0.5 0 0 1 0.5 -0.5z",
+  },
+  // A pool's ladder over water
+  "Hydrotherapy pool/bathroom": {
+    stroke: "M7 15V5.5a2.5 2.5 0 0 1 5 0M14 15V5.5a2.5 2.5 0 0 1 5 0M7 8.5h7M7 12h7M2 17.5c1.7 0 1.7 1.2 3.3 1.2s1.7-1.2 3.4-1.2 1.6 1.2 3.3 1.2 1.7-1.2 3.3-1.2 1.7 1.2 3.4 1.2 1.6-1.2 3.3-1.2",
+    fill: "",
+  },
+  // A lift's doors, with up and down arrows
+  "Passenger lift": {
+    stroke: "M5 2.5h14a2 2 0 0 1 2 2v15a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-15a2 2 0 0 1 2 -2zM12 2.5v19M7.5 15.5v-8M5.25 9.75 7.5 7.5l2.25 2.25M16.5 8.5v8M14.25 14.25l2.25 2.25 2.25-2.25",
+    fill: "",
+  },
+  // A chair on a rail up the stairs
+  "Stairlift": {
+    stroke: "M2 22h5v-3.5h5V15h5v-3.5h5M2.5 18 21.5 7M10 10.5v2.5",
+    fill: "M6.5 1.5h0.6a1 1 0 0 1 1 1v7a1 1 0 0 1 -1 1h-0.6a1 1 0 0 1 -1 -1v-7a1 1 0 0 1 1 -1zM6.5 8h6a1 1 0 0 1 1 1v0.6a1 1 0 0 1 -1 1h-6a1 1 0 0 1 -1 -1v-0.6a1 1 0 0 1 1 -1z",
+  },
+  // A head with a heart
+  "Mental-health-specific unit": {
+    stroke: "M15 21v-3.5c2.8-1.2 4.5-3.9 4.5-7A7.5 7.5 0 0 0 4.8 8.6L3 12.5h2v3a2 2 0 0 0 2 2h2.5V21",
+    fill: "M11.5 13.05C7.5 10.3 8.25 7.05 10 7.3C10.88 7.43 11.5 8.05 11.5 8.8C11.5 8.05 12.13 7.43 13 7.3C14.75 7.05 15.5 10.3 11.5 13.05z",
+  },
+  // A head with a plaster
+  "Acquired-brain-injury unit": {
+    stroke: "M15 21v-3.5c2.8-1.2 4.5-3.9 4.5-7A7.5 7.5 0 0 0 4.8 8.6L3 12.5h2v3a2 2 0 0 0 2 2h2.5V21",
+    fill: "M8.8 7.1 14.9 5l.9 2.6-6.1 2.1z",
+  },
+  // A bed, with a plus for getting better
+  "Convalescence unit": {
+    stroke: "M3.5 13V8.5a1 1 0 0 1 1-1h7.5a1 1 0 0 1 1 1V13M3 17.5v3M21 17.5v3M18 3v6M15 6h6",
+    fill: "M3.5 12.5h17a1 1 0 0 1 1 1v3a1 1 0 0 1 -1 1h-17a1 1 0 0 1 -1 -1v-3a1 1 0 0 1 1 -1zM6.25 9h3.5a0.75 0.75 0 0 1 0.75 0.75v0.5a0.75 0.75 0 0 1 -0.75 0.75h-3.5a0.75 0.75 0 0 1 -0.75 -0.75v-0.5a0.75 0.75 0 0 1 0.75 -0.75z",
+  },
+  // Two dice
+  "Activities room": {
+    stroke: "M4 10h6.5a2 2 0 0 1 2 2v6.5a2 2 0 0 1 -2 2h-6.5a2 2 0 0 1 -2 -2v-6.5a2 2 0 0 1 2 -2zM15.5 3.5h4.5a2 2 0 0 1 2 2v4.5a2 2 0 0 1 -2 2h-4.5a2 2 0 0 1 -2 -2v-4.5a2 2 0 0 1 2 -2z",
+    fill: "M3.9 13a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM6.15 15.25a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM8.4 17.5a1.1 1.1 0 1 0 2.2 0a1.1 1.1 0 1 0 -2.2 0zM15 6a1 1 0 1 0 2 0a1 1 0 1 0 -2 0zM18.5 9.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0z",
+  },
+};
+
+// A facility that is the place for an activity has that activity's icon, so the same thing looks
+// the same wherever it is mentioned: the chapel and religious services, the salon and hairdressing.
+export const FACILITY_REUSES: Record<string, string> = {
+  "Chapel/oratory": "Religious services and prayer",
+  "Hairdressing/beauty salon": "Hairdressing",
+  "Physiotherapy room": "Physiotherapy",
+  "Sensory room": "Sensory activities",
+  "Cinema room": "Films and television",
+  "Gym": "Exercise classes",
+  "Occupational therapy room": "Occupational therapy",
+  "Library": "Reading and writing",
+  "Games room": "Board and card games",
+  "Quiet/relaxation room": "Meditation and relaxation",
+  "Centre-provided bus/car transport": "Outings",
+  "Dementia-specific unit": "Cognitive stimulation therapy",
+};
+
+export const AMENITY_ICON_PATHS: Record<string, AmenityIconPaths> = {
+  ...DRAWINGS,
+  ...Object.fromEntries(Object.entries(FACILITY_REUSES).map(([facility, activity]) => [facility, DRAWINGS[activity]])),
 };
