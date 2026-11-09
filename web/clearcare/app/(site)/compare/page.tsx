@@ -17,6 +17,7 @@ import { CollapsibleGroup } from "@/components/compare/collapsible-group";
 import { CompareButton } from "@/components/compare/compare-button";
 import { CompareSync } from "@/components/compare/compare-sync";
 import { StickyHomeNames } from "@/components/compare/sticky-home-names";
+import { AmenityIcon } from "@/components/centre/amenity-icon";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
@@ -51,6 +52,7 @@ import {
   repeatedNotCompliant,
   type LatestResult,
 } from "@/lib/compare";
+import { AMENITY_ICON_PATHS } from "@/lib/amenity-icons";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
@@ -456,19 +458,30 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
                 <ul className="list-disc space-y-1 pl-4 text-sm marker:text-ink-muted">
                   {items
                     .filter((item) => mentioned.has(item))
-                    .map((item) => (
-                      <li key={item} className={common.has(item) ? "-ml-4 list-none" : undefined}>
-                        {common.has(item) ? (
-                          // On a green highlight in place of the bullet.
-                          <span className={commonClass}>
-                            {item}
-                            <span className="sr-only"> (in every home)</span>
-                          </span>
-                        ) : (
-                          item
-                        )}
-                      </li>
-                    ))}
+                    .map((item) => {
+                      // An item with a picture (CCARE-225) has it in place of the bullet.
+                      const pictured = item in AMENITY_ICON_PATHS;
+                      return (
+                        <li key={item} className={common.has(item) || pictured ? "-ml-4 list-none" : undefined}>
+                          {common.has(item) ? (
+                            // On a green highlight in place of the bullet.
+                            <span className={`${commonClass} inline-flex items-center gap-1.5`}>
+                              <AmenityIcon item={item} />
+                              {item}
+                              <span className="sr-only"> (in every home)</span>
+                            </span>
+                          ) : pictured ? (
+                            // px-2, as the highlight's, so its words line up with a highlighted item's.
+                            <span className="inline-flex items-center gap-1.5 px-2">
+                              <AmenityIcon item={item} className="size-4 text-ink-muted adult:size-5" />
+                              {item}
+                            </span>
+                          ) : (
+                            item
+                          )}
+                        </li>
+                      );
+                    })}
                 </ul>
               );
             }),
