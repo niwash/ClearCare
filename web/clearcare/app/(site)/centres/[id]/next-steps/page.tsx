@@ -5,7 +5,8 @@
 // pages, and SectionAccordion opens it on arrival.
 import { Band } from "@/components/centre/centre-band";
 import { PromiseTrail } from "@/components/centre/promise-trail";
-import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
+import { emptyReason, NothingToFlag } from "@/components/centre/nothing-to-flag";
+import { sectionHeadingClass } from "@/components/centre/section-icon";
 import { SectionAccordion } from "@/components/guides/section-accordion";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
 import { notFound } from "next/navigation";
@@ -23,7 +24,7 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { reports } = record;
+  const { centre, reports, findingsRead } = record;
   const trails = reports?.trails ?? [];
 
   return (
@@ -48,11 +49,14 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
             ))}
           </>
         ) : (
-          // The tab isn't shown without trails, but the address can still be opened.
-          <p className={`${sectionCardClass} p-6 text-ink-muted`}>
-            No regulation of this home is highlighted, so there is nothing to follow up here. Its inspection history has
-            how every regulation was judged.
-          </p>
+          // The tab is always there, so the page says why it's empty (NothingToFlag).
+          <NothingToFlag
+            reason={emptyReason(Boolean(reports?.inspections.length), findingsRead)}
+            page="next-steps"
+            inspectionsHref={centrePath(id, "inspections")}
+            visitHref={reports?.visitQuestions.length ? `${centrePath(id)}#visit` : undefined}
+            hiqaUrl={centre.hiqa_url}
+          />
         )}
       </section>
     </Band>
