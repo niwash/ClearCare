@@ -18,7 +18,15 @@ import { addFindings } from "@/lib/findings";
 export type CentreRecord =
   | { status: "not-found" }
   | { status: "unavailable"; httpStatus: number }
-  | { status: "found"; centre: CentreDetail; reports: CentreReports | null; amenities: CentreAmenities | null };
+  | {
+      status: "found";
+      centre: CentreDetail;
+      reports: CentreReports | null;
+      amenities: CentreAmenities | null;
+      // false when the findings couldn't be read, so the pages built from them don't say nothing
+      // stands out when they simply don't know.
+      findingsRead: boolean;
+    };
 
 export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> => {
   const lookup = await getCentre(id);
@@ -30,7 +38,13 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
     getCentreFindings(id),
   ]);
   // Without findings the reports have no highlights or trails, and the pages show the history alone.
-  return { status: "found", centre: lookup.centre, reports: baseReports && addFindings(baseReports, findings), amenities };
+  return {
+    status: "found",
+    centre: lookup.centre,
+    reports: baseReports && addFindings(baseReports, findings),
+    amenities,
+    findingsRead: findings !== null,
+  };
 });
 
 // The record's pages: the overview, and a subpage for each long section.
