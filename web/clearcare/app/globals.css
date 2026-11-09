@@ -608,3 +608,69 @@
     line-height: var(--tw-leading, var(--text-xs--line-height));
   }
 }
+
+/* The folder tabs of a home's record (CCARE-212, centre-tabs.tsx, template.tsx). The page a tab
+   opens slides in a little from the side its tab is on, as pages turned in a folder, fading in as
+   it comes. Only what is inside each band moves (.page-column): the bands' colours stay where they
+   are, as the tab above already shows the new one, so their edges don't shift and the page's height
+   never moves while it arrives. The tab clicked takes its band's colour smoothly. Nothing moves on
+   arriving at a record from elsewhere. Not in the adult-centred design or with reduced motion
+   (WCAG 2.3.3), where it all changes at once. */
+@keyframes tab-from-right {
+  from {
+    opacity: 0;
+    translate: 1.5rem 0;
+  }
+}
+
+@keyframes tab-from-left {
+  from {
+    opacity: 0;
+    translate: -1.5rem 0;
+  }
+}
+
+/* The spinner on a tab whose page is still on its way (centre-tabs.tsx), and on the record's
+   loading outline. Shown only after a moment, so a page that comes at once never flashes it. With
+   reduced motion it stays still, but is still shown. */
+@keyframes loading-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes loading-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.loading-spinner {
+  animation: loading-appear 0.2s ease-out 0.15s both;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loading-spinner {
+    animation:
+      loading-appear 0.2s ease-out 0.15s both,
+      loading-spin 0.8s linear infinite;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  :root:not([data-design="adult-centred"]) .folder-tab {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  :root:not([data-design="adult-centred"]) .tab-from-right .page-column {
+    animation: tab-from-right 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  :root:not([data-design="adult-centred"]) .tab-from-left .page-column {
+    animation: tab-from-left 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
