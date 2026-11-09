@@ -14,9 +14,9 @@ const BAND_TINTS = {
   blue: "bg-tint-blue",
 } as const;
 
-export function Band({ tint, children }: { tint: keyof typeof BAND_TINTS; children: ReactNode }) {
+export function Band({ tint, className = "", children }: { tint: keyof typeof BAND_TINTS; className?: string; children: ReactNode }) {
   return (
-    <div className={`${fullWidthClass} ${BAND_TINTS[tint]} py-8 md:py-10`}>
+    <div className={`${fullWidthClass} ${BAND_TINTS[tint]} py-8 md:py-10 print:bg-transparent print:py-4 ${className}`}>
       <div className="page-column px-4 md:px-8">{children}</div>
     </div>
   );

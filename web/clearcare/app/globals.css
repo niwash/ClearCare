@@ -572,6 +572,38 @@ gmp-advanced-marker:focus-visible,
    worked examples inside them, not just the section that happens to be open. Blocks still
    waiting to slide up would print blank, so print shows them all. */
 @media print {
+  /* Black on white, whatever the screen's theme: the colour tokens follow color-scheme. Bands and
+     cards lose their fills and shadows, as most printers drop them anyway, and toasts, the tour's
+     offer and side panels, all fixed to the window, are left out. */
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light !important;
+  }
+
+  body,
+  main {
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  .fixed {
+    display: none !important;
+  }
+
+  /* Every closed section prints open: a home's stories (What happened next), a finding's full
+     passage, and the guides' sections below. */
+  details::details-content {
+    content-visibility: visible !important;
+    display: block !important;
+    block-size: auto !important;
+    opacity: 1 !important;
+    translate: none !important;
+  }
+
   details[name]::details-content,
   details[name] details::details-content {
     content-visibility: visible;

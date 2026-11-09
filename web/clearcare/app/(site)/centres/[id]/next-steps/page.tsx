@@ -4,6 +4,7 @@
 // (CCARE-212). What to look at first and the history table link to a trail by its id, from their own
 // pages, and SectionAccordion opens it on arrival.
 import { Band } from "@/components/centre/centre-band";
+import { RecordPrintButton } from "@/components/centre/record-print";
 import { PromiseTrail } from "@/components/centre/promise-trail";
 import { emptyReason, NothingToFlag } from "@/components/centre/nothing-to-flag";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
@@ -33,9 +34,12 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
           number can be open, so a family can read two together and compare them. */}
       <section aria-labelledby="trails-h" className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <h2 id="trails-h" className={sectionHeadingClass}>
-            What happened next
-          </h2>
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <h2 id="trails-h" className={sectionHeadingClass}>
+              What happened next
+            </h2>
+            <RecordPrintButton />
+          </div>
           <p className="max-w-3xl text-ink">
             The story behind each thing in What to look at first: what the inspector found, what the home said it
             would do, and what happened at the next inspection.

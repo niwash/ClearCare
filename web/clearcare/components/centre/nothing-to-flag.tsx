@@ -115,7 +115,7 @@ const actionClass =
   "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-ink no-underline hover:border-primary adult:rounded-md adult:underline";
 
 function Actions({ children }: { children: ReactNode }) {
-  return <div className="mt-1 flex flex-wrap gap-2">{children}</div>;
+  return <div className="mt-1 flex flex-wrap gap-2 print:hidden">{children}</div>;
 }
 
 function ActionLink({ href, children }: { href: string; children: ReactNode }) {

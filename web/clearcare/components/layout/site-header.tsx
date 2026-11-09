@@ -69,7 +69,7 @@ function NavItem({ item, className }: { item: NavEntry; className: string }) {
 // the adult-centred design keeps the band visible there, scrolling sideways if it has to.
 export function SiteHeader() {
   return (
-    <header className="border-b border-line bg-surface">
+    <header className="border-b border-line bg-surface print:hidden">
       {/* Says when a home is added to or removed from the shortlist, on every page (CCARE-127). */}
       <CompareStatus />
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}

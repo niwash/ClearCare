@@ -4,6 +4,7 @@
 // happened next, the inspection history and what to ask have pages of their own (look-first/,
 // next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
+import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { CompareButton } from "@/components/compare/compare-button";
@@ -55,7 +56,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
 
       {/* What to ask has a tab of its own (CCARE-212); the overview points to it, as the step to take
           once the facts are read. */}
-      <Band tint="page">
+      <Band tint="page" className="print:hidden">
         <section
           aria-labelledby="visit-h"
           className="flex flex-col gap-4 rounded-2xl bg-tint-blue p-5 text-on-tint-blue sm:flex-row sm:items-center sm:justify-between md:p-7 adult:rounded-lg adult:border adult:border-line"
@@ -141,16 +142,19 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
 
   return (
     <section id="about" aria-labelledby="facts-h" className="flex flex-col gap-4">
-      <h2 id="facts-h" className={sectionHeadingClass}>
-        About this home
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+        <h2 id="facts-h" className={sectionHeadingClass}>
+          About this home
+        </h2>
+        <RecordPrintButton />
+      </div>
 
       {/* The photo takes most of the width, as the first thing a family looks at. Beside it on wide
           screens, how to reach the home and the actions, in a wider column than the buttons need so the
           photo is not too big; it is as tall as that column, so the two end level. On narrow screens
           they follow the photo. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
-        <CentrePhoto className="lg:aspect-auto lg:h-full lg:min-h-80" />
+        <CentrePhoto className="lg:aspect-auto lg:h-full lg:min-h-80 print:hidden" />
         <div className="flex flex-col gap-4">
           <FactCard title="Contact" icon="address">
             {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
@@ -164,7 +168,9 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
             {phone && <Fact label="Phone">{phoneLink}</Fact>}
             <Fact label="County">Co. {centre.county}</Fact>
           </FactCard>
-          <CentreActions centre={centre} reports={reports} />
+          <div className="print:hidden">
+            <CentreActions centre={centre} reports={reports} />
+          </div>
         </div>
       </div>
 
