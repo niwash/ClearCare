@@ -2,7 +2,8 @@
 // The search a signed-in visitor asked the site to remember (ADR-0025): the county, the order and
 // the ticked care and amenity options, so they come back on a later visit without being ticked
 // again. The name and place a visitor typed are not kept: they name one search, not a standing
-// choice.
+// choice. Nor is the point distances are measured from (near, CCARE-228), so neither is the order
+// that needs one.
 //
 // It is one document, stored by the API as it is given. Everything that decides what may be in it
 // lives here, so both the page and the route that saves it ask the same question: a county the
@@ -24,9 +25,13 @@ import {
 /** The search the site remembers: what the filters can say, without the words typed in. */
 export interface SavedSearch {
   county: string; // "" for any county
-  sort: SortValue;
+  sort: SavedSort;
   selection: FilterSelection;
 }
+
+// Every order but distance, which needs a place, and a place is never saved: the API's sort_by has
+// no distance on purpose (api/openapi.yaml).
+export type SavedSort = Exclude<SortValue, "distance">;
 
 /**
  * The same search in the shape the API stores it (PUT /preferences, api/openapi.yaml). The keys are
@@ -40,7 +45,7 @@ export interface SavedSearchDocument {
   room_types: string[];
   facilities: string[];
   activities: string[];
-  sort_by: SortValue;
+  sort_by: SavedSort;
 }
 
 // Whether there is a choice in here worth keeping. A search by name, or by an Eircode, leaves
@@ -49,9 +54,10 @@ export function hasSavedChoices(saved: SavedSearch) {
   return saved.county !== "" || saved.sort !== "name" || FILTER_GROUPS.some((group) => saved.selection[group.key].length > 0);
 }
 
-// The part of a search worth remembering, taken from the applied one.
-export function savedSearchFrom(search: Pick<SavedSearch, "county" | "sort" | "selection">): SavedSearch {
-  return { county: search.county, sort: search.sort, selection: search.selection };
+// The part of a search worth remembering, taken from the applied one. A search nearest first is
+// saved in name order.
+export function savedSearchFrom(search: { county: string; sort: SortValue; selection: FilterSelection }): SavedSearch {
+  return { county: search.county, sort: search.sort === "distance" ? "name" : search.sort, selection: search.selection };
 }
 
 export function savedSearchDocument(saved: SavedSearch): SavedSearchDocument {
@@ -65,9 +71,9 @@ export function savedSearchDocument(saved: SavedSearch): SavedSearchDocument {
   };
 }
 
-// The order the site offers, or the default.
-function readSort(value: unknown): SortValue {
-  return SORTS.some((option) => option.value === value) ? (value as SortValue) : "name";
+// An order the site offers and can save, or the default.
+function readSort(value: unknown): SavedSort {
+  return value !== "distance" && SORTS.some((option) => option.value === value) ? (value as SavedSort) : "name";
 }
 
 // A county the register has, or "any county".

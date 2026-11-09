@@ -1,11 +1,13 @@
 // components/search/card-result.tsx
-// One search result (CCARE-189): the home's name, where it is, its size and Fair Deal, a button to
-// shortlist it, a tick for each chosen filter it meets, and the date of its latest inspection. The
+// One search result (CCARE-189): the home's name, where it is, its size and Fair Deal, how far it is
+// from the place searched from (CCARE-228), a button to shortlist it, a tick for each chosen filter
+// it meets, and the date of its latest inspection. The
 // filter ticks, Fair Deal and the inspection come from an API with the filters (lib/search.ts);
 // before that, the card has the name, place and size.
 import { CompareButton } from "@/components/compare/compare-button";
 import { formatDate } from "@/lib/centres";
 import { asEircode } from "@/lib/eircode";
+import { distanceText } from "@/lib/near";
 import type { CentreSummary } from "@/lib/search";
 import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
 import Link from "next/link";
@@ -38,6 +40,7 @@ export function CardResult({ centre, selection }: CardResultProps) {
     centre.maximum_occupancy !== null && `${centre.maximum_occupancy} residents`,
     centre.fair_deal && "Fair Deal",
   ].filter(Boolean);
+  const distance = distanceText(centre.distance_m);
   const ticks = matchedLabels(selection, centre.amenities);
   const inspection = centre.latest_inspection;
 
@@ -52,6 +55,7 @@ export function CardResult({ centre, selection }: CardResultProps) {
             </Link>
           </h3>
           <p className="mt-1 text-sm text-ink-muted">{facts.join(" · ")}</p>
+          {distance && <p className="mt-1 text-sm font-semibold text-ink">{distance}</p>}
         </div>
         <CompareButton home={{ id: centre.centre_id, name: centre.centre_name }} variant="result" className="" />
       </div>
