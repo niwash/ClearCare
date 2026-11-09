@@ -12,6 +12,7 @@ import { fullWidthClass } from "@/components/ui/classes";
 import { centrePhone, type CentreDetail } from "@/lib/centres";
 import { CENTRE_SECTION_TITLES, centrePath, getCentreRecord } from "@/lib/centre-record";
 import { getGuide } from "@/lib/guides";
+import { returnQuery } from "@/lib/return-to-centre";
 import { unavailableMessage } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -56,6 +57,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
         title="Making sense of this record"
         intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
         guides={RECORD_GUIDES}
+        linkQuery={returnQuery(id)}
         className="-mt-6 -mb-6 md:-mt-8 md:-mb-8 print:hidden"
       />
 
