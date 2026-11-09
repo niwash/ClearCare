@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { NotFoundContent } from "@/components/layout/not-found-content";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -6,6 +8,12 @@ import { SiteHeader } from "@/components/layout/site-header";
 // root layout, outside the (site) group, so it brings the site's header, <main> and footer itself,
 // as the (site) layout does. notFound() inside the group shows app/(site)/not-found.tsx instead,
 // which leaves them to the group's layout.
+
+// The tab's title, in the page as it is sent. Next.js 16.3.7 honours metadata in not-found.tsx,
+// though its docs only promise it for global-not-found.tsx: after an upgrade, check that a 404's tab
+// still reads this rather than "ClearCare". Next.js adds the noindex tag for a 404 on its own.
+export const metadata: Metadata = { title: "Page not found · ClearCare" };
+
 export default function NotFound() {
   return (
     <>

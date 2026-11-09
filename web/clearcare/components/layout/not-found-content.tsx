@@ -1,6 +1,5 @@
 import Link from "next/link";
 
-import { DocumentTitle } from "@/components/layout/document-title";
 import { actionLinkClass, fullWidthClass, linkCardClass, secondaryLinkClass, stretchedActionClass } from "@/components/ui/classes";
 
 // What the 404 page says (CCARE-214), without the site's header and footer, so it can be shown in
@@ -8,8 +7,7 @@ import { actionLinkClass, fullWidthClass, linkCardClass, secondaryLinkClass, str
 // footer itself; and app/(site)/not-found.tsx, for notFound() in a page of the (site) group, such as
 // a home's page whose centre ID isn't known, where the group's layout already has them. With one
 // file for both, a home's 404 showed two headers, two footers and a <main> inside a <main>.
-// A not-found file can't export metadata, so DocumentTitle sets the tab's title; Next.js adds the
-// noindex tag for a 404 on its own.
+// The tab's title is each not-found file's metadata.
 
 // The pages most people are looking for, so a mistyped address still leads somewhere useful.
 const PLACES = [
@@ -21,7 +19,6 @@ const PLACES = [
 export function NotFoundContent() {
   return (
     <>
-      <DocumentTitle title="Page not found · ClearCare" />
       <section aria-labelledby="not-found-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
         <div className="page-column flex flex-col items-start gap-3 px-4 py-8 md:px-8 md:py-12">
           <p className="text-sm font-semibold text-ink-muted">Error 404</p>
