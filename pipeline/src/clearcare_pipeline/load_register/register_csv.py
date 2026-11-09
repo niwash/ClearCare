@@ -187,6 +187,9 @@ def _entry(number: int, fields: list[str]) -> RegisterEntry:
 def _eircode(address: str) -> str | None:
     # HIQA puts the Eircode, when there is one, after the last comma.
     candidate = "".join(address.rsplit(",", 1)[-1].split()).upper()
+    # Eircodes leave out the letter O so that it cannot be confused with a
+    # zero. An O in an Eircode can only be a zero typed as a letter.
+    candidate = candidate.replace("O", "0")
     return candidate if EIRCODE.match(candidate) else None
 
 
