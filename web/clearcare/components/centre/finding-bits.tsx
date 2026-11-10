@@ -53,25 +53,28 @@ export function RiskRating({ risk }: { risk: string }) {
   );
 }
 
-export type Outcome = { label: string; tone: "good" | "bad" | "open" };
+export type Outcome = { label: string; tone: "bad" | "open" };
 
 const OUTCOME_TONES: Record<Outcome["tone"], string> = {
-  good: "bg-tint-sage text-on-tint-sage",
   bad: "bg-tint-rose text-on-tint-rose",
   open: "bg-tint-gold text-on-tint-gold",
 };
 
-// What became of a finding, in a word or two: put right, still an issue, or not known yet.
+// What became of a finding, in a word or two: unresolved, partly resolved, or not known yet.
+// Never resolved: addFindings (lib/findings.ts) traces only findings that were still a problem, so
+// the next inspection that judged one found it not compliant or substantially compliant.
+// The next inspection is due to check a compliance plan, but nobody knows when it will be, so the
+// label says what it will do rather than that it is coming.
 export function trailOutcome({ followUp, orderUnknown }: PromiseTrail): Outcome {
-  if (!followUp) return orderUnknown ? { label: "Not clear yet", tone: "open" } : { label: "Waiting for next inspection", tone: "open" };
+  if (!followUp) return orderUnknown ? { label: "Not clear yet", tone: "open" } : { label: "To be checked at next inspection", tone: "open" };
   if (followUp.printedJudgement) return { label: `Judged “${followUp.printedJudgement}”`, tone: "open" };
   switch (followUp.judgement) {
-    case "compliant":
-      return { label: "Put right", tone: "good" };
     case "not-assessed":
       return { label: "Not checked since", tone: "open" };
+    case "substantially-compliant":
+      return { label: "Partly resolved", tone: "open" };
     default:
-      return { label: "Still an issue", tone: "bad" };
+      return { label: "Unresolved", tone: "bad" };
   }
 }
 
@@ -145,16 +148,17 @@ export function Quotes({ quotes, bare = false }: { quotes: string[]; bare?: bool
   );
 }
 
-// What to ask the home, by how the story ended (What happened next, and What to ask). The reports stop at the last inspection, so only the
-// home can say what has happened since; nothing to ask once an inspection found it put right.
+// What to ask the home, by how the story ended (What happened next, and What to ask). The reports stop
+// at the last inspection, so only the home can say what has happened since.
 // several: the question asked once about more than one topic (What to ask), so "this" is "these".
-export function askTheHome({ label, tone }: { label: string; tone: string }, findingDate?: string, several = false) {
-  if (tone === "good") return null;
-  if (label === "Still an issue")
+export function askTheHome({ label }: { label: string }, findingDate?: string, several = false) {
+  if (label === "Unresolved")
     return several
       ? "“What are you doing about these now, and when will they be fixed?”"
       : "“What are you doing about this now, and when will it be fixed?”";
-  if (label === "Waiting for next inspection") return `“What has changed since the inspection${findingDate ? ` in ${findingDate.replace(/^\d+ /, "")}` : ""}?”`;
+  if (label === "Partly resolved")
+    return several ? "“What is left to do on these, and when will it be done?”" : "“What is left to do on this, and when will it be done?”";
+  if (label === "To be checked at next inspection") return `“What has changed since the inspection${findingDate ? ` in ${findingDate.replace(/^\d+ /, "")}` : ""}?”`;
   if (label === "Not checked since")
     return several ? "“Were these put right? No inspection has checked since.”" : "“Was this put right? No inspection has checked since.”";
   return several ? "“What has happened with these since the last inspection?”" : "“What has happened with this since the last inspection?”";

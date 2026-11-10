@@ -20,14 +20,16 @@ export function emptyReason(hasReports: boolean, findingsRead: boolean): EmptyRe
   return findingsRead ? "clear" : "unread";
 }
 
-// What What to look at first checks each regulation for (addFindings, lib/findings.ts), as passed.
+// What What to look at first checks each regulation for (addFindings, lib/findings.ts), as passed,
+// and said as what was found rather than as what wasn't.
 const CHECKS = [
-  "Nothing not compliant at the latest inspection",
-  "No problem repeated across inspections",
-  // A compliance plan whose deadline a later inspection passed without judging the regulation
+  // No regulation judged Not compliant; Substantially compliant ones may remain, hence "serious".
+  "No serious problems found at the latest inspection",
+  "No problem found again at a later inspection",
+  // No compliance plan whose deadline a later inspection passed without judging the regulation
   // again (promiseNotRejudged). Not "no compliance plan", which a home with a recent one would
   // contradict.
-  "No compliance plan left unchecked past its deadline",
+  "Every compliance plan checked once its deadline passed",
 ];
 
 type NothingToFlagProps = {
