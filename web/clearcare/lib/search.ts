@@ -2,6 +2,7 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
+import { apiUrl } from "./api-url.ts";
 import { ANY_COUNTY, COUNTIES } from "./counties.ts";
 import type { SearchQuery } from "./page-search.ts";
 import type { SortValue } from "./search-filters";
@@ -9,6 +10,8 @@ import type { SortValue } from "./search-filters";
 // The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
 // value are in lib/counties.ts: the saved-search tests load them without this file's API call.
 export { ANY_COUNTY, COUNTIES };
+// The API's base URL is in lib/api-url.ts, for the same reason.
+export { apiUrl };
 
 export interface CentreSummary {
   centre_id: string;
@@ -66,11 +69,6 @@ export type SearchResult =
 
 // The longest name or address the API accepts.
 export const MAX_TEXT_LENGTH = 100;
-
-// The API's base URL, or null if it isn't set.
-export function apiUrl() {
-  return process.env.API_URL?.replace(/\/$/, "") || null;
-}
 
 // filters: the care and amenity filters' parameters (apiFilterParams, lib/search-filters.ts).
 export async function searchCentres(query: SearchQuery, filters?: URLSearchParams): Promise<SearchResult> {

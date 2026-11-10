@@ -5,8 +5,11 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
+import { GoogleForSearch, GoogleMapsLoader } from "@/components/search/google-places";
 import { RememberSearch } from "@/components/search/last-search";
+import { ResultsMap } from "@/components/search/results-map";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
+import { MapUnavailable, ViewSwitch } from "@/components/search/view-switch";
 import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
@@ -16,8 +19,9 @@ import { formatDate } from "@/lib/centres";
 import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
+import { pointsConfigured, readPoints } from "@/lib/points-api";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
-import { formatEircode, searchCentres, unavailableMessage, type SearchResponse } from "@/lib/search";
+import { formatEircode, searchCentres, unavailableMessage, type RegisterSnapshot, type SearchResponse } from "@/lib/search";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -103,6 +107,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // Read on each request, after the address made the page dynamic, rather than at build: the Docker
   // image is built once and must not carry it (README).
   const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;
+  // The map's pins are advanced markers, which Google draws only on a map with a map ID (README).
+  const mapId = process.env.GOOGLE_MAPS_MAP_ID || null;
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
@@ -140,8 +146,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // and the page says the search is unavailable.
   const facets = (data ?? (start?.ok ? start.data : null))?.facets ?? null;
 
+  // The results as a map (CCARE-229), offered once there are results to show and this deployment can
+  // draw one: Google's key and map ID for the map, and the token the API gives the points for
+  // (ADR-0029). Only then does view=map in the address mean anything. The points are every matching
+  // home's, not this page of the list's, read on the server for each map and handed to it as props.
+  const mapOffered = Boolean(data && data.total > 0 && googleKey && mapId && pointsConfigured());
+  const mapView = mapOffered && search.view === "map";
+  const points = mapView ? await readPoints(search) : null;
+  const pins = points?.ok && points.points.length > 0 ? points.points : null;
+  const listHref = searchHref({ ...search, view: "list" });
+
   return (
-    <>
+    // What the place boxes in the filters and the map in the results share of Google.
+    <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
       <SearchHero />
@@ -154,29 +171,45 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           search={search}
           facets={facets}
           total={data ? data.total : null}
-          sortShown={data !== null}
+          sortShown={data !== null && !mapView}
           initialSaved={initialSaved}
-          googleKey={googleKey}
         />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ShortlistDrawer />
-            {/* The order, once there are results to order. On phones it's in the bar with Filters. */}
-            {data && (
-              <div className="hidden md:block">
-                <SortSelect search={search} />
-              </div>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {mapOffered && <ViewSwitch search={search} />}
+              {/* The order, once there are results to order; pins have none. On phones it's in the
+                  bar with Filters. */}
+              {data && !mapView && (
+                <div className="hidden md:block">
+                  <SortSelect search={search} />
+                </div>
+              )}
+            </div>
           </div>
 
           {result === null ? (
             <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
           ) : result.ok ? (
-            <Results search={search} data={result.data} />
+            <ResultsHeading search={search} total={result.data.total} />
           ) : (
             <SearchError status={result.status} detail={result.detail} />
           )}
+
+          {/* Google's loader has this one place whatever else the page shows, since a place box can
+              ask for it before any search. The map is drawn inside it; keyed by the search, so a new
+              search opens on its own pins. */}
+          <GoogleMapsLoader>
+            {pins && mapId && (
+              <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={listHref} />
+            )}
+          </GoogleMapsLoader>
+          {points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+
+          {data && !mapView && <ResultsList search={search} data={data} />}
+          {data && <Source snapshot={data.register_snapshot} />}
         </section>
       </div>
 
@@ -184,7 +217,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
       <ContactsBanner className="-mb-6 md:-mb-10" />
-    </>
+    </GoogleForSearch>
   );
 }
 
@@ -236,10 +269,8 @@ function SearchPrompt({ empty, filters }: { empty: boolean; filters: boolean }) 
   );
 }
 
-function Results({ search, data }: { search: PageSearch; data: SearchResponse }) {
-  const { centres, page, page_size, total, register_snapshot } = data;
-  const lastPage = Math.max(1, Math.ceil(total / page_size));
-  const where = describe(search);
+// What was found and the filters in use, over the list and over the map alike.
+function ResultsHeading({ search, total }: { search: PageSearch; total: number }) {
   const filters = activeFilters(search.selection);
 
   return (
@@ -279,7 +310,18 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           </Link>
         </div>
       )}
+    </>
+  );
+}
 
+// The results as cards, a page at a time.
+function ResultsList({ search, data }: { search: PageSearch; data: SearchResponse }) {
+  const { centres, page, page_size, total } = data;
+  const lastPage = Math.max(1, Math.ceil(total / page_size));
+  const where = describe(search);
+
+  return (
+    <>
       {total === 0 ? (
         filterCount(search.selection) > 0 ? (
           <NoMatches search={search} />
@@ -325,15 +367,19 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           {page < lastPage ? <Link href={searchHref(search, page + 1)} className="tap-target">Next &rarr;</Link> : <span />}
         </nav>
       )}
-
-      <p className="text-xs text-ink-faint">
-        Source:{" "}
-        <a href={register_snapshot.url} className="text-ink-faint adult:text-primary">
-          HIQA register
-        </a>
-        , downloaded {formatDate(register_snapshot.fetched_at)}.
-      </p>
     </>
+  );
+}
+
+function Source({ snapshot }: { snapshot: RegisterSnapshot }) {
+  return (
+    <p className="text-xs text-ink-faint">
+      Source:{" "}
+      <a href={snapshot.url} className="text-ink-faint adult:text-primary">
+        HIQA register
+      </a>
+      , downloaded {formatDate(snapshot.fetched_at)}.
+    </p>
   );
 }
 

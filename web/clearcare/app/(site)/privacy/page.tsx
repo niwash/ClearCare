@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "9 November 2026";
+const LAST_UPDATED = "10 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -59,13 +59,14 @@ export default function PrivacyPage() {
               Google so it can suggest places. Like any request your browser makes, it carries your IP address.
               When you pick a town, an area or an Eircode, or search for what you typed, Google is also asked where
               that place is.
-              Nothing goes to Google until you type in that box.{" "}
+              Nothing goes to Google for this until you type in that box.{" "}
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
               with these requests.
             </li>
             {/* "Use my location": the browser's Geolocation API, asked only on the click; nearFrom
                 (lib/near.ts) rounds the point to two decimals before it goes into the search, and the
-                API refuses anything finer (api/openapi.yaml, near). It doesn't go to Google. */}
+                API refuses anything finer (api/openapi.yaml, near). It isn't sent to Google, though the
+                map of the results opens around it (the next item but one). */}
             <li>
               &ldquo;Use my location&rdquo; asks your browser where you are, only when you press it. The page rounds
               that to about 1 km before it goes anywhere, so our servers never get anything more precise. We
@@ -80,6 +81,23 @@ export default function PrivacyPage() {
               any link you share. It&apos;s also in your last search on this visit, which your browser keeps until
               you close the tab. Only the point we measure distances from is rounded to about 1 km: the name in the
               box stays as you typed or picked it, and a full Eircode there is an exact address.
+            </li>
+            {/* The map of the results (CCARE-229, components/search/results-map.tsx): Google's Maps
+                JavaScript loads for it only once Map is chosen (view=map in the page address), and
+                asks Google for the map's pictures as it is moved. The homes' positions come from
+                ClearCare's API through the site's server (ADR-0029) and are drawn in the browser. With
+                a place or a location in the search, the map opens around that point (firstView,
+                lib/search-map.ts). Measured on 10 Nov 2026 in headless Chrome with an empty profile:
+                requests went to maps.googleapis.com, maps.gstatic.com, fonts.googleapis.com and
+                fonts.gstatic.com, and Google's scripts set nothing in cookies, localStorage or
+                sessionStorage. In list view no request went to Google. */}
+            <li>
+              When you choose &ldquo;Map&rdquo; on the search page, the map comes from Google. Your browser asks
+              Google for each part of the map you look at, and like any request this carries your IP address. If
+              you searched from a place or from your location, the map opens around it. The nursing homes&apos;
+              positions come from ClearCare, not from you. Nothing goes to Google for the map until you choose
+              &ldquo;Map&rdquo;. <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a>{" "}
+              covers what it does with these requests.
             </li>
             <li>
               Like any website, our servers keep short technical logs of requests. Finding faults and keeping the site
@@ -218,14 +236,16 @@ export default function PrivacyPage() {
               of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
               pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
               openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
-              place box's suggestions, components/search/google-places.tsx), which may handle these requests
+              place box's suggestions, components/search/google-places.tsx, and since CCARE-229 the map of
+              the results, components/search/results-map.tsx), which may handle these requests
               outside the EU. The pipeline's geocoding (ADR-0027) sends Google only the centres' register
               addresses, which name no visitor. Cloudflare only holds DNS records, so it sees no visits.
               Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
             Service providers handle data for us: hosting providers run the site and store its data in the EU, AI
-            services read the reports, and a maps service suggests places as you type in the search. Some of these
+            services read the reports, and a maps service suggests places as you type in the search and draws the
+            map of the results. Some of these
             providers are in the United States, where data is protected
             by the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
             Commission&apos;s standard contractual clauses. Email us for a copy of these safeguards.

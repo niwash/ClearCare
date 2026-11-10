@@ -32,9 +32,15 @@ function chooseTheme(theme: Theme) {
   listeners.forEach((listener) => listener());
 }
 
+// The theme the page is shown in: the one chosen with the toggle, or else the system's. null on the
+// server and until hydration, which cannot know it.
+export function useShownTheme(): Theme | null {
+  return useSyncExternalStore(subscribe, shownTheme, () => null);
+}
+
 export function ThemeToggle() {
-  // The server cannot know the theme, so the button renders empty until hydration.
-  const theme = useSyncExternalStore(subscribe, shownTheme, () => null);
+  // The button renders empty until the theme is known.
+  const theme = useShownTheme();
   const other: Theme = theme === "dark" ? "light" : "dark";
 
   return (
