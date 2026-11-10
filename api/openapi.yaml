@@ -52,98 +52,15 @@ paths:
         than once, is refused with 400. A filter value given twice counts
         once.
       parameters:
-        - name: name
-          in: query
-          description: Words that start words of the centre's name.
-          schema:
-            type: string
-            maxLength: 100
-          example: hall elm
-        - name: address
-          in: query
-          description: >
-            Words that start words of the centre's address, such as a town.
-            Most addresses do not name their county, so use `county` to search
-            by county.
-          schema:
-            type: string
-            maxLength: 100
-          example: celbridge
-        - name: eircode
-          in: query
-          description: >
-            A routing key (`W23`, `D6W`) finds every Eircode that starts with
-            it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
-            removed, letters made upper case and `O` read as `0` when the
-            first three characters hold a digit, since Eircodes have no
-            letter O. Only the letters and digits used in Eircodes are
-            accepted.
-          schema:
-            type: string
-          example: W23
-        - name: county
-          in: query
-          description: A county, spelt as on the register. Case matters.
-          schema:
-            $ref: "#/components/schemas/County"
-          example: Dublin
-        - name: care_type
-          in: query
-          description: >
-            Care types the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
-          style: form
-          explode: true
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/CareTypeItem"
-          example: ["Dementia care", "Respite care"]
-        - name: room_type
-          in: query
-          description: >
-            Room types of which the centre's latest extracted report must mention at least one. Exact item names; case matters. May be repeated.
-          style: form
-          explode: true
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/RoomTypeItem"
-          example: ["Single room"]
-        - name: facility
-          in: query
-          description: >
-            Facilities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
-          style: form
-          explode: true
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/FacilityItem"
-          example: ["Garden"]
-        - name: activity
-          in: query
-          description: >
-            Activities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
-          style: form
-          explode: true
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/ActivityItem"
-          example: ["Bingo"]
-        - name: near
-          in: query
-          description: >
-            Where each centre's `distance_m` is measured from: a latitude from
-            -90 to 90 and a longitude from -180 to 180, in degrees on WGS 84,
-            separated by a comma. Each has at most two decimal places, which
-            is about 1 km: round a visitor's location before sending it, as
-            more are refused. `near` filters nothing: every matching centre is
-            returned, in the order `sort` asks for.
-          schema:
-            type: string
-            pattern: "^-?[0-9]{1,3}(\\.[0-9]{1,2})?,-?[0-9]{1,3}(\\.[0-9]{1,2})?$"
-          example: "53.35,-6.26"
+        - $ref: "#/components/parameters/SearchName"
+        - $ref: "#/components/parameters/SearchAddress"
+        - $ref: "#/components/parameters/SearchEircode"
+        - $ref: "#/components/parameters/SearchCounty"
+        - $ref: "#/components/parameters/SearchCareType"
+        - $ref: "#/components/parameters/SearchRoomType"
+        - $ref: "#/components/parameters/SearchFacility"
+        - $ref: "#/components/parameters/SearchActivity"
+        - $ref: "#/components/parameters/SearchNear"
         - name: sort
           in: query
           description: The order of the results, as described above.
@@ -236,6 +153,104 @@ paths:
                 status: 503
                 detail: The register has not been loaded yet.
                 instance: /centres
+
+  /centres/points:
+    get:
+      operationId: listCentrePoints
+      summary: The points of the centres a search matches, for the site's map
+      description: |
+        Returns a point for every centre that `GET /centres` matches with the
+        same parameters, so that the search page can draw them all on a map.
+        A centre that ClearCare has no location for under 30 days old is left
+        out. The answer has no pages and one order, that of `sort=name`, so
+        `sort`, `page` and `page_size` are refused with 400 like any unknown
+        parameter.
+
+        Only the site's own server may call this path. The coordinates are
+        Google's geocoding results, which no other answer of this API carries
+        (ADR-0029). The site sends the token it shares with the API
+        (ADR-0025): a request without that token is refused with 401, and the
+        path answers 503 while no token is configured. The site asks again
+        for every map it draws and does not keep the answer.
+      parameters:
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          description: The token the site's server and the API share.
+          schema:
+            type: string
+        - $ref: "#/components/parameters/SearchName"
+        - $ref: "#/components/parameters/SearchAddress"
+        - $ref: "#/components/parameters/SearchEircode"
+        - $ref: "#/components/parameters/SearchCounty"
+        - $ref: "#/components/parameters/SearchCareType"
+        - $ref: "#/components/parameters/SearchRoomType"
+        - $ref: "#/components/parameters/SearchFacility"
+        - $ref: "#/components/parameters/SearchActivity"
+        - $ref: "#/components/parameters/SearchNear"
+      responses:
+        "200":
+          description: >
+            The point of every matching centre that has one. No matches, or
+            none with a point, give `"points": []`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentrePointsResult"
+              example:
+                points:
+                  - centre_id: "34"
+                    centre_name: Elm Hall Nursing Home
+                    address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                    county: Kildare
+                    latitude: 53.34
+                    longitude: -6.54
+                    distance_m: null
+                register_snapshot:
+                  fetched_at: "2026-10-05T06:12:54Z"
+                  url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
+                  sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+        "400":
+          description: >
+            As for `GET /centres`; `sort`, `page` and `page_size` are unknown
+            parameters here.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Bad Request
+                status: 400
+                detail: >-
+                  page is not a parameter; use one of name, address, eircode,
+                  county, care_type, room_type, facility, activity, near
+                instance: /centres/points
+        "401":
+          description: >
+            No token, or one that is not the site's: the request did not come
+            from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Unauthorized
+                status: 401
+                detail: The request is not from the site.
+                instance: /centres/points
+        "503":
+          description: >
+            This API has no token configured, so it gives no points; or no
+            register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: This API is not configured for the site's requests.
+                instance: /centres/points
 
   /centres/{centre_id}:
     get:
@@ -890,6 +905,117 @@ paths:
                 $ref: "#/components/schemas/Problem"
 
 components:
+  parameters:
+    SearchName:
+      name: name
+      in: query
+      description: Words that start words of the centre's name.
+      schema:
+        type: string
+        maxLength: 100
+      example: hall elm
+
+    SearchAddress:
+      name: address
+      in: query
+      description: >
+        Words that start words of the centre's address, such as a town.
+        Most addresses do not name their county, so use `county` to search
+        by county.
+      schema:
+        type: string
+        maxLength: 100
+      example: celbridge
+
+    SearchEircode:
+      name: eircode
+      in: query
+      description: >
+        A routing key (`W23`, `D6W`) finds every Eircode that starts with
+        it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
+        removed, letters made upper case and `O` read as `0` when the
+        first three characters hold a digit, since Eircodes have no
+        letter O. Only the letters and digits used in Eircodes are
+        accepted.
+      schema:
+        type: string
+      example: W23
+
+    SearchCounty:
+      name: county
+      in: query
+      description: A county, spelt as on the register. Case matters.
+      schema:
+        $ref: "#/components/schemas/County"
+      example: Dublin
+
+    SearchCareType:
+      name: care_type
+      in: query
+      description: >
+        Care types the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/CareTypeItem"
+      example: ["Dementia care", "Respite care"]
+
+    SearchRoomType:
+      name: room_type
+      in: query
+      description: >
+        Room types of which the centre's latest extracted report must mention at least one. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/RoomTypeItem"
+      example: ["Single room"]
+
+    SearchFacility:
+      name: facility
+      in: query
+      description: >
+        Facilities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/FacilityItem"
+      example: ["Garden"]
+
+    SearchActivity:
+      name: activity
+      in: query
+      description: >
+        Activities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/ActivityItem"
+      example: ["Bingo"]
+
+    SearchNear:
+      name: near
+      in: query
+      description: >
+        Where each centre's `distance_m` is measured from: a latitude from
+        -90 to 90 and a longitude from -180 to 180, in degrees on WGS 84,
+        separated by a comma. Each has at most two decimal places, which
+        is about 1 km: round a visitor's location before sending it, as
+        more are refused. `near` filters nothing: every matching centre is
+        still returned.
+      schema:
+        type: string
+        pattern: "^-?[0-9]{1,3}(\\.[0-9]{1,2})?,-?[0-9]{1,3}(\\.[0-9]{1,2})?$"
+      example: "53.35,-6.26"
+
   schemas:
     CentreSearchResult:
       type: object
@@ -962,6 +1088,58 @@ components:
                 straight line on the WGS 84 spheroid. null when `near` is not
                 given, or when ClearCare has no location for the centre under
                 30 days old.
+
+    CentrePointsResult:
+      type: object
+      required: [points, register_snapshot]
+      properties:
+        points:
+          type: array
+          description: In the order of `sort=name` on `GET /centres`.
+          items:
+            $ref: "#/components/schemas/CentrePoint"
+        register_snapshot:
+          $ref: "#/components/schemas/RegisterSnapshot"
+
+    CentrePoint:
+      type: object
+      description: >
+        A centre as a pin on the search page's map: enough of its register
+        entry to label the pin, and where the pin goes.
+      required: [centre_id, centre_name, address, county, latitude, longitude, distance_m]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        centre_name:
+          type: string
+          minLength: 1
+        address:
+          type: string
+          minLength: 1
+        county:
+          type: string
+          minLength: 1
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: >
+            In degrees on WGS 84, as Google's Geocoding API gave it, not
+            rounded.
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: As `latitude`.
+        distance_m:
+          type: [integer, "null"]
+          description: >
+            As in `CentreSummary`: how far the centre is from `near` in whole
+            metres, or null when `near` is not given.
 
     MentionedAmenities:
       type: object
