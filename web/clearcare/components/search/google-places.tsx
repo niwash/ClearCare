@@ -3,18 +3,20 @@
 // components/search/google-places.tsx
 // Google's suggestions for the place box (CCARE-228): Maps JavaScript with its places library,
 // loaded with @vis.gl/react-google-maps, and the Place Autocomplete Data API's answers read into
-// PlaceSuggestions (lib/place-search.ts). Nothing here runs until the visitor types in the box.
-// SearchFilters mounts the loader then, beside the forms rather than around them, so loading never
-// remounts the input being typed in.
+// PlaceSuggestions (lib/place-search.ts). Nothing here runs until the visitor types in the box, or
+// opens the map of the results (CCARE-229), which needs Maps JavaScript too.
+//
+// Maps JavaScript loads once on a page, so the place boxes and the map share one loader
+// (GoogleMapsLoader). It mounts when the first of them needs it, beside the forms and the results
+// rather than around them, so loading never remounts the input being typed in. What the place boxes
+// need of it is held above both (GoogleForSearch), since the boxes are in the filters and the loader
+// is where the map is drawn.
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
-import { useCallback, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 import { nearFrom } from "@/lib/near";
 import { readSuggestion, type PlaceSuggestion } from "@/lib/place-search";
 
-// Module constants, so the loader's props keep their identity between renders: APIProvider reloads
-// its libraries whenever they change.
-const LIBRARIES = ["places"];
 // Towns (Cavan, Swords), city areas (Rathmines, Tallaght, Dublin 6), counties and full Eircodes, and
 // no streets or businesses; five is Google's limit. "(regions)" misses Rathmines and Dublin 6.
 const PLACE_TYPES = ["locality", "neighborhood", "postal_town", "postal_code", "administrative_area_level_2"];
@@ -33,11 +35,32 @@ export interface GooglePlaces {
   findFirst: (text: string) => Promise<PlaceSuggestion | null>;
 }
 
-type LoaderProps = Parameters<typeof GooglePlacesLoader>[0];
+// What the loader needs: the key, and whether a place box has asked for suggestions yet.
+interface Loading {
+  apiKey: string;
+  placesWanted: boolean;
+  onPlaces: (finder: PlaceFinder) => void;
+  onError: () => void;
+}
 
-// Google for the place boxes of the column and the phone sheet, which edit the same draft. Nothing
-// loads until request(); the caller then renders the loader with the props this gives it.
-export function useGooglePlaces(apiKey: string | null): GooglePlaces & { loader: LoaderProps | null } {
+const Google = createContext<(GooglePlaces & { loading: Loading | null }) | null>(null);
+
+// Around the filters and the results. apiKey is the browser key the page read on the server (not
+// NEXT_PUBLIC_, so the Docker image doesn't carry it); null leaves the place box a plain text box
+// and the page without a map.
+export function GoogleForSearch({ apiKey, children }: { apiKey: string | null; children: ReactNode }) {
+  return <Google.Provider value={useGoogle(apiKey)}>{children}</Google.Provider>;
+}
+
+// Google for the place boxes of the column and the phone sheet, which edit the same draft.
+export function useGooglePlaces(): GooglePlaces {
+  const google = useContext(Google);
+  if (!google) throw new Error("useGooglePlaces needs GoogleForSearch around it");
+  return google;
+}
+
+// Nothing loads for the place boxes until request().
+function useGoogle(apiKey: string | null): GooglePlaces & { loading: Loading | null } {
   const [requested, setRequested] = useState(false);
   const [finder, setFinder] = useState<PlaceFinder | null>(null);
   const [failed, setFailed] = useState(false);
@@ -74,30 +97,31 @@ export function useGooglePlaces(apiKey: string | null): GooglePlaces & { loader:
     finder,
     request,
     findFirst,
-    loader: apiKey && requested ? { apiKey, onLoad, onError } : null,
+    loading: apiKey ? { apiKey, placesWanted: requested, onPlaces: onLoad, onError } : null,
   };
 }
 
-// Loads the library and hands over a PlaceFinder. It draws nothing. The search's page address holds
-// the name searched for and near, so Google is to get only the origin: authReferrerPolicy="origin"
-// has Maps JavaScript check the key against the origin alone rather than the whole address.
-// solutionChannel="" leaves out the usage label the package adds to every request.
-export function GooglePlacesLoader({
-  apiKey,
-  onLoad,
-  onError,
-}: {
-  apiKey: string;
-  onLoad: (finder: PlaceFinder) => void;
-  onError: () => void;
-}) {
+// The page's one loader of Maps JavaScript. It mounts once a place box has asked for suggestions or
+// it is given a map to draw, and then stays: the places library joins a loader the map started, and
+// a map opened later is drawn in the one the place box started. Each library is fetched when
+// something first uses it, so the map alone loads no places library.
+//
+// The search's page address holds the name searched for and near, so Google is to get only the
+// origin: authReferrerPolicy="origin" has Maps JavaScript check the key against the origin alone
+// rather than the whole address. solutionChannel="" leaves out the usage label the package adds to
+// every request.
+export function GoogleMapsLoader({ children }: { children?: ReactNode }) {
+  const loading = useContext(Google)?.loading;
+  if (!loading || !(loading.placesWanted || children)) return null;
   return (
-    <APIProvider apiKey={apiKey} libraries={LIBRARIES} authReferrerPolicy="origin" solutionChannel="" onError={onError}>
-      <PlacesLibrary onLoad={onLoad} />
+    <APIProvider apiKey={loading.apiKey} authReferrerPolicy="origin" solutionChannel="" onError={loading.onError}>
+      {loading.placesWanted && <PlacesLibrary onLoad={loading.onPlaces} />}
+      {children}
     </APIProvider>
   );
 }
 
+// Loads the places library and hands over a PlaceFinder. It draws nothing.
 function PlacesLibrary({ onLoad }: { onLoad: (finder: PlaceFinder) => void }) {
   const places = useMapsLibrary("places");
   useEffect(() => {

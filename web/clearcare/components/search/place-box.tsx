@@ -21,7 +21,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type Dispatch, type 
 import { GoogleMapsLogo } from "./google-maps-logo";
 import type { GooglePlaces } from "./google-places";
 
-type Draft = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort">;
+type Draft = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort" | "view">;
 
 // How long after the last character Google is asked, so a word typed at speed is one request.
 const PAUSE = 250;

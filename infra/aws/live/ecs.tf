@@ -105,6 +105,9 @@ resource "aws_ecs_task_definition" "web" {
         # The place suggestions on the search page (CCARE-228). Every visitor's browser is given the
         # key, so it is a plain value rather than a secret, and the task starts with or without it.
         { name = "GOOGLE_MAPS_BROWSER_KEY", value = var.google_maps_browser_key },
+        # The map of the search results (CCARE-229): a plain value like the key, and the task starts
+        # with or without it.
+        { name = "GOOGLE_MAPS_MAP_ID", value = var.google_maps_map_id },
       ]
       # ECS refuses to start a container whose secret has no value, so these arrive only once
       # accounts_enabled is on, which is after both values have been set.

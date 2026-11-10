@@ -15,7 +15,7 @@ import { textInputClass } from "@/components/ui/classes";
 import { PreferencesNotice } from "@/components/preferences/preferences-notice";
 import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
 import { hydrateSavedSearch, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
-import { GooglePlacesLoader, useGooglePlaces, type GooglePlaces } from "@/components/search/google-places";
+import { useGooglePlaces, type GooglePlaces } from "@/components/search/google-places";
 import { forgetLastSearch } from "@/components/search/last-search";
 import { PlaceBox } from "@/components/search/place-box";
 import { filtersClearedHref, leavesHomesOut, searchHref, type PageSearch } from "@/lib/page-search";
@@ -36,9 +36,11 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
-type FilterState = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort">;
+// view is not a filter, but it is in the page address with them, so the draft carries it and a new
+// search keeps the list or the map the visitor was on.
+type FilterState = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort" | "view">;
 
-const EMPTY: FilterState = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name" };
+const EMPTY: FilterState = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name", view: "list" };
 // How long after the last change its counts are asked for.
 const PAUSE = 250;
 // How long Search waits for Google to place the box's text before searching it as text.
@@ -54,15 +56,11 @@ export function SearchFilters({
   total,
   sortShown,
   initialSaved,
-  googleKey,
 }: {
   search: FilterState;
   facets: Facets | null;
   total: number | null; // null before anything is searched for
   sortShown: boolean;
-  // The browser key for Google's place suggestions, read by the page on the server (not
-  // NEXT_PUBLIC_, so the Docker image doesn't carry it). null: the place box is a plain text box.
-  googleKey: string | null;
   // What the page read from the account on the server (ADR-0025): whether there is a saved search,
   // and whether one could be read at all. Handed down rather than fetched here, so a visitor with no
   // account sends no request, and the page has already opened a kept search before it renders.
@@ -90,7 +88,7 @@ export function SearchFilters({
   const savedFromDraft = savedSearchFrom(draft);
   // Google's suggestions for the place boxes, loaded once the visitor types in one, and a picked
   // place whose location Google is still giving, which Search waits for.
-  const google = useGooglePlaces(googleKey);
+  const google = useGooglePlaces();
   const pick = useRef<PendingPick | null>(null);
   // Counts presses of Search: a lookup can take up to LOOKUP_LIMIT, so an older press can finish last.
   const searches = useRef(0);
@@ -188,7 +186,7 @@ export function SearchFilters({
 
   // Something in the draft to clear (the order isn't cleared).
   const canClear = searchHref({ ...draft, sort: "name" }) !== "/search";
-  const clear = () => setDraft({ ...EMPTY, sort: withoutDistance(draft.sort) });
+  const clear = () => setDraft({ ...EMPTY, sort: withoutDistance(draft.sort), view: draft.view });
   const place = {
     google,
     onPick: (picked: PendingPick) => {
@@ -203,7 +201,6 @@ export function SearchFilters({
     <>
       {/* From md up: the column beside the results. */}
         <PreferencesNotice />
-      {google.loader && <GooglePlacesLoader {...google.loader} />}
 
       <aside aria-label="Filters" className="hidden md:block">
         <FilterPanel
@@ -374,6 +371,7 @@ function FilterPanel({
           </select>
         </Field>
         {state.sort !== "name" && <input type="hidden" name="sort" value={state.sort} />}
+        {state.view === "map" && <input type="hidden" name="view" value="map" />}
         {/* In the sheet, whose button is outside the form: so Enter searches, and without scripts
             the form can be sent. The column has its own in the footer. */}
         {!footer && (
