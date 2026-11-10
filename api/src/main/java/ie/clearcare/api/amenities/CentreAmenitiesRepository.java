@@ -1,5 +1,6 @@
 package ie.clearcare.api.amenities;
 
+import ie.clearcare.api.centres.CentreRegisterChecks;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,14 +16,6 @@ import tools.jackson.databind.json.JsonMapper;
 /** Reads amenities from the view the clearcare_api role can read (db/V11). */
 @Repository
 class CentreAmenitiesRepository {
-
-  // The register's views (db/V1). Amenities are served only for a centre the register snapshot
-  // has, and only once a snapshot has been published, as reports are.
-  private static final String REGISTER_SNAPSHOT =
-      "SELECT 1 FROM clearcare.published_register_snapshot";
-
-  private static final String CENTRE =
-      "SELECT 1 FROM clearcare.centre_search WHERE centre_id = :centre_id";
 
   // The view holds the newest extraction of the centre's newest report that has one.
   private static final String AMENITIES =
@@ -43,9 +36,11 @@ class CentreAmenitiesRepository {
 
   private final JsonMapper json;
   private final JdbcClient jdbc;
+  private final CentreRegisterChecks register;
 
-  CentreAmenitiesRepository(JdbcClient jdbc, JsonMapper json) {
+  CentreAmenitiesRepository(JdbcClient jdbc, JsonMapper json, CentreRegisterChecks register) {
     this.jdbc = jdbc;
+    this.register = register;
     this.json = json;
   }
 
@@ -56,10 +51,10 @@ class CentreAmenitiesRepository {
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreAmenitiesLookup> find(String centreId, String version) {
-    if (!registerPublished()) {
+    if (!register.registerPublished()) {
       return Optional.empty();
     }
-    if (!centreExists(centreId)) {
+    if (!register.centreExists(centreId)) {
       return Optional.of(new CentreAmenitiesLookup(false, null));
     }
     if (version.equals("amenities-v2")) {
@@ -78,14 +73,6 @@ class CentreAmenitiesRepository {
             .optional()
             .orElse(null);
     return Optional.of(new CentreAmenitiesLookup(true, amenities));
-  }
-
-  private boolean registerPublished() {
-    return jdbc.sql(REGISTER_SNAPSHOT).query(Integer.class).optional().isPresent();
-  }
-
-  private boolean centreExists(String centreId) {
-    return jdbc.sql(CENTRE).param("centre_id", centreId).query(Integer.class).optional().isPresent();
   }
 
   private CentreAmenitiesV2 rowV2(ResultSet rs) throws SQLException {
