@@ -44,13 +44,15 @@ import tools.jackson.databind.node.ObjectNode;
 import ie.clearcare.api.DatabaseImage;
 
 /**
- * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
- * repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
+ * GET /centres, GET /centres/points and GET /centres/{centre_id} against PostgreSQL with the roles
+ * and schema from this repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
  */
-@SpringBootTest
+@SpringBootTest(properties = "clearcare.site.token=the-sites-own-token")
 @AutoConfigureMockMvc
 @Testcontainers
 class CentreSearchTest {
+
+  private static final String TOKEN = "the-sites-own-token";
 
   // Maven runs the tests in api/.
   private static final Path REPOSITORY = Path.of("..");
@@ -463,6 +465,83 @@ class CentreSearchTest {
     }
   }
 
+  // Strict: any other property, such as eircode or place_id, a total or facets, fails the test.
+  @Test
+  void givesTheMapEachCentresPointWithTheSnapshotItCameFrom() throws Exception {
+    points("name=elm")
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {
+                      "points": [{
+                        "centre_id": "34",
+                        "centre_name": "Elm Hall Nursing Home",
+                        "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
+                        "county": "Kildare",
+                        "latitude": 53.34,
+                        "longitude": -6.54,
+                        "distance_m": null
+                      }],
+                      "register_snapshot": {
+                        "fetched_at": "2026-10-05T06:12:54Z",
+                        "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
+                        "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
+                      }
+                    }
+                    """,
+                    JsonCompareMode.STRICT));
+  }
+
+  // The centres GET /centres finds for the same parameters, in name order and on no pages, less
+  // the two the map has no point for: St Joseph's in Cork, whose only point is too old to serve
+  // (ADR-0027), and Stella Maris, which has none.
+  @ParameterizedTest
+  @ValueSource(strings = {"", "county=Dublin", "care_type=Dementia care", "county=Cork"})
+  void givesAPointForEachCentreTheSearchFindsThatHasOne(String query) throws Exception {
+    List<String> withAPoint = new ArrayList<>();
+    for (JsonNode centre : searchResult(query).get("centres")) {
+      withAPoint.add(centre.get("centre_id").asString());
+    }
+    withAPoint.removeAll(List.of(ST_JOSEPHS_CORK, STELLA_MARIS));
+    points(query)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[*].centre_id", is(withAPoint)));
+  }
+
+  @Test
+  void givesEachPointsDistanceFromNear() throws Exception {
+    points("name=aras&near=" + NEAR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[0].distance_m").value(1113));
+  }
+
+  // The answer has no pages and one order, so these are unknown parameters here.
+  @ParameterizedTest
+  @ValueSource(strings = {"page", "page_size", "sort"})
+  void refusesToPageOrSortThePoints(String parameter) throws Exception {
+    points(parameter + "=1")
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    parameter
+                        + " is not a parameter; use one of name, address, eircode, county,"
+                        + " care_type, room_type, facility, activity, near"));
+  }
+
+  // The points are Google's, which the public API does not give out (ADR-0029).
+  @Test
+  void givesPointsOnlyToTheSite() throws Exception {
+    mvc.perform(get("/centres/points"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+    mvc.perform(get("/centres/points").header("X-ClearCare-Token", "not-the-token"))
+        .andExpect(status().isUnauthorized());
+  }
+
   // near measures the centres, and orders them if asked, but leaves none of them out.
   @Test
   void countsTheSameWithNear() throws Exception {
@@ -726,6 +805,10 @@ class CentreSearchTest {
 
   private ResultActions search(String query) throws Exception {
     return mvc.perform(get("/centres?" + query));
+  }
+
+  private ResultActions points(String query) throws Exception {
+    return mvc.perform(get("/centres/points?" + query).header("X-ClearCare-Token", TOKEN));
   }
 
   // Read as bytes: the body is UTF-8, which the response's string form does not assume.

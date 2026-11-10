@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
 /**
- * Decides whether a request came from the site's own server, and which account it is about.
+ * Decides whether a request came from the site's own server, and which account it is about, if any.
  *
  * <p>The browser never holds a Cognito token (ADR-0020), so the API cannot check a session: the
  * Next server reads its encrypted cookie, takes the account's subject claim and sends it with a
@@ -22,6 +22,9 @@ import org.springframework.web.server.ResponseStatusException;
  * asks for on a visitor's behalf is proved by this same value, sent as {@code X-ClearCare-Token}.
  * Rotating it therefore rotates every feature that calls the API, which is the cost of one secret
  * rather than one per feature.
+ *
+ * <p>It also guards a route that is about no account: the points of the search page's map are
+ * Google's coordinates, which only the site may be given (ADR-0029).
  */
 @Component
 public class SiteToken {
@@ -37,18 +40,23 @@ public class SiteToken {
 
   /**
    * Answers every request that is not the site's: 503 while this deployment has no token, and 401
-   * for a request with no subject or the wrong token.
+   * for a request with the wrong token. For a route that is about no account.
    */
-  public void require(String cognitoSub, String token) {
+  public void requireSite(String token) {
     if (expected.isEmpty()) {
       throw new ResponseStatusException(
           HttpStatus.SERVICE_UNAVAILABLE, "This API is not configured for the site's requests.");
     }
-    if (cognitoSub == null || !SUB.matcher(cognitoSub).matches()) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The request names no account.");
-    }
     if (token == null || !MessageDigest.isEqual(bytes(expected), bytes(token))) {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The request is not from the site.");
+    }
+  }
+
+  /** As requireSite, and 401 for a request from the site that names no account. */
+  public void require(String cognitoSub, String token) {
+    requireSite(token);
+    if (cognitoSub == null || !SUB.matcher(cognitoSub).matches()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "The request names no account.");
     }
   }
 
