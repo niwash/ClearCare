@@ -146,20 +146,18 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
                   : "There hasn't been an inspection since, so we don't know yet."}
               </p>
             )}
-            {/* The question to take to the home, which depends on how it ended: none once it was put right. */}
-            {question && (
-              <p className="flex max-w-3xl items-start gap-2.5 rounded-xl bg-tint-blue px-4 py-3 text-sm text-on-tint-blue adult:rounded-md adult:border adult:border-line">
-                <svg aria-hidden viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5" />
-                </svg>
-                <span>
-                  <span className="font-semibold">Worth asking the home:</span> {question}{" "}
-                  <a href={questionsHref} className="font-semibold whitespace-nowrap text-on-tint-blue print:hidden">
-                    All questions <span aria-hidden>→</span>
-                  </a>
-                </span>
-              </p>
-            )}
+            {/* The question to take to the home, which depends on how it ended. */}
+            <p className="flex max-w-3xl items-start gap-2.5 rounded-xl bg-tint-blue px-4 py-3 text-sm text-on-tint-blue adult:rounded-md adult:border adult:border-line">
+              <svg aria-hidden viewBox="0 0 24 24" className="mt-0.5 size-4 shrink-0" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5" />
+              </svg>
+              <span>
+                <span className="font-semibold">Worth asking the home:</span> {question}{" "}
+                <a href={questionsHref} className="font-semibold whitespace-nowrap text-on-tint-blue print:hidden">
+                  All questions <span aria-hidden>→</span>
+                </a>
+              </span>
+            </p>
           </Step>
         </ol>
 

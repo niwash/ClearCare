@@ -16,9 +16,13 @@
 // tab's side (template.tsx). A tab clicked before its page has arrived is shown as the current one
 // at once, with a spinner after a moment, until the page comes. The window stays where it is, as
 // with tabs on one page, rather than jumping to the page's top.
+//
+// Where the row scrolls, the current tab is scrolled into the middle of it when a page opens, so
+// arriving at What to ask from a link elsewhere doesn't leave its tab off-screen. Only the row
+// scrolls, not the window.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // band: the background class of the band the page starts with (Band in centre-band.tsx), written
 // out in full so Tailwind finds it.
@@ -31,8 +35,21 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
   const [clicked, setClicked] = useState<{ href: string; from: string } | null>(null);
   const waiting = clicked && clicked.from === pathname && clicked.href !== pathname ? clicked.href : null;
   const shown = waiting ?? pathname;
+
+  const row = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = row.current;
+    const tab = nav?.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!nav || !tab) return;
+    const navBox = nav.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    // Left alone when it's already in full view, so moving between visible tabs doesn't shift the row.
+    if (tabBox.left >= navBox.left && tabBox.right <= navBox.right) return;
+    nav.scrollLeft += tabBox.left - navBox.left - (navBox.width - tabBox.width) / 2;
+  }, [pathname]);
+
   return (
-    <nav aria-label="This home's record" aria-busy={waiting ? true : undefined} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
+    <nav ref={row} aria-label="This home's record" aria-busy={waiting ? true : undefined} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
       {/* The row's line is the bottom edge of the folder's back; the current tab covers it. */}
       <ul className="flex min-w-max items-end gap-1.5 border-b border-line pt-1">
         {tabs.map((tab) => {

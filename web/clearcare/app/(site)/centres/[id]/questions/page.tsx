@@ -48,23 +48,21 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
   if (record.status !== "found") notFound();
   const { centre, reports } = record;
 
-  // One question for each story that leaves something to ask: none once it was put right.
-  // Stories that end the same way share one question, asked once with their topics under it, rather
-  // than the same words repeated for each. Grouped by the question for one topic, which carries the
-  // outcome and, for one still waiting, the month of its inspection.
+  // One question for each story. Stories that end the same way share one question, asked once with
+  // their topics under it, rather than the same words repeated for each. Grouped by the question for
+  // one topic, which carries the outcome and, for one still to be checked, the month of its inspection.
   const groups = new Map<string, { outcome: Outcome; date?: string; trails: PromiseTrail[] }>();
   for (const trail of reports?.trails ?? []) {
     const outcome = trailOutcome(trail);
     const date = inspectionDate(reports!.inspections, trail.finding.inspectionId);
     const key = askTheHome(outcome, date);
-    if (!key) continue;
     const group = groups.get(key) ?? { outcome, date, trails: [] };
     group.trails.push(trail);
     groups.set(key, group);
   }
   const about = [...groups.values()].map((group) => ({
     ...group,
-    question: askTheHome(group.outcome, group.date, group.trails.length > 1)!,
+    question: askTheHome(group.outcome, group.date, group.trails.length > 1),
   }));
 
   return (
