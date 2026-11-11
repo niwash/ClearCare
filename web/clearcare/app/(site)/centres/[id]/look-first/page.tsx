@@ -8,6 +8,7 @@ import { CentreHighlights } from "@/components/centre/centre-highlights";
 import { emptyReason, NothingToFlag } from "@/components/centre/nothing-to-flag";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { formatDate } from "@/lib/centres";
 import { notFound } from "next/navigation";
 
 interface LookFirstPageProps {
@@ -23,7 +24,9 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports, findingsRead } = record;
+  const { centre, reports, findingsRead, hasCompliancePlan } = record;
+  // The inspection What to look at first's rules go by (addFindings): the latest that judged regulations.
+  const latestJudged = reports?.inspections.filter((inspection) => inspection.regulationJudgements).at(-1);
 
   return (
     <Band tint="gold">
@@ -50,6 +53,8 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
             inspectionsHref={centrePath(id, "inspections")}
             visitHref={centrePath(id, "questions")}
             hiqaUrl={centre.hiqa_url}
+            latestInspection={latestJudged && formatDate(latestJudged.date)}
+            hasCompliancePlan={hasCompliancePlan}
           />
         </section>
       )}

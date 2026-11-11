@@ -42,7 +42,7 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
           </div>
           <p className="max-w-3xl text-ink">
             The story behind each thing in What to look at first: what the inspector found, what the home said it
-            would do, and what happened at the next inspection.
+            would do, and how the regulation was judged the next time an inspection looked at it.
           </p>
         </div>
         {reports && trails.length > 0 ? (

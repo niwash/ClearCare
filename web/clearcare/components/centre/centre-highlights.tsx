@@ -16,7 +16,6 @@ import {
 import Link from "next/link";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { inspectionDate, JudgementChip, OutcomePill, Quotes, SourceLink, trailOutcome } from "./finding-bits";
-import { JUDGEMENT_LABELS } from "./judgement-icon";
 import { sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 
 const COUNT_WORDS = ["", "one", "two", "three", "four", "five", "six"];
@@ -28,7 +27,7 @@ function reason({ rule, dates }: Highlight) {
       return `At the latest inspection, ${formatDate(dates[0])}`;
     case "repeated":
       // With the span they cover, oldest to latest, so "in a row" has dates to go by.
-      return `Not fully put right at ${COUNT_WORDS[dates.length] ?? dates.length} inspections in a row · ${formatMonth(dates[0])} – ${formatMonth(dates.at(-1)!)}`;
+      return `Not fully compliant at ${COUNT_WORDS[dates.length] ?? dates.length} inspections in a row · ${formatMonth(dates[0])} – ${formatMonth(dates.at(-1)!)}`;
     case "promise-not-rejudged":
       return `Promised in ${formatMonth(dates[0])}, not checked since`;
   }
@@ -146,7 +145,7 @@ export function CentreHighlights({ highlights, trails, inspections, trailsHref, 
   );
 }
 
-// What happened next, in a line: what the home promised, or else what the next inspection found,
+// What happened next, in a line: what the home promised, or else how it was next judged,
 // with how it ended and a link to the whole story.
 function NextLine({ trail, inspections, href }: { trail: PromiseTrail; inspections: Inspection[]; href: string }) {
   const promise = trail.promises[0];
@@ -163,8 +162,9 @@ function NextLine({ trail, inspections, href }: { trail: PromiseTrail; inspectio
           </>
         ) : followUp && followUp.judgement !== "not-assessed" ? (
           <>
-            <span className="font-semibold">Next inspection{followUpDate ? `, ${followUpDate}` : ""}:</span>{" "}
-            <span className="text-ink-muted">{followUp.printedJudgement ?? JUDGEMENT_LABELS[followUp.judgement]}</span>
+            {/* Not "the next inspection": it's the next one that judged this regulation, which can
+                be a few inspections later. How it was judged is on the pill beside it. */}
+            <span className="font-semibold">Judged again{followUpDate ? ` on ${followUpDate}` : ""}</span>
           </>
         ) : !followUp && !trail.orderUnknown ? (
           <span className="text-ink-muted">Found at the latest inspection, so it hasn&apos;t been checked again yet.</span>

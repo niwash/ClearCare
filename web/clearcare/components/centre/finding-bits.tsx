@@ -53,28 +53,41 @@ export function RiskRating({ risk }: { risk: string }) {
   );
 }
 
-export type Outcome = { label: string; tone: "bad" | "open" };
+// kind: how the story ended, which the question to ask goes by (askTheHome) whatever the label says.
+export type Outcome = {
+  label: string;
+  tone: "bad" | "open";
+  kind: "not-compliant" | "substantially-compliant" | "to-check" | "not-checked" | "other";
+};
 
 const OUTCOME_TONES: Record<Outcome["tone"], string> = {
   bad: "bg-tint-rose text-on-tint-rose",
   open: "bg-tint-gold text-on-tint-gold",
 };
 
-// What became of a finding, in a word or two: unresolved, partly resolved, or not known yet.
-// Never resolved: addFindings (lib/findings.ts) traces only findings that were still a problem, so
+// What became of a finding, in a word or two: how the regulation was judged when an inspection next
+// judged it, or that it isn't known yet. The label says what the inspection judged and no more. A
+// second judgment against the same regulation can be about a different problem from the first, so
+// it doesn't show that the first was left unfixed, or partly fixed (#170 review).
+// Never compliant: addFindings (lib/findings.ts) traces only findings that were still a problem, so
 // the next inspection that judged one found it not compliant or substantially compliant.
 // The next inspection is due to check a compliance plan, but nobody knows when it will be, so the
 // label says what it will do rather than that it is coming.
-export function trailOutcome({ followUp, orderUnknown }: PromiseTrail): Outcome {
-  if (!followUp) return orderUnknown ? { label: "Not clear yet", tone: "open" } : { label: "To be checked at next inspection", tone: "open" };
-  if (followUp.printedJudgement) return { label: `Judged “${followUp.printedJudgement}”`, tone: "open" };
+export function trailOutcome({ finding, followUp, orderUnknown }: PromiseTrail): Outcome {
+  if (!followUp) {
+    return orderUnknown
+      ? { label: "Not clear yet", tone: "open", kind: "other" }
+      : { label: "To be checked at next inspection", tone: "open", kind: "to-check" };
+  }
+  if (followUp.printedJudgement) return { label: `Judged “${followUp.printedJudgement}”`, tone: "open", kind: "other" };
   switch (followUp.judgement) {
     case "not-assessed":
-      return { label: "Not checked since", tone: "open" };
+      return { label: "Not checked since", tone: "open", kind: "not-checked" };
     case "substantially-compliant":
-      return { label: "Partly resolved", tone: "open" };
+      return { label: "Substantially compliant", tone: "open", kind: "substantially-compliant" };
     default:
-      return { label: "Unresolved", tone: "bad" };
+      // "again" only when it was not compliant the first time too.
+      return { label: finding.judgement === "not-compliant" ? "Not compliant again" : "Not compliant", tone: "bad", kind: "not-compliant" };
   }
 }
 
@@ -151,15 +164,15 @@ export function Quotes({ quotes, bare = false }: { quotes: string[]; bare?: bool
 // What to ask the home, by how the story ended (What happened next, and What to ask). The reports stop
 // at the last inspection, so only the home can say what has happened since.
 // several: the question asked once about more than one topic (What to ask), so "this" is "these".
-export function askTheHome({ label }: { label: string }, findingDate?: string, several = false) {
-  if (label === "Unresolved")
+export function askTheHome({ kind }: Pick<Outcome, "kind">, findingDate?: string, several = false) {
+  if (kind === "not-compliant")
     return several
       ? "“What are you doing about these now, and when will they be fixed?”"
       : "“What are you doing about this now, and when will it be fixed?”";
-  if (label === "Partly resolved")
+  if (kind === "substantially-compliant")
     return several ? "“What is left to do on these, and when will it be done?”" : "“What is left to do on this, and when will it be done?”";
-  if (label === "To be checked at next inspection") return `“What has changed since the inspection${findingDate ? ` in ${findingDate.replace(/^\d+ /, "")}` : ""}?”`;
-  if (label === "Not checked since")
+  if (kind === "to-check") return `“What has changed since the inspection${findingDate ? ` in ${findingDate.replace(/^\d+ /, "")}` : ""}?”`;
+  if (kind === "not-checked")
     return several ? "“Were these put right? No inspection has checked since.”" : "“Was this put right? No inspection has checked since.”";
   return several ? "“What has happened with these since the last inspection?”" : "“What has happened with this since the last inspection?”";
 }

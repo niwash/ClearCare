@@ -22,15 +22,18 @@ export function emptyReason(hasReports: boolean, findingsRead: boolean): EmptyRe
 
 // What What to look at first checks each regulation for (addFindings, lib/findings.ts), as passed,
 // and said as what was found rather than as what wasn't.
-const CHECKS = [
-  // No regulation judged Not compliant; Substantially compliant ones may remain, hence "serious".
-  "No serious problems found at the latest inspection",
-  "No problem found again at a later inspection",
-  // No compliance plan whose deadline a later inspection passed without judging the regulation
-  // again (promiseNotRejudged). Not "no compliance plan", which a home with a recent one would
-  // contradict.
-  "Every compliance plan checked once its deadline passed",
-];
+function checks(latestInspection: string | undefined, hasCompliancePlan: boolean) {
+  return [
+    // No regulation judged Not compliant; Substantially compliant ones may remain, hence "serious".
+    // With the inspection's date, as a page with findings gives theirs (#170 review).
+    `No serious problems found at the latest inspection${latestInspection ? `, ${latestInspection}` : ""}`,
+    "No problem found again at a later inspection",
+    // No compliance plan whose deadline a later inspection passed without judging the regulation
+    // again (promiseNotRejudged). Not "no compliance plan", which a home with a recent one would
+    // contradict; and not said at all of a home that never had one, where there was nothing to check.
+    ...(hasCompliancePlan ? ["Every compliance plan checked once its deadline passed"] : []),
+  ];
+}
 
 type NothingToFlagProps = {
   reason: EmptyReason;
@@ -39,9 +42,13 @@ type NothingToFlagProps = {
   // What to ask, the questions to take on a visit.
   visitHref?: string;
   hiqaUrl: string;
+  // For What to look at first's checks: the date of the latest inspection that judged regulations,
+  // as shown, and whether any of the home's reports has a compliance plan.
+  latestInspection?: string;
+  hasCompliancePlan?: boolean;
 };
 
-export function NothingToFlag({ reason, page, inspectionsHref, visitHref, hiqaUrl }: NothingToFlagProps) {
+export function NothingToFlag({ reason, page, inspectionsHref, visitHref, hiqaUrl, latestInspection, hasCompliancePlan = false }: NothingToFlagProps) {
   const history = <ActionLink href={inspectionsHref}>See inspection history</ActionLink>;
 
   if (reason === "no-reports") {
@@ -68,7 +75,7 @@ export function NothingToFlag({ reason, page, inspectionsHref, visitHref, hiqaUr
     <Card icon="results" title={page === "look-first" ? "Nothing stands out" : "Nothing to follow up"}>
       {page === "look-first" ? (
         <ul className="flex flex-col gap-2">
-          {CHECKS.map((check) => (
+          {checks(latestInspection, hasCompliancePlan).map((check) => (
             <li key={check} className="flex items-start gap-2.5">
               <Tick />
               {check}
