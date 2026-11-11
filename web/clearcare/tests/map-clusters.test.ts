@@ -1,11 +1,11 @@
 // tests/map-clusters.test.ts
 // What the search page's map draws at a zoom (lib/map-clusters.ts): a pin for a home on its own, and
-// one cluster with a count where pins would pile up.
+// one cluster with a count where pins would pile up; and which of them a home in the list marks.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { clusterIndex, marksIn, opensAt } from "../lib/map-clusters.ts";
+import { clusterIndex, markOf, marksIn, opensAt } from "../lib/map-clusters.ts";
 import type { CentrePoint, MapBounds } from "../lib/search-map.ts";
 
 function home(centre_id: string, latitude: number, longitude: number): CentrePoint {
@@ -82,5 +82,31 @@ describe("what the map draws", () => {
     const [cluster] = marksIn(index, IRELAND, COUNTRY_ZOOM).clusters;
 
     assert.deepEqual(new Set(marksIn(index, IRELAND, opensAt(index, cluster)).pins), new Set(rathmines));
+  });
+});
+
+describe("the mark of a home in the list", () => {
+  const index = clusterIndex([...rathmines, cork]);
+
+  test("is its own pin where it is drawn apart", () => {
+    const close = marksIn(index, IRELAND, STREET_ZOOM);
+
+    assert.equal(markOf(index, close, "a"), rathmines[0]);
+    assert.equal(markOf(index, close, "c"), cork);
+  });
+
+  test("is the cluster that holds it where it is not", () => {
+    const far = marksIn(index, IRELAND, COUNTRY_ZOOM);
+
+    assert.equal(markOf(index, far, "a"), far.clusters[0]);
+    assert.equal(markOf(index, far, "b"), far.clusters[0]);
+    assert.equal(markOf(index, far, "c"), cork);
+  });
+
+  test("is nothing for a home out of view, or with no point", () => {
+    const dublin: MapBounds = { north: 53.4, south: 53.3, east: -6.2, west: -6.35 };
+
+    assert.equal(markOf(index, marksIn(index, dublin, STREET_ZOOM), "c"), null);
+    assert.equal(markOf(index, marksIn(index, IRELAND, COUNTRY_ZOOM), "no-point"), null);
   });
 });

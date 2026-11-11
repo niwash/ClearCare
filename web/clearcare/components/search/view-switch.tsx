@@ -1,7 +1,9 @@
 // components/search/view-switch.tsx
 // The search results as a list of cards or as pins on a map (CCARE-229): the switch between the
 // two, and what stands in the map's place when it can't be drawn. The view is in the page address
-// (view=map), so both are links and work before scripts run.
+// (view=map), so both are links and work before scripts run. The switch is for screens too narrow
+// for both: a wide one has the map beside the list whatever the view (CCARE-230), and the page
+// leaves the switch out there.
 import { actionLinkClass } from "@/components/ui/classes";
 import { searchHref, type PageSearch } from "@/lib/page-search";
 import Link from "next/link";
@@ -39,7 +41,10 @@ export function ViewSwitch({ search }: { search: PageSearch }) {
 //
 // Without listHref it is the map of every home, shown before anything is searched, that failed in
 // the browser. There is no list of results to point to then, so it says only that there is no map.
-export function MapUnavailable({ listHref, located = false }: { listHref?: string; located?: boolean }) {
+//
+// listBeside: it stands where the map of a search's results would, which a wide screen has beside
+// the list (CCARE-230). The list is in view there, so the link is for narrower screens.
+export function MapUnavailable({ listHref, located = false, listBeside = false }: { listHref?: string; located?: boolean; listBeside?: boolean }) {
   return (
     <div role="status" className="flex flex-col items-start gap-3 rounded-2xl bg-band p-6 md:p-8 adult:rounded-lg">
       <p className="font-heading text-xl font-semibold text-ink md:text-2xl">
@@ -50,7 +55,7 @@ export function MapUnavailable({ listHref, located = false }: { listHref?: strin
           <p className="text-ink-muted">
             {located ? "ClearCare has no map location for the nursing homes this search found." : "The nursing homes this search found are still in the list."}
           </p>
-          <Link href={listHref} scroll={false} className={`${actionLinkClass} mt-2`}>
+          <Link href={listHref} scroll={false} className={`${actionLinkClass} mt-2 ${listBeside ? "xl:hidden" : ""}`}>
             Show them as a list <span aria-hidden>→</span>
           </Link>
         </>

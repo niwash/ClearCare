@@ -3,7 +3,9 @@
 // search page's map (GET /centres/points), called from the Next server only. The coordinates are
 // Google's, so the API gives them to nobody but the
 // site, which proves itself with the token it shares with the API, and they are asked for again for
-// every map and never cached (ADR-0029). The browser gets them from the page, only to draw the map.
+// every page that may draw a map and never cached (ADR-0029). That is every search with results: the
+// server can't tell a wide screen, which has the map beside the list (CCARE-230), from a narrow one.
+// The browser gets them from the page, only to draw the map.
 //
 // Nothing here throws on the API being down or unset: the page says the map isn't available and
 // keeps its list. The tests load this file as it is (tests/points-api.test.ts), so its imports are

@@ -5,12 +5,13 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
-import { GoogleForSearch, GoogleMapsLoader } from "@/components/search/google-places";
+import { GoogleForSearch } from "@/components/search/google-places";
 import { RememberSearch } from "@/components/search/last-search";
+import { ListBesideMap, MapWhereShown, ResultOnMap } from "@/components/search/list-beside-map";
 import { ResultsMap } from "@/components/search/results-map";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
 import { MapUnavailable, ViewSwitch } from "@/components/search/view-switch";
-import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass, primaryButtonClass, widePageColumnClass, widerThanPageClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
@@ -30,9 +31,9 @@ interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// The results are one column of cards under the bar. 24 to a page divides by 1, 2 and 3,
-// should a grid come back, so every full page fills its last row. The API's default of 20 would
-// leave gaps.
+// The results are one column of cards under the bar, with the map beside it on a wide screen. 24 to
+// a page divides by 1, 2 and 3, should a grid come back, so every full page fills its last row. The
+// API's default of 20 would leave gaps.
 const RESULTS_PER_PAGE = "24";
 
 function noun(count: number) {
@@ -164,24 +165,34 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // map, and the token the API gives the points for (ADR-0029).
   const mapPossible = Boolean(googleKey && mapId && pointsConfigured());
   // The results as a map, offered once there are results to show. Only then does view=map in the
-  // address mean anything.
+  // address mean anything, and only on a screen too narrow for the list and the map together.
   const mapOffered = mapPossible && Boolean(data && data.total > 0);
   const mapView = mapOffered && search.view === "map";
   // Before anything is searched, every home on a map under the prompt, with no switch: there is no
   // list to switch to.
   const mapOfEveryHome = mapPossible && !searched;
   // The points are every matching home's, not this page of the list's, and every home's when nothing
-  // is searched. They are read on the server for each map and handed to it as props.
-  const points = mapView || mapOfEveryHome ? await readPoints(search) : null;
+  // is searched. They are read on the server and handed to the map as props. That is for every
+  // search with results, whatever the view: a wide screen has the map beside the list, and the
+  // server can't know the screen's width.
+  const points = mapOffered || mapOfEveryHome ? await readPoints(search) : null;
   const pins = points?.ok && points.points.length > 0 ? points.points : null;
+  // The list with the map beside it, from xl up (CCARE-230): the list in two fifths of the width,
+  // and no less than its cards need, and the map in the rest, kept in view while the list scrolls.
+  // The page is then wider than the site's column, the heading and the bar with it. Without the
+  // points there is nothing to put beside the list, and the page is as it is on a narrower screen.
+  const besideMap = searched && pins !== null;
   const listHref = searchHref({ ...search, view: "list" });
+  // What the map is keyed by: the search without its order, as without its page. Neither changes the
+  // pins, so sorting the list or turning its page leaves the map where the visitor had it.
+  const mapKey = searchHref({ ...search, sort: "name", view: "list" });
 
   return (
     // What the search box in the bar and the page's map share of Google.
     <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
-      <SearchHero />
+      <SearchHero wide={besideMap} />
 
       {/* The search box and the filters in a bar above the results, which have the page's width
           (CCARE-230). They were a column beside the results (CCARE-189) because a bar can't hold as
@@ -193,47 +204,78 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         facets={facets}
         total={data ? data.total : null}
         sortShown={data !== null && !mapView}
+        besideMap={besideMap}
         initialSaved={initialSaved}
         arrivedWith={arrivedWith}
       />
 
-      <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <ShortlistDrawer />
-          <div className="flex flex-wrap items-center gap-3">
-            {mapOffered && <ViewSwitch search={search} />}
-            {/* The order, once there are results to order; pins have none. On phones it's in the
-                bar with Filters. */}
-            {data && !mapView && (
-              <div className="hidden md:block">
-                <SortSelect search={search} />
+      {/* Below xl, one column: what was found, then the list or the map. From xl, with the map
+          beside the list, a grid: the list's parts down the first column and the map in the second,
+          beside them all. The middle row takes what is left when the map is taller than the list. */}
+      <section
+        aria-label="Results"
+        className={`flex min-w-0 flex-col gap-4 ${besideMap ? `${widerThanPageClass} xl:grid xl:grid-cols-[minmax(30rem,2fr)_minmax(0,3fr)] xl:grid-rows-[auto_1fr_auto] xl:items-start xl:gap-x-6` : ""}`}
+      >
+        <ListBesideMap>
+          <div className="flex min-w-0 flex-col gap-4 xl:col-start-1">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <ShortlistDrawer />
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Not beside the map: both are in view there, whatever view the address has. */}
+                {mapOffered && (
+                  <div className={besideMap ? "xl:hidden" : undefined}>
+                    <ViewSwitch search={search} />
+                  </div>
+                )}
+                {/* The order, once there is a list to order; pins have none. On phones it's in the
+                    bar with Filters. */}
+                {data && (!mapView || besideMap) && (
+                  <div className={mapView ? "hidden xl:block" : "hidden md:block"}>
+                    <SortSelect search={search} />
+                  </div>
+                )}
               </div>
+            </div>
+
+            {result === null ? (
+              <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
+            ) : result.ok ? (
+              <ResultsHeading search={search} total={result.data.total} />
+            ) : (
+              <SearchError status={result.status} detail={result.detail} />
             )}
           </div>
-        </div>
 
-        {result === null ? (
-          <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
-        ) : result.ok ? (
-          <ResultsHeading search={search} total={result.data.total} />
-        ) : (
-          <SearchError status={result.status} detail={result.detail} />
-        )}
-
-        {/* Google's loader has this one place whatever else the page shows, since a search box can
-            ask for it before any search. The map is drawn inside it; keyed by the search, so a new
-            search opens on its own pins. Before a search it has no list to lead back to. */}
-        <GoogleMapsLoader>
-          {pins && mapId && (
-            <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+          {/* Before the map in the page, so the keyboard reaches the list first. With view=map, a
+              screen too narrow for both shows the map alone. */}
+          {data && (!mapView || besideMap) && (
+            <div className={`min-w-0 flex-col gap-4 xl:col-start-1 ${mapView ? "hidden xl:flex" : "flex"}`}>
+              <ResultsList search={search} data={data} />
+            </div>
           )}
-        </GoogleMapsLoader>
-        {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
-            points the page is the prompt alone. */}
-        {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
 
-        {data && !mapView && <ResultsList search={search} data={data} />}
-        {data && <Source snapshot={data.register_snapshot} />}
+          {/* Google's loader has this one place whatever else the page shows, since a search box can
+              ask for it before any search. The map is drawn inside it; keyed by the search, so a new
+              search opens on its own pins. Before a search it has no list to lead back to. Beside the
+              list it stays in view, with the window's height, while the list scrolls. */}
+          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-4 xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh-2rem)]" : ""}`}>
+            <MapWhereShown everywhere={mapView || mapOfEveryHome}>
+              {pins && mapId && (
+                <ResultsMap key={mapKey} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+              )}
+            </MapWhereShown>
+          </div>
+          {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
+              points the page is the prompt alone. Nor did a wide screen ask for the map beside its
+              list: without the points it has the list alone. */}
+          {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+
+          {data && (
+            <div className="xl:col-start-1">
+              <Source snapshot={data.register_snapshot} />
+            </div>
+          )}
+        </ListBesideMap>
       </section>
 
       <ShortlistToast />
@@ -247,10 +289,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 // The top of the page, flush under the header as on the resources page: the heading and a line of
 // welcome on the soft welcome band (welcome-band, globals.css). The results say what was searched,
 // so the heading stays the task.
-function SearchHero() {
+// wide: the results have the map beside the list, and the page is wider than the site's column.
+function SearchHero({ wide }: { wide: boolean }) {
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className={`page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8 ${wide ? widePageColumnClass : ""}`}>
         <Breadcrumb trail={[]} current="Search for Homes" />
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Find a nursing home
@@ -338,7 +381,8 @@ function ResultsHeading({ search, total }: { search: PageSearch; total: number }
   );
 }
 
-// The results as cards, a page at a time.
+// The results as cards, a page at a time. Each card and its pin on the map beside the list mark one
+// another (ResultOnMap).
 function ResultsList({ search, data }: { search: PageSearch; data: SearchResponse }) {
   const { centres, page, page_size, total } = data;
   const lastPage = Math.max(1, Math.ceil(total / page_size));
@@ -377,7 +421,9 @@ function ResultsList({ search, data }: { search: PageSearch; data: SearchRespons
       ) : (
         <div className="flex flex-col gap-4">
           {centres.map((centre) => (
-            <CardResult key={centre.centre_id} centre={centre} selection={search.selection} />
+            <ResultOnMap key={centre.centre_id} centreId={centre.centre_id}>
+              <CardResult centre={centre} selection={search.selection} />
+            </ResultOnMap>
           ))}
         </div>
       )}

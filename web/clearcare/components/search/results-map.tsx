@@ -2,7 +2,8 @@
 
 // components/search/results-map.tsx
 // The search results on a Google map (CCARE-229): a pin for every home the search matches, clusters
-// where pins would pile up, and a card for the home that is chosen. Before anything is searched, the
+// where pins would pile up, and a card for the home that is chosen. On a wide screen it is beside the
+// list of the same results (CCARE-230, list-beside-map.tsx). Before anything is searched, the
 // page draws the same map with every home on it, under its prompt. The points come from the page,
 // which read them on the server (ADR-0029); nothing here asks for more as the map moves. It is drawn
 // inside the page's one Google loader (GoogleMapsLoader, google-places.tsx).
@@ -11,11 +12,12 @@
 // the zoom buttons are the site's, and the map's colours come with its map ID (map-style/, README).
 import { useShownTheme } from "@/components/theme/theme-toggle";
 import { Icon } from "@/components/ui/icons";
-import { clusterIndex, marksIn, opensAt, type Cluster } from "@/lib/map-clusters";
+import { clusterIndex, markOf, marksIn, opensAt, type Cluster } from "@/lib/map-clusters";
 import { firstView, nearPoint, shiftInto, type Box, type CentrePoint, type LatLng, type MapBounds } from "@/lib/search-map";
 import { APILoadingStatus, AdvancedMarker, ColorScheme, ControlPosition, Map, MapControl, useApiLoadingStatus, useMap } from "@vis.gl/react-google-maps";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
+import { useListBesideMap } from "./list-beside-map";
 import { HomeCard } from "./map-card";
 import { ClusterPin, HomePin, PlacePin } from "./map-pins";
 import { MapUnavailable } from "./view-switch";
@@ -67,7 +69,11 @@ export function ResultsMap({
   // null until the page's theme is known: Google's map takes its colours when it is made.
   const theme = useShownTheme();
   const [drawn, setDrawn] = useState(false);
-  const [chosenId, setChosenId] = useState<string | null>(null);
+  // The home whose pin was pressed, which the list beside the map marks too, and the home whose
+  // card is pointed at there, which the map marks.
+  const { chosenId, choose, pointedId } = useListBesideMap();
+  // A new search draws a new map, and the home chosen on this one goes with it.
+  useEffect(() => () => choose(null), [choose]);
   // The pin the card was opened from, which gets the keyboard's focus back when the card is closed.
   const opener = useRef<HTMLElement | null>(null);
 
@@ -84,29 +90,36 @@ export function ResultsMap({
     };
   }, []);
 
-  if (failed || refused) return <MapUnavailable listHref={listHref} />;
+  if (failed || refused) return <MapUnavailable listHref={listHref} listBeside />;
 
   function close() {
-    setChosenId(null);
+    choose(null);
     opener.current?.focus({ preventScroll: true });
   }
 
   return (
     <>
       <p className="sr-only">
-        {listHref
-          ? "The map shows the same nursing homes as the list. To read them without the map, choose List above."
-          : "The map shows nursing homes across Ireland. To read them as a list, search for a name, a place or a county."}
+        {listHref ? (
+          <>
+            The map shows the same nursing homes as the list.
+            {/* Only where the switch is: a wide screen has the list beside the map. */}
+            <span className="xl:hidden"> To read them without the map, choose List above.</span>
+          </>
+        ) : (
+          "The map shows nursing homes across Ireland. To read them as a list, search for a name, a place or a county."
+        )}
       </p>
       {/* The frame of a result card. Until Google's first tiles are drawn it says so, and the map
-          then fades in over it, rather than a grey box turning into a map. */}
+          then fades in over it, rather than a grey box turning into a map. Beside the list on a
+          wide screen it fills the place the page keeps for it, which has the window's height. */}
       <div
         role="region"
         aria-label={listHref ? "Map of the nursing homes found" : "Map of nursing homes across Ireland"}
         onKeyDown={(event) => {
           if (event.key === "Escape" && chosenId) close();
         }}
-        className="relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[44rem] adult:rounded-lg"
+        className={`relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[44rem] adult:rounded-lg ${listHref ? "xl:h-full" : ""}`}
       >
         {!drawn && (
           <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-ink-muted">
@@ -139,10 +152,11 @@ export function ResultsMap({
               from={nearPoint(near)}
               place={place}
               chosenId={chosenId}
+              pointedId={pointedId}
               chosenPin={opener}
               onChoose={(point, pin) => {
                 opener.current = pin;
-                setChosenId(point.centre_id);
+                choose(point.centre_id);
               }}
               onClose={close}
             />
@@ -159,6 +173,7 @@ function Marks({
   from,
   place,
   chosenId,
+  pointedId,
   chosenPin,
   onChoose,
   onClose,
@@ -167,6 +182,7 @@ function Marks({
   from: LatLng | null;
   place: string;
   chosenId: string | null;
+  pointedId: string | null;
   chosenPin: RefObject<HTMLElement | null>;
   onChoose: (point: CentrePoint, pin: HTMLElement) => void;
   onClose: () => void;
@@ -194,6 +210,8 @@ function Marks({
   // A home's card goes with its pin: zoomed out until the pin joins a cluster, or moved well out of
   // view, there is no card.
   const chosen = marks?.pins.find((point) => point.centre_id === chosenId) ?? null;
+  // What the card pointed at in the list marks: its home's pin, or the cluster that holds it.
+  const pointed = useMemo(() => (marks && pointedId ? markOf(index, marks, pointedId) : null), [index, marks, pointedId]);
 
   const [card, setCard] = useState<HTMLElement | null>(null);
   // Once a card can be seen, it is given the keyboard's focus, as it opens somewhere else in the
@@ -240,10 +258,10 @@ function Marks({
   return (
     <>
       {marks?.clusters.map((cluster) => (
-        <ClusterPin key={`cluster-${cluster.id}`} cluster={cluster} onChoose={() => open(cluster)} />
+        <ClusterPin key={`cluster-${cluster.id}`} cluster={cluster} marked={cluster === pointed} onChoose={() => open(cluster)} />
       ))}
       {marks?.pins.map((point) => (
-        <HomePin key={point.centre_id} point={point} chosen={point === chosen} onChoose={(pin) => onChoose(point, pin)} />
+        <HomePin key={point.centre_id} point={point} chosen={point === chosen} marked={point === pointed} onChoose={(pin) => onChoose(point, pin)} />
       ))}
       {from && <PlacePin position={from} name={place || "Chosen location"} />}
 

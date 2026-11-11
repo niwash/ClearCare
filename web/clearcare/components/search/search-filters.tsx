@@ -14,7 +14,7 @@
 // out rather than offered without them.
 import { AmenityIcon } from "@/components/centre/amenity-icon";
 import { Chevron } from "@/components/ui/chevron";
-import { fullWidthClass, primaryButtonClass, textInputClass } from "@/components/ui/classes";
+import { fullWidthClass, primaryButtonClass, textInputClass, widePageColumnClass } from "@/components/ui/classes";
 import { PreferencesNotice } from "@/components/preferences/preferences-notice";
 import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
 import { hydrateSavedSearch, savePreferences, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
@@ -62,6 +62,7 @@ export function SearchFilters({
   facets,
   total,
   sortShown,
+  besideMap,
   initialSaved,
   arrivedWith,
 }: {
@@ -69,6 +70,7 @@ export function SearchFilters({
   facets: Facets | null;
   total: number | null; // null before anything is searched for
   sortShown: boolean;
+  besideMap: boolean; // the results have the map beside the list on a wide screen, and the bar their width
   // What the page read from the account on the server (ADR-0025): whether there is a saved search,
   // and whether one could be read at all. Handed down rather than fetched here, so a visitor with no
   // account sends no request, and the page has already opened a kept search before it renders.
@@ -280,7 +282,7 @@ export function SearchFilters({
         }}
         className={`${fullWidthClass} -mt-6 bg-surface md:-mt-8 md:border-b md:border-line`}
       >
-        <div className="page-column flex flex-col gap-1.5 px-4 pb-1 pt-4 md:px-8 md:pb-4">
+        <div className={`page-column flex flex-col gap-1.5 px-4 pb-1 pt-4 md:px-8 md:pb-4 ${besideMap ? widePageColumnClass : ""}`}>
           {/* One box, so nobody has to know which box their words belong in (CCARE-230). Its label
               is in view over it and no field has a faded example: people read one as already filled
               in (CCARE-164). */}

@@ -59,6 +59,16 @@ export function marksIn(index: ClusterIndex, view: MapBounds, zoom: number): Mar
   return marks;
 }
 
+// What a home is drawn as among the marks: its own pin, or the cluster that holds it. null for a
+// home out of view, or with no point. The card pointed at in the list beside the map marks it
+// (CCARE-230).
+export function markOf(index: ClusterIndex, marks: Marks, centreId: string): CentrePoint | Cluster | null {
+  const pin = marks.pins.find((point) => point.centre_id === centreId);
+  if (pin) return pin;
+  const holds = (cluster: Cluster) => index.getLeaves(cluster.id, Infinity).some((leaf) => leaf.properties.centre_id === centreId);
+  return marks.clusters.find(holds) ?? null;
+}
+
 // The zoom a chosen cluster opens at: the first one where it is more than one mark. A view fitted
 // to its homes is not enough: on a short map it can stay at the zoom that clusters them.
 export function opensAt(index: ClusterIndex, cluster: Cluster) {

@@ -97,9 +97,12 @@ export default function PrivacyPage() {
               box stays as you typed or picked it, and a full Eircode there is an exact address.
             </li>
             {/* The search page's map (CCARE-229, components/search/results-map.tsx). Google's Maps
-                JavaScript loads for it in two cases: when the search page opens with nothing searched,
-                for the map of every home under the prompt, without anything being pressed; and once
-                Map is chosen for a search's results (view=map in the page address). It asks Google for
+                JavaScript loads for it in three cases, the first two without anything being pressed:
+                when the search page opens with nothing searched, for the map of every home under the
+                prompt; when a search has results on a wide screen, where the map is beside the list
+                (CCARE-230; from 80rem, which is 1280px at the browser's own text size, MapWhereShown in
+                components/search/list-beside-map.tsx); and on a narrower screen once Map is chosen for
+                a search's results (view=map in the page address). It asks Google for
                 the map's pictures as it is moved. The homes' positions come from ClearCare's API
                 through the site's server (ADR-0029) and are drawn in the browser. With a place or a
                 location in the search, the map of the results opens around that point (firstView,
@@ -109,11 +112,18 @@ export default function PrivacyPage() {
                 with nothing searched: requests went to maps.googleapis.com,
                 mapsresources-pa.googleapis.com, maps.gstatic.com, fonts.googleapis.com and
                 fonts.gstatic.com, and Google's scripts set nothing in cookies, localStorage or
-                sessionStorage. A list of results, opened on its own, sent no request to Google. */}
+                sessionStorage.
+
+                Measured on 11 Nov 2026 in headless Chrome with an empty profile: a list of results
+                opened 1440px wide asked the same Google hosts as the page with nothing searched, and
+                Google's scripts stored nothing; the same list opened 390px wide sent no request to
+                Google and loaded no Maps script. */}
             <li>
-              The search page shows a map of every nursing home before you search, and a map of your results
-              when you choose &ldquo;Map&rdquo;. The map comes from Google, so opening the search page with
-              nothing searched is enough for your browser to ask Google for it. Your browser asks Google for
+              The search page shows a map of every nursing home before you search. After a search, a wide
+              screen, such as a laptop or a desktop computer, shows a map of your results beside the list. A
+              narrower screen, such as a phone, shows the map when you choose &ldquo;Map&rdquo;. The map comes
+              from Google, so opening the search page with nothing searched, or seeing your results on a wide
+              screen, is enough for your browser to ask Google for it. Your browser asks Google for
               each part of the map you look at, and like any request this carries your IP address. If you
               searched from a place or from your location, the map of your results opens around it. The nursing
               homes&apos; positions come from ClearCare, not from you.{" "}
