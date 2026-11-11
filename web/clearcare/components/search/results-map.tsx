@@ -203,7 +203,8 @@ function Marks({
       // come out of a cluster again, or the map was made again for another theme. Nothing moves then.
       const pin = chosenPin.current;
       if (!pin?.isConnected) return;
-      if (!card.checkVisibility({ visibilityProperty: true })) {
+      // Safari before 17.4 has no checkVisibility; there the card is taken as shown.
+      if (card.checkVisibility?.({ visibilityProperty: true }) === false) {
         frame = requestAnimationFrame(show);
         return;
       }
