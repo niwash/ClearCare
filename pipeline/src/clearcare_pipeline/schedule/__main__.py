@@ -29,6 +29,7 @@ from clearcare_pipeline.load_register.__main__ import main as load_register
 from clearcare_pipeline.load_report_files.__main__ import (
     main as load_report_files,
 )
+from clearcare_pipeline.match_places.__main__ import main as match_places
 from clearcare_pipeline.object_store import (
     ObjectStore,
     ObjectStoreError,
@@ -55,6 +56,8 @@ STAGES: Mapping[str, Stage] = {
     "load_register": load_register,
     # It reads only the database and Google, so it takes no data directory.
     "geocode": lambda _: geocode([]),
+    # It reads only the database and Google, so it takes no data directory.
+    "match_places": lambda _: match_places([]),
     "price_lists": price_lists,
     "load_contract_prices": load_contract_prices,
     "reports": reports,
@@ -252,6 +255,8 @@ def _run_due(
     for name in (
         "load_register",
         "geocode",
+        # It needs the point geocode writes, so it follows it.
+        "match_places",
         "load_contract_prices",
         "load_report_files",
         "ingest_reports",
@@ -309,7 +314,7 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
             name="register",
             scope="all",
             download=("snapshots",),
-            then=("load_register", "geocode"),
+            then=("load_register", "geocode", "match_places"),
             wait_after_success=timedelta(days=1),
         ),
         # HSE republishes the lists about once a month.
