@@ -1,7 +1,7 @@
 
 # A centre's photo comes from a Google place identifier we store
 
-`clearcare.centre_image` holds one row for each centre whose photo we can show: the identifier of the Google listing matched to it, and when it was matched. A centre with no row has no acceptable listing, and the page shows our placeholder. It holds nothing else: no coordinates, no photo URL, no copy of a photo. The page renders the photo from the identifier in the visitor's browser, through Google's Places UI Kit, so no image passes through our servers and none is stored.
+`clearcare.centre_image` holds one row for each centre whose photo we can show: the identifier of the Google listing matched to it, and when it was matched. A centre with no row has no acceptable listing, and the page shows our placeholder. It holds nothing else: no coordinates, no photo URL, no copy of a photo. The page renders the photo from the identifier in the visitor's browser, through Google's Places UI Kit, so no image passes through our servers and none is stored. That request goes from the visitor's browser to Google, which therefore sees their IP address; the privacy notice says so (ADR-0028).
 
 An identifier is what makes this possible under Google's terms. The EEA Service Specific Terms let the coordinates of a place be cached for at most 30 consecutive calendar days (ADR-0027), but they place no such limit on a place identifier, which may be kept indefinitely. That is why `centre_image` has no expiry column and no job deletes its rows, unlike `clearcare.centre_location`. Storing the identifier and re-fetching the photo on every view is the only arrangement that keeps the photo current and stays inside the terms; caching the image, or the coordinates behind it, would not.
 

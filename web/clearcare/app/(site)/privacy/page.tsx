@@ -77,6 +77,19 @@ export default function PrivacyPage() {
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
               with these requests.
             </li>
+            {/* A home's photo (CCARE-209, components/centre/centre-photo.tsx): the Places UI Kit
+                loads on a home's page, is sent the home's listing id, and fetches the photo from
+                Google into the visitor's browser, so Google sees their IP address as any request
+                does. Nothing of Google's is stored on our servers (ADR-0030). Unlike the place box,
+                it happens on page load, with no typing. Measured on 11 Nov 2026. */}
+            <li>
+              On a home&apos;s page, Google is asked for that home&apos;s photos as soon as the page opens,
+              without you typing anything. That request carries your IP address, like any request your browser
+              makes, and the photos come from Google straight to your browser rather than through our servers.{" "}
+              <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it
+              does with these requests.
+            </li>
+
             {/* "Use my location" and, before a search on a wide screen, "Homes near me" (askLocation): the browser's Geolocation API, asked only on the click; nearFrom
                 (lib/near.ts) rounds the point to two decimals before it goes into the search, and the
                 API refuses anything finer (api/openapi.yaml, near). It isn't sent to Google, though the
@@ -264,20 +277,21 @@ export default function PrivacyPage() {
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
               the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
-              code on 9 Nov 2026, after CCARE-228: AWS in eu-north-1 (infra/aws), Vercel for previews
-              of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
+              code on 11 Nov 2026, after CCARE-228 and CCARE-209: AWS in eu-north-1 (infra/aws), Vercel for
+              previews of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
               pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
               openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
-              search box's place suggestions, components/search/google-places.tsx, and since CCARE-229 the search
-              page's map, components/search/results-map.tsx), which may handle these requests
+              search box's place suggestions, components/search/google-places.tsx, since CCARE-229 the search
+              page's map, components/search/results-map.tsx, and the photos on a home's page,
+              components/centre/centre-photo.tsx), which may handle these requests
               outside the EU. The pipeline's geocoding (ADR-0027) sends Google only the centres' register
               addresses, which name no visitor. Cloudflare only holds DNS records, so it sees no visits.
               Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
             Service providers handle data for us: hosting providers run the site and store its data in the EU, AI
-            services read the reports, and a maps service suggests places as you type in the search and draws the
-            map on the search page. Some of these
+            services read the reports, and a maps service suggests places as you type in the search, draws the
+            map on the search page and shows the photos on a home&apos;s page. Some of these
             providers are in the United States, where data is protected
             by the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
             Commission&apos;s standard contractual clauses. Email us for a copy of these safeguards.
