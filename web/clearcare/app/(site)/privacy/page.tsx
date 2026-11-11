@@ -77,15 +77,16 @@ export default function PrivacyPage() {
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
               with these requests.
             </li>
-            {/* A home's photo (CCARE-209, components/centre/centre-photo.tsx): the Places UI Kit
-                loads on a home's page, is sent the home's listing id, and fetches the photo from
-                Google into the visitor's browser, so Google sees their IP address as any request
-                does. Nothing of Google's is stored on our servers (ADR-0030). Unlike the place box,
-                it happens on page load, with no typing. Measured on 11 Nov 2026. */}
+            {/* A home's photo (CCARE-209, components/centre/centre-photo.tsx): the Places UI Kit is
+                not loaded until the visitor presses "Show photos", and the agreement lasts the visit
+                (sessionStorage, key "photos-agreed"). The request carries their IP address as any
+                request does, and the photo comes from Google into their browser; nothing of Google's
+                is stored on our servers (ADR-0030). Measured on 11 Nov 2026. */}
             <li>
-              On a home&apos;s page, Google is asked for that home&apos;s photos as soon as the page opens,
-              without you typing anything. That request carries your IP address, like any request your browser
-              makes, and the photos come from Google straight to your browser rather than through our servers.{" "}
+              A home&apos;s page can show photos of it from Google. They load only when you press
+              &ldquo;Show photos&rdquo;: that request carries your IP address, like any request your browser
+              makes, and the photos come from Google straight to your browser rather than through our servers.
+              If you don&apos;t press it, nothing goes to Google.{" "}
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it
               does with these requests.
             </li>

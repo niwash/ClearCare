@@ -3,15 +3,27 @@
 // components/centre/centre-photo.tsx
 // The home's photo, on the overview of its record (CCARE-209, ADR-0030). Google's Places UI Kit
 // renders it in the visitor's browser from the listing the pipeline matched to the centre, so no
-// image passes through our servers and none is stored. A centre with no matched listing, a
-// deployment without a browser key, or a refused request keeps the placeholder of the same size,
-// so the layout never jumps and a family is never shown an empty frame.
+// image passes through our servers and none is stored.
 //
-// Only the photo and Google's attribution are shown: the page says the home's name, address and
-// the rest itself, and repeating them inside Google's card would say everything twice.
+// Nothing is asked of Google until the visitor says so. The request goes from their browser to
+// Google and carries their IP address, so the frame shows a short note and a button first, and
+// Google's library is not loaded until that button is pressed. The agreement lasts the visit, so a
+// family reading several homes is asked once.
+//
+// A centre with no matched listing, a deployment without a browser key, or a refused request keeps
+// the placeholder of the same size, so the layout never jumps and a family is never shown an empty
+// frame. Only the photo and Google's attribution are shown: the page says the home's name, address
+// and the rest itself, and repeating them inside Google's card would say everything twice.
 import { APIProvider } from "@vis.gl/react-google-maps";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
+import { primaryButtonClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
 
 // Module constant, so the loader's props keep their identity between renders: APIProvider reloads
@@ -21,6 +33,49 @@ const LIBRARIES = ["places"];
 // The room a photo takes: 4:3 on its own, or the free height beside the details on wide screens
 // (CCARE-212). The frame crops, so a real photo and the placeholder take the same room.
 const FRAME = "aspect-[4/3] w-full overflow-hidden rounded-2xl adult:rounded-lg";
+
+// Set once the visitor agrees, and kept for the visit like the welcome tour's dismissal: the same
+// person moving between homes is not asked again, and closing the tab forgets it.
+const AGREED_KEY = "photos-agreed";
+
+function agreedAlready() {
+  try {
+    return sessionStorage.getItem(AGREED_KEY) === "yes";
+  } catch {
+    return false;
+  }
+}
+
+function rememberAgreement() {
+  try {
+    sessionStorage.setItem(AGREED_KEY, "yes");
+  } catch {
+    // Not remembered, so the next home asks again. The photo still shows this time.
+  }
+}
+
+// The agreement is read as an external store rather than copied into state in an effect: the server
+// has no sessionStorage, and an effect that set state would both mismatch on hydration and trip
+// React's rule against setting state in one. The event is how pressing the button tells this
+// component, and the browser's own storage event is how another tab's agreement reaches it.
+const AGREED_EVENT = "photos-agreed";
+
+function subscribeToAgreement(onChange: () => void) {
+  window.addEventListener(AGREED_EVENT, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(AGREED_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+function agreementNow() {
+  return agreedAlready();
+}
+
+function agreementOnServer() {
+  return false;
+}
 
 export function CentrePhoto({
   placeId,
@@ -34,13 +89,25 @@ export function CentrePhoto({
   className?: string;
 }) {
   // Until the photo has loaded the placeholder is what shows; a refusal keeps it for good.
+  const agreed = useSyncExternalStore(
+    subscribeToAgreement,
+    agreementNow,
+    agreementOnServer,
+  );
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
   const fail = useCallback(() => setFailed(true), []);
   const ready = useCallback(() => setLoaded(true), []);
+  const agree = useCallback(() => {
+    rememberAgreement();
+    window.dispatchEvent(new Event(AGREED_EVENT));
+  }, []);
 
   if (!placeId || !apiKey) {
     return <Placeholder className={`${FRAME} ${className}`} />;
+  }
+  if (!agreed) {
+    return <Consent className={`${FRAME} ${className}`} onAgree={agree} />;
   }
   return (
     <div className={`${FRAME} ${className} relative`}>
@@ -61,6 +128,41 @@ export function CentrePhoto({
           </APIProvider>
         </div>
       )}
+    </div>
+  );
+}
+
+// What the frame shows before anything is asked of Google. Short and plain: the photo is a nice
+// extra, not a condition of using the page, and the wording should not make it sound like a risk.
+function Consent({
+  className = "",
+  onAgree,
+}: {
+  className?: string;
+  onAgree: () => void;
+}) {
+  return (
+    <div
+      className={`flex flex-col items-center justify-center gap-2 border border-dashed border-line bg-surface-muted p-4 text-center ${className}`}
+    >
+      <Icon name="home" className="size-10 text-ink-muted" />
+      <p className="text-sm font-semibold text-ink">
+        Photos of this home come from Google
+      </p>
+      <p className="text-sm text-ink-muted">
+        Showing them sends Google your IP address, as any visit to another site
+        does.
+      </p>
+      <button
+        type="button"
+        onClick={onAgree}
+        className={`${primaryButtonClass} mt-1 text-sm`}
+      >
+        Show photos
+      </button>
+      <a href="/privacy" className="text-xs text-ink-muted underline">
+        Privacy notice
+      </a>
     </div>
   );
 }
