@@ -40,7 +40,7 @@ resource "aws_secretsmanager_secret" "google_geocoding" {
   recovery_window_in_days = 7
 }
 
-# The pipeline's Google key for Places, for the match_places stage (ADR-0029).
+# The pipeline's Google key for Places, for the match_places stage (ADR-0030).
 # A separate key from the geocoding one, so each is limited to one API and a
 # quota on one cannot stop the other.
 resource "aws_secretsmanager_secret" "google_places" {
