@@ -7,11 +7,11 @@
 // arrives with text from the home page box (CCARE-230), or the page draws a map (CCARE-229), which needs Maps JavaScript too: of every home when the search
 // page opens with nothing searched, and of a search's results once Map is chosen.
 //
-// Maps JavaScript loads once on a page, so the search boxes and the map share one loader
-// (GoogleMapsLoader). It mounts when the first of them needs it, beside the forms and the results
-// rather than around them, so loading never remounts the input being typed in. What the search boxes
-// need of it is held above both (GoogleForSearch), since the boxes are in the filters and the loader
-// is where the map is drawn.
+// Maps JavaScript loads once on a page, so the search box and the map share one loader
+// (GoogleMapsLoader). It mounts when the first of them needs it, beside the bar and the results
+// rather than around them, so loading never remounts the input being typed in. What the search box
+// needs of it is held above both (GoogleForSearch), since the box is in the bar and the loader is
+// where the map is drawn.
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
@@ -45,14 +45,14 @@ interface Loading {
 
 const Google = createContext<(GooglePlaces & { loading: Loading | null }) | null>(null);
 
-// Around the filters and the results. apiKey is the browser key the page read on the server (not
+// Around the bar and the results. apiKey is the browser key the page read on the server (not
 // NEXT_PUBLIC_, so the Docker image doesn't carry it); null leaves the search box suggesting homes
 // only, and the page without a map.
 export function GoogleForSearch({ apiKey, children }: { apiKey: string | null; children: ReactNode }) {
   return <Google.Provider value={useGoogle(apiKey)}>{children}</Google.Provider>;
 }
 
-// Google for the search boxes of the column and the phone sheet, which edit the same draft.
+// Google for the search box in the bar.
 export function useGooglePlaces(): GooglePlaces {
   const google = useContext(Google);
   if (!google) throw new Error("useGooglePlaces needs GoogleForSearch around it");

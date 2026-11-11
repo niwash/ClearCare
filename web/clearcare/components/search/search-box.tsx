@@ -1,13 +1,13 @@
 "use client";
 
 // components/search/search-box.tsx
-// The search box in the search filters (CCARE-230): one box for a home's name, a town, an area or an
-// Eircode, with "Use my location" under it. As the visitor types, a list under the box suggests the
+// The search box in the search page's bar (CCARE-230): one box for a home's name, a town, an area or
+// an Eircode, with "Use my location" under it. As the visitor types, a list under the box suggests the
 // nursing homes whose name matches, from ClearCare's own data (/search/names), then places in
 // Ireland, from Google: a combobox by the ARIA pattern
 // (https://www.w3.org/WAI/ARIA/apg/patterns/combobox/), its list in two groups. What a pick, the
 // typing and the location button do to the search is in lib/search-box.ts; like every field in the
-// filters, it changes the draft, which applies on the panel's button.
+// bar, it changes the draft, which applies on Search.
 //
 // Without a key, or once Google has failed to load, the list suggests homes only. Before scripts run
 // the box is a plain text box sent as q, which the search page settles without Google
@@ -61,8 +61,11 @@ const LOCATION_MESSAGES: Record<LocationState, string> = {
 };
 
 // False on the server and in the first render in the browser, then true: the combobox and the
-// location button need scripts, so they appear only once scripts run.
+// location button need scripts, so they appear only once scripts run. The filters' "Show all" too.
 const subscribeNothing = () => () => {};
+export function useScripted() {
+  return useSyncExternalStore(subscribeNothing, () => true, () => false);
+}
 
 // The names of the homes that match text, read through the site's own server.
 export async function homeNames(text: string): Promise<string[]> {
@@ -86,7 +89,7 @@ export function SearchBox({
   google: GooglePlaces;
   onPick: (pick: PendingPick) => void; // a picked place whose location is still on its way
 }) {
-  const scripted = useSyncExternalStore(subscribeNothing, () => true, () => false);
+  const scripted = useScripted();
   const listId = `${id}-suggestions`;
 
   // What the visitor typed, which the suggestions are for. Not the box's text: a pick, or the page
@@ -220,7 +223,7 @@ export function SearchBox({
     }
     close();
     const attempt = ++locating.current;
-    // input is null once the box has gone, as it does when the phone's sheet closes.
+    // input is null once the box has gone, as it has when the page was left.
     const wanted = () => attempt === locating.current && input.current !== null;
     let answered = false;
     let limit: ReturnType<typeof setTimeout> | undefined;
