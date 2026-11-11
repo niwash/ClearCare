@@ -4,7 +4,8 @@
 // Google's suggestions for the place box (CCARE-228): Maps JavaScript with its places library,
 // loaded with @vis.gl/react-google-maps, and the Place Autocomplete Data API's answers read into
 // PlaceSuggestions (lib/place-search.ts). Nothing here runs until the visitor types in the box, or
-// opens the map of the results (CCARE-229), which needs Maps JavaScript too.
+// the page draws a map (CCARE-229), which needs Maps JavaScript too: of every home when the search
+// page opens with nothing searched, and of a search's results once Map is chosen.
 //
 // Maps JavaScript loads once on a page, so the place boxes and the map share one loader
 // (GoogleMapsLoader). It mounts when the first of them needs it, beside the forms and the results

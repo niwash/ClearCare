@@ -1,7 +1,7 @@
 // tests/points-api.test.ts
 // What the search page's map asks the API for (lib/points-api.ts): the points of the same search,
-// with the token that says the request is the site's own (ADR-0029), and what the page is told when
-// they can't be read. The API is a fetch each test replaces.
+// or of every home before one, with the token that says the request is the site's own (ADR-0029),
+// and what the page is told when they can't be read. The API is a fetch each test replaces.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, describe, test, type TestContext } from "node:test";
@@ -66,6 +66,16 @@ describe("the points of a search", () => {
       ["name", "elm"],
       ["near", "53.34,-6.54"],
     ]);
+  });
+
+  test("are every home's when nothing is searched: the request names nothing to match", async (context) => {
+    const requests = api(context, 200, { points: [ELM_HALL], register_snapshot: {} });
+
+    // An order and a view can be in the address without a search.
+    const answer = await readPoints(readSearch({ sort: "latest_inspection", view: "map" }));
+
+    assert.deepEqual(answer, { ok: true, points: [ELM_HALL] });
+    assert.deepEqual([...requests[0].url.searchParams], []);
   });
 
   test("are asked for as the site, and never from a cache", async (context) => {

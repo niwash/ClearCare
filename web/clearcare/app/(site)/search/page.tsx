@@ -109,8 +109,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;
   // The map's pins are advanced markers, which Google draws only on a map with a map ID (README).
   const mapId = process.env.GOOGLE_MAPS_MAP_ID || null;
-  // Nothing is listed until something is searched for (CCARE-164): a full list of every home
-  // read as if the search had been done for them.
+  // No home is listed until something is searched for (CCARE-164): a full list of every home
+  // read as if the search had been done for them. The list still isn't shown; every home is on a
+  // map under the prompt instead (mapOfEveryHome, below).
   const searched = hasSearch(search);
 
   // The account's saved search, read here rather than in the browser (ADR-0025). A visitor with no
@@ -146,18 +147,24 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // and the page says the search is unavailable.
   const facets = (data ?? (start?.ok ? start.data : null))?.facets ?? null;
 
-  // The results as a map (CCARE-229), offered once there are results to show and this deployment can
-  // draw one: Google's key and map ID for the map, and the token the API gives the points for
-  // (ADR-0029). Only then does view=map in the address mean anything. The points are every matching
-  // home's, not this page of the list's, read on the server for each map and handed to it as props.
-  const mapOffered = Boolean(data && data.total > 0 && googleKey && mapId && pointsConfigured());
+  // The page's map (CCARE-229), when this deployment can draw one: Google's key and map ID for the
+  // map, and the token the API gives the points for (ADR-0029).
+  const mapPossible = Boolean(googleKey && mapId && pointsConfigured());
+  // The results as a map, offered once there are results to show. Only then does view=map in the
+  // address mean anything.
+  const mapOffered = mapPossible && Boolean(data && data.total > 0);
   const mapView = mapOffered && search.view === "map";
-  const points = mapView ? await readPoints(search) : null;
+  // Before anything is searched, every home on a map under the prompt, with no switch: there is no
+  // list to switch to.
+  const mapOfEveryHome = mapPossible && !searched;
+  // The points are every matching home's, not this page of the list's, and every home's when nothing
+  // is searched. They are read on the server for each map and handed to it as props.
+  const points = mapView || mapOfEveryHome ? await readPoints(search) : null;
   const pins = points?.ok && points.points.length > 0 ? points.points : null;
   const listHref = searchHref({ ...search, view: "list" });
 
   return (
-    // What the place boxes in the filters and the map in the results share of Google.
+    // What the place boxes in the filters and the page's map share of Google.
     <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
@@ -200,13 +207,15 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
           {/* Google's loader has this one place whatever else the page shows, since a place box can
               ask for it before any search. The map is drawn inside it; keyed by the search, so a new
-              search opens on its own pins. */}
+              search opens on its own pins. Before a search it has no list to lead back to. */}
           <GoogleMapsLoader>
             {pins && mapId && (
-              <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={listHref} />
+              <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
             )}
           </GoogleMapsLoader>
-          {points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+          {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
+              points the page is the prompt alone. */}
+          {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
 
           {data && !mapView && <ResultsList search={search} data={data} />}
           {data && <Source snapshot={data.register_snapshot} />}
@@ -243,6 +252,7 @@ function SearchHero() {
 // In place of results before anything is searched for: what to enter, in a tinted panel like the
 // no-results one, with the icon in a soft circle, and where to start for a family new to this. If
 // the form was sent empty, it says so instead. filters: the care and amenity filters are offered.
+// The map of every home, where there is one, comes under it.
 function SearchPrompt({ empty, filters }: { empty: boolean; filters: boolean }) {
   return (
     <section
