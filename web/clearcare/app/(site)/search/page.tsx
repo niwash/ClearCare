@@ -16,12 +16,12 @@ import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { pointsConfigured, readPoints } from "@/lib/points-api";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
 import { formatEircode, searchCentres, unavailableMessage, type RegisterSnapshot, type SearchResponse } from "@/lib/search";
+import { editedText, NOBODY_TO_ASK, settleBox } from "@/lib/search-box";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -85,11 +85,24 @@ async function sentEmpty(searchParams: SearchPageProps["searchParams"]) {
   return ["name", "place", "county"].some((key) => key in params);
 }
 
-// The home page box sends q. It goes on to the search homeSearchHref makes of it (lib/home-search.ts).
-async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
-  const value = (await searchParams).q;
-  if (value === undefined) return;
-  redirect(homeSearchHref((Array.isArray(value) ? value[0] : value) ?? ""));
+// The home page box sends q, and so does this page's box when its form is sent without scripts,
+// beside the search it was drawn from and the filters chosen. The page goes on to the search the
+// box's rule makes of the text (settleBox, lib/search-box.ts).
+//
+// Google is asked only in the browser, so here a town or an area can't be looked up as a place and
+// would end as a name. Such text is returned for the browser to settle (SearchFilters), over the
+// page for nothing searched. A form that says scripts are off gets the name search instead: both
+// forms say so, the home page's in a <noscript>.
+async function settleSentText(searchParams: SearchPageProps["searchParams"]) {
+  const { q, scripts, ...sentWithIt } = await searchParams;
+  if (q === undefined) return null;
+  const text = ((Array.isArray(q) ? q[0] : q) ?? "").trim();
+  const sent = readSearch(sentWithIt);
+  const search = await settleBox(editedText(sent, text, sent), { ...NOBODY_TO_ASK, searched: sent });
+  if (scripts !== "off" && search.name && search.name !== sent.name) return text;
+  // An empty box goes on as an empty name, so it gets "Please enter something to search for"
+  // (sentEmpty).
+  redirect(hasSearch(search) ? searchHref(search) : "/search?name=");
 }
 
 export async function generateMetadata({ searchParams }: SearchPageProps) {
@@ -101,7 +114,7 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  await redirectHomeSearch(searchParams);
+  const arrivedWith = await settleSentText(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
   // Read on each request, after the address made the page dynamic, rather than at build: the Docker
@@ -164,7 +177,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const listHref = searchHref({ ...search, view: "list" });
 
   return (
-    // What the place boxes in the filters and the page's map share of Google.
+    // What the search boxes in the filters and the page's map share of Google.
     <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
@@ -180,6 +193,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           total={data ? data.total : null}
           sortShown={data !== null && !mapView}
           initialSaved={initialSaved}
+          arrivedWith={arrivedWith}
         />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
@@ -205,7 +219,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <SearchError status={result.status} detail={result.detail} />
           )}
 
-          {/* Google's loader has this one place whatever else the page shows, since a place box can
+          {/* Google's loader has this one place whatever else the page shows, since a search box can
               ask for it before any search. The map is drawn inside it; keyed by the search, so a new
               search opens on its own pins. Before a search it has no list to lead back to. */}
           <GoogleMapsLoader>

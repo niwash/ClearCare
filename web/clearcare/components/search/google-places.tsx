@@ -1,22 +1,22 @@
 "use client";
 
 // components/search/google-places.tsx
-// Google's suggestions for the place box (CCARE-228): Maps JavaScript with its places library,
+// Google's place suggestions for the search box (CCARE-228): Maps JavaScript with its places library,
 // loaded with @vis.gl/react-google-maps, and the Place Autocomplete Data API's answers read into
-// PlaceSuggestions (lib/place-search.ts). Nothing here runs until the visitor types in the box, or
-// the page draws a map (CCARE-229), which needs Maps JavaScript too: of every home when the search
+// PlaceSuggestions (lib/search-box.ts). Nothing here runs until the visitor types in the box or
+// arrives with text from the home page box (CCARE-230), or the page draws a map (CCARE-229), which needs Maps JavaScript too: of every home when the search
 // page opens with nothing searched, and of a search's results once Map is chosen.
 //
-// Maps JavaScript loads once on a page, so the place boxes and the map share one loader
+// Maps JavaScript loads once on a page, so the search boxes and the map share one loader
 // (GoogleMapsLoader). It mounts when the first of them needs it, beside the forms and the results
-// rather than around them, so loading never remounts the input being typed in. What the place boxes
+// rather than around them, so loading never remounts the input being typed in. What the search boxes
 // need of it is held above both (GoogleForSearch), since the boxes are in the filters and the loader
 // is where the map is drawn.
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
 import { nearFrom } from "@/lib/near";
-import { readSuggestion, type PlaceSuggestion } from "@/lib/place-search";
+import { readSuggestion, type PlaceSuggestion } from "@/lib/search-box";
 
 // Towns (Cavan, Swords), city areas (Rathmines, Tallaght, Dublin 6), counties and full Eircodes, and
 // no streets or businesses; five is Google's limit. "(regions)" misses Rathmines and Dublin 6.
@@ -27,16 +27,15 @@ export interface PlaceFinder {
 }
 
 export interface GooglePlaces {
-  enabled: boolean; // there is a key and Google hasn't failed to load: the box offers suggestions
-  inUse: boolean; // and the visitor has typed in it, so Search looks text up (settlePlace)
   finder: PlaceFinder | null; // once the library has loaded
   request: () => void; // on the first character typed
-  // Google's first suggestion for text, once the library has loaded; null when there is none or it
-  // failed to load.
-  findFirst: (text: string) => Promise<PlaceSuggestion | null>;
+  // Google's first suggestion for text, which Search asks for to place text that wasn't picked
+  // (settleBox); it answers null when there is none. Without a key, or once Google has failed to
+  // load, there is nothing to ask.
+  findFirst: ((text: string) => Promise<PlaceSuggestion | null>) | null;
 }
 
-// What the loader needs: the key, and whether a place box has asked for suggestions yet.
+// What the loader needs: the key, and whether a search box has asked for suggestions yet.
 interface Loading {
   apiKey: string;
   placesWanted: boolean;
@@ -47,20 +46,20 @@ interface Loading {
 const Google = createContext<(GooglePlaces & { loading: Loading | null }) | null>(null);
 
 // Around the filters and the results. apiKey is the browser key the page read on the server (not
-// NEXT_PUBLIC_, so the Docker image doesn't carry it); null leaves the place box a plain text box
-// and the page without a map.
+// NEXT_PUBLIC_, so the Docker image doesn't carry it); null leaves the search box suggesting homes
+// only, and the page without a map.
 export function GoogleForSearch({ apiKey, children }: { apiKey: string | null; children: ReactNode }) {
   return <Google.Provider value={useGoogle(apiKey)}>{children}</Google.Provider>;
 }
 
-// Google for the place boxes of the column and the phone sheet, which edit the same draft.
+// Google for the search boxes of the column and the phone sheet, which edit the same draft.
 export function useGooglePlaces(): GooglePlaces {
   const google = useContext(Google);
   if (!google) throw new Error("useGooglePlaces needs GoogleForSearch around it");
   return google;
 }
 
-// Nothing loads for the place boxes until request().
+// Nothing loads for the search boxes until request(), or until Search asks for a first suggestion.
 function useGoogle(apiKey: string | null): GooglePlaces & { loading: Loading | null } {
   const [requested, setRequested] = useState(false);
   const [finder, setFinder] = useState<PlaceFinder | null>(null);
@@ -86,6 +85,8 @@ function useGoogle(apiKey: string | null): GooglePlaces & { loading: Loading | n
   const request = useCallback(() => setRequested(true), []);
   const findFirst = useCallback(
     async (text: string) => {
+      // Text that arrives from the home page box was typed there, so no box here has asked yet.
+      setRequested(true);
       const loaded = await ready.promise;
       return loaded ? ((await loaded.suggest(text))[0] ?? null) : null;
     },
@@ -93,18 +94,16 @@ function useGoogle(apiKey: string | null): GooglePlaces & { loading: Loading | n
   );
 
   return {
-    enabled: Boolean(apiKey) && !failed,
-    inUse: Boolean(apiKey) && requested && !failed,
     finder,
     request,
-    findFirst,
+    findFirst: apiKey && !failed ? findFirst : null,
     loading: apiKey ? { apiKey, placesWanted: requested, onPlaces: onLoad, onError } : null,
   };
 }
 
-// The page's one loader of Maps JavaScript. It mounts once a place box has asked for suggestions or
+// The page's one loader of Maps JavaScript. It mounts once a search box has asked for suggestions or
 // it is given a map to draw, and then stays: the places library joins a loader the map started, and
-// a map opened later is drawn in the one the place box started. Each library is fetched when
+// a map opened later is drawn in the one the search box started. Each library is fetched when
 // something first uses it, so the map alone loads no places library.
 //
 // The search's page address holds the name searched for and near, so Google is to get only the

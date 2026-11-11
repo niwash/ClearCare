@@ -20,18 +20,20 @@ import { useEffect, useState } from "react";
 
 import { hasSavedChoices, type SavedSearch } from "@/lib/preferences";
 
-import { forgetPreferences, savePreferences, useSavedSearch } from "./saved-search-store";
+import { forgetPreferences, useSavedSearch } from "./saved-search-store";
 
 // How long "Saved" stays before the button offers to save again.
 const SAVED_FOR = 3000;
 
 export function SavePreferencesButton({
   current,
-  onSaved,
+  save,
   onForgotten,
 }: {
   current: SavedSearch; // the choices on screen, saved or not
-  onSaved?: () => void; // what to do once they are stored: the panel applies them
+  // Stores them and says whether it worked. The panel does it: it applies them once stored, and
+  // text typed in its search box can be one of them, a county, only once it is settled.
+  save: () => Promise<boolean>;
   onForgotten?: () => void; // what to do once they are gone: the panel empties the page
 }) {
   const { status, saved, error, busy } = useSavedSearch();
@@ -53,8 +55,7 @@ export function SavePreferencesButton({
       <button
         type="button"
         onClick={async () => {
-          const stored = await savePreferences(current, onSaved);
-          if (stored) setJustSaved(true);
+          if (await save()) setJustSaved(true);
         }}
         disabled={busy || !canSave}
         className={`min-h-11 w-full rounded-full border px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:border-line disabled:text-ink-faint adult:rounded-md ${

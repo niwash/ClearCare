@@ -6,7 +6,7 @@ The site reads centres from the ClearCare API (`api/openapi.yaml`). Set these in
 
 - `API_URL`: the API's base URL. Production must set it.
 Without `API_URL`, search and centre pages say the data isn't available.
-- `GOOGLE_MAPS_BROWSER_KEY`: Google's browser key, for the place suggestions and the map on the search page. The server reads it for each request, so one built image serves every environment. Without it, the "Town, area or Eircode" box is a plain text box searched as an address or Eircode.
+- `GOOGLE_MAPS_BROWSER_KEY`: Google's browser key, for the place suggestions and the map on the search page. The server reads it for each request, so one built image serves every environment. Without it, the search box suggests nursing homes only, and a town or an area typed there is searched as a name.
 - `GOOGLE_MAPS_MAP_ID`: a map ID from the same Google Cloud project, for the search page's map. Its pins are advanced markers, which Google draws only on a map with a map ID. `DEMO_MAP_ID` will do for local work.
 - `SITE_TOKEN`: the token the site shares with the API (`.env.example`). The API gives the map's points only to a caller that sends it ([ADR-0029](../../docs/adr/0029-coordinates-reach-the-map-through-a-route-only-the-site-can-call.md)).
 

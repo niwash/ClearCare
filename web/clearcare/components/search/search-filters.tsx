@@ -1,6 +1,6 @@
 "use client";
 
-// The search page's filters (CCARE-189): where to look, with the place box (PlaceBox, CCARE-228),
+// The search page's filters (CCARE-189): where to look, with the search box (SearchBox, CCARE-230),
 // then the care and amenity filters (lib/search-filters.ts) in folding groups. From md up they're a column beside the
 // results; on phones they open in a full-screen sheet from a "Filters" button. Either way, choices
 // apply on "Show n nursing homes" (or Enter), not as they're made, so the results don't change
@@ -14,14 +14,14 @@ import { Chevron } from "@/components/ui/chevron";
 import { textInputClass } from "@/components/ui/classes";
 import { PreferencesNotice } from "@/components/preferences/preferences-notice";
 import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
-import { hydrateSavedSearch, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
+import { hydrateSavedSearch, savePreferences, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
 import { useGooglePlaces, type GooglePlaces } from "@/components/search/google-places";
 import { forgetLastSearch } from "@/components/search/last-search";
-import { PlaceBox } from "@/components/search/place-box";
+import { homeNames, SearchBox } from "@/components/search/search-box";
 import { filtersClearedHref, leavesHomesOut, searchHref, type PageSearch } from "@/lib/page-search";
-import { needsLookup, settlePlace, withoutDistance, type PendingPick } from "@/lib/place-search";
 import { savedSearchFrom } from "@/lib/preferences";
-import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, type Facets } from "@/lib/search";
+import { ANY_COUNTY, COUNTIES, type Facets } from "@/lib/search";
+import { needsLookup, settleBox, typedText, withoutDistance, type PendingPick } from "@/lib/search-box";
 import {
   filterCount,
   FILTER_GROUPS,
@@ -34,7 +34,7 @@ import {
   type FilterGroupKey,
 } from "@/lib/search-filters";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { useEffect, useEffectEvent, useId, useRef, useState, useTransition, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
 // view is not a filter, but it is in the page address with them, so the draft carries it and a new
 // search keeps the list or the map the visitor was on.
@@ -43,7 +43,8 @@ type FilterState = Pick<PageSearch, "name" | "place" | "near" | "county" | "sele
 const EMPTY: FilterState = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name", view: "list" };
 // How long after the last change its counts are asked for.
 const PAUSE = 250;
-// How long Search waits for Google to place the box's text before searching it as text.
+// How long Search waits for the homes' names and for Google to settle the box's text before
+// searching it as a name.
 const LOOKUP_LIMIT = 2000;
 
 function noun(count: number) {
@@ -56,6 +57,7 @@ export function SearchFilters({
   total,
   sortShown,
   initialSaved,
+  arrivedWith,
 }: {
   search: FilterState;
   facets: Facets | null;
@@ -65,6 +67,9 @@ export function SearchFilters({
   // and whether one could be read at all. Handed down rather than fetched here, so a visitor with no
   // account sends no request, and the page has already opened a kept search before it renders.
   initialSaved: SavedSearchInitial;
+  // Text from the home page box that the server left for the browser to settle, which can ask
+  // Google where a town is (app/(site)/search/page.tsx); null on any other arrival.
+  arrivedWith: string | null;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -73,7 +78,7 @@ export function SearchFilters({
   // The choices not yet applied, in the column or the sheet. They start as what's applied, and go
   // back to it whenever the page address changes (a search, a tag removed, the back button).
   const sheet = useRef<HTMLDialogElement>(null);
-  const [draft, setDraft] = useState<FilterState>(search);
+  const [draft, setDraft] = useState<FilterState>(arrivedWith ? typedText(search, arrivedWith) : search);
   const [draftFor, setDraftFor] = useState(applied);
   if (draftFor !== applied) {
     setDraftFor(applied);
@@ -82,18 +87,18 @@ export function SearchFilters({
   const [fetched, setFetched] = useState<{ total: number | null; facets: Facets | null; search: FilterState } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const draftHref = searchHref(draft);
-  // What "Save my preferences" keeps: the choices in the form, not the words typed into the search
-  // boxes (lib/preferences.ts). It sits under the Search button, so it saves what is about to be
-  // searched for, and applies it once stored.
+  // What "Save my preferences" would keep, for whether it has anything to keep: the choices in the
+  // form, not the words typed into the search box (lib/preferences.ts).
   const savedFromDraft = savedSearchFrom(draft);
-  // Google's suggestions for the place boxes, loaded once the visitor types in one, and a picked
-  // place whose location Google is still giving, which Search waits for.
+  // Google's suggestions for the search boxes, loaded once the visitor types in one or arrives with
+  // text from the home page box, and a picked place whose location Google is still giving, which
+  // Search waits for.
   const google = useGooglePlaces();
   const pick = useRef<PendingPick | null>(null);
   // Counts presses of Search: a lookup can take up to LOOKUP_LIMIT, so an older press can finish last.
   const searches = useRef(0);
-  // Text in the place box that Search will look up first: a count now would be for the wrong search.
-  const lookingUp = google.inUse && needsLookup(draft, search);
+  // Text in the search box that Search will settle first: a count now would be for the wrong search.
+  const lookingUp = needsLookup(draft, search);
 
   // The account's saved choices, as the page read them on the server. The button under Search
   // reports them, and a kept search was applied before this page rendered (app/(site)/search),
@@ -155,22 +160,55 @@ export function SearchFilters({
     sheet.current?.showModal();
   }
 
-  async function apply() {
-    sheet.current?.close();
+  // The draft with the search box's text as the name, county or place it is (lib/search-box.ts),
+  // or null once a later press of Search has taken over.
+  async function settle() {
     const thisSearch = ++searches.current;
-    // The place box's text as Google places it, or as it is (lib/place-search.ts).
-    const settled = await settlePlace(draft, {
+    const settled = await settleBox(draft, {
       searched: search,
       pick: pick.current,
-      findFirst: google.inUse ? google.findFirst : null,
+      hasName: async (text) => (await homeNames(text)).length > 0,
+      findFirst: google.findFirst,
       deadline: new Promise((resolve) => setTimeout(resolve, LOOKUP_LIMIT)),
     });
-    if (thisSearch !== searches.current) return;
-    // A search with every field emptied goes to the page that says so (?filtersCleared=true) rather than to
-    // /search, which is the arrival that opens the visitor's saved search again. Without this,
-    // "Clear all" followed by Search would put the cleared filters straight back.
-    startTransition(() => router.push(filtersClearedHref(settled), { scroll: false }));
+    return thisSearch === searches.current ? settled : null;
   }
+
+  // A search with every field emptied goes to the page that says so (?filtersCleared=true) rather than to
+  // /search, which is the arrival that opens the visitor's saved search again. Without this,
+  // "Clear all" followed by Search would put the cleared filters straight back.
+  function go(settled: FilterState, how: "push" | "replace" = "push") {
+    startTransition(() => router[how](filtersClearedHref(settled), { scroll: false }));
+  }
+
+  async function apply() {
+    sheet.current?.close();
+    const settled = await settle();
+    if (settled) go(settled);
+  }
+
+  // "Save my preferences" sits under the Search button, so it saves what is about to be searched
+  // for, and applies it once stored. The text is settled first: typed in the box, a county is one
+  // of the choices kept.
+  async function save() {
+    const settled = await settle();
+    if (!settled) return false;
+    return savePreferences(savedSearchFrom(settled), () => {
+      sheet.current?.close();
+      go(settled);
+    });
+  }
+
+  // Text from the home page box goes through the rule Search follows, once the page is in the
+  // browser. Until then the page is the one for nothing searched, with the text in the box. Its
+  // search replaces this address, so Back leads to the home page and not to the settling again.
+  const settleArrival = useEffectEvent(async () => {
+    const settled = await settle();
+    if (settled) go(settled, "replace");
+  });
+  useEffect(() => {
+    if (arrivedWith) settleArrival();
+  }, [arrivedWith]);
 
   // Worded from the search the count is for, so that until a new count arrives the button keeps
   // what it said. A point alone lists every home (leavesHomesOut), so the button doesn't count them.
@@ -187,7 +225,8 @@ export function SearchFilters({
   // Something in the draft to clear (the order isn't cleared).
   const canClear = searchHref({ ...draft, sort: "name" }) !== "/search";
   const clear = () => setDraft({ ...EMPTY, sort: withoutDistance(draft.sort), view: draft.view });
-  const place = {
+  const box = {
+    searched: search,
     google,
     onPick: (picked: PendingPick) => {
       pick.current = picked;
@@ -206,7 +245,7 @@ export function SearchFilters({
         <FilterPanel
           state={draft}
           onChange={setDraft}
-          place={place}
+          box={box}
           facets={draftCount.facets}
           onSubmit={apply}
           footer={
@@ -220,7 +259,7 @@ export function SearchFilters({
                   kept (ADR-0025). It applies them once saved, so the results on screen are the ones
                   the account remembers. */}
               <div className="w-full">
-                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+                <SavePreferencesButton current={savedFromDraft} save={save} onForgotten={startOver} />
               </div>
               {canClear && (
                 <button type="button" onClick={clear} className="min-h-11 px-2 text-sm text-primary underline">
@@ -282,14 +321,14 @@ export function SearchFilters({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <FilterPanel state={draft} onChange={setDraft} place={place} facets={draftCount.facets} onSubmit={apply} summaries />
+              <FilterPanel state={draft} onChange={setDraft} box={box} facets={draftCount.facets} onSubmit={apply} summaries />
             </div>
             <div className="border-t border-line bg-surface px-5 pb-5 pt-3 shadow-[0_-6px_16px_rgb(31_42_55/0.06)]">
               <button type="button" onClick={apply} className="min-h-13 w-full rounded-full bg-primary text-[17px] font-bold text-on-primary">
                 {showLabel}
               </button>
               <div className="mt-2 w-full">
-                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+                <SavePreferencesButton current={savedFromDraft} save={save} onForgotten={startOver} />
               </div>
             </div>
           </div>
@@ -304,7 +343,7 @@ export function SearchFilters({
 function FilterPanel({
   state,
   onChange,
-  place,
+  box,
   facets,
   footer,
   rounded = false,
@@ -313,7 +352,7 @@ function FilterPanel({
 }: {
   state: FilterState;
   onChange: Dispatch<SetStateAction<FilterState>>;
-  place: { google: GooglePlaces; onPick: (pick: PendingPick) => void };
+  box: { searched: FilterState; google: GooglePlaces; onPick: (pick: PendingPick) => void };
   facets: Facets | null;
   footer?: ReactNode;
   rounded?: boolean;
@@ -339,20 +378,10 @@ function FilterPanel({
     >
       <div className="flex flex-col gap-4 px-5 pb-5 pt-4.5">
         <SectionHeading>Home location</SectionHeading>
-        <Field id={`${id}-name`} label="Nursing home name">
-          {/* No faded example in any field: people read one as already filled in (CCARE-164). */}
-          <input
-            id={`${id}-name`}
-            name="name"
-            type="search"
-            value={state.name}
-            onChange={(event) => onChange({ ...state, name: event.target.value })}
-            maxLength={MAX_TEXT_LENGTH}
-            className={`${textInputClass} w-full`}
-          />
-        </Field>
-        <Field id={`${id}-place`} label="Town, area or Eircode">
-          <PlaceBox id={`${id}-place`} draft={state} onChange={onChange} google={place.google} onPick={place.onPick} />
+        {/* One box, so nobody has to know which box their words belong in (CCARE-230). No faded
+            example in any field: people read one as already filled in (CCARE-164). */}
+        <Field id={`${id}-box`} label="Nursing home name, town, area or Eircode">
+          <SearchBox id={`${id}-box`} draft={state} searched={box.searched} onChange={onChange} google={box.google} onPick={box.onPick} />
         </Field>
         <Field id={`${id}-county`} label="County">
           <select
@@ -372,6 +401,14 @@ function FilterPanel({
         </Field>
         {state.sort !== "name" && <input type="hidden" name="sort" value={state.sort} />}
         {state.view === "map" && <input type="hidden" name="view" value="map" />}
+        {/* Read only when the form is sent as a form, which is when scripts don't run. The box sends
+            its text beside the search it was drawn from, so that text nobody edited goes on as the
+            search it was (editedText), and "scripts" tells the page not to leave the text for the
+            browser to settle. */}
+        {state.name && <input type="hidden" name="name" value={state.name} />}
+        {state.place && <input type="hidden" name="place" value={state.place} />}
+        {state.near && <input type="hidden" name="near" value={state.near} />}
+        <input type="hidden" name="scripts" value="off" />
         {/* In the sheet, whose button is outside the form: so Enter searches, and without scripts
             the form can be sent. The column has its own in the footer. */}
         {!footer && (

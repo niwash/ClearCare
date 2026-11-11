@@ -49,17 +49,31 @@ export default function PrivacyPage() {
               Compare Homes can take you back to it, and the homes on your Compare Homes shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
               the page address, like any other page you visit, so they appear in the technical logs below.
             </li>
-            {/* The place box (CCARE-228, components/search/place-box.tsx and google-places.tsx): Google's
-                Places library loads only once something is typed in it, and is sent what is typed,
-                then asked for the location of a picked town, area or Eircode, or of the first suggestion
-                when Search is pressed with text that wasn't picked; a county isn't looked up. Measured on
-                9 Nov 2026: it stores nothing in the site's cookies, localStorage or sessionStorage. */}
+            {/* The search box (CCARE-228, CCARE-230; components/search/search-box.tsx and
+                google-places.tsx): one box takes a home's name and a place, so Google's Places library,
+                which loads only once something is typed in it, is sent a home's name as it is typed
+                too. The site's own server is sent the same text, to suggest homes by name
+                (app/(site)/search/names). Google is asked for the location of a picked town, area or
+                Eircode. When Search is pressed with text that wasn't picked and isn't a county, Google
+                is asked for its first suggestion, and for that place's location when the search is
+                made from it (settleBox, lib/search-box.ts). Text searched from the home page box that
+                is no county and no Eircode is settled the same way as the search page opens
+                (settleArrival, components/search/search-filters.tsx), so it goes to Google with
+                nothing typed in the search page's box.
+
+                Measured on 11 Nov 2026 in headless Chrome with an empty profile, typing a town into
+                the box: the suggestions asked places.googleapis.com, and nothing was stored in the
+                site's cookies, localStorage or sessionStorage. */}
             <li>
-              When you type in the &ldquo;Town, area or Eircode&rdquo; box on the search page, what you type goes to
-              Google so it can suggest places. Like any request your browser makes, it carries your IP address.
-              When you pick a town, an area or an Eircode, or search for what you typed, Google is also asked where
-              that place is.
-              Nothing goes to Google for this until you type in that box.{" "}
+              When you type in the search box on the search page, what you type goes to our own server, which
+              suggests nursing homes by name, and to Google, which suggests places. Google gets it whether you
+              are typing a nursing home&apos;s name, a town, an area or an Eircode. Like any request your browser
+              makes, it carries your IP address. When you pick a town, an area or an Eircode, Google is also
+              asked where that place is. When you search for what you typed without picking, Google is asked
+              which place it could be, unless it is a county, and where that place is if we search from it.
+              The same happens when you search from the box on the home page, unless what you typed is a
+              county or an Eircode. Nothing goes to Google for this until you type in the search box or
+              search from the home page.{" "}
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
               with these requests.
             </li>
@@ -153,7 +167,7 @@ export default function PrivacyPage() {
             <li>
               A search you ask us to remember: the county, the order and the care and amenity options you chose.
               It&apos;s kept with your account so it&apos;s there on your next visit, on any device, and what you
-              type into the search boxes isn&apos;t kept. Saving one also keeps a number for your account, which
+              type into the search box isn&apos;t kept. Saving one also keeps a number for your account, which
               the search is filed against. You can forget the search on the search page at any time; that leaves
               your account as it is, and if you ask us by email we remove the saved search along with the account.
             </li>
@@ -243,7 +257,7 @@ export default function PrivacyPage() {
               of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
               pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
               openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
-              place box's suggestions, components/search/google-places.tsx, and since CCARE-229 the search
+              search box's place suggestions, components/search/google-places.tsx, and since CCARE-229 the search
               page's map, components/search/results-map.tsx), which may handle these requests
               outside the EU. The pipeline's geocoding (ADR-0027) sends Google only the centres' register
               addresses, which name no visitor. Cloudflare only holds DNS records, so it sees no visits.
