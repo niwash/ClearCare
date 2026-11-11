@@ -46,7 +46,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports } = record;
+  const { centre, reports, findingsRead } = record;
 
   // One question for each story. Stories that end the same way share one question, asked once with
   // their topics under it, rather than the same words repeated for each. Grouped by the question for
@@ -129,9 +129,15 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
             {about.length > 0 ? "Good to ask any home" : "Good questions to ask"}
           </h3>
           <p className="text-sm text-ink-muted">
+            {/* Only a home whose reports were read can be said to need no question of its own, as on
+                the other tabs (emptyReason). */}
             {about.length > 0
               ? "Whatever its reports say."
-              : "Nothing in this home's reports needs a question of its own, but these are worth asking any home."}
+              : !reports?.inspections.length
+                ? "ClearCare has no inspection reports for this home yet, so there are no questions about them. These are worth asking any home."
+                : !findingsRead
+                  ? "We can't show questions about this home's reports right now. These are worth asking any home."
+                  : "Nothing in this home's reports needs a question of its own, but these are worth asking any home."}
           </p>
           <ul className="mt-3 flex flex-col gap-3">
             {ANY_HOME.map((question) => (

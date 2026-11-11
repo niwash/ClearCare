@@ -26,6 +26,9 @@ export type CentreRecord =
       // false when the findings couldn't be read, so the pages built from them don't say nothing
       // stands out when they simply don't know.
       findingsRead: boolean;
+      // Whether any report has a compliance plan: the home's response to a finding, or a date to
+      // comply by. A page can't say every plan was checked of a home that never had one.
+      hasCompliancePlan: boolean;
     };
 
 export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> => {
@@ -44,6 +47,9 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
     reports: baseReports && addFindings(baseReports, findings),
     amenities,
     findingsRead: findings !== null,
+    hasCompliancePlan: (findings ?? []).some(
+      (finding) => finding.compliance_items.length > 0 || finding.provider_response !== null || Boolean(finding.stated_deadlines?.length),
+    ),
   };
 });
 

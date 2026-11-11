@@ -1,6 +1,6 @@
 // components/centre/promise-trail.tsx
 // One regulation's story on What happened next (CCARE-207, CCARE-212): what the inspector found, what
-// the home said it would do, and what the next inspection found, told down a timeline rather than
+// the home said it would do, and how the regulation was next judged, told down a timeline rather than
 // in three technical columns. Closed, it says the whole story in a line, with how it ended; open, each
 // step has the report's own words and where they are.
 import { formatDate, highlightAnchor, trailAnchor, type Inspection, type PromiseTrail as Trail } from "@/lib/centres";
@@ -119,7 +119,8 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
                   ) : (
                     <JudgementChip judgement={followUp.judgement} />
                   )}
-                  <OutcomePill outcome={outcome} />
+                  {/* Only when it adds to the judgement beside it, which the pill otherwise repeats. */}
+                  {outcome.kind === "not-checked" && <OutcomePill outcome={outcome} />}
                 </div>
                 {followUp.judgement === "not-assessed" && (
                   <p className="text-ink-muted">The next inspection didn&apos;t look at this regulation again.</p>
