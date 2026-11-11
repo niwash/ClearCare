@@ -36,8 +36,9 @@ export function HomeHero() {
             how a home is doing and talk through the choice together.
           </p>
 
-          {/* A name, a county or an Eircode here. The search page takes a county as the County filter,
-              an Eircode as the place and anything else as a name (lib/home-search.ts). A visible
+          {/* A name, a county or an Eircode here. The search page takes a county as the County filter
+              and an Eircode as the place, and settles anything else in the browser by its own box's
+              rule, which can ask Google where a town is (settleBox, lib/search-box.ts). A visible
               label, not a faded hint in the box: people read one as already filled in (CCARE-164). */}
           <form
             action="/search"
@@ -48,7 +49,7 @@ export function HomeHero() {
           >
             <label htmlFor="start-search" className="font-semibold">
               Check a nursing home&apos;s record
-              <span className="block text-sm font-normal text-ink-muted">Nursing home name, county or Eircode</span>
+              <span className="block text-sm font-normal text-ink-muted">Nursing home name, town, county or Eircode</span>
             </label>
             <div className="flex flex-col gap-2 sm:flex-row">
               <input
@@ -59,13 +60,18 @@ export function HomeHero() {
                 // sm:flex-1, not flex-1: in the phone's column a zero basis would squash its height.
                 className={`${textInputClass} w-full sm:flex-1`}
               />
+              {/* Without scripts nothing can ask Google, so the search page is told, and takes
+                  anything that isn't a county or an Eircode as a name. */}
+              <noscript>
+                <input type="hidden" name="scripts" value="off" />
+              </noscript>
               <button type="submit" className={`${primaryButtonClass} inline-flex items-center justify-center gap-2`}>
                 <Icon name="search" />
                 Search
               </button>
             </div>
             <p className="text-sm">
-              <Link href="/search" className="tap-target">Search by town or area instead →</Link>
+              <Link href="/search" className="tap-target">Search with filters and the map →</Link>
             </p>
           </form>
 

@@ -171,7 +171,9 @@ paths:
         (ADR-0029). The site sends the token it shares with the API
         (ADR-0025): a request without that token is refused with 401, and the
         path answers 503 while no token is configured. The site asks again
-        for every map it draws and does not keep the answer.
+        for every page that may draw the map (the search page with nothing
+        searched, and every search with results) and does not keep the
+        answer.
       parameters:
         - name: X-ClearCare-Token
           in: header

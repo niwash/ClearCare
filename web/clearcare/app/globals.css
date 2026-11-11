@@ -393,6 +393,14 @@
   box-shadow: none;
 }
 
+/* A pin or a cluster on the search page's map (map-pins.tsx) shows the keyboard's focus as an
+   outline round its disc. The element Google wraps it in would get the outlines above as a square
+   round that, so it gets none. */
+gmp-advanced-marker:focus-visible,
+:root[data-design="adult-centred"] gmp-advanced-marker:focus-visible {
+  outline: none;
+}
+
 /* WCAG 2.5.5 (AAA): links that stand on their own are at least 44px tall in the adult-centred
    design. tap-target-top keeps the text at the top, for links that sit beside other text.
    Outside any layer so it wins over display utilities such as inline-block. */
@@ -493,6 +501,14 @@
     block-size: auto;
     opacity: 1;
     translate: 0;
+  }
+
+  /* A <details> whose content opens over the page rather than in it, such as the panels of the
+     search page's bar, keeps the fade alone: a translate would make ::details-content the box the
+     panel is placed against, and the clip would then cut the panel off. */
+  :root:not([data-design="adult-centred"]) details.opens-over::details-content {
+    overflow: visible;
+    translate: none;
   }
 }
 

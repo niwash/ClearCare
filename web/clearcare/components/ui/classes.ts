@@ -10,6 +10,13 @@ export const primaryButtonClass =
 // home page. Add the background and spacing for where it sits.
 export const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 
+// The search page's column from xl up when its results have the map beside the list (CCARE-230): up
+// to 96rem, wider than the site's (page-column, globals.css), so that both fit. The first is for a
+// page-column, as the bar's; the second for a block inside the site's column and its padding, as the
+// results, which it widens by the same on each side. The two then have the same edges.
+export const widePageColumnClass = "xl:max-w-[96rem]";
+export const widerThanPageClass = "xl:mx-[calc(50%_-_min(50vw,48rem)_+_2rem)]";
+
 // A link styled as a large button, such as "Read guide" or "See contacts": a call to action. On a
 // brand-colour band (brand-band, globals.css) it turns white with brand-colour text. In the
 // standard design it is a pill that lifts a little on hover, and its arrow (an aria-hidden span)

@@ -68,7 +68,7 @@ describe("the token behind the API call", () => {
   test("is read on the server only", () => {
     const offenders = sourceFiles("components").filter(
       (file) =>
-        /SITE_TOKEN/.test(read(file)) || /preferences-api/.test(read(file)),
+        /SITE_TOKEN/.test(read(file)) || /preferences-api|points-api/.test(read(file)),
     );
 
     assert.deepEqual(offenders, [], "only app/ and lib/ may reach the API's token");
