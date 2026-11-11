@@ -334,6 +334,10 @@ paths:
         The centre must be in the register snapshot ClearCare currently serves.
         Any value that is not the ID of such a centre gives 404, including one
         that is not a number. A centre with no reports gives `"reports": []`.
+
+        `hiqa_checked_at` says when ClearCare last read the centre's page on
+        hiqa.ie, where HIQA lists the centre's reports, so a reader can tell
+        how recently ClearCare looked for a new one.
       parameters:
         - name: centre_id
           in: path
@@ -361,6 +365,7 @@ paths:
                     inspector_count: 2
                     regulation_count: 12
                     compliance_item_count: 18
+                hiqa_checked_at: "2026-11-10T06:20:31Z"
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -1345,7 +1350,7 @@ components:
 
     CentreReportsResult:
       type: object
-      required: [centre_id, reports]
+      required: [centre_id, reports, hiqa_checked_at]
       properties:
         centre_id:
           type: string
@@ -1356,6 +1361,13 @@ components:
           description: The centre's reports, newest inspection first.
           items:
             $ref: "#/components/schemas/CentreReport"
+        hiqa_checked_at:
+          type: [string, "null"]
+          format: date-time
+          description: >
+            When ClearCare last read the centre's page on hiqa.ie and could use
+            it, in UTC, to the second. A read that failed, or a page for another
+            centre, does not count. `null` until the page has been read.
 
     CentreReport:
       type: object

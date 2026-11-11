@@ -33,6 +33,8 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V14__finding_re_assessment.sql",
     REPOSITORY / "db" / "V15__user_preferences.sql",
     REPOSITORY / "db" / "V16__centre_location.sql",
+    REPOSITORY / "db" / "V17__centre_point_view.sql",
+    REPOSITORY / "db" / "V18__centre_page_check.sql",
 )
 # The same image as compose.yaml, which says why it is this one.
 POSTGRES_IMAGE = (
