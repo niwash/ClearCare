@@ -48,9 +48,9 @@ const LOCATION_OPTIONS: PositionOptions = { enableHighAccuracy: false, maximumAg
 const LOCATION_LIMIT = 10 * 1000;
 const groupHeadingClass = "px-3 pb-1 pt-3 text-xs font-bold uppercase tracking-[0.08em] text-ink-muted";
 
-type LocationState = "idle" | "asking" | "waiting" | "refused" | "timeout" | "unavailable" | "unsupported";
+export type LocationState = "idle" | "asking" | "waiting" | "refused" | "timeout" | "unavailable" | "unsupported";
 
-const LOCATION_MESSAGES: Record<LocationState, string> = {
+export const LOCATION_MESSAGES: Record<LocationState, string> = {
   idle: "",
   asking: "Allow location access in your browser.",
   waiting: "Finding your location…",
@@ -65,6 +65,58 @@ const LOCATION_MESSAGES: Record<LocationState, string> = {
 const subscribeNothing = () => () => {};
 export function useScripted() {
   return useSyncExternalStore(subscribeNothing, () => true, () => false);
+}
+
+// Asks the browser where the visitor is, for "Use my location" under the box and "Homes near me"
+// before anything is searched (homes-near-me.tsx). wanted: whether this request's answer still
+// counts. says: what the button is doing or why it couldn't, for the visitor. found: the point.
+export function askLocation(wanted: () => boolean, says: (state: LocationState) => void, found: (near: string) => void) {
+  if (!("geolocation" in navigator)) {
+    says("unsupported");
+    return;
+  }
+  // Answered, or given up on at the limit: nothing after that counts.
+  let over = false;
+  let limit: ReturnType<typeof setTimeout> | undefined;
+  const startLimit = () => {
+    if (over || !wanted()) return;
+    says("waiting");
+    limit = setTimeout(() => {
+      if (!wanted()) return;
+      over = true;
+      says("timeout");
+    }, LOCATION_LIMIT);
+  };
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      if (over) return;
+      over = true;
+      clearTimeout(limit);
+      if (!wanted()) return;
+      // Rounded here, before it is kept anywhere: nothing finer leaves the page.
+      const near = nearFrom(position.coords.latitude, position.coords.longitude);
+      if (!near) return says("unavailable");
+      found(near);
+    },
+    (error) => {
+      if (over) return;
+      over = true;
+      clearTimeout(limit);
+      if (wanted()) says(error.code === error.PERMISSION_DENIED ? "refused" : "unavailable");
+    },
+    LOCATION_OPTIONS,
+  );
+  // The browser counts its own timeout from the call, including the time its question waits for
+  // an answer, so the page keeps its own limit and starts it once the location is allowed. Without
+  // the Permissions API it can't tell, and counts from the press.
+  if (!navigator.permissions) return startLimit();
+  navigator.permissions.query({ name: "geolocation" }).then((permission) => {
+    if (permission.state === "granted") return startLimit();
+    if (permission.state === "prompt" && !over && wanted()) says("asking");
+    permission.addEventListener("change", () => {
+      if (permission.state === "granted") startLimit();
+    });
+  }, startLimit);
 }
 
 // The names of the homes that match text, read through the site's own server.
@@ -217,55 +269,15 @@ export function SearchBox({
   }
 
   function locate() {
-    if (!("geolocation" in navigator)) {
-      setLocation("unsupported");
-      return;
-    }
     close();
     const attempt = ++locating.current;
     // input is null once the box has gone, as it has when the page was left.
     const wanted = () => attempt === locating.current && input.current !== null;
-    let answered = false;
-    let limit: ReturnType<typeof setTimeout> | undefined;
-    const startLimit = () => {
-      if (answered || !wanted()) return;
-      setLocation("waiting");
-      limit = setTimeout(() => {
-        if (!wanted()) return;
-        locating.current += 1;
-        setLocation("timeout");
-      }, LOCATION_LIMIT);
-    };
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        answered = true;
-        clearTimeout(limit);
-        if (!wanted()) return;
-        // Rounded here, before it is kept anywhere: nothing finer leaves the page.
-        const near = nearFrom(position.coords.latitude, position.coords.longitude);
-        if (!near) return setLocation("unavailable");
-        onChange((current) => usedLocation(current, near));
-        setTyped("");
-        setLocation("idle");
-      },
-      (error) => {
-        answered = true;
-        clearTimeout(limit);
-        if (wanted()) setLocation(error.code === error.PERMISSION_DENIED ? "refused" : "unavailable");
-      },
-      LOCATION_OPTIONS,
-    );
-    // The browser counts its own timeout from the call, including the time its question waits for
-    // an answer, so the page keeps its own limit and starts it once the location is allowed. Without
-    // the Permissions API it can't tell, and counts from the press.
-    if (!navigator.permissions) return startLimit();
-    navigator.permissions.query({ name: "geolocation" }).then((permission) => {
-      if (permission.state === "granted") return startLimit();
-      if (permission.state === "prompt" && !answered && wanted()) setLocation("asking");
-      permission.addEventListener("change", () => {
-        if (permission.state === "granted") startLimit();
-      });
-    }, startLimit);
+    askLocation(wanted, setLocation, (near) => {
+      onChange((current) => usedLocation(current, near));
+      setTyped("");
+      setLocation("idle");
+    });
   }
 
   // What the box doesn't show of where the search looks, said under it. A point with no name for
