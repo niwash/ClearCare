@@ -7,13 +7,16 @@ import assert from "node:assert/strict";
 import {
   activeFilters,
   apiFilterParams,
+  CARE_GROUPS,
   filterCount,
   FILTER_GROUPS,
   matchedLabels,
+  MORE_GROUPS,
   NO_FILTERS,
   readSelection,
   selectionParams,
   toggled,
+  withoutGroups,
 } from "../lib/search-filters.ts";
 
 test("reads comma-joined and repeated values, in the options' order, and drops unknown slugs", () => {
@@ -73,6 +76,19 @@ test("counts and lists the active filters, each with the selection without it", 
   assert.deepEqual(active.map((filter) => filter.label), ["Dementia care", "Garden"]);
   assert.deepEqual(active[0].without.care, []);
   assert.deepEqual(active[1].without.fac, []);
+});
+
+test("the bar's two panels hold every group between them: the care types, and the rest", () => {
+  assert.deepEqual(CARE_GROUPS.map((group) => group.key), ["care"]);
+  assert.deepEqual(MORE_GROUPS.map((group) => group.key), ["room", "fac", "act"]);
+});
+
+test("a panel counts and clears the options ticked in its own groups", () => {
+  const selection = { care: ["dementia"], room: ["single", "twin"], fac: ["garden"], act: [] };
+  assert.equal(filterCount(selection, CARE_GROUPS), 1);
+  assert.equal(filterCount(selection, MORE_GROUPS), 3);
+  assert.deepEqual(withoutGroups(selection, MORE_GROUPS), { ...NO_FILTERS, care: ["dementia"] });
+  assert.deepEqual(withoutGroups(selection, CARE_GROUPS), { ...selection, care: [] });
 });
 
 test("a result is ticked only for the chosen options it has", () => {

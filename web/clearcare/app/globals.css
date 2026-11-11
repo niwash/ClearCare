@@ -502,6 +502,14 @@ gmp-advanced-marker:focus-visible,
     opacity: 1;
     translate: 0;
   }
+
+  /* A <details> whose content opens over the page rather than in it, such as the panels of the
+     search page's bar, keeps the fade alone: a translate would make ::details-content the box the
+     panel is placed against, and the clip would then cut the panel off. */
+  :root:not([data-design="adult-centred"]) details.opens-over::details-content {
+    overflow: visible;
+    translate: none;
+  }
 }
 
 /* The same slide and fade for a fold that's a button rather than a <details>, such as the search

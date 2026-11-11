@@ -164,6 +164,11 @@ export const FILTER_GROUPS: FilterGroup[] = [
   },
 ];
 
+// The two panels of the bar above the results (CCARE-230): the care types have a button of their
+// own, and every other group is under "More filters". The phones' sheet lists all four.
+export const CARE_GROUPS = FILTER_GROUPS.filter((group) => group.key === "care");
+export const MORE_GROUPS = FILTER_GROUPS.filter((group) => group.key !== "care");
+
 // More options than this and the rest fold behind "Show all".
 export const SHOWN_OPTIONS = 6;
 
@@ -206,8 +211,14 @@ export function readSelection(params: Params): FilterSelection {
   return selection;
 }
 
-export function filterCount(selection: FilterSelection) {
-  return FILTER_GROUPS.reduce((total, group) => total + selection[group.key].length, 0);
+// How many options are ticked: in every group, or in one panel's.
+export function filterCount(selection: FilterSelection, groups = FILTER_GROUPS) {
+  return groups.reduce((total, group) => total + selection[group.key].length, 0);
+}
+
+// The selection with nothing ticked in these groups, for a panel's "Clear".
+export function withoutGroups(selection: FilterSelection, groups: FilterGroup[]): FilterSelection {
+  return { ...selection, ...Object.fromEntries(groups.map((group) => [group.key, []])) };
 }
 
 // For the page address: ?care=dementia,respite&fac=garden. Comma-joined, so a shared link stays short.

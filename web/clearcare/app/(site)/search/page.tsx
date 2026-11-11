@@ -30,7 +30,7 @@ interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// The results are one column of cards beside the filters. 24 to a page divides by 1, 2 and 3,
+// The results are one column of cards under the bar. 24 to a page divides by 1, 2 and 3,
 // should a grid come back, so every full page fills its last row. The API's default of 20 would
 // leave gaps.
 const RESULTS_PER_PAGE = "24";
@@ -129,8 +129,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   // The account's saved search, read here rather than in the browser (ADR-0025). A visitor with no
   // account makes no request at all, and one who keeps a search is sent straight to it below, so
-  // they never see the prompt render and then be replaced. The filters panel is told what was found,
-  // so it shows the button and "Forget my preferences" without asking again.
+  // they never see the prompt render and then be replaced. The bar is told what was found, so it
+  // shows the button and "Forget my preferences" without asking again.
   const signedIn = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
   const kept = signedIn && preferencesConfigured() ? await readSavedSearch(signedIn) : null;
   const saved: SavedSearch | null = kept?.ok ? kept.saved : null;
@@ -177,64 +177,64 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const listHref = searchHref({ ...search, view: "list" });
 
   return (
-    // What the search boxes in the filters and the page's map share of Google.
+    // What the search box in the bar and the page's map share of Google.
     <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
       <SearchHero />
 
-      {/* From md up, the filters in a column on the left and the results on the right (CCARE-189):
-          with the care and amenity filters, there are too many kinds of filter for a bar above the
-          results (Baymard). Below md, a Filters button opens them in a sheet. */}
-      <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters
-          search={search}
-          facets={facets}
-          total={data ? data.total : null}
-          sortShown={data !== null && !mapView}
-          initialSaved={initialSaved}
-          arrivedWith={arrivedWith}
-        />
+      {/* The search box and the filters in a bar above the results, which have the page's width
+          (CCARE-230). They were a column beside the results (CCARE-189) because a bar can't hold as
+          many kinds of filter as there are (Baymard). So this one holds three kinds of control:
+          where, the county and the care types. Every other filter is behind one button, "More
+          filters". Below md, a Filters button opens them in a sheet. */}
+      <SearchFilters
+        search={search}
+        facets={facets}
+        total={data ? data.total : null}
+        sortShown={data !== null && !mapView}
+        initialSaved={initialSaved}
+        arrivedWith={arrivedWith}
+      />
 
-        <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <ShortlistDrawer />
-            <div className="flex flex-wrap items-center gap-3">
-              {mapOffered && <ViewSwitch search={search} />}
-              {/* The order, once there are results to order; pins have none. On phones it's in the
-                  bar with Filters. */}
-              {data && !mapView && (
-                <div className="hidden md:block">
-                  <SortSelect search={search} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {result === null ? (
-            <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
-          ) : result.ok ? (
-            <ResultsHeading search={search} total={result.data.total} />
-          ) : (
-            <SearchError status={result.status} detail={result.detail} />
-          )}
-
-          {/* Google's loader has this one place whatever else the page shows, since a search box can
-              ask for it before any search. The map is drawn inside it; keyed by the search, so a new
-              search opens on its own pins. Before a search it has no list to lead back to. */}
-          <GoogleMapsLoader>
-            {pins && mapId && (
-              <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+      <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <ShortlistDrawer />
+          <div className="flex flex-wrap items-center gap-3">
+            {mapOffered && <ViewSwitch search={search} />}
+            {/* The order, once there are results to order; pins have none. On phones it's in the
+                bar with Filters. */}
+            {data && !mapView && (
+              <div className="hidden md:block">
+                <SortSelect search={search} />
+              </div>
             )}
-          </GoogleMapsLoader>
-          {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
-              points the page is the prompt alone. */}
-          {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+          </div>
+        </div>
 
-          {data && !mapView && <ResultsList search={search} data={data} />}
-          {data && <Source snapshot={data.register_snapshot} />}
-        </section>
-      </div>
+        {result === null ? (
+          <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
+        ) : result.ok ? (
+          <ResultsHeading search={search} total={result.data.total} />
+        ) : (
+          <SearchError status={result.status} detail={result.detail} />
+        )}
+
+        {/* Google's loader has this one place whatever else the page shows, since a search box can
+            ask for it before any search. The map is drawn inside it; keyed by the search, so a new
+            search opens on its own pins. Before a search it has no list to lead back to. */}
+        <GoogleMapsLoader>
+          {pins && mapId && (
+            <ResultsMap key={listHref} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+          )}
+        </GoogleMapsLoader>
+        {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
+            points the page is the prompt alone. */}
+        {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+
+        {data && !mapView && <ResultsList search={search} data={data} />}
+        {data && <Source snapshot={data.register_snapshot} />}
+      </section>
 
       <ShortlistToast />
 
