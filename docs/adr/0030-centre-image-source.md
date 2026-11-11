@@ -18,4 +18,4 @@ Neither method is exact, and the size of the error is not known. A spot check of
 
 `place_id` is not unique. Two centres in one campus can resolve to the same Google listing, and a constraint would fail a load for a correct match.
 
-The API will read these rows through a view granted to `clearcare_api`, as it does for the points (ADR-0026); V18 grants nothing to that role. Which homes display a photo, and the cost of doing so, is CCARE-209's proposal; this record covers only what is stored and for how long.
+The API reads these rows through `clearcare.centre_listing`, a view granted to `clearcare_api` (db/V19), as it does for the points (ADR-0026); V18 itself grants nothing to that role. The centre's record carries the identifier as `place_id`, and the page renders the photo from it in the visitor's browser. Which homes display a photo, and the cost of doing so, is CCARE-209's proposal; this record covers only what is stored and for how long.

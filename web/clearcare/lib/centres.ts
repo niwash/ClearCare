@@ -140,6 +140,10 @@ export interface CentreDetail extends CentreSummary {
   // has been loaded for it; missing from an API without them, so the page leaves the rows out.
   contract_price?: number | null;
   home_type?: HomeType | null;
+  // Google's identifier for the home's listing, which the overview renders the photo from through
+  // Google's Places UI Kit (CCARE-209, ADR-0030). null when no listing was matched, so the page
+  // shows its placeholder; missing from an API without db/V19, which the page treats the same way.
+  place_id?: string | null;
 }
 
 // A weekly price in euro: whole euros when it has no cents, as the HSE's lists mostly are.

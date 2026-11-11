@@ -153,9 +153,14 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
       {/* The photo takes most of the width, as the first thing a family looks at. Beside it on wide
           screens, how to reach the home and the actions, in a wider column than the buttons need so the
           photo is not too big; it is as tall as that column, so the two end level. On narrow screens
-          they follow the photo. */}
+          they follow the photo. The key is read here, on the server, and only reaches the browser
+          because the Places UI Kit has to have it (CCARE-209). */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-6">
-        <CentrePhoto className="lg:aspect-auto lg:h-full lg:min-h-80 print:hidden" />
+        <CentrePhoto
+          placeId={centre.place_id ?? null}
+          apiKey={process.env.GOOGLE_MAPS_BROWSER_KEY || null}
+          className="lg:aspect-auto lg:h-full lg:min-h-80 print:hidden"
+        />
         <div className="flex flex-col gap-4">
           <FactCard title="Contact" icon="address">
             {/* As it is on the register: some addresses don't start with the name or end with the Eircode. */}
