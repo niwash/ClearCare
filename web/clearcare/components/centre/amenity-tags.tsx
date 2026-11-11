@@ -3,6 +3,7 @@
 
 import type { AmenityEvidence, AmenityItem } from "@/lib/centres";
 import { useEffect, useId, useRef, useState } from "react";
+import { AmenityIcon } from "./amenity-icon";
 
 // One row's amenities in the standard design (CCARE-163). Hovering, focusing or tapping an item
 // opens a panel under the row with the passages it was read from. The easier-to-read design shows
@@ -47,8 +48,9 @@ export function AmenityTags({ items, reportUrl }: { items: AmenityItem[]; report
               onMouseEnter={() => setOpen(item)}
               onFocus={() => setOpen(item)}
               onClick={() => setOpen(item)}
-              className="cursor-help rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage underline decoration-dotted decoration-1 underline-offset-4 outline-offset-2 hover:decoration-solid focus-visible:outline-2 focus-visible:outline-ink aria-expanded:decoration-solid aria-expanded:ring-1 aria-expanded:ring-on-tint-sage"
+              className="inline-flex cursor-help items-center gap-1.5 rounded-full bg-tint-sage px-2.5 py-0.5 text-sm text-on-tint-sage underline decoration-dotted decoration-1 underline-offset-4 outline-offset-2 hover:decoration-solid focus-visible:outline-2 focus-visible:outline-ink aria-expanded:decoration-solid aria-expanded:ring-1 aria-expanded:ring-on-tint-sage"
             >
+              <AmenityIcon item={item} />
               {item}
             </button>
           </li>

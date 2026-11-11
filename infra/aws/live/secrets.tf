@@ -1,4 +1,5 @@
-# One secret per database login (ADR-0010), and the pipeline's Anthropic key.
+# One secret per database login (ADR-0010), and the pipeline's Anthropic and
+# Google keys.
 # Terraform creates the secrets but not their values, so no password or key
 # is in the state or in a plan; README.md shows how to set them. The
 # administrator's secret belongs to RDS (rds.tf). Each task's execution role
@@ -32,6 +33,13 @@ resource "aws_secretsmanager_secret" "anthropic" {
   recovery_window_in_days = 7
 }
 
+# The pipeline's Google key, for the geocode stage (ADR-0027).
+resource "aws_secretsmanager_secret" "google_geocoding" {
+  name                    = "${local.name}/google/geocoding-key"
+  description             = "Google server key of the pipeline, limited to the Geocoding API, as plain text"
+  recovery_window_in_days = 7
+}
+
 # The site's session signing key and the Cognito app client secret (CCARE-183). Terraform creates
 # the secrets but not their values, like the database passwords, so neither lands in state. The web
 # task can only start with them once they are set, which is why ecs.tf injects them only when
@@ -45,5 +53,14 @@ resource "aws_secretsmanager_secret" "auth_session" {
 resource "aws_secretsmanager_secret" "cognito_client_secret" {
   name                    = "${local.name}/auth/cognito-client-secret"
   description             = "App client secret of the Cognito pool that holds public accounts"
+  recovery_window_in_days = 7
+}
+
+# The token the site's server and the API share when they read or write a visitor's saved search
+# (ADR-0025). Both tasks read it, so both execution roles are granted it (iam.tf). One value, set
+# once, in both places: generate it with openssl rand -base64 33.
+resource "aws_secretsmanager_secret" "site_token" {
+  name                    = "${local.name}/site/token"
+  description             = "Token the site's server and the API share for everything the site asks for on a visitor's behalf; generate with openssl rand -base64 33"
   recovery_window_in_days = 7
 }

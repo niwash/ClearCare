@@ -2,7 +2,13 @@
 // The search contract for GET /centres (CCARE-45). Field names are the API's and stay snake_case.
 // searchCentres calls the API at API_URL. Without it, search reports that it isn't working.
 import { connection } from "next/server";
-import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters";
+import { ANY_COUNTY, COUNTIES } from "./counties.ts";
+import type { SearchQuery } from "./page-search.ts";
+import type { SortValue } from "./search-filters";
+
+// The counties the API accepts (the County enum in api/openapi.yaml) and the county list's "any"
+// value are in lib/counties.ts: the saved-search tests load them without this file's API call.
+export { ANY_COUNTY, COUNTIES };
 
 export interface CentreSummary {
   centre_id: string;
@@ -16,6 +22,9 @@ export interface CentreSummary {
   fair_deal: boolean; // the API has an HSE contract price for it, so it takes part in Fair Deal
   // The newest loaded report, or null when it has none; date is null when the report gives none.
   latest_inspection: { date: string | null } | null;
+  // How far it is from near, in whole metres in a straight line (CCARE-226); null without near, or
+  // when ClearCare has no location for it.
+  distance_m: number | null;
 }
 
 // What a home's latest read report mentions (MentionedAmenities in api/openapi.yaml), item names only:
@@ -51,30 +60,12 @@ export interface SearchResponse {
 
 export type Facets = Record<"care_type" | "room_type" | "facility" | "activity", Record<string, number>> & { fair_deal: number };
 
-// Straight from the URL, so the API does the validating.
-export interface SearchQuery {
-  name?: string;
-  address?: string;
-  county?: string;
-  eircode?: string;
-  page?: string;
-  page_size?: string;
-  sort?: string;
-}
-
 export type SearchResult =
   | { ok: true; data: SearchResponse }
   | { ok: false; status: number; detail: string };
 
 // The longest name or address the API accepts.
 export const MAX_TEXT_LENGTH = 100;
-
-// The County enum in api/openapi.yaml. The API is case-sensitive, so these are the only values to send.
-export const COUNTIES = [
-  "Carlow", "Cavan", "Clare", "Cork", "Donegal", "Dublin", "Galway", "Kerry", "Kildare",
-  "Kilkenny", "Laois", "Leitrim", "Limerick", "Longford", "Louth", "Mayo", "Meath", "Monaghan",
-  "Offaly", "Roscommon", "Sligo", "Tipperary", "Waterford", "Westmeath", "Wexford", "Wicklow",
-];
 
 // The API's base URL, or null if it isn't set.
 export function apiUrl() {
@@ -117,75 +108,7 @@ async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSea
   return { ok: false, status: response.status, detail: body?.detail ?? response.statusText };
 }
 
-const ROUTING_KEY = /^([AC-FHKNPRTV-Y]\d{2}|D6W)$/;
-const FULL_EIRCODE = /^([AC-FHKNPRTV-Y]\d{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}$/;
-
-// "D06", "w23 p6ex" and "W23P6EX" are Eircodes; "Elm Hall" isn't.
-export function looksLikeEircode(text: string) {
-  const compact = text.replace(/\s+/g, "").toUpperCase();
-  return ROUTING_KEY.test(compact) || FULL_EIRCODE.test(compact);
-}
-
 // "W23P6EX" → "W23 P6EX". Routing keys and anything unexpected are left alone.
 export function formatEircode(eircode: string) {
   return eircode.length === 7 ? `${eircode.slice(0, 3)} ${eircode.slice(3)}` : eircode;
-}
-
-// The search as the page address holds it: the name, one "Town, area or Eircode" field (place), the
-// county, the care and amenity filters, the order and the page. place goes to the API as an Eircode
-// if it looks like one, otherwise as an address; links from before it, with address or eircode,
-// still work.
-export interface PageSearch {
-  query: SearchQuery; // for GET /centres, with the filters sent separately (apiFilterParams)
-  name: string;
-  place: string;
-  county: string; // "" for any county
-  selection: FilterSelection;
-  sort: SortValue;
-}
-
-type PageParams = Record<string, string | string[] | undefined>;
-
-function first(params: PageParams, key: string) {
-  const value = params[key];
-  return (Array.isArray(value) ? value[0] : value)?.trim() ?? "";
-}
-
-// The county list's "Any county" value. It means no county, as a blank does.
-export const ANY_COUNTY = "any";
-
-export function readSearch(params: PageParams): PageSearch {
-  const name = first(params, "name");
-  const place = first(params, "place") || first(params, "address") || first(params, "eircode");
-  const countyValue = first(params, "county");
-  const county = countyValue === ANY_COUNTY ? "" : countyValue;
-  const sortValue = first(params, "sort");
-  const sort = (SORTS.some((option) => option.value === sortValue) ? sortValue : "name") as SortValue;
-
-  const query: SearchQuery = {};
-  if (name) query.name = name;
-  if (place) query[looksLikeEircode(place) ? "eircode" : "address"] = place;
-  if (county) query.county = county;
-  if (sort !== "name") query.sort = sort;
-  for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);
-
-  return { query, name, place, county, selection: readSelection(params), sort };
-}
-
-// Something to search for: a name, a place, a county or a filter.
-export function hasSearch(search: Pick<PageSearch, "name" | "place" | "county" | "selection">) {
-  return Boolean(search.name || search.place || search.county || filterCount(search.selection) > 0);
-}
-
-// The page address for a search, leaving out what's empty, so a shared link stays short.
-export function searchHref(search: Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">, page = 1) {
-  const params = new URLSearchParams();
-  if (search.name) params.set("name", search.name);
-  if (search.place) params.set("place", search.place);
-  if (search.county) params.set("county", search.county);
-  for (const [key, value] of selectionParams(search.selection)) params.set(key, value);
-  if (search.sort !== "name") params.set("sort", search.sort);
-  if (page > 1) params.set("page", String(page));
-  const text = params.toString();
-  return text ? `/search?${text}` : "/search";
 }

@@ -14,8 +14,7 @@ export interface FilterOption {
   slug: string; // in the page address: ?care=dementia
   item: string; // the v2 item, as the API takes and returns it
   label: string;
-  help?: string;
-  more?: boolean; // one of the rarer options, after the main ones and shown without a count
+  more?: boolean; // asked about less, so after the main ones, behind the group's "Show all"
 }
 
 export interface FilterGroup {
@@ -38,12 +37,12 @@ export const FILTER_GROUPS: FilterGroup[] = [
     mode: "all",
     openByDefault: true,
     options: [
-      { slug: "long-term", item: "Long-term residential care", label: "Long-term residential care", help: "Living in the home permanently" },
+      { slug: "long-term", item: "Long-term residential care", label: "Long-term residential care" },
       { slug: "dementia", item: "Dementia care", label: "Dementia care" },
-      { slug: "respite", item: "Respite care", label: "Respite care", help: "Short stays, often to give family carers a break" },
-      { slug: "convalescent", item: "Convalescent care", label: "Convalescent care", help: "Recovery after a hospital stay" },
-      { slug: "step-down", item: "Step-down care", label: "Step-down care", help: "From hospital to home, by way of a short stay" },
-      { slug: "palliative", item: "Palliative care", label: "Palliative care", help: "Comfort-focused care" },
+      { slug: "respite", item: "Respite care", label: "Respite care" },
+      { slug: "convalescent", item: "Convalescent care", label: "Convalescent care" },
+      { slug: "step-down", item: "Step-down care", label: "Step-down care" },
+      { slug: "palliative", item: "Palliative care", label: "Palliative care" },
       { slug: "end-of-life", item: "End-of-life care", label: "End-of-life care" },
       { slug: "physical-disability", item: "Physical disability care", label: "Physical disability care" },
       { slug: "intellectual-disability", item: "Intellectual disability care", label: "Intellectual disability care" },
@@ -69,7 +68,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
       { slug: "single", item: "Single room", label: "Single room" },
       { slug: "en-suite", item: "En-suite facilities", label: "En-suite bathroom" },
       { slug: "twin", item: "Twin/double room", label: "Twin / double room" },
-      { slug: "multi", item: "Multi-bed room", label: "Multi-occupancy room", help: "Three or more people sharing" },
+      { slug: "multi", item: "Multi-bed room", label: "Multi-occupancy room" },
       { slug: "shared", item: "Shared room, occupancy unspecified", label: "Shared room, number sharing not stated", more: true },
       { slug: "shared-bathroom", item: "Shared bathroom facilities", label: "Shared bathroom", more: true },
     ],
@@ -128,7 +127,7 @@ export const FILTER_GROUPS: FilterGroup[] = [
     options: [
       { slug: "music", item: "Music and singing", label: "Music & singing" },
       { slug: "exercise", item: "Exercise classes", label: "Exercise classes" },
-      { slug: "reminiscence", item: "Reminiscence activities", label: "Reminiscence", help: "Talking through memories with photos and objects" },
+      { slug: "reminiscence", item: "Reminiscence activities", label: "Reminiscence" },
       { slug: "arts", item: "Arts and crafts", label: "Arts & crafts" },
       { slug: "outings", item: "Outings", label: "Outings" },
       { slug: "sensory", item: "Sensory activities", label: "Sensory sessions" },
@@ -171,6 +170,9 @@ export const SHOWN_OPTIONS = 6;
 export const SORTS = [
   { value: "name", label: "Name A–Z" },
   { value: "latest_inspection", label: "Latest inspection" },
+  // Only while the search has a point to measure from (near, lib/near.ts): the API refuses it
+  // without one.
+  { value: "distance", label: "Nearest first" },
 ] as const;
 
 export type SortValue = (typeof SORTS)[number]["value"];

@@ -11,6 +11,7 @@ import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
 import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
+import { SlideUp } from "@/components/ui/slide-up";
 import { formatDate, type Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
 import {
@@ -37,6 +38,10 @@ export default async function NationalPage() {
 
   return (
     <>
+      {/* Only the guides near the end slide up (CCARE-186): the figures and their headings are what
+          people came to read, so they never wait for them. */}
+      <SlideUp slideOnOpen={false} />
+
       <NationalHero />
 
       {/* What the figures are, in a box like the Fair Deal guide's summary, before the contents. */}
@@ -90,7 +95,7 @@ function NationalHero() {
         <p className="text-sm text-ink-muted">
           New to inspection reports?{" "}
           <Link href="/guides/reading-inspection-reports" className="text-ink tap-target">
-            Learn how to read a HIQA inspection report →
+            Learn how to read one and use what it found →
           </Link>
         </p>
       </div>

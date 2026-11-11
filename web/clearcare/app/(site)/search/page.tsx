@@ -5,22 +5,19 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
+import { RememberSearch } from "@/components/search/last-search";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
 import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
+import { authRuntime } from "@/lib/auth";
+import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import {
-  formatEircode,
-  hasSearch,
-  looksLikeEircode,
-  readSearch,
-  searchCentres,
-  searchHref,
-  unavailableMessage,
-  type PageSearch,
-  type SearchResponse,
-} from "@/lib/search";
+import { homeSearchHref } from "@/lib/home-search";
+import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
+import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
+import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
+import { formatEircode, searchCentres, unavailableMessage, type SearchResponse } from "@/lib/search";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -38,14 +35,44 @@ function noun(count: number) {
   return count === 1 ? "nursing home" : "nursing homes";
 }
 
-// "matching “aras” in Co. Mayo", for the results heading and the page title.
-function describe({ name, place, county }: Pick<PageSearch, "name" | "place" | "county">) {
+// "matching “aras” in Co. Mayo": what the results were filtered by. A place with a point to measure
+// from filters nothing (measuredFrom says where it is).
+function describe({ name, place, near, county, query }: Pick<PageSearch, "name" | "place" | "near" | "county" | "query">) {
   const parts = [
     name && `matching “${name}”`,
-    place && (looksLikeEircode(place) ? `near ${formatEircode(place.replace(/\s+/g, "").toUpperCase())}` : `in “${place}”`),
+    place && !near && (query.eircode ? `near ${formatEircode(query.eircode)}` : `in “${place}”`),
     county && `in Co. ${county}`,
   ].filter(Boolean);
   return parts.join(" ");
+}
+
+// What the headings and titles call a point: the place it was picked as, or "the chosen location" for
+// the visitor's own location, which has no name.
+function pointName(place: string) {
+  return place || "the chosen location";
+}
+
+// "nearest to Rathmines, Dublin first", or "" without a point (CCARE-228). Never "near" or "in" the
+// place: every matching home is listed, so the words must not read as if only nearby ones were.
+function measuredFrom({ place, near, sort }: Pick<PageSearch, "place" | "near" | "sort">) {
+  if (!near) return "";
+  if (sort === "distance") return place ? `nearest to ${place} first` : "nearest first";
+  return `with distances from ${pointName(place)}`;
+}
+
+// What follows "547 nursing homes" in the results heading, or "Nursing homes" in the page title:
+// " matching “elm”, nearest to Rathmines, Dublin first", or "" when only filters were chosen.
+function described(search: PageSearch) {
+  const where = describe(search);
+  const from = measuredFrom(search);
+  return `${where ? ` ${where}` : ""}${from ? `, ${from}` : ""}`;
+}
+
+// The results heading and the page title for a point alone, which lists every home, so there is no
+// count (leavesHomesOut): "Nursing homes nearest to Rathmines, Dublin".
+function fromPointAlone({ place, sort }: Pick<PageSearch, "place" | "sort">) {
+  const point = pointName(place);
+  return sort === "distance" ? `Nursing homes nearest to ${point}` : `Nursing homes, with distances from ${point}`;
 }
 
 // The form was sent with every field empty: its fields arrive as "", so the keys are there.
@@ -54,30 +81,53 @@ async function sentEmpty(searchParams: SearchPageProps["searchParams"]) {
   return ["name", "place", "county"].some((key) => key in params);
 }
 
-// The home page box sends q. The API has no combined search, so send it on as a place if it looks
-// like an Eircode, otherwise as a name. An empty box goes on as an empty name, so it gets the same
-// "Please enter something" as an empty search here.
+// The home page box sends q. It goes on to the search homeSearchHref makes of it (lib/home-search.ts).
 async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
   const value = (await searchParams).q;
   if (value === undefined) return;
-  const q = (Array.isArray(value) ? value[0] : value)?.trim();
-  if (!q) redirect("/search?name=");
-  redirect(`/search?${new URLSearchParams({ [looksLikeEircode(q) ? "place" : "name"]: q })}`);
+  redirect(homeSearchHref((Array.isArray(value) ? value[0] : value) ?? ""));
 }
 
 export async function generateMetadata({ searchParams }: SearchPageProps) {
   const search = readSearch(await searchParams);
   if (!hasSearch(search)) return { title: "Find a nursing home" };
-  const where = describe(search);
-  return { title: where ? `Nursing homes ${where}` : "Search results" };
+  if (!leavesHomesOut(search)) return { title: fromPointAlone(search) };
+  const what = described(search);
+  return { title: what ? `Nursing homes${what}` : "Search results" };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
-  const search = readSearch(await searchParams);
+  const params = await searchParams;
+  const search = readSearch(params);
+  // Read on each request, after the address made the page dynamic, rather than at build: the Docker
+  // image is built once and must not carry it (README).
+  const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
+
+  // The account's saved search, read here rather than in the browser (ADR-0025). A visitor with no
+  // account makes no request at all, and one who keeps a search is sent straight to it below, so
+  // they never see the prompt render and then be replaced. The filters panel is told what was found,
+  // so it shows the button and "Forget my preferences" without asking again.
+  const signedIn = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
+  const kept = signedIn && preferencesConfigured() ? await readSavedSearch(signedIn) : null;
+  const saved: SavedSearch | null = kept?.ok ? kept.saved : null;
+  const initialSaved = {
+    status: !signedIn
+      ? ("signed_out" as const)
+      : kept?.ok
+        ? ("ready" as const)
+        : ("unavailable" as const),
+    saved,
+  };
+  // A returning visitor who has asked for nothing opens the search they kept. "Nothing" is an
+  // address with no query at all, not an address the API finds no search in: ?sort=latest_inspection
+  // is somewhere a visitor arrived on purpose (Clear all with a changed order, or the last tag
+  // removed), and opening the saved search over it would undo what they did. It would also loop when
+  // the order is the only thing saved, since that is exactly the address it redirects to.
+  if (Object.keys(params).length === 0 && saved && hasSavedChoices(saved)) redirect(savedSearchHref(saved));
   // page_size isn't added to the query itself, so it stays out of the page links.
   const result = searched
     ? await searchCentres({ ...search.query, page_size: search.query.page_size ?? RESULTS_PER_PAGE }, apiFilterParams(search.selection))
@@ -92,13 +142,22 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   return (
     <>
+      {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
+      <RememberSearch />
       <SearchHero />
 
       {/* From md up, the filters in a column on the left and the results on the right (CCARE-189):
           with the care and amenity filters, there are too many kinds of filter for a bar above the
           results (Baymard). Below md, a Filters button opens them in a sheet. */}
       <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} />
+        <SearchFilters
+          search={search}
+          facets={facets}
+          total={data ? data.total : null}
+          sortShown={data !== null}
+          initialSaved={initialSaved}
+          googleKey={googleKey}
+        />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -187,7 +246,14 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
     <>
       <h2 aria-live="polite" className="font-heading text-2xl font-semibold leading-tight md:text-[1.625rem]">
         {/* With only filters, no name, place or county: "12 nursing homes found". */}
-        {total} {noun(total)} {where || "found"}
+        {leavesHomesOut(search) ? (
+          <>
+            {total} {noun(total)}
+            {described(search) || " found"}
+          </>
+        ) : (
+          fromPointAlone(search)
+        )}
       </h2>
 
       {/* The filters in use, each removable, as links so they work without scripts. On phones they
@@ -197,7 +263,7 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           {filters.map((filter) => (
             <Link
               key={filter.id}
-              href={searchHref({ ...search, selection: filter.without })}
+              href={filtersClearedHref({ ...search, selection: filter.without })}
               scroll={false}
               aria-label={`Remove filter: ${filter.label}`}
               className="inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-primary bg-surface pl-3 pr-2.5 text-[0.8125rem] font-medium text-ink no-underline hover:bg-surface-muted adult:rounded-md"
@@ -208,7 +274,7 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
               </svg>
             </Link>
           ))}
-          <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className="inline-flex min-h-8 shrink-0 items-center px-1.5 text-[0.8125rem]">
+          <Link href={filtersClearedHref({ ...search, selection: NO_FILTERS })} scroll={false} className="inline-flex min-h-8 shrink-0 items-center px-1.5 text-[0.8125rem]">
             Clear all
           </Link>
         </div>
@@ -282,7 +348,7 @@ function NoMatches({ search }: { search: PageSearch }) {
         No homes match all {count} {count === 1 ? "filter" : "filters"}
       </h3>
       <p className="text-ink-muted">Remove the filter that is ruling out the most homes, or clear them and start again.</p>
-      <Link href={searchHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
+      <Link href={filtersClearedHref({ ...search, selection: NO_FILTERS })} scroll={false} className={`${primaryButtonClass} inline-flex h-auto min-h-11 items-center py-2 no-underline`}>
         Clear all filters
       </Link>
     </div>

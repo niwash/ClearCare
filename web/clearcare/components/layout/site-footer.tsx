@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { NAV_ITEMS } from "@/components/layout/site-header";
+import { NAV_ITEMS, SiteLogo } from "@/components/layout/site-header";
+import { LastSearchLink } from "@/components/search/last-search";
 
 // The header's pages, then the ones only the footer links to. Unfinished pages are left out.
 const FOOTER_LINKS = [
-  ...NAV_ITEMS.flatMap((item) => (item.href ? [{ label: item.label, href: item.href }] : [])),
+  ...NAV_ITEMS.flatMap((item) => (item.href ? [{ label: item.label, href: item.href, search: item.search }] : [])),
   { label: "Privacy notice", href: "/privacy" },
 ];
 
@@ -15,15 +16,15 @@ const FOOTER_LINKS = [
 export function SiteFooter() {
   return (
     <footer className="brand-band brand-band-deep text-sm">
-      {/* Taller at the bottom while the welcome tour's offer is in the corner, so it doesn't cover
-          the small print. Enough for the box at its tallest, on a 320px phone, and taller again in
-          Easier to read, where its text and buttons are bigger. */}
-      <div className="page-column flex flex-col gap-6 px-4 py-10 md:px-8 [body:has([data-tour-offer])_&]:pb-80 [body:has([data-tour-offer])_&]:adult:pb-96">
+      {/* While the welcome tour's offer is in the corner, on phones the footer is taller at the
+          bottom by the box's measured height (--tour-offer-room, set in welcome-tour.tsx), so the
+          box doesn't cover the links or the licence line. 20rem until it is measured. From md up
+          the box floats over the bottom of the footer, which it covers much less of: room sized
+          for it there left a large empty band (CCARE-211, CCARE-214). */}
+      <div className="page-column flex flex-col gap-6 px-4 py-10 md:px-8 max-md:[body:has([data-tour-offer])_&]:pb-[var(--tour-offer-room,20rem)]">
         <div className="flex flex-col gap-6 md:flex-row md:justify-between md:gap-12">
           <div className="flex max-w-sm flex-col gap-2">
-            <Link href="/" className="w-fit font-heading text-xl font-semibold text-ink no-underline hover:text-ink tap-target">
-              ClearCare
-            </Link>
+            <SiteLogo className="flex w-fit items-center text-xl tap-target" />
             <p className="text-ink-muted">
               HIQA nursing home inspection reports, made easier to search, understand and compare.
             </p>
@@ -33,9 +34,14 @@ export function SiteFooter() {
             <ul className="grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-3">
               {FOOTER_LINKS.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href} className="inline-block py-1 tap-target">
-                    {link.label}
-                  </Link>
+                  {/* Search for Homes goes back to the last search on this visit, as in the header. */}
+                  {"search" in link && link.search ? (
+                    <LastSearchLink className="inline-block py-1 tap-target">{link.label}</LastSearchLink>
+                  ) : (
+                    <Link href={link.href} className="inline-block py-1 tap-target">
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

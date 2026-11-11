@@ -9,7 +9,7 @@ Each part of the project has its own top-level folder:
 | `pipeline/` | Python pipeline |
 | `db/` | SQL migrations, applied by Flyway ([ADR-0010](docs/adr/0010-schema-in-sql-migrations.md)) |
 | `infra/` | VM setup: the Compose file for the VM, the deploy script and install notes |
-| `infra/postgres/` | Database roles, created once before the first migration |
+| `infra/postgres/` | PostGIS and the database roles, set up once before the first migration |
 | `web/` | Next.js site |
 | `api/` | Spring Boot API |
 
@@ -50,6 +50,21 @@ The database is `clearcare` on `127.0.0.1`, port 5432. If another PostgreSQL alr
 
 To start again from an empty database, run `docker compose down -v`, which deletes the volume and all local data, then `docker compose up migrate`.
 
+V16 needs PostGIS ([ADR-0026](docs/adr/0026-centre-locations-as-postgis-points.md)). A new volume gets it from `infra/postgres/postgis.sh`; for a volume created before V16, run:
+
+```sh
+docker compose pull db
+docker compose up -d --wait db
+docker compose exec db psql -U postgres -d clearcare -c 'CREATE EXTENSION postgis'
+docker compose up migrate
+```
+
+A volume first started with the image's own PostGIS script, before `postgis.sh` replaced it, also has three extensions that RDS lacks, and a dump of it fails to restore there. Drop them:
+
+```sh
+docker compose exec db psql -U postgres -d clearcare -c 'DROP EXTENSION postgis_tiger_geocoder, postgis_topology, fuzzystrmatch; DROP SCHEMA tiger, topology'
+```
+
 If `roles.sql` fails on the first run, the `db` log shows the error and Flyway cannot log in. The image runs `roles.sql` only when it starts on an empty volume, so restarting does not retry it. Delete the volume as above, or keep it and fix the cause: run `docker compose up -d db` so the container picks up any change to `.env`, then run `roles.sql` again as the superuser and apply the migrations:
 
 ```sh
@@ -78,5 +93,7 @@ To follow its log, run `docker compose logs -f pipeline`.
 Ingest also stores the inspector narrative and Section 1 responses, with PDF pages, character offsets at each page boundary, and the extractor version, `EXTRACTOR_VERSION` in `pipeline/src/clearcare_pipeline/parser/text.py`. Change that version when you change `text.csv` or the extractor. The pipeline runs `extract_text` after each ingest. It adds text for loaded reports that have none at the current version, so the first start after the version changes extracts every report again (about half an hour for the national set), and later runs add nothing. Missing files or incomplete text are logged and `extract_text` exits 1, while the stages after it still run.
 
 After `extract_text`, the pipeline runs `split_commitments`, which appends commitments from stored responses and their page offsets. It needs no local PDFs. It uses the splitter's `rules-v3` version; change that version when changing its rules. Repeat runs write nothing new. Month-only stated deadlines retain month precision; their stored date is the last day of that month. Dates need an explicit link to the commitment or a Timeframe or Time Frame label; uncertain wording stays in the response span without a parsed deadline.
+
+The pipeline runs `geocode` after the register load, at start and after each register download. It first deletes every point 30 or more calendar days old, counted in UTC, since Google lets its coordinates be kept no longer ([ADR-0027](docs/adr/0027-google-coordinates-refreshed-every-23-days-and-deleted-at-30.md)). With `GOOGLE_GEOCODING_API_KEY` set in `.env`, it then asks Google's Geocoding API for each centre in the served register with no point, or with one 23 or more calendar days old: by Eircode, or by address for a centre without one. It stores the point and its `place_id` only when Google's answer has the register's Eircode, or its county, and logs the id of each centre it leaves without one. Without the key it only deletes. A second run on the same day asks only about the centres still due.
 
 On Linux, create the data directory before the first start, and set `CLEARCARE_PIPELINE_UID` and `CLEARCARE_PIPELINE_GID` to its owner. Otherwise Docker creates the directory as root and the pipeline cannot write to it.

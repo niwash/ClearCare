@@ -99,7 +99,8 @@ const TOUR_STEPS: TourStep[] = [
     ),
     // The navigation bar's link, on every page, rather than the search box on the home page.
     places: [
-      { selector: '[data-tour="nav"] a[href="/search"]' },
+      // href^=: the link carries the visitor's last search when there is one (CCARE-214).
+      { selector: '[data-tour="nav"] a[href^="/search"]' },
       {
         selector: MENU,
         body: (
@@ -165,6 +166,24 @@ const TOUR_STEPS: TourStep[] = [
     places: [{ selector: '[data-tour="guide-links"]' }],
   },
 ];
+
+// On phones the box covers more than half the footer's links and its licence line, so the footer
+// makes room for it there (site-footer.tsx; CCARE-214 review): the box's height, plus the 16px it
+// sits above the bottom and 16px more, goes on the page as --tour-offer-room, and the footer pads by
+// that. Measured rather than guessed, since the box is taller on narrow screens and in Easier to
+// read, and a guess big enough for the tallest left an empty band under the footer (CCARE-211).
+function reserveFooterRoom(box: HTMLElement | null) {
+  if (!box) return;
+  const root = document.documentElement;
+  const update = () => root.style.setProperty("--tour-offer-room", `${Math.ceil(box.getBoundingClientRect().height) + 32}px`);
+  update();
+  const observer = new ResizeObserver(update);
+  observer.observe(box);
+  return () => {
+    observer.disconnect();
+    root.style.removeProperty("--tour-offer-room");
+  };
+}
 
 // If storage is blocked, dismissing lasts until the page reloads (dismissedHere).
 const listeners = new Set<() => void>();
@@ -369,13 +388,16 @@ export function WelcomeTour() {
       {/* Asked, not started (CCARE-164). In the bottom-left corner, clear of the Menu button.
           Straight into <body> (CCARE-184): inside the welcome band it was fixed to the band's
           fade-in animation rather than to the window (an animated translate makes a containing
-          block), so it stayed hidden until the band scrolled in. The footer makes room for it.
+          block), so it stayed hidden until the band scrolled in. On phones the footer makes room
+          for it (reserveFooterRoom); from md up it floats over the bottom of the footer, which it
+          covers much less of (CCARE-214).
           TODO: If the user is logged in, remove the box entirely. */}
       {hydrated &&
         !dismissed &&
         step === null &&
         createPortal(
           <section
+            ref={reserveFooterRoom}
             data-tour-offer
             aria-labelledby="tour-offer-h"
             className="fixed bottom-4 left-4 right-24 z-30 flex flex-col gap-3 rounded-lg border border-line bg-surface p-4 text-left text-ink shadow-xl sm:right-auto sm:w-96"

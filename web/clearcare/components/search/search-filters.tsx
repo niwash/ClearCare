@@ -1,7 +1,7 @@
 "use client";
 
-// The search page's filters (CCARE-189): where to look, then the care and amenity filters
-// (lib/search-filters.ts) in folding groups. From md up they're a column beside the
+// The search page's filters (CCARE-189): where to look, with the place box (PlaceBox, CCARE-228),
+// then the care and amenity filters (lib/search-filters.ts) in folding groups. From md up they're a column beside the
 // results; on phones they open in a full-screen sheet from a "Filters" button. Either way, choices
 // apply on "Show n nursing homes" (or Enter), not as they're made, so the results don't change
 // under someone still choosing. Until then the counts, and the number on the button, are asked for
@@ -12,8 +12,16 @@
 // out rather than offered without them.
 import { Chevron } from "@/components/ui/chevron";
 import { textInputClass } from "@/components/ui/classes";
-import { Icon } from "@/components/ui/icons";
-import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, searchHref, type Facets, type PageSearch } from "@/lib/search";
+import { PreferencesNotice } from "@/components/preferences/preferences-notice";
+import { SavePreferencesButton } from "@/components/preferences/save-preferences-button";
+import { hydrateSavedSearch, type SavedSearchInitial } from "@/components/preferences/saved-search-store";
+import { GooglePlacesLoader, useGooglePlaces, type GooglePlaces } from "@/components/search/google-places";
+import { forgetLastSearch } from "@/components/search/last-search";
+import { PlaceBox } from "@/components/search/place-box";
+import { filtersClearedHref, leavesHomesOut, searchHref, type PageSearch } from "@/lib/page-search";
+import { needsLookup, settlePlace, withoutDistance, type PendingPick } from "@/lib/place-search";
+import { savedSearchFrom } from "@/lib/preferences";
+import { ANY_COUNTY, COUNTIES, MAX_TEXT_LENGTH, type Facets } from "@/lib/search";
 import {
   filterCount,
   FILTER_GROUPS,
@@ -26,13 +34,15 @@ import {
   type FilterGroupKey,
 } from "@/lib/search-filters";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, useTransition, type Dispatch, type ReactNode, type SetStateAction } from "react";
 
-type FilterState = Pick<PageSearch, "name" | "place" | "county" | "selection" | "sort">;
+type FilterState = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort">;
 
-const EMPTY: FilterState = { name: "", place: "", county: "", selection: NO_FILTERS, sort: "name" };
+const EMPTY: FilterState = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name" };
 // How long after the last change its counts are asked for.
 const PAUSE = 250;
+// How long Search waits for Google to place the box's text before searching it as text.
+const LOOKUP_LIMIT = 2000;
 
 function noun(count: number) {
   return count === 1 ? "nursing home" : "nursing homes";
@@ -43,11 +53,20 @@ export function SearchFilters({
   facets,
   total,
   sortShown,
+  initialSaved,
+  googleKey,
 }: {
   search: FilterState;
   facets: Facets | null;
   total: number | null; // null before anything is searched for
   sortShown: boolean;
+  // The browser key for Google's place suggestions, read by the page on the server (not
+  // NEXT_PUBLIC_, so the Docker image doesn't carry it). null: the place box is a plain text box.
+  googleKey: string | null;
+  // What the page read from the account on the server (ADR-0025): whether there is a saved search,
+  // and whether one could be read at all. Handed down rather than fetched here, so a visitor with no
+  // account sends no request, and the page has already opened a kept search before it renders.
+  initialSaved: SavedSearchInitial;
 }) {
   const router = useRouter();
   const [, startTransition] = useTransition();
@@ -62,20 +81,65 @@ export function SearchFilters({
     setDraftFor(applied);
     setDraft(search);
   }
-  const [fetched, setFetched] = useState<{ total: number | null; facets: Facets | null } | null>(null);
+  const [fetched, setFetched] = useState<{ total: number | null; facets: Facets | null; search: FilterState } | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const draftHref = searchHref(draft);
+  // What "Save my preferences" keeps: the choices in the form, not the words typed into the search
+  // boxes (lib/preferences.ts). It sits under the Search button, so it saves what is about to be
+  // searched for, and applies it once stored.
+  const savedFromDraft = savedSearchFrom(draft);
+  // Google's suggestions for the place boxes, loaded once the visitor types in one, and a picked
+  // place whose location Google is still giving, which Search waits for.
+  const google = useGooglePlaces(googleKey);
+  const pick = useRef<PendingPick | null>(null);
+  // Counts presses of Search: a lookup can take up to LOOKUP_LIMIT, so an older press can finish last.
+  const searches = useRef(0);
+  // Text in the place box that Search will look up first: a count now would be for the wrong search.
+  const lookingUp = google.inUse && needsLookup(draft, search);
+
+  // The account's saved choices, as the page read them on the server. The button under Search
+  // reports them, and a kept search was applied before this page rendered (app/(site)/search),
+  // so there is nothing to fetch and nothing to redirect from here.
+  const { status: savedStatus, saved: savedAtLoad } = initialSaved;
+  useEffect(() => {
+    hydrateSavedSearch({ status: savedStatus, saved: savedAtLoad });
+  }, [savedStatus, savedAtLoad]);
+
+  // Forgetting empties the page as well as the account: the choices on screen are gone from the
+  // table, so they should not stay in front of the visitor as if they were still kept. The sheet
+  // closes too, so a phone is not left looking at an empty form.
+  function startOver() {
+    sheet.current?.close();
+    setDraft({ ...EMPTY, sort: withoutDistance(draft.sort) });
+    // The links to search would otherwise bring the forgotten choices back (CCARE-214).
+    forgetLastSearch();
+    startTransition(() => router.replace("/search"));
+  }
+
+  // The browser's Back button can restore this page from its own cache, without asking the server:
+  // it comes back exactly as it was, including "Forget my preferences" for a search that has since
+  // been forgotten. A restored page is loaded again, so what it shows is what is stored.
+  //
+  // router.refresh() is not enough here: on a restored page it is answered from the router's own
+  // cache with the payload the page was built from, which is the stale one. Reloading asks the server.
+  useEffect(() => {
+    const askAgain = (event: PageTransitionEvent) => {
+      if (event.persisted) window.location.reload();
+    };
+    window.addEventListener("pageshow", askAgain);
+    return () => window.removeEventListener("pageshow", askAgain);
+  }, []);
   // The page's own counts while the draft is what's applied; otherwise the last ones fetched for it,
-  // which lag a moment behind the ticks.
-  const draftCount = draftHref === applied || !fetched ? { total, facets } : fetched;
+  // which lag a moment behind the ticks. Each comes with the search it counts, which words the button.
+  const draftCount = draftHref === applied || !fetched ? { total, facets, search } : fetched;
 
   useEffect(() => {
-    if (draftHref === applied) return;
+    if (draftHref === applied || lookingUp) return;
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(draftHref.replace("/search", "/search/count"), { signal: controller.signal });
-        if (response.ok) setFetched(await response.json());
+        if (response.ok) setFetched({ ...(await response.json()), search: draft });
       } catch {
         // Aborted by a newer change, or offline: the button keeps its last count.
       }
@@ -84,7 +148,7 @@ export function SearchFilters({
       clearTimeout(timer);
       controller.abort();
     };
-  }, [draftHref, applied]);
+  }, [draft, draftHref, applied, lookingUp]);
 
   function openSheet() {
     setDraft(search);
@@ -93,36 +157,76 @@ export function SearchFilters({
     sheet.current?.showModal();
   }
 
-  function apply() {
+  async function apply() {
     sheet.current?.close();
-    startTransition(() => router.push(draftHref, { scroll: false }));
+    const thisSearch = ++searches.current;
+    // The place box's text as Google places it, or as it is (lib/place-search.ts).
+    const settled = await settlePlace(draft, {
+      searched: search,
+      pick: pick.current,
+      findFirst: google.inUse ? google.findFirst : null,
+      deadline: new Promise((resolve) => setTimeout(resolve, LOOKUP_LIMIT)),
+    });
+    if (thisSearch !== searches.current) return;
+    // A search with every field emptied goes to the page that says so (?filtersCleared=true) rather than to
+    // /search, which is the arrival that opens the visitor's saved search again. Without this,
+    // "Clear all" followed by Search would put the cleared filters straight back.
+    startTransition(() => router.push(filtersClearedHref(settled), { scroll: false }));
   }
 
-  const showLabel = draftCount.total === null ? "Search" : `Show ${draftCount.total} ${noun(draftCount.total)}`;
+  // Worded from the search the count is for, so that until a new count arrives the button keeps
+  // what it said. A point alone lists every home (leavesHomesOut), so the button doesn't count them.
+  const counted = draftCount.search;
+  const showLabel =
+    draftCount.total === null || lookingUp
+      ? "Search"
+      : leavesHomesOut(counted)
+        ? `Show ${draftCount.total} ${noun(draftCount.total)}`
+        : counted.sort === "distance"
+          ? "Show nearest nursing homes"
+          : "Show nursing homes";
 
   // Something in the draft to clear (the order isn't cleared).
   const canClear = searchHref({ ...draft, sort: "name" }) !== "/search";
+  const clear = () => setDraft({ ...EMPTY, sort: withoutDistance(draft.sort) });
+  const place = {
+    google,
+    onPick: (picked: PendingPick) => {
+      pick.current = picked;
+    },
+  };
 
-  const active = filterCount(search.selection) + (search.name ? 1 : 0) + (search.place ? 1 : 0) + (search.county ? 1 : 0);
+  const active =
+    filterCount(search.selection) + (search.name ? 1 : 0) + (search.place || search.near ? 1 : 0) + (search.county ? 1 : 0);
 
   return (
     <>
       {/* From md up: the column beside the results. */}
+        <PreferencesNotice />
+      {google.loader && <GooglePlacesLoader {...google.loader} />}
+
       <aside aria-label="Filters" className="hidden md:block">
         <FilterPanel
           state={draft}
           onChange={setDraft}
+          place={place}
           facets={draftCount.facets}
           onSubmit={apply}
           footer={
             // Kept in view at the bottom of the window while the column is taller than it, with
             // "Clear all" under the button once something is set.
-            <div className={`sticky bottom-0 flex flex-col items-center gap-1 rounded-b-2xl border-t border-line bg-surface px-5 pt-3.5 adult:rounded-b-lg ${canClear ? "pb-2" : "pb-3.5"}`}>
+            <div className={`sticky bottom-0 flex flex-col items-center gap-2 rounded-b-2xl border-t border-line bg-surface px-5 pt-3.5 adult:rounded-b-lg ${canClear ? "pb-2" : "pb-3.5"}`}>
               <button type="submit" aria-live="polite" className="min-h-12 w-full rounded-full bg-primary px-4 font-bold text-on-primary hover:bg-primary-hover">
                 {showLabel}
               </button>
+              {/* Under the Search button: the choices are made here, so this is where they are
+                  kept (ADR-0025). It applies them once saved, so the results on screen are the ones
+                  the account remembers. */}
+              <div className="w-full">
+                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+              </div>
               {canClear && (
-                <button type="button" onClick={() => setDraft({ ...EMPTY, sort: draft.sort })} className="min-h-11 px-2 text-sm text-primary underline">
+                <button type="button" onClick={clear} className="min-h-11 px-2 text-sm text-primary underline">
                   Clear all
                 </button>
               )}
@@ -166,7 +270,7 @@ export function SearchFilters({
               <h2 id="sheet-h" className="flex-1 text-xl font-bold">
                 Filters
               </h2>
-              <button type="button" onClick={() => setDraft({ ...EMPTY, sort: draft.sort })} className="min-h-11 px-2.5 text-[15px] text-primary underline">
+              <button type="button" onClick={clear} className="min-h-11 px-2.5 text-[15px] text-primary underline">
                 Clear all
               </button>
               <button
@@ -181,12 +285,15 @@ export function SearchFilters({
               </button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <FilterPanel state={draft} onChange={setDraft} facets={draftCount.facets} onSubmit={apply} summaries />
+              <FilterPanel state={draft} onChange={setDraft} place={place} facets={draftCount.facets} onSubmit={apply} summaries />
             </div>
             <div className="border-t border-line bg-surface px-5 pb-5 pt-3 shadow-[0_-6px_16px_rgb(31_42_55/0.06)]">
               <button type="button" onClick={apply} className="min-h-13 w-full rounded-full bg-primary text-[17px] font-bold text-on-primary">
                 {showLabel}
               </button>
+              <div className="mt-2 w-full">
+                <SavePreferencesButton current={savedFromDraft} onSaved={apply} onForgotten={startOver} />
+              </div>
             </div>
           </div>
         )}
@@ -200,6 +307,7 @@ export function SearchFilters({
 function FilterPanel({
   state,
   onChange,
+  place,
   facets,
   footer,
   rounded = false,
@@ -207,7 +315,8 @@ function FilterPanel({
   onSubmit,
 }: {
   state: FilterState;
-  onChange: (state: FilterState) => void;
+  onChange: Dispatch<SetStateAction<FilterState>>;
+  place: { google: GooglePlaces; onPick: (pick: PendingPick) => void };
   facets: Facets | null;
   footer?: ReactNode;
   rounded?: boolean;
@@ -246,19 +355,7 @@ function FilterPanel({
           />
         </Field>
         <Field id={`${id}-place`} label="Town, area or Eircode">
-          <div className="relative">
-            <Icon name="address" className="pointer-events-none absolute left-3 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted" />
-            <input
-              id={`${id}-place`}
-              name="place"
-              type="search"
-              value={state.place}
-              onChange={(event) => onChange({ ...state, place: event.target.value })}
-              maxLength={MAX_TEXT_LENGTH}
-              autoComplete="postal-code"
-              className={`${textInputClass} w-full pl-10`}
-            />
-          </div>
+          <PlaceBox id={`${id}-place`} draft={state} onChange={onChange} google={place.google} onPick={place.onPick} />
         </Field>
         <Field id={`${id}-county`} label="County">
           <select
@@ -290,6 +387,12 @@ function FilterPanel({
         <>
           <div className="border-t border-line px-5 pb-1.5 pt-4.5">
             <SectionHeading>Care &amp; living</SectionHeading>
+            {/* Every group below is filled from the amenities an AI tool read from the reports
+                (centre_amenities_v2), so it says so here as the result cards and centre page do.
+                Drop "We're now checking" when CCARE-192 and -193 are done. */}
+            <p className="mt-1.5 text-xs text-ink-muted">
+              Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these.
+            </p>
           </div>
           {FILTER_GROUPS.map((group) => (
             <FilterGroupSection
@@ -337,8 +440,8 @@ function Count({ n }: { n: number }) {
 }
 
 // One folding group of checkboxes: its title, how many are ticked, and the options, the ones
-// families ask about most first. Past the first few, the list folds behind "Show all"; the rarer
-// options (more) go without counts, to keep the long lists quiet.
+// families ask about most first, each with how many homes it would find. Past the first few, the
+// list folds behind "Show all", with the options asked about less (more) after them.
 function FilterGroupSection({
   idPrefix,
   group,
@@ -387,41 +490,43 @@ function FilterGroupSection({
         )}
         <Chevron className={`size-[18px] ${open ? "-rotate-90" : "rotate-90"}`} />
       </button>
-      <div id={bodyId} hidden={!open} className="px-5 pb-4.5">
-        <fieldset>
-          <legend className="sr-only">{title}</legend>
-          {shown.map((option) => {
-            const checked = picked.includes(option.slug);
-            const n = counts[option.item] ?? 0;
-            const inputId = `${idPrefix}-${group.key}-${option.slug}`;
-            return (
-              <label key={option.slug} htmlFor={inputId} className="flex min-h-11 cursor-pointer items-start gap-3 py-2">
-                <input
-                  id={inputId}
-                  type="checkbox"
-                  name={group.key}
-                  value={option.slug}
-                  checked={checked}
-                  onChange={() => onToggle(option.slug)}
-                  className="mt-0.5 size-[18px] shrink-0 accent-primary"
-                />
-                <span className="flex flex-1 flex-col gap-0.5">
-                  {/* Greyed when ticking it would find nothing. */}
-                  <span className={`leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
-                    {option.label}
-                  </span>
-                  {option.help && <span className="text-sm leading-snug text-ink-muted">{option.help}</span>}
-                </span>
-                {!option.more && <Count n={n} />}
-              </label>
-            );
-          })}
-        </fieldset>
-        {folded.length < options.length && (
-          <button type="button" onClick={() => setShowAll(!showAll)} className="min-h-11 py-2 text-sm font-semibold text-primary underline">
-            {showAll ? "Show fewer" : `Show all ${options.length}`}
-          </button>
-        )}
+      {/* Slides open and shut (fold, globals.css); inert keeps it out of reach while it's shut. */}
+      <div id={bodyId} className="fold" data-open={open} inert={!open}>
+        <div>
+          <div className="px-5 pb-4.5">
+            <fieldset>
+              <legend className="sr-only">{title}</legend>
+              {shown.map((option) => {
+                const checked = picked.includes(option.slug);
+                const n = counts[option.item] ?? 0;
+                const inputId = `${idPrefix}-${group.key}-${option.slug}`;
+                return (
+                  <label key={option.slug} htmlFor={inputId} className="flex min-h-11 cursor-pointer items-start gap-3 py-2">
+                    <input
+                      id={inputId}
+                      type="checkbox"
+                      name={group.key}
+                      value={option.slug}
+                      checked={checked}
+                      onChange={() => onToggle(option.slug)}
+                      className="mt-0.5 size-[18px] shrink-0 accent-primary"
+                    />
+                    {/* Greyed when ticking it would find nothing. */}
+                    <span className={`flex-1 leading-snug ${checked ? "font-semibold" : ""} ${n === 0 && !checked ? "text-ink-muted" : ""}`}>
+                      {option.label}
+                    </span>
+                    <Count n={n} />
+                  </label>
+                );
+              })}
+            </fieldset>
+            {folded.length < options.length && (
+              <button type="button" onClick={() => setShowAll(!showAll)} className="min-h-11 py-2 text-sm font-semibold text-primary underline">
+                {showAll ? "Show fewer" : `Show all ${options.length}`}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -443,7 +548,7 @@ export function SortSelect({ search, compact = false }: { search: FilterState; c
         onChange={(event) => router.push(searchHref({ ...search, sort: event.target.value as FilterState["sort"] }), { scroll: false })}
         className={`${textInputClass} ${compact ? "rounded-full font-semibold" : ""}`}
       >
-        {SORTS.map((option) => (
+        {SORTS.filter((option) => option.value !== "distance" || search.near).map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>

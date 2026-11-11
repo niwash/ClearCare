@@ -1,6 +1,7 @@
-# A real PostgreSQL for the database tests: infra/postgres/roles.sql runs from
-# the image's init scripts and the migrations create the schema. These tests
-# need Docker; leave them out with `uv run pytest -m "not database"`.
+# A real PostgreSQL for the database tests: infra/postgres/postgis.sh installs
+# PostGIS, as compose.yaml has it, infra/postgres/roles.sql creates the roles,
+# and the migrations create the schema. These tests need Docker; leave them
+# out with `uv run pytest -m "not database"`.
 
 import secrets
 from collections.abc import Generator
@@ -14,6 +15,7 @@ from testcontainers.community.postgres import PostgresContainer
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 ROLES_SQL = REPOSITORY / "infra" / "postgres" / "roles.sql"
+POSTGIS_SH = REPOSITORY / "infra" / "postgres" / "postgis.sh"
 MIGRATIONS = (
     REPOSITORY / "db" / "V1__register_entries.sql",
     REPOSITORY / "db" / "V2__inspection_reports.sql",
@@ -28,8 +30,15 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V11__report_amenities.sql",
     REPOSITORY / "db" / "V12__report_amenities_v2.sql",
     REPOSITORY / "db" / "V13__pipeline_run.sql",
+    REPOSITORY / "db" / "V14__finding_re_assessment.sql",
+    REPOSITORY / "db" / "V15__user_preferences.sql",
+    REPOSITORY / "db" / "V16__centre_location.sql",
 )
-POSTGRES_IMAGE = "postgres:18.6"
+# The same image as compose.yaml, which says why it is this one.
+POSTGRES_IMAGE = (
+    "postgis/postgis:18-3.6"
+    "@sha256:530bb81ad6c5993ae870ea66095d9dc758ef5866007186833f31fb2bebdd5791"
+)
 SUPERUSER = "postgres"
 MIGRATOR = "clearcare_migrator"
 PIPELINE = "clearcare_pipeline"
@@ -63,7 +72,12 @@ def migrated_database() -> Generator[Database]:
         password=PASSWORDS[SUPERUSER],
         dbname="clearcare",
         driver=None,
-    ).with_volume_mapping(
+    )
+    # In place of the image's own script, as in compose.yaml.
+    container.with_volume_mapping(
+        str(POSTGIS_SH), "/docker-entrypoint-initdb.d/10_postgis.sh", "ro"
+    )
+    container.with_volume_mapping(
         str(ROLES_SQL), "/docker-entrypoint-initdb.d/roles.sql", "ro"
     )
     for role in LOGIN_ROLES:

@@ -158,16 +158,29 @@ accounts_enabled   = true
 ```
 
 ```sh
-# Both secrets exist from the first apply, with no value. Set them, then deploy.
+# All three secrets exist from the first apply, with no value. Set them, then deploy.
 aws secretsmanager put-secret-value --secret-id clearcare/auth/session-secret \
     --secret-string "$(openssl rand -base64 33)"
 aws secretsmanager put-secret-value --secret-id clearcare/auth/cognito-client-secret \
     --secret-string "<client_secret from the pool>"
+# One value, read by the site and the API: it is how the API knows a saved search is the site's own
+# (ADR-0025).
+aws secretsmanager put-secret-value --secret-id clearcare/site/token \
+    --secret-string "$(openssl rand -base64 33)"
 ```
 
-`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the two are injected only once they have been set. The web task's execution role can read nothing else.
+`accounts_enabled` is the switch, and it is separate for a reason: an ECS task cannot start with a secret that has no value, so the three are injected only once they have been set. The web task's execution role can read nothing else.
 
-Then apply `infra/aws/live` and run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
+That switch is already on in the live account, so a plain `terraform apply` is no longer a safe first step: it registers task definitions carrying `SITE_TOKEN` before the secret has a value, and the new tasks cannot start. Bring the secret up on its own first:
+
+```sh
+terraform apply -target=aws_secretsmanager_secret.site_token
+aws secretsmanager put-secret-value --secret-id clearcare/site/token \
+    --secret-string "$(openssl rand -base64 33)"
+terraform apply
+```
+
+Then run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
 
 ## Database passwords and roles
 
@@ -201,6 +214,31 @@ aws secretsmanager put-secret-value --secret-id clearcare/anthropic --secret-str
 
 A pipeline task does not start while this secret has no value, so set it before `pipeline_enabled`. The apply that adds the secret registers a pipeline revision that reads it, but the schedules keep the one recorded in `/clearcare/release/pipeline`: run the deploy workflow for the running commit afterwards, so they start the new one.
 
+The pipeline's Google key for geocoding is in `clearcare/google/geocoding-key` ([ADR-0027](../../docs/adr/0027-google-coordinates-refreshed-every-23-days-and-deleted-at-30.md)). Since a pipeline task does not start while a secret it reads has no value, create the secret alone, set its value, then apply the rest and run the deploy workflow for the running commit:
+
+```sh
+cd infra/aws/live
+terraform apply -target=aws_secretsmanager_secret.google_geocoding
+read -rs key
+aws secretsmanager put-secret-value --secret-id clearcare/google/geocoding-key --secret-string "$key"
+terraform apply
+```
+
+The key is limited to the Geocoding API. Fargate has no fixed egress IP, so it has no IP restriction; a quota and a billing alert are set in Google Cloud instead.
+
+Before the deploy that brings V16, install PostGIS once in `clearcare` as the RDS administrator, through the restore task:
+
+```sh
+aws ecs run-task --cluster clearcare --task-definition clearcare-restore \
+    --launch-type FARGATE --platform-version 1.4.0 \
+    --network-configuration "$(aws ssm get-parameter --name /clearcare/network/restore --query Parameter.Value --output text)" \
+    --overrides '{"containerOverrides": [{"name": "download", "command": ["true"]},
+      {"name": "pg_restore", "command": ["psql", "-v", "ON_ERROR_STOP=1", "-d", "clearcare", "-c", "CREATE EXTENSION postgis"]}]}'
+aws logs tail /clearcare/restore --since 15m
+```
+
+Once the task has stopped, its log ends with `CREATE EXTENSION`. RDS PostgreSQL 18.6 offers PostGIS 3.6.3. Without the extension, the migration stops at V16 and the deploy fails ([ADR-0026](../../docs/adr/0026-centre-locations-as-postgis-points.md)).
+
 ## Plan and apply
 
 ```sh
@@ -233,6 +271,12 @@ Changing a hostname replaces the certificate. To change them from `infra/aws/liv
 4. Apply everything: `terraform apply`. The listener rules move to the new hostnames.
 5. Run the AWS deploy workflow for the running commit, so the site's tasks get the new `API_URL`.
 6. Set `API_URL` for the Vercel previews to the new API hostname, then redeploy the preview of `main`: a changed variable reaches only new deployments.
+
+## Place suggestions
+
+The search page's place suggestions use Google's Maps JavaScript and Places APIs, with a browser key limited in Google Cloud to the site's hostname. Set it as `google_maps_browser_key` in `terraform.tfvars`, apply, and run the AWS deploy workflow for the running commit so that new tasks get it. Without the key, the place box is a plain text box ([web/clearcare/README.md](../../web/clearcare/README.md)).
+
+The Vercel previews need `GOOGLE_MAPS_BROWSER_KEY` set to the same key in the Vercel project's settings, and their address added to the key's referrers.
 
 ## Deploy
 
@@ -308,7 +352,7 @@ To turn the pipeline on, with `pipeline_enabled = false` until the last step:
        --query 'taskDefinition.containerDefinitions[?name==`pipeline`].command'
    ```
 
-4. If Terraform has created the secret `clearcare/anthropic`, set its value; a pipeline task does not start without it.
+4. If Terraform has created the secrets `clearcare/anthropic` and `clearcare/google/geocoding-key`, set their values; a pipeline task does not start without them.
 5. Seed the state from the VM, below.
 6. Set `pipeline_enabled = true` and apply.
 
@@ -339,7 +383,7 @@ A task cannot delete, and writes a checkpoint only after a successful upload, so
 
 ## Dumps and restore
 
-The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first (Database passwords and roles). Upload the dump, then run the restore:
+The restore task loads a dump in `pg_dump`'s custom format into an empty `clearcare` database, in one transaction, as the RDS administrator. The roles must exist first (Database passwords and roles). Make the dump with `pg_dump -Fc --exclude-extension=postgis --exclude-table-data=clearcare.centre_location`. The dump leaves out Google's coordinates, which may be kept for 30 days only, so after a restore the next run geocodes every centre again. `pg_restore` sets its role to `clearcare_owner`, which cannot create PostGIS, so install it in the new database first, as in Database passwords and roles. Upload the dump, then run the restore:
 
 ```sh
 aws s3 cp clearcare.dump "s3://clearcare-dumps-$ACCOUNT_ID/restore/clearcare.dump"

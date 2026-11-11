@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "3 November 2026";
+const LAST_UPDATED = "9 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -45,9 +45,41 @@ export default function PrivacyPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>
               Some choices you make are saved in your own browser: the colour theme, the easier-to-read design,
-              whether you&apos;ve closed the welcome tour&apos;s box on this visit, and the homes on your Compare Homes
-              shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
+              whether you&apos;ve closed the welcome tour&apos;s box on this visit, your last search on this visit, so
+              Compare Homes can take you back to it, and the homes on your Compare Homes shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
               the page address, like any other page you visit, so they appear in the technical logs below.
+            </li>
+            {/* The place box (CCARE-228, components/search/place-box.tsx and google-places.tsx): Google's
+                Places library loads only once something is typed in it, and is sent what is typed,
+                then asked for the location of a picked town, area or Eircode, or of the first suggestion
+                when Search is pressed with text that wasn't picked; a county isn't looked up. Measured on
+                9 Nov 2026: it stores nothing in the site's cookies, localStorage or sessionStorage. */}
+            <li>
+              When you type in the &ldquo;Town, area or Eircode&rdquo; box on the search page, what you type goes to
+              Google so it can suggest places. Like any request your browser makes, it carries your IP address.
+              When you pick a town, an area or an Eircode, or search for what you typed, Google is also asked where
+              that place is.
+              Nothing goes to Google until you type in that box.{" "}
+              <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
+              with these requests.
+            </li>
+            {/* "Use my location": the browser's Geolocation API, asked only on the click; nearFrom
+                (lib/near.ts) rounds the point to two decimals before it goes into the search, and the
+                API refuses anything finer (api/openapi.yaml, near). It doesn't go to Google. */}
+            <li>
+              &ldquo;Use my location&rdquo; asks your browser where you are, only when you press it. The page rounds
+              that to about 1 km before it goes anywhere, so our servers never get anything more precise. We
+              don&apos;t store it, though like any page address it can appear in the technical logs below.
+            </li>
+            {/* place and near are in the page address (lib/page-search.ts), so they are in the history
+                and in shared links, and in the last search (components/search/last-search.tsx), which
+                keeps them on purpose. Only near is rounded (lib/near.ts); place is the box's text as typed
+                or picked. Neither goes into a saved search (lib/preferences.ts). */}
+            <li>
+              The place you search from is in the page address, so it stays in your browser&apos;s history and in
+              any link you share. It&apos;s also in your last search on this visit, which your browser keeps until
+              you close the tab. Only the point we measure distances from is rounded to about 1 km: the name in the
+              box stays as you typed or picked it, and a full Eircode there is an exact address.
             </li>
             <li>
               Like any website, our servers keep short technical logs of requests. Finding faults and keeping the site
@@ -74,13 +106,14 @@ export default function PrivacyPage() {
         </PrivacySection>
 
         <PrivacySection id="accounts" title="If you create an account">
-          <p>
-            Accounts aren&apos;t open yet. When they are, this is what we&apos;ll hold:
-          </p>
+          {/* Accounts are live since CCARE-183 wired the production pool into the deployment. */}
+          <p>You don&apos;t need an account to use ClearCare. If you create one, this is what we hold:</p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
+            {/* The pool signs in by email and asks for nothing else (infra/aws/modules/cognito/main.tf):
+                no name is collected. If that changes, this changes in the same pull request. */}
             <li>
-              Your email address, and your name if you give it, held by Amazon Cognito in the EU. We use them to sign
-              you in and to contact you about your account. The legal basis is providing the service you asked for.
+              Your email address, held by Amazon Cognito in the EU. We use it to sign you in and to contact you about
+              your account. The legal basis is providing the service you asked for.
             </li>
             {/* Auth.js (PR #107) sets the session cookie, and short-lived state, PKCE and CSRF cookies
                 while you sign in. */}
@@ -90,7 +123,21 @@ export default function PrivacyPage() {
               keep the sign-in itself secure. None of them needs your consent, because signing in can&apos;t work
               without them.
             </li>
-            <li>We keep your account until you delete it, or ask us to by email.</li>
+            {/* The saved search (ADR-0025): clearcare.user_preferences, keyed on the account's id in
+                clearcare.users, holding the county, the order and the ticked filter options only. */}
+            <li>
+              A search you ask us to remember: the county, the order and the care and amenity options you chose.
+              It&apos;s kept with your account so it&apos;s there on your next visit, on any device, and what you
+              type into the search boxes isn&apos;t kept. Saving one also keeps a number for your account, which
+              the search is filed against. You can forget the search on the search page at any time; that leaves
+              your account as it is, and if you ask us by email we remove the saved search along with the account.
+            </li>
+            {/* There's no delete route yet: an operator follows documentations/operations/account_deletion.md.
+                The database's automatic backups are kept for 7 days (infra/aws/live/rds.tf). */}
+            <li>
+              We keep your account until you ask us by email to delete it. Once we have, copies left in our database
+              backups are gone within 7 days.
+            </li>
           </ul>
         </PrivacySection>
 
@@ -167,15 +214,19 @@ export default function PrivacyPage() {
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
               the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
-              code on 3 Nov 2026, after CCARE-198 (#135): AWS in eu-north-1 (infra/aws), Vercel for previews
+              code on 9 Nov 2026, after CCARE-228: AWS in eu-north-1 (infra/aws), Vercel for previews
               of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
               pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
-              openai, and the amenities loaded before CCARE-198), the last three in the US. Cloudflare only
-              holds DNS records, so it sees no visits. Update this when a service changes. */}
+              openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
+              place box's suggestions, components/search/google-places.tsx), which may handle these requests
+              outside the EU. The pipeline's geocoding (ADR-0027) sends Google only the centres' register
+              addresses, which name no visitor. Cloudflare only holds DNS records, so it sees no visits.
+              Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
-            Service providers handle data for us: hosting providers run the site and store its data in the EU, and
-            AI services read the reports. Some of these providers are in the United States, where data is protected
+            Service providers handle data for us: hosting providers run the site and store its data in the EU, AI
+            services read the reports, and a maps service suggests places as you type in the search. Some of these
+            providers are in the United States, where data is protected
             by the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
             Commission&apos;s standard contractual clauses. Email us for a copy of these safeguards.
           </p>
@@ -195,8 +246,8 @@ export default function PrivacyPage() {
 
         <PrivacySection id="changes" title="Changes to this notice">
           <p>
-            We&apos;ll update this page when ClearCare changes how it uses data, such as when accounts open.
-            Last updated {LAST_UPDATED}.
+            {/* A change to the data ClearCare handles updates this page in the same pull request. */}
+            We&apos;ll update this page whenever ClearCare changes how it uses data. Last updated {LAST_UPDATED}.
           </p>
         </PrivacySection>
       </div>

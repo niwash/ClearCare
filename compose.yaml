@@ -3,8 +3,11 @@
 
 services:
   db:
-    # The same image as the database tests in pipeline/tests.
-    image: postgres:18.6
+    # PostgreSQL 18.6 with PostGIS, the same image as the tests (ADR-0026).
+    # Debian, so existing volumes keep their glibc collations. amd64 only: the
+    # digest is the amd64 image's, so ARM Macs pull it and run it emulated.
+    # An existing volume needs one step (CONTRIBUTING.md).
+    image: postgis/postgis:18-3.6@sha256:530bb81ad6c5993ae870ea66095d9dc758ef5866007186833f31fb2bebdd5791
     restart: unless-stopped
     environment:
       # infra/postgres/roles.sql expects this database name.
@@ -17,6 +20,8 @@ services:
       - 127.0.0.1:${CLEARCARE_DB_PORT:-5432}:5432
     volumes:
       - db-data:/var/lib/postgresql
+      # In place of the image's own script; postgis.sh says why.
+      - ./infra/postgres/postgis.sh:/docker-entrypoint-initdb.d/10_postgis.sh:ro
       - ./infra/postgres/roles.sql:/docker-entrypoint-initdb.d/roles.sql:ro
     healthcheck:
       # Over TCP: while the init scripts run, the server listens only on its
@@ -53,6 +58,10 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/clearcare
       CLEARCARE_API_PASSWORD: ${CLEARCARE_API_PASSWORD:?see .env.example}
+      # The token this API and the web server share for a visitor's saved search (ADR-0025). Left
+      # out, /preferences answers 503 and the site offers no saved search, so an older .env still
+      # runs: set it in both places to try the feature.
+      SITE_TOKEN: ${SITE_TOKEN:-}
     ports:
       - 127.0.0.1:${CLEARCARE_API_PORT:-8080}:8080
     depends_on:
@@ -85,6 +94,7 @@ services:
       CLEARCARE_S3_BUCKET: ${CLEARCARE_S3_BUCKET:-}
       CLEARCARE_S3_ACCESS_KEY_ID: ${CLEARCARE_S3_ACCESS_KEY_ID:-}
       CLEARCARE_S3_SECRET_ACCESS_KEY: ${CLEARCARE_S3_SECRET_ACCESS_KEY:-}
+      GOOGLE_GEOCODING_API_KEY: ${GOOGLE_GEOCODING_API_KEY:-}
     volumes:
       - ${CLEARCARE_DATA_DIR:-./data}:/data
     depends_on:

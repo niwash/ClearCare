@@ -1,10 +1,10 @@
 // lib/compare.ts
-// Compare Homes (CCARE-127): the homes a user has saved to compare, at most three, kept in the
+// Compare Homes (CCARE-127): the homes a user has saved to compare, at most five, kept in the
 // browser's localStorage (components/compare/compare-store.ts) and lined up side by side on
 // /compare. Only type imports, so the tests can load this file as it is.
 import type { CentreReports, ISODate, Judgement, Regulation } from "./centres";
 
-export const MAX_COMPARED = 3;
+export const MAX_COMPARED = 5;
 export const COMPARE_STORAGE_KEY = "compare-homes";
 // The note in Your shortlist that says the list is full. The search results' buttons point to it,
 // so it's said once rather than on every card. Here, not in the "use client" shortlist file: a
@@ -59,7 +59,7 @@ export function compareHref(ids: string[]) {
   return ids.length > 0 ? `/compare?homes=${ids.join(",")}` : "/compare";
 }
 
-// The IDs in ?homes=, in order: digits only, no repeats, at most three.
+// The IDs in ?homes=, in order: digits only, no repeats, at most MAX_COMPARED.
 export function parseHomesParam(param: string | string[] | undefined): string[] {
   const value = Array.isArray(param) ? param[0] : param;
   const ids: string[] = [];
@@ -139,4 +139,9 @@ export function repeatedNotCompliant(reports: CentreReports): Regulation[] {
     })
     .map((history) => history.regulation)
     .sort((a, b) => a.number - b.number);
+}
+
+// "/compare/csv?homes=101,34": the same homes as a spreadsheet, for Download as CSV.
+export function compareCsvHref(ids: string[]) {
+  return `/compare/csv?homes=${ids.join(",")}`;
 }
