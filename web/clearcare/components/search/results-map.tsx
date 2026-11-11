@@ -4,9 +4,10 @@
 // The search results on a Google map (CCARE-229): a pin for every home the search matches, clusters
 // where pins would pile up, and a card for the home that is chosen. On a wide screen it is beside the
 // list of the same results (CCARE-230, list-beside-map.tsx). Before anything is searched, the
-// page draws the same map with every home on it, under its prompt. The points come from the page,
-// which read them on the server (ADR-0029); nothing here asks for more as the map moves. It is drawn
-// inside the page's one Google loader (GoogleMapsLoader, google-places.tsx).
+// page draws the same map with every home on it, under its prompt or, on a wide screen, beside the
+// ways to start. The points come from the page, which read them on the server (ADR-0029); nothing
+// here asks for more as the map moves. It is drawn inside the page's one Google loader
+// (GoogleMapsLoader, google-places.tsx).
 //
 // Only the map itself is Google's. The pins and clusters (map-pins.tsx), the card (map-card.tsx) and
 // the zoom buttons are the site's, and the map's colours come with its map ID (map-style/, README).
@@ -111,15 +112,16 @@ export function ResultsMap({
         )}
       </p>
       {/* The frame of a result card. Until Google's first tiles are drawn it says so, and the map
-          then fades in over it, rather than a grey box turning into a map. Beside the list on a
-          wide screen it fills the place the page keeps for it, which has the window's height. */}
+          then fades in over it, rather than a grey box turning into a map. On a wide screen it is
+          beside the list, or the ways to start, and fills the place the page keeps for it, which
+          has the window's height. */}
       <div
         role="region"
         aria-label={listHref ? "Map of the nursing homes found" : "Map of nursing homes across Ireland"}
         onKeyDown={(event) => {
           if (event.key === "Escape" && chosenId) close();
         }}
-        className={`relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[44rem] adult:rounded-lg ${listHref ? "xl:h-full" : ""}`}
+        className="relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[44rem] xl:h-full adult:rounded-lg"
       >
         {!drawn && (
           <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-ink-muted">
