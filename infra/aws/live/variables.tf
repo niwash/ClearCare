@@ -127,3 +127,9 @@ variable "accounts_enabled" {
   type        = bool
   default     = false
 }
+
+variable "google_maps_browser_key" {
+  description = "Google's browser key for the place suggestions on the search page, limited by referrer to the site's own address. Every visitor's browser is given it, so it is not a secret; empty leaves the place box a plain text box."
+  type        = string
+  default     = ""
+}

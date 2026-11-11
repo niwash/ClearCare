@@ -3,7 +3,8 @@
 // phones (SearchFilters): its choices only apply on "Show n nursing homes", so the page's own counts
 // are for the search before them. The same parameters as the search page.
 import { apiFilterParams } from "@/lib/search-filters";
-import { hasSearch, readSearch, searchCentres } from "@/lib/search";
+import { hasSearch, readSearch } from "@/lib/page-search";
+import { searchCentres } from "@/lib/search";
 
 export async function GET(request: Request) {
   const search = readSearch(Object.fromEntries(new URL(request.url).searchParams));

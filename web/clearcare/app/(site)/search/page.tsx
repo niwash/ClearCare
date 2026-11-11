@@ -15,18 +15,9 @@ import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
 import { homeSearchHref } from "@/lib/home-search";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
+import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
-import {
-  filtersClearedHref,
-  formatEircode,
-  hasSearch,
-  readSearch,
-  searchCentres,
-  searchHref,
-  unavailableMessage,
-  type PageSearch,
-  type SearchResponse,
-} from "@/lib/search";
+import { formatEircode, searchCentres, unavailableMessage, type SearchResponse } from "@/lib/search";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -44,14 +35,44 @@ function noun(count: number) {
   return count === 1 ? "nursing home" : "nursing homes";
 }
 
-// "matching “aras” in Co. Mayo", for the results heading and the page title.
-function describe({ name, place, county, query }: Pick<PageSearch, "name" | "place" | "county" | "query">) {
+// "matching “aras” in Co. Mayo": what the results were filtered by. A place with a point to measure
+// from filters nothing (measuredFrom says where it is).
+function describe({ name, place, near, county, query }: Pick<PageSearch, "name" | "place" | "near" | "county" | "query">) {
   const parts = [
     name && `matching “${name}”`,
-    place && (query.eircode ? `near ${formatEircode(query.eircode)}` : `in “${place}”`),
+    place && !near && (query.eircode ? `near ${formatEircode(query.eircode)}` : `in “${place}”`),
     county && `in Co. ${county}`,
   ].filter(Boolean);
   return parts.join(" ");
+}
+
+// What the headings and titles call a point: the place it was picked as, or "the chosen location" for
+// the visitor's own location, which has no name.
+function pointName(place: string) {
+  return place || "the chosen location";
+}
+
+// "nearest to Rathmines, Dublin first", or "" without a point (CCARE-228). Never "near" or "in" the
+// place: every matching home is listed, so the words must not read as if only nearby ones were.
+function measuredFrom({ place, near, sort }: Pick<PageSearch, "place" | "near" | "sort">) {
+  if (!near) return "";
+  if (sort === "distance") return place ? `nearest to ${place} first` : "nearest first";
+  return `with distances from ${pointName(place)}`;
+}
+
+// What follows "547 nursing homes" in the results heading, or "Nursing homes" in the page title:
+// " matching “elm”, nearest to Rathmines, Dublin first", or "" when only filters were chosen.
+function described(search: PageSearch) {
+  const where = describe(search);
+  const from = measuredFrom(search);
+  return `${where ? ` ${where}` : ""}${from ? `, ${from}` : ""}`;
+}
+
+// The results heading and the page title for a point alone, which lists every home, so there is no
+// count (leavesHomesOut): "Nursing homes nearest to Rathmines, Dublin".
+function fromPointAlone({ place, sort }: Pick<PageSearch, "place" | "sort">) {
+  const point = pointName(place);
+  return sort === "distance" ? `Nursing homes nearest to ${point}` : `Nursing homes, with distances from ${point}`;
 }
 
 // The form was sent with every field empty: its fields arrive as "", so the keys are there.
@@ -70,14 +91,18 @@ async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"])
 export async function generateMetadata({ searchParams }: SearchPageProps) {
   const search = readSearch(await searchParams);
   if (!hasSearch(search)) return { title: "Find a nursing home" };
-  const where = describe(search);
-  return { title: where ? `Nursing homes ${where}` : "Search results" };
+  if (!leavesHomesOut(search)) return { title: fromPointAlone(search) };
+  const what = described(search);
+  return { title: what ? `Nursing homes${what}` : "Search results" };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
   await redirectHomeSearch(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
+  // Read on each request, after the address made the page dynamic, rather than at build: the Docker
+  // image is built once and must not carry it (README).
+  const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;
   // Nothing is listed until something is searched for (CCARE-164): a full list of every home
   // read as if the search had been done for them.
   const searched = hasSearch(search);
@@ -125,7 +150,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           with the care and amenity filters, there are too many kinds of filter for a bar above the
           results (Baymard). Below md, a Filters button opens them in a sheet. */}
       <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters search={search} facets={facets} total={data ? data.total : null} sortShown={data !== null} initialSaved={initialSaved} />
+        <SearchFilters
+          search={search}
+          facets={facets}
+          total={data ? data.total : null}
+          sortShown={data !== null}
+          initialSaved={initialSaved}
+          googleKey={googleKey}
+        />
 
         <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -214,7 +246,14 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
     <>
       <h2 aria-live="polite" className="font-heading text-2xl font-semibold leading-tight md:text-[1.625rem]">
         {/* With only filters, no name, place or county: "12 nursing homes found". */}
-        {total} {noun(total)} {where || "found"}
+        {leavesHomesOut(search) ? (
+          <>
+            {total} {noun(total)}
+            {described(search) || " found"}
+          </>
+        ) : (
+          fromPointAlone(search)
+        )}
       </h2>
 
       {/* The filters in use, each removable, as links so they work without scripts. On phones they

@@ -41,6 +41,21 @@ class SiteTokenTest {
         .isInstanceOf(ResponseStatusException.class);
   }
 
+  // A route about no account, such as the map's points, has no subject to send.
+  @Test
+  void checksTheTokenAloneForARequestAboutNoAccount() {
+    assertThatCode(() -> new SiteToken("shared-token").requireSite("shared-token"))
+        .doesNotThrowAnyException();
+    assertThatThrownBy(() -> new SiteToken("shared-token").requireSite(null))
+        .isInstanceOfSatisfying(
+            ResponseStatusException.class,
+            refused -> assertThat(refused.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED));
+    assertThatThrownBy(() -> new SiteToken("").requireSite("anything"))
+        .isInstanceOfSatisfying(
+            ResponseStatusException.class,
+            refused -> assertThat(refused.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE));
+  }
+
   // The subject is what a row is keyed on, so a value that could not be one is refused rather than
   // stored.
   @Test

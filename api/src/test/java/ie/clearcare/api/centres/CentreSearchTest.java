@@ -12,8 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -35,7 +37,6 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -43,13 +44,15 @@ import tools.jackson.databind.node.ObjectNode;
 import ie.clearcare.api.DatabaseImage;
 
 /**
- * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
- * repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
+ * GET /centres, GET /centres/points and GET /centres/{centre_id} against PostgreSQL with the roles
+ * and schema from this repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
  */
-@SpringBootTest
+@SpringBootTest(properties = "clearcare.site.token=the-sites-own-token")
 @AutoConfigureMockMvc
 @Testcontainers
 class CentreSearchTest {
+
+  private static final String TOKEN = "the-sites-own-token";
 
   // Maven runs the tests in api/.
   private static final Path REPOSITORY = Path.of("..");
@@ -68,8 +71,9 @@ class CentreSearchTest {
       List.of(ARAS, ELM_HALL, ST_JOSEPHS_CORK, ST_JOSEPHS_DUBLIN, STELLA_MARIS);
 
   // The register migrations, the reports and their views, those that add
-  // centre_phone and the contract prices, and the amenities-v2 view, as Flyway
-  // runs them (ADR-0010). The other migrations are not needed here.
+  // centre_phone and the contract prices, the amenities-v2 view, and the
+  // centre locations and their view, as Flyway runs them (ADR-0010). The other
+  // migrations are not needed here.
   private static final List<String> MIGRATIONS =
       List.of(
           "db/V1__register_entries.sql",
@@ -79,7 +83,9 @@ class CentreSearchTest {
           "db/V8__contract_prices.sql",
           "db/V9__centre_contract_price_view.sql",
           "db/V10__centre_contract_price_home_type.sql",
-          "db/V12__report_amenities_v2.sql");
+          "db/V12__report_amenities_v2.sql",
+          "db/V16__centre_location.sql",
+          "db/V17__centre_point_view.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -206,17 +212,30 @@ class CentreSearchTest {
            '9.pdf', 'https://www.hiqa.ie/test/9.pdf', 'amenities-v2', 'test', now());
       """;
 
-  // roles.sql runs from the image's init scripts, as it does for a new local database.
+  // In the middle of Dublin.
+  private static final String NEAR = "53.35,-6.26";
+
+  // What a 400 says of any near that is not a valid one.
+  private static final String NEAR_RULE =
+      "near must be a latitude from -90 to 90 and a longitude from -180 to 180 in degrees, with at"
+          + " most two decimal places, such as 53.35,-6.26";
+
+  // The points the geocoder stores (db/V16), longitude first. Áras is 0.01° of latitude north of
+  // NEAR, which is 1,113 m. St Joseph's in Cork's point is 60 days old, long past the 30 the view
+  // allows, and Stella Maris has no point.
+  private static final String LOCATIONS =
+      """
+      INSERT INTO clearcare.centre_location (centre_id, point, place_id, geocoded_at)
+      VALUES
+          ('456', ST_SetSRID(ST_MakePoint(-6.26, 53.36), 4326), 'aras', now()),
+          ('34', ST_SetSRID(ST_MakePoint(-6.54, 53.34), 4326), 'elm-hall', now()),
+          ('10', ST_SetSRID(ST_MakePoint(-6.30, 53.31), 4326), 'st-josephs-dublin', now()),
+          ('9', ST_SetSRID(ST_MakePoint(-8.47, 51.90), 4326), 'st-josephs-cork',
+           now() - interval '60 days');
+      """;
+
   @Container
-  static final PostgreSQLContainer database =
-      new PostgreSQLContainer(DatabaseImage.POSTGIS)
-          .withDatabaseName("clearcare")
-          .withCopyFileToContainer(
-              MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
-              "/docker-entrypoint-initdb.d/roles.sql")
-          .withEnv("CLEARCARE_MIGRATOR_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_PIPELINE_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_API_PASSWORD", PASSWORD);
+  static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
   // The user name comes from application.properties.
   @DynamicPropertySource
@@ -239,6 +258,7 @@ class CentreSearchTest {
     execute(PUBLISH);
     execute(CONTRACT_PRICES);
     execute(REPORTS);
+    execute(LOCATIONS);
   }
 
   @Test
@@ -269,7 +289,8 @@ class CentreSearchTest {
                       "facilities": ["Garden"]
                     },
                     "fair_deal": true,
-                    "latest_inspection": {"date": "2026-05-13"}
+                    "latest_inspection": {"date": "2026-05-13"},
+                    "distance_m": null
                   }],
                   "page": 1,
                   "page_size": 20,
@@ -373,6 +394,163 @@ class CentreSearchTest {
         .andExpect(jsonPath("$.sort").value("latest_inspection"));
   }
 
+  // Nearest first. St Joseph's in Cork, whose only point is too old, and Stella Maris, which has
+  // none, come last, in name order.
+  @Test
+  void sortsByDistanceFromNear() throws Exception {
+    search("near=" + NEAR + "&sort=distance")
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.centres[*].centre_id",
+                is(List.of(ARAS, ST_JOSEPHS_DUBLIN, ELM_HALL, ST_JOSEPHS_CORK, STELLA_MARIS))))
+        .andExpect(jsonPath("$.sort").value("distance"));
+  }
+
+  @Test
+  void givesTheDistanceInWholeMetres() throws Exception {
+    search("name=aras&near=" + NEAR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.centres[0].distance_m").value(1113));
+  }
+
+  // near with another order: the centres in that order, with a distance for each centre that has a
+  // point.
+  @Test
+  void givesDistancesInTheOrderAskedFor() throws Exception {
+    search("near=" + NEAR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.centres[*].centre_id", is(EVERY_CENTRE)))
+        .andExpect(
+            jsonPath(
+                "$.centres[?(@.distance_m != null)].centre_id",
+                is(List.of(ARAS, ELM_HALL, ST_JOSEPHS_DUBLIN))))
+        .andExpect(jsonPath("$.sort").value("name"));
+  }
+
+  // Counted in UTC calendar days, as the geocoder deletes them (ADR-0027). St Joseph's in Dublin's
+  // point is stamped 29 days ago early in the day, and St Joseph's in Cork's 30 days ago late in
+  // the day: whatever the time now, Dublin's may be over 29 times 24 hours old and Cork's under 30
+  // times 24. One transaction stamps them and reads the view, so now() is the same for both, and
+  // rolling it back leaves the fixture as it was.
+  @Test
+  void servesOnlyPointsUnder30CalendarDaysOld() throws Exception {
+    try (Connection connection = database.createConnection("");
+        Statement statement = connection.createStatement()) {
+      connection.setAutoCommit(false);
+      try {
+        statement.execute(
+            """
+            UPDATE clearcare.centre_location
+            SET geocoded_at =
+                ((now() AT TIME ZONE 'UTC')::date - 29 + time '00:01') AT TIME ZONE 'UTC'
+            WHERE centre_id = '10';
+            UPDATE clearcare.centre_location
+            SET geocoded_at =
+                ((now() AT TIME ZONE 'UTC')::date - 30 + time '23:59') AT TIME ZONE 'UTC'
+            WHERE centre_id = '9';
+            """);
+        List<String> served = new ArrayList<>();
+        try (ResultSet row =
+            statement.executeQuery(
+                "SELECT centre_id FROM clearcare.centre_point WHERE centre_id IN ('10', '9')")) {
+          while (row.next()) {
+            served.add(row.getString("centre_id"));
+          }
+        }
+        assertThat(served).containsExactly(ST_JOSEPHS_DUBLIN);
+      } finally {
+        connection.rollback();
+      }
+    }
+  }
+
+  // Strict: any other property, such as eircode or place_id, a total or facets, fails the test.
+  @Test
+  void givesTheMapEachCentresPointWithTheSnapshotItCameFrom() throws Exception {
+    points("name=elm")
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {
+                      "points": [{
+                        "centre_id": "34",
+                        "centre_name": "Elm Hall Nursing Home",
+                        "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
+                        "county": "Kildare",
+                        "latitude": 53.34,
+                        "longitude": -6.54,
+                        "distance_m": null
+                      }],
+                      "register_snapshot": {
+                        "fetched_at": "2026-10-05T06:12:54Z",
+                        "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
+                        "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
+                      }
+                    }
+                    """,
+                    JsonCompareMode.STRICT));
+  }
+
+  // The centres GET /centres finds for the same parameters, in name order and on no pages, less
+  // the two the map has no point for: St Joseph's in Cork, whose only point is too old to serve
+  // (ADR-0027), and Stella Maris, which has none.
+  @ParameterizedTest
+  @ValueSource(strings = {"", "county=Dublin", "care_type=Dementia care", "county=Cork"})
+  void givesAPointForEachCentreTheSearchFindsThatHasOne(String query) throws Exception {
+    List<String> withAPoint = new ArrayList<>();
+    for (JsonNode centre : searchResult(query).get("centres")) {
+      withAPoint.add(centre.get("centre_id").asString());
+    }
+    withAPoint.removeAll(List.of(ST_JOSEPHS_CORK, STELLA_MARIS));
+    points(query)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[*].centre_id", is(withAPoint)));
+  }
+
+  @Test
+  void givesEachPointsDistanceFromNear() throws Exception {
+    points("name=aras&near=" + NEAR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[0].distance_m").value(1113));
+  }
+
+  // The answer has no pages and one order, so these are unknown parameters here.
+  @ParameterizedTest
+  @ValueSource(strings = {"page", "page_size", "sort"})
+  void refusesToPageOrSortThePoints(String parameter) throws Exception {
+    points(parameter + "=1")
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    parameter
+                        + " is not a parameter; use one of name, address, eircode, county,"
+                        + " care_type, room_type, facility, activity, near"));
+  }
+
+  // The points are Google's, which the public API does not give out (ADR-0029).
+  @Test
+  void givesPointsOnlyToTheSite() throws Exception {
+    mvc.perform(get("/centres/points"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+    mvc.perform(get("/centres/points").header("X-ClearCare-Token", "not-the-token"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  // near measures the centres, and orders them if asked, but leaves none of them out.
+  @Test
+  void countsTheSameWithNear() throws Exception {
+    JsonNode withoutNear = searchResult("");
+    JsonNode withNear = searchResult("near=" + NEAR + "&sort=distance");
+    assertThat(withNear.get("total")).isEqualTo(withoutNear.get("total"));
+    assertThat(withNear.get("facets")).isEqualTo(withoutNear.get("facets"));
+  }
+
   // With no parameters every centre matches. Every item of every list is a key, with 0 for those
   // that no report mentions.
   @Test
@@ -473,10 +651,17 @@ class CentreSearchTest {
         arguments(
             "colour=red",
             "colour is not a parameter; use one of name, address, eircode, county, care_type,"
-                + " room_type, facility, activity, sort, page, page_size"),
+                + " room_type, facility, activity, near, sort, page, page_size"),
         arguments("name=a&name=b", "name must be given only once"),
         arguments("sort=name&sort=name", "sort must be given only once"),
-        arguments("sort=newest", "sort must be name or latest_inspection"),
+        arguments("sort=newest", "sort must be name, latest_inspection or distance"),
+        arguments("sort=distance", "sort=distance needs near, such as near=53.35,-6.26"),
+        arguments("near=53.35", NEAR_RULE),
+        arguments("near=90.01,-6.26", NEAR_RULE),
+        arguments("near=53.35,-180.01", NEAR_RULE),
+        // A third decimal place is about 100 m, more exact than the API accepts.
+        arguments("near=53.35,-6.261", NEAR_RULE),
+        arguments("near=53.35,-6.26&near=53.35,-6.26", "near must be given only once"),
         // Item names are exact, and each list has its own.
         arguments(
             "facility=garden",
@@ -620,6 +805,10 @@ class CentreSearchTest {
 
   private ResultActions search(String query) throws Exception {
     return mvc.perform(get("/centres?" + query));
+  }
+
+  private ResultActions points(String query) throws Exception {
+    return mvc.perform(get("/centres/points?" + query).header("X-ClearCare-Token", TOKEN));
   }
 
   // Read as bytes: the body is UTF-8, which the response's string form does not assume.

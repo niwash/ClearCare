@@ -170,6 +170,9 @@ export const SHOWN_OPTIONS = 6;
 export const SORTS = [
   { value: "name", label: "Name A–Z" },
   { value: "latest_inspection", label: "Latest inspection" },
+  // Only while the search has a point to measure from (near, lib/near.ts): the API refuses it
+  // without one.
+  { value: "distance", label: "Nearest first" },
 ] as const;
 
 export type SortValue = (typeof SORTS)[number]["value"];
