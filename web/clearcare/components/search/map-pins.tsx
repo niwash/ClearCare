@@ -27,12 +27,17 @@ const FOCUS =
   "[gmp-advanced-marker:focus-visible_&]:outline-2 [gmp-advanced-marker:focus-visible_&]:outline-offset-2 [gmp-advanced-marker:focus-visible_&]:outline-focus adult:[gmp-advanced-marker:focus-visible_&]:outline-3";
 const LIFT = "group-hover:-translate-y-0.5 group-hover:scale-110 [gmp-advanced-marker:focus-visible_&]:-translate-y-0.5 [gmp-advanced-marker:focus-visible_&]:scale-110";
 const MOVES = "transition-[scale,translate] duration-150 motion-reduce:transition-none adult:transition-none";
+// A marked cluster: lifted as under the pointer, with a line round its halo.
+const MARKED = "-translate-y-0.5 scale-110 outline-3 outline-offset-4 outline-primary";
 
 // One home. Its box is 44 pixels across, a finger's width, round a smaller disc, so that two homes a
-// street apart are still two discs. The chosen one is larger, in front, and named.
-export function HomePin({ point, chosen, onChoose }: { point: CentrePoint; chosen: boolean; onChoose: (pin: HTMLElement) => void }) {
+// street apart are still two discs. The chosen one is larger, in front, and named. So is the marked
+// one, whose card is pointed at in the list beside the map (CCARE-230): its size and its name say
+// which home it is, not a colour, which would set it apart from the others (above).
+export function HomePin({ point, chosen, marked, onChoose }: { point: CentrePoint; chosen: boolean; marked: boolean; onChoose: (pin: HTMLElement) => void }) {
   const [ref, pin] = useAdvancedMarkerRef();
   const [hovered, setHovered] = useState(false);
+  const large = chosen || marked;
 
   return (
     <AdvancedMarker
@@ -40,22 +45,24 @@ export function HomePin({ point, chosen, onChoose }: { point: CentrePoint; chose
       position={{ lat: point.latitude, lng: point.longitude }}
       title={point.centre_name}
       {...MIDDLE}
-      zIndex={chosen ? 2 : hovered ? 1 : 0}
+      zIndex={large ? 2 : hovered ? 1 : 0}
       onClick={() => pin && onChoose(pin)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="group relative flex size-11 flex-col items-center justify-center"
     >
-      <span className={`${DISC} ${FOCUS} ${MOVES} ${chosen ? "size-10" : `size-7 ${LIFT}`}`}>
-        <Icon name="home" className={chosen ? "size-5" : "size-3.5"} />
+      <span className={`${DISC} ${FOCUS} ${MOVES} ${large ? "size-10" : `size-7 ${LIFT}`}`}>
+        <Icon name="home" className={large ? "size-5" : "size-3.5"} />
       </span>
-      {chosen && <span className={NAME}>{point.centre_name}</span>}
+      {large && <span className={NAME}>{point.centre_name}</span>}
     </AdvancedMarker>
   );
 }
 
-// Homes too close to draw apart, as their count. Choosing it opens the map on them.
-export function ClusterPin({ cluster, onChoose }: { cluster: Cluster; onChoose: () => void }) {
+// Homes too close to draw apart, as their count. Choosing it opens the map on them. The marked one
+// holds the home whose card is pointed at in the list beside the map: it is larger and in front,
+// with a line round it. Size alone would not say so, since a cluster's size follows its count.
+export function ClusterPin({ cluster, marked, onChoose }: { cluster: Cluster; marked: boolean; onChoose: () => void }) {
   const size = cluster.count < 10 ? "size-9" : cluster.count < 50 ? "size-11" : "size-13";
 
   return (
@@ -65,11 +72,11 @@ export function ClusterPin({ cluster, onChoose }: { cluster: Cluster; onChoose: 
       {...MIDDLE}
       // Left to Google, a mark's place in the pile follows how far down the map it is, and a cluster
       // low on the map would cover a chosen home's card.
-      zIndex={0}
+      zIndex={marked ? 1 : 0}
       onClick={onChoose}
       className="group flex size-14 items-center justify-center"
     >
-      <span className={`${DISC} ${FOCUS} ${MOVES} ${LIFT} ${size} text-sm font-semibold ring-4 ring-primary/25`}>{cluster.count}</span>
+      <span className={`${DISC} ${FOCUS} ${MOVES} ${marked ? MARKED : LIFT} ${size} text-sm font-semibold ring-4 ring-primary/25`}>{cluster.count}</span>
     </AdvancedMarker>
   );
 }

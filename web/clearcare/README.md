@@ -10,7 +10,7 @@ Without `API_URL`, search and centre pages say the data isn't available.
 - `GOOGLE_MAPS_MAP_ID`: a map ID from the same Google Cloud project, for the search page's map. Its pins are advanced markers, which Google draws only on a map with a map ID. `DEMO_MAP_ID` will do for local work.
 - `SITE_TOKEN`: the token the site shares with the API (`.env.example`). The API gives the map's points only to a caller that sends it ([ADR-0029](../../docs/adr/0029-coordinates-reach-the-map-through-a-route-only-the-site-can-call.md)).
 
-The search page has a map only when `GOOGLE_MAPS_BROWSER_KEY`, `GOOGLE_MAPS_MAP_ID` and `SITE_TOKEN` are all set. Before anything is searched, it shows every home on the map under its prompt, so opening the page is enough to load Google's map. After a search, the results are a list, with a switch to see them on the map. Without any one of the three settings there is no map: the prompt alone before a search, and the list alone after one.
+The search page has a map only when `GOOGLE_MAPS_BROWSER_KEY`, `GOOGLE_MAPS_MAP_ID` and `SITE_TOKEN` are all set. Before anything is searched, it shows every home on the map under its prompt, so opening the page is enough to load Google's map. After a search, a screen 1280px wide or more shows the list with the map beside it, and the map loads there without anything being pressed. A narrower screen shows the list, with a switch to see the results on the map. Without any one of the three settings there is no map: the prompt alone before a search, and the list alone after one.
 
 For local work, run the API with `docker compose up -d` from the repository root (see `CONTRIBUTING.md`) and set `API_URL=http://127.0.0.1:8080`.
 

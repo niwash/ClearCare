@@ -5,7 +5,8 @@
 // loaded with @vis.gl/react-google-maps, and the Place Autocomplete Data API's answers read into
 // PlaceSuggestions (lib/search-box.ts). Nothing here runs until the visitor types in the box or
 // arrives with text from the home page box (CCARE-230), or the page draws a map (CCARE-229), which needs Maps JavaScript too: of every home when the search
-// page opens with nothing searched, and of a search's results once Map is chosen.
+// page opens with nothing searched, and of a search's results beside the list on a wide screen, or
+// on a narrower one once Map is chosen (list-beside-map.tsx).
 //
 // Maps JavaScript loads once on a page, so the search box and the map share one loader
 // (GoogleMapsLoader). It mounts when the first of them needs it, beside the bar and the results

@@ -20,7 +20,9 @@ export interface SearchQuery {
   sort?: string;
 }
 
-// How the results are shown: the list of cards, or every matching home as a pin on a map (CCARE-229).
+// How the results are shown on a screen too narrow for both: the list of cards, or every matching
+// home as a pin on a map (CCARE-229). A wide screen shows the two side by side whichever this is
+// (CCARE-230).
 export type SearchView = "list" | "map";
 
 // The name, the town, area or Eircode (place), the point distances are measured from (near),
