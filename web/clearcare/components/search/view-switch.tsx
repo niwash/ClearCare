@@ -36,18 +36,25 @@ export function ViewSwitch({ search }: { search: PageSearch }) {
 // In the map's place, in the look of the page's other panels that say nothing was found: it isn't a
 // fault in the search, and the list still has every home. located: the points were read, and none of
 // these homes has one. A status, as it can take the map's place after the page has loaded.
-export function MapUnavailable({ listHref, located = false }: { listHref: string; located?: boolean }) {
+//
+// Without listHref it is the map of every home, shown before anything is searched, that failed in
+// the browser. There is no list of results to point to then, so it says only that there is no map.
+export function MapUnavailable({ listHref, located = false }: { listHref?: string; located?: boolean }) {
   return (
     <div role="status" className="flex flex-col items-start gap-3 rounded-2xl bg-band p-6 md:p-8 adult:rounded-lg">
       <p className="font-heading text-xl font-semibold text-ink md:text-2xl">
         {located ? "No map locations for these nursing homes yet" : "The map isn't available at the moment"}
       </p>
-      <p className="text-ink-muted">
-        {located ? "ClearCare has no map location for the nursing homes this search found." : "The nursing homes this search found are still in the list."}
-      </p>
-      <Link href={listHref} scroll={false} className={`${actionLinkClass} mt-2`}>
-        Show them as a list <span aria-hidden>→</span>
-      </Link>
+      {listHref && (
+        <>
+          <p className="text-ink-muted">
+            {located ? "ClearCare has no map location for the nursing homes this search found." : "The nursing homes this search found are still in the list."}
+          </p>
+          <Link href={listHref} scroll={false} className={`${actionLinkClass} mt-2`}>
+            Show them as a list <span aria-hidden>→</span>
+          </Link>
+        </>
+      )}
     </div>
   );
 }

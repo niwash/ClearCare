@@ -1,6 +1,7 @@
 // lib/points-api.ts
-// The points of the homes a search matches, for the search page's map (GET /centres/points), called
-// from the Next server only. The coordinates are Google's, so the API gives them to nobody but the
+// The points of the homes a search matches, or of every home when nothing is searched, for the
+// search page's map (GET /centres/points), called from the Next server only. The coordinates are
+// Google's, so the API gives them to nobody but the
 // site, which proves itself with the token it shares with the API, and they are asked for again for
 // every map and never cached (ADR-0029). The browser gets them from the page, only to draw the map.
 //

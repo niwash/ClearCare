@@ -2,7 +2,8 @@
 
 // components/search/results-map.tsx
 // The search results on a Google map (CCARE-229): a pin for every home the search matches, clusters
-// where pins would pile up, and a card for the home that is chosen. The points come from the page,
+// where pins would pile up, and a card for the home that is chosen. Before anything is searched, the
+// page draws the same map with every home on it, under its prompt. The points come from the page,
 // which read them on the server (ADR-0029); nothing here asks for more as the map moves. It is drawn
 // inside the page's one Google loader (GoogleMapsLoader, google-places.tsx).
 //
@@ -61,7 +62,7 @@ export function ResultsMap({
   near: string; // where the search measures from, or ""
   place: string; // its name, or "" for a location with none
   mapId: string; // advanced markers need one (README)
-  listHref: string;
+  listHref?: string; // the same homes as a list; none before a search, which has no list
 }) {
   // null until the page's theme is known: Google's map takes its colours when it is made.
   const theme = useShownTheme();
@@ -92,16 +93,20 @@ export function ResultsMap({
 
   return (
     <>
-      <p className="sr-only">The map shows the same nursing homes as the list. To read them without the map, choose List above.</p>
+      <p className="sr-only">
+        {listHref
+          ? "The map shows the same nursing homes as the list. To read them without the map, choose List above."
+          : "The map shows nursing homes across Ireland. To read them as a list, search for a name, a place or a county."}
+      </p>
       {/* The frame of a result card. Until Google's first tiles are drawn it says so, and the map
           then fades in over it, rather than a grey box turning into a map. */}
       <div
         role="region"
-        aria-label="Map of the nursing homes found"
+        aria-label={listHref ? "Map of the nursing homes found" : "Map of nursing homes across Ireland"}
         onKeyDown={(event) => {
           if (event.key === "Escape" && chosenId) close();
         }}
-        className="relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[36rem] adult:rounded-lg"
+        className="relative isolate h-[70dvh] overflow-hidden rounded-2xl border border-line bg-surface-muted md:h-[44rem] adult:rounded-lg"
       >
         {!drawn && (
           <p className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-ink-muted">
