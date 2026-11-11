@@ -231,6 +231,9 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
                 {reports.inspections.length} {reports.inspections.length === 1 ? "report" : "reports"} since{" "}
                 {new Date(first.date).getUTCFullYear()}
               </Note>
+              {/* How current the reports are (CCARE-212, from the PR review): when ClearCare last
+                  looked on hiqa.ie for a new one. */}
+              {reports.hiqaCheckedAt && <Note>Reports last checked on HIQA: {formatDate(reports.hiqaCheckedAt)}</Note>}
               <Link href={centrePath(centre.centre_id, "inspections")} className="tap-target">
                 See the inspection history
               </Link>

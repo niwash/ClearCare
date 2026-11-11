@@ -1,6 +1,7 @@
 package ie.clearcare.api.reports;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -57,7 +58,8 @@ class CentreReportsTest {
           "db/V1__register_entries.sql",
           "db/V2__inspection_reports.sql",
           "db/V3__inspection_report_views.sql",
-          "db/V4__re_assessment.sql");
+          "db/V4__re_assessment.sql",
+          "db/V18__centre_page_check.sql");
 
   // A register snapshot, so that the centre exists (db/V1), and one parsed report of it
   // (db/V2), as the pipeline loads it. The report's PDF is a second stored file (ADR-0007),
@@ -113,6 +115,10 @@ class CentreReportsTest {
           report_id, regulation, requirement, judgment, risk_rating, date_to_comply)
       VALUES (1, 'Regulation 16(1)(a)', 'Staff receive appropriate training.',
               'Not Compliant', 'Orange', '2026-09-01');
+
+      -- When Elm Hall's page on hiqa.ie was last read (db/V18). 99's has not been.
+      INSERT INTO clearcare.centre_page_check (centre_id, checked_at)
+      VALUES ('34', '2026-11-10 06:20:31.5+00');
       """;
 
   @Container
@@ -157,7 +163,8 @@ class CentreReportsTest {
                         "inspector_count": 2,
                         "regulation_count": 2,
                         "compliance_item_count": 1
-                      }]
+                      }],
+                      "hiqa_checked_at": "2026-11-10T06:20:31Z"
                     }
                     """,
                     JsonCompareMode.STRICT));
@@ -236,7 +243,9 @@ class CentreReportsTest {
     mvc.perform(get("/centres/" + NO_REPORTS + "/reports"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.centre_id", is(NO_REPORTS)))
-        .andExpect(jsonPath("$.reports", is(List.of())));
+        .andExpect(jsonPath("$.reports", is(List.of())))
+        // Its page on hiqa.ie has not been read yet.
+        .andExpect(jsonPath("$.hiqa_checked_at").value(nullValue()));
   }
 
   // A value that is not a centre ID at all is not found either, rather than refused.
