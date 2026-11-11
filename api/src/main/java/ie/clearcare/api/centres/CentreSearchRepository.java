@@ -204,8 +204,9 @@ class CentreSearchRepository {
   private static final String CENTRE =
       """
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
-          centre_phone
+          centre_phone, listing.place_id
       FROM clearcare.centre_search
+      LEFT JOIN clearcare.centre_listing AS listing USING (centre_id)
       WHERE centre_id = :centre_id
       """;
 

@@ -1248,7 +1248,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [centre_phone]
+          required: [centre_phone, place_id]
           properties:
             centre_phone:
               type: [string, "null"]
@@ -1257,6 +1257,15 @@ components:
                 not always one number: a few say TBC or give two. null when the
                 register gives none, or the snapshot was loaded before
                 ClearCare kept it.
+            place_id:
+              type: [string, "null"]
+              description: >
+                Google's identifier for the centre's listing, which the page
+                renders the home's photo from through Google's Places UI Kit.
+                Nothing of Google's is stored. null when no listing was
+                matched for the centre, and the page shows a placeholder
+                instead.
+              example: ChIJN1t_tDeuEmsRUsoyG83frY4
 
     Centre:
       type: object

@@ -85,7 +85,9 @@ class CentreSearchTest {
           "db/V10__centre_contract_price_home_type.sql",
           "db/V12__report_amenities_v2.sql",
           "db/V16__centre_location.sql",
-          "db/V17__centre_point_view.sql");
+          "db/V17__centre_point_view.sql",
+          "db/V18__centre_image.sql",
+          "db/V19__centre_listing_view.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -234,6 +236,14 @@ class CentreSearchTest {
            now() - interval '60 days');
       """;
 
+  // The listing the pipeline matched for one centre (db/V18, ADR-0030). The others have none, so
+  // the page shows its placeholder for them.
+  private static final String IMAGES =
+      """
+      INSERT INTO clearcare.centre_image (centre_id, place_id, updated_at)
+      VALUES ('34', 'ChIJelmHallNursingHome', now());
+      """;
+
   @Container
   static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
@@ -259,6 +269,7 @@ class CentreSearchTest {
     execute(CONTRACT_PRICES);
     execute(REPORTS);
     execute(LOCATIONS);
+    execute(IMAGES);
   }
 
   @Test
@@ -703,7 +714,8 @@ class CentreSearchTest {
                         "eircode": "W23P6EX",
                         "maximum_occupancy": 62,
                         "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home",
-                        "centre_phone": "01 555 0123"
+                        "centre_phone": "01 555 0123",
+                        "place_id": "ChIJelmHallNursingHome"
                       },
                       "register_snapshot": {
                         "fetched_at": "2026-10-05T06:12:54Z",
@@ -726,6 +738,19 @@ class CentreSearchTest {
                 .json(
                     """
                     {"centre": {"centre_id": "77", "centre_phone": null}}
+                    """));
+  }
+
+  @Test
+  void returnsNoListingForACentreWithNoPhoto() throws Exception {
+    // No row in centre_image: the page shows its placeholder rather than an empty frame.
+    mvc.perform(get("/centres/" + STELLA_MARIS))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"centre": {"centre_id": "77", "place_id": null}}
                     """));
   }
 
