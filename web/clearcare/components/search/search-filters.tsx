@@ -304,8 +304,11 @@ export function SearchFilters({
                 }}
               />
             </div>
-            {/* relative: "More filters" opens against this, so its panel ends where the bar does. */}
-            <div className="relative xl:flex-none">
+            {/* relative: "More filters" opens against this, so its panel ends where the bar does.
+                z-20: a panel's own z-30 doesn't count while it fades in (::details-content is then a
+                stacking context), so the map beside the list would cover it until the fade ends.
+                Under the suggestions' z-30, which open over this row from md to xl. */}
+            <div className="relative z-20 xl:flex-none">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="hidden items-center gap-2 md:flex">
                   <label htmlFor={`${id}-county`} className="text-sm font-semibold">
