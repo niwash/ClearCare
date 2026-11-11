@@ -77,12 +77,13 @@ export default function PrivacyPage() {
               <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
               with these requests.
             </li>
-            {/* "Use my location": the browser's Geolocation API, asked only on the click; nearFrom
+            {/* "Use my location" and, before a search on a wide screen, "Homes near me" (askLocation): the browser's Geolocation API, asked only on the click; nearFrom
                 (lib/near.ts) rounds the point to two decimals before it goes into the search, and the
                 API refuses anything finer (api/openapi.yaml, near). It isn't sent to Google, though the
                 map of the results opens around it (the next item but one). */}
             <li>
-              &ldquo;Use my location&rdquo; asks your browser where you are, only when you press it. The page rounds
+              &ldquo;Use my location&rdquo; and &ldquo;Homes near me&rdquo; ask your browser where you are, only when you press
+              one of them. The page rounds
               that to about 1 km before it goes anywhere, so our servers never get anything more precise. We
               don&apos;t store it, though like any page address it can appear in the technical logs below.
             </li>
