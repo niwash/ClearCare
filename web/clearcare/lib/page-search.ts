@@ -23,7 +23,7 @@ export interface SearchQuery {
 // How the results are shown: the list of cards, or every matching home as a pin on a map (CCARE-229).
 export type SearchView = "list" | "map";
 
-// The name, one "Town, area or Eircode" field (place), the point distances are measured from (near),
+// The name, the town, area or Eircode (place), the point distances are measured from (near),
 // the county, the care and amenity filters, the order, the view and the page. Without near, place goes to the
 // API as an Eircode if it looks like one, otherwise as an address; links from before it, with address
 // or eircode, still work. With near, place is only the name of the point (CCARE-228): near filters
