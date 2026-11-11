@@ -146,12 +146,9 @@ function Consent({
       className={`flex flex-col items-center justify-center gap-2 border border-dashed border-line bg-surface-muted p-4 text-center ${className}`}
     >
       <Icon name="home" className="size-10 text-ink-muted" />
-      <p className="text-sm font-semibold text-ink">
-        Photos of this home come from Google
-      </p>
+      <p className="text-sm font-semibold text-ink">Photos come from Google</p>
       <p className="text-sm text-ink-muted">
-        Showing them sends Google your IP address, as any visit to another site
-        does.
+        Viewing this content shares your internet address with Google.
       </p>
       <button
         type="button"
