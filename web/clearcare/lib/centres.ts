@@ -142,7 +142,7 @@ export interface CentreDetail extends CentreSummary {
   home_type?: HomeType | null;
   // Google's identifier for the home's listing, which the overview renders the photo from through
   // Google's Places UI Kit (CCARE-209, ADR-0030). null when no listing was matched, so the page
-  // shows its placeholder; missing from an API without db/V19, which the page treats the same way.
+  // shows its placeholder; missing from an API without db/V20, which the page treats the same way.
   place_id?: string | null;
 }
 
