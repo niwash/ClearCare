@@ -112,9 +112,10 @@
   --line-soft: light-dark(#e5dfd6, #3a352e);
   --field: var(--line);
   --focus: light-dark(#1f1b16, #f4f0ea);
-  /* Sans serif headings, like the body text. NIA/NLM: "Use a sans serif typeface… that is
-     not condensed". */
-  --heading-font: var(--font-public-sans);
+  /* The headings keep the standard design's serif (--heading-font, above), so the two designs share
+     one set of fonts (CCARE-232, the team's choice). NIA/NLM advise a sans serif typeface for older
+     readers; the body text, which is most of what is read, stays sans serif in both. WCAG sets no
+     typeface at any level. */
   /* Tailwind's own corners, as before CCARE-179: plain shapes, nothing to get used to. */
   --radius-control: 0.375rem;
   --radius-card: 0.5rem;
