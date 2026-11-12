@@ -1,5 +1,6 @@
 package ie.clearcare.api.reports;
 
+import ie.clearcare.api.centres.CentreRegisterChecks;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -13,14 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 /** Reads inspection reports from the views the clearcare_api role can read (db/V3). */
 @Repository
 class CentreReportsRepository {
-
-  // The register's views (db/V1). Reports are served only for a centre the register snapshot has,
-  // and only once a snapshot has been published.
-  private static final String REGISTER_SNAPSHOT =
-      "SELECT 1 FROM clearcare.published_register_snapshot";
-
-  private static final String CENTRE =
-      "SELECT 1 FROM clearcare.centre_search WHERE centre_id = :centre_id";
 
   // A report is listed with how much it holds; the report itself is fetched by report_id. Newest
   // inspection first, then by report_id so that reports with no date have a stable order.
@@ -82,9 +75,11 @@ class CentreReportsRepository {
       """;
 
   private final JdbcClient jdbc;
+  private final CentreRegisterChecks register;
 
-  CentreReportsRepository(JdbcClient jdbc) {
+  CentreReportsRepository(JdbcClient jdbc, CentreRegisterChecks register) {
     this.jdbc = jdbc;
+    this.register = register;
   }
 
   /**
@@ -94,10 +89,10 @@ class CentreReportsRepository {
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreReportsResult> findReports(String centreId) {
-    if (!registerPublished()) {
+    if (!register.registerPublished()) {
       return Optional.empty();
     }
-    if (!centreExists(centreId)) {
+    if (!register.centreExists(centreId)) {
       return Optional.of(new CentreReportsResult(centreId, null, null));
     }
     return Optional.of(
@@ -113,14 +108,6 @@ class CentreReportsRepository {
     Optional<ReportHeader> header =
         jdbc.sql(REPORT).param("report_id", reportId).query(ReportHeader.class).optional();
     return header.map(value -> new ReportResult(detail(value)));
-  }
-
-  private boolean registerPublished() {
-    return jdbc.sql(REGISTER_SNAPSHOT).query(Integer.class).optional().isPresent();
-  }
-
-  private boolean centreExists(String centreId) {
-    return jdbc.sql(CENTRE).param("centre_id", centreId).query(Integer.class).optional().isPresent();
   }
 
   private List<CentreReport> reports(String centreId) {
