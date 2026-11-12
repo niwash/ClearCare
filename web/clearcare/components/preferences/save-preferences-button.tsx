@@ -1,9 +1,10 @@
 "use client";
 
 // components/preferences/save-preferences-button.tsx
-// "Save my preferences", under the Search button in the filters panel (ADR-0025): the choices are
-// made here, so this is where they are kept — and, now that nothing sits above the results, this is
-// also where a visitor hears how it went.
+// "Save my preferences", with the Search button (ADR-0025): under the controls of the search
+// page's bar from md up, with "Forget my preferences" beside it, and under the button of the
+// phones' sheet, one over the other. The choices are made here, so this is where they are kept,
+// and where a visitor hears how it went.
 //
 // It is in place for every signed-in visitor and disabled until there is something worth keeping,
 // so the option is visible before it can be used, and it goes back to disabled as soon as the form
@@ -20,18 +21,20 @@ import { useEffect, useState } from "react";
 
 import { hasSavedChoices, type SavedSearch } from "@/lib/preferences";
 
-import { forgetPreferences, savePreferences, useSavedSearch } from "./saved-search-store";
+import { forgetPreferences, useSavedSearch } from "./saved-search-store";
 
 // How long "Saved" stays before the button offers to save again.
 const SAVED_FOR = 3000;
 
 export function SavePreferencesButton({
   current,
-  onSaved,
+  save,
   onForgotten,
 }: {
   current: SavedSearch; // the choices on screen, saved or not
-  onSaved?: () => void; // what to do once they are stored: the panel applies them
+  // Stores them and says whether it worked. The panel does it: it applies them once stored, and
+  // text typed in its search box can be one of them, a county, only once it is settled.
+  save: () => Promise<boolean>;
   onForgotten?: () => void; // what to do once they are gone: the panel empties the page
 }) {
   const { status, saved, error, busy } = useSavedSearch();
@@ -49,15 +52,14 @@ export function SavePreferencesButton({
   const canSave = hasSavedChoices(current);
 
   return (
-    <div className="flex w-full flex-col items-center gap-1">
+    <div className="flex w-full flex-col items-center gap-1 md:mt-2 md:flex-row md:flex-wrap md:gap-x-3">
       <button
         type="button"
         onClick={async () => {
-          const stored = await savePreferences(current, onSaved);
-          if (stored) setJustSaved(true);
+          if (await save()) setJustSaved(true);
         }}
         disabled={busy || !canSave}
-        className={`min-h-11 w-full rounded-full border px-4 text-sm font-semibold disabled:cursor-not-allowed disabled:border-line disabled:text-ink-faint adult:rounded-md ${
+        className={`min-h-11 w-full rounded-full border px-4 text-sm font-semibold md:w-auto disabled:cursor-not-allowed disabled:border-line disabled:text-ink-faint adult:rounded-md ${
           justSaved
             ? "border-primary bg-primary text-on-primary"
             : "border-primary bg-surface text-ink enabled:hover:bg-surface-muted"

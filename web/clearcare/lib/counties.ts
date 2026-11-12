@@ -18,3 +18,13 @@ export function countyNamed(text: string) {
   const bare = text.trim().replace(/^(co\.|co\s|county\s)\s*/i, "").toLowerCase();
   return COUNTIES.find((county) => county.toLowerCase() === bare) ?? null;
 }
+
+// How many centres each county has among the points of the map, for "Browse by county" before
+// anything is searched (CCARE-230). A centre ClearCare has no location for has no point, so a
+// county's number can be lower than its search finds. A county with no point at all is left out:
+// it can't be told from a county with no nursing home, and its link would say "0 homes".
+export function centresByCounty(points: { county: string }[]) {
+  return COUNTIES.map((county) => ({ county, centres: points.filter((point) => point.county === county).length })).filter(
+    ({ centres }) => centres > 0,
+  );
+}

@@ -66,3 +66,32 @@ def stored_report_files(path: Path) -> dict[str, Report]:
             if report.sha256 is not None
         )
     return stored
+
+
+def last_page_checks(path: Path) -> dict[str, str]:
+    """Returns when each centre's page was last read and it worked.
+
+    The result maps the centre ID to the read's fetched_at, in UTC. A read
+    with an error was not a look at the reports, so it is left out, and an
+    earlier read that worked stands. Errors in the reports' own downloads do
+    not matter here: the page was still read.
+
+    Raises:
+        ManifestError: If a line cannot be read as a centre record.
+    """
+    if not path.is_file():
+        return {}
+    checks: dict[str, str] = {}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for number, line in enumerate(lines, 1):
+        try:
+            record = json.loads(line)
+            centre_id, checked_at = record["centre_id"], record["fetched_at"]
+            error = record["error"]
+        except (ValueError, KeyError, TypeError) as problem:
+            raise ManifestError(
+                f"{path.name} line {number}: not a centre record"
+            ) from problem
+        if error is None and checked_at > checks.get(centre_id, ""):
+            checks[centre_id] = checked_at
+    return checks

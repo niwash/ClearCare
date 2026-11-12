@@ -66,6 +66,8 @@ export interface Highlight {
   dates: ISODate[];
   regulation: Regulation;
   text: string; // the inspector's or the provider's own words
+  // The inspector's whole passage, when text is the opening of it, for reading in full.
+  passage?: string[];
   sources: string[];
   reportUrl?: string;
 }
@@ -138,6 +140,10 @@ export interface CentreDetail extends CentreSummary {
   // has been loaded for it; missing from an API without them, so the page leaves the rows out.
   contract_price?: number | null;
   home_type?: HomeType | null;
+  // Google's identifier for the home's listing, which the overview renders the photo from through
+  // Google's Places UI Kit (CCARE-209, ADR-0030). null when no listing was matched, so the page
+  // shows its placeholder; missing from an API without db/V20, which the page treats the same way.
+  place_id?: string | null;
 }
 
 // A weekly price in euro: whole euros when it has no cents, as the HSE's lists mostly are.
@@ -171,6 +177,9 @@ export interface CentreReports {
   highlights: Highlight[];
   visitQuestions: string[];
   trails: PromiseTrail[];
+  // When ClearCare last read the home's page on hiqa.ie for new reports (ISO date-time, UTC). null
+  // until it has, and from an API that doesn't serve it yet.
+  hiqaCheckedAt?: string | null;
 }
 
 export type CentreLookup =
@@ -200,6 +209,7 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
 interface CentreReportsResult {
   centre_id: string;
   reports: { report_id: number; inspection_date: ISODate | null }[];
+  hiqa_checked_at?: string | null;
 }
 
 // GET /reports/{report_id} (ReportResult in api/openapi.yaml), only the fields the page uses.
@@ -274,7 +284,7 @@ export const getCentreReports = cache(async (id: string): Promise<CentreReports 
       a.regulation.number - b.regulation.number,
   );
 
-  return { inspections, history, highlights: [], visitQuestions: [], trails: [] };
+  return { inspections, history, highlights: [], visitQuestions: [], trails: [], hiqaCheckedAt: list?.hiqa_checked_at ?? null };
 });
 
 // GET /centres/{centre_id}/findings (CCARE-206): each finding with the inspector's and the

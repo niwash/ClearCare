@@ -5,20 +5,28 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { ShortlistToast } from "@/components/compare/shortlist-toast";
 import { CardResult } from "@/components/search/card-result";
+import { GoogleForSearch } from "@/components/search/google-places";
+import { HomesNearMe } from "@/components/search/homes-near-me";
 import { RememberSearch } from "@/components/search/last-search";
+import { ListBesideMap, MapWhereShown, ResultOnMap } from "@/components/search/list-beside-map";
+import { ResultsMap } from "@/components/search/results-map";
 import { SearchFilters, SortSelect } from "@/components/search/search-filters";
-import { actionLinkClass, fullWidthClass, primaryButtonClass } from "@/components/ui/classes";
+import { MapUnavailable, ViewSwitch } from "@/components/search/view-switch";
+import { actionLinkClass, fullWidthClass, primaryButtonClass, widePageColumnClass, widerThanPageClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatDate } from "@/lib/centres";
-import { homeSearchHref } from "@/lib/home-search";
+import { centresByCounty } from "@/lib/counties";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
+import { pointsConfigured, readPoints } from "@/lib/points-api";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
-import { formatEircode, searchCentres, unavailableMessage, type SearchResponse } from "@/lib/search";
+import { formatEircode, searchCentres, unavailableMessage, type RegisterSnapshot, type SearchResponse } from "@/lib/search";
+import { editedText, NOBODY_TO_ASK, settleBox } from "@/lib/search-box";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
+import type { CentrePoint } from "@/lib/search-map";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
@@ -26,9 +34,9 @@ interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-// The results are one column of cards beside the filters. 24 to a page divides by 1, 2 and 3,
-// should a grid come back, so every full page fills its last row. The API's default of 20 would
-// leave gaps.
+// The results are one column of cards under the bar, with the map beside it on a wide screen. 24 to
+// a page divides by 1, 2 and 3, should a grid come back, so every full page fills its last row. The
+// API's default of 20 would leave gaps.
 const RESULTS_PER_PAGE = "24";
 
 function noun(count: number) {
@@ -81,11 +89,24 @@ async function sentEmpty(searchParams: SearchPageProps["searchParams"]) {
   return ["name", "place", "county"].some((key) => key in params);
 }
 
-// The home page box sends q. It goes on to the search homeSearchHref makes of it (lib/home-search.ts).
-async function redirectHomeSearch(searchParams: SearchPageProps["searchParams"]) {
-  const value = (await searchParams).q;
-  if (value === undefined) return;
-  redirect(homeSearchHref((Array.isArray(value) ? value[0] : value) ?? ""));
+// The home page box sends q, and so does this page's box when its form is sent without scripts,
+// beside the search it was drawn from and the filters chosen. The page goes on to the search the
+// box's rule makes of the text (settleBox, lib/search-box.ts).
+//
+// Google is asked only in the browser, so here a town or an area can't be looked up as a place and
+// would end as a name. Such text is returned for the browser to settle (SearchFilters), over the
+// page for nothing searched. A form that says scripts are off gets the name search instead: both
+// forms say so, the home page's in a <noscript>.
+async function settleSentText(searchParams: SearchPageProps["searchParams"]) {
+  const { q, scripts, ...sentWithIt } = await searchParams;
+  if (q === undefined) return null;
+  const text = ((Array.isArray(q) ? q[0] : q) ?? "").trim();
+  const sent = readSearch(sentWithIt);
+  const search = await settleBox(editedText(sent, text, sent), { ...NOBODY_TO_ASK, searched: sent });
+  if (scripts !== "off" && search.name && search.name !== sent.name) return text;
+  // An empty box goes on as an empty name, so it gets "Please enter something to search for"
+  // (sentEmpty).
+  redirect(hasSearch(search) ? searchHref(search) : "/search?name=");
 }
 
 export async function generateMetadata({ searchParams }: SearchPageProps) {
@@ -97,20 +118,23 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
-  await redirectHomeSearch(searchParams);
+  const arrivedWith = await settleSentText(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
   // Read on each request, after the address made the page dynamic, rather than at build: the Docker
   // image is built once and must not carry it (README).
   const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;
-  // Nothing is listed until something is searched for (CCARE-164): a full list of every home
-  // read as if the search had been done for them.
+  // The map's pins are advanced markers, which Google draws only on a map with a map ID (README).
+  const mapId = process.env.GOOGLE_MAPS_MAP_ID || null;
+  // No home is listed until something is searched for (CCARE-164): a full list of every home
+  // read as if the search had been done for them. The list still isn't shown; every home is on a
+  // map instead, under the prompt or beside the ways to start (mapOfEveryHome, below).
   const searched = hasSearch(search);
 
   // The account's saved search, read here rather than in the browser (ADR-0025). A visitor with no
   // account makes no request at all, and one who keeps a search is sent straight to it below, so
-  // they never see the prompt render and then be replaced. The filters panel is told what was found,
-  // so it shows the button and "Forget my preferences" without asking again.
+  // they never see the prompt render and then be replaced. The bar is told what was found, so it
+  // shows the button and "Forget my preferences" without asking again.
   const signedIn = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
   const kept = signedIn && preferencesConfigured() ? await readSavedSearch(signedIn) : null;
   const saved: SavedSearch | null = kept?.ok ? kept.saved : null;
@@ -140,61 +164,150 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // and the page says the search is unavailable.
   const facets = (data ?? (start?.ok ? start.data : null))?.facets ?? null;
 
+  // The page's map (CCARE-229), when this deployment can draw one: Google's key and map ID for the
+  // map, and the token the API gives the points for (ADR-0029).
+  const mapPossible = Boolean(googleKey && mapId && pointsConfigured());
+  // The results as a map, offered once there are results to show. Only then does view=map in the
+  // address mean anything, and only on a screen too narrow for the list and the map together.
+  const mapOffered = mapPossible && Boolean(data && data.total > 0);
+  const mapView = mapOffered && search.view === "map";
+  // Before anything is searched, every home on a map, with no switch: there is no list to switch
+  // to. It is under the prompt, or from xl up beside the ways to start (WaysToStart).
+  const mapOfEveryHome = mapPossible && !searched;
+  // The points are every matching home's, not this page of the list's, and every home's when nothing
+  // is searched. They are read on the server and handed to the map as props. That is for every
+  // search with results, whatever the view: a wide screen has the map beside the list, and the
+  // server can't know the screen's width.
+  const points = mapOffered || mapOfEveryHome ? await readPoints(search) : null;
+  const pins = points?.ok && points.points.length > 0 ? points.points : null;
+  // The list with the map beside it, from xl up (CCARE-230): the list in two fifths of the width,
+  // and no less than its cards need, and the map in the rest, kept in view while the list scrolls.
+  // The page is then wider than the site's column, the heading and the bar with it. Before anything
+  // is searched, the ways to start have the list's place. Without the points there is nothing to
+  // put beside either, and the page is as it is on a narrower screen.
+  const besideMap = pins !== null;
+  const listHref = searchHref({ ...search, view: "list" });
+  // What the map is keyed by: the search without its order, as without its page. Neither changes the
+  // pins, so sorting the list or turning its page leaves the map where the visitor had it.
+  const mapKey = searchHref({ ...search, sort: "name", view: "list" });
+
   return (
-    <>
+    // What the search box in the bar and the page's map share of Google.
+    <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
-      <SearchHero />
+      <SearchHero wide={besideMap} />
 
-      {/* From md up, the filters in a column on the left and the results on the right (CCARE-189):
-          with the care and amenity filters, there are too many kinds of filter for a bar above the
-          results (Baymard). Below md, a Filters button opens them in a sheet. */}
-      <div className="grid gap-6 md:grid-cols-[18rem_minmax(0,1fr)] md:items-start lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-8">
-        <SearchFilters
-          search={search}
-          facets={facets}
-          total={data ? data.total : null}
-          sortShown={data !== null}
-          initialSaved={initialSaved}
-          googleKey={googleKey}
-        />
+      {/* The search box and the filters in a bar above the results, which have the page's width
+          (CCARE-230). They were a column beside the results (CCARE-189) because a bar can't hold as
+          many kinds of filter as there are (Baymard). So this one holds three kinds of control:
+          where, the county and the care types. Every other filter is behind one button, "More
+          filters". Below md, a Filters button opens them in a sheet. */}
+      <SearchFilters
+        search={search}
+        facets={facets}
+        total={data ? data.total : null}
+        sortShown={data !== null && !mapView}
+        besideMap={besideMap}
+        initialSaved={initialSaved}
+        arrivedWith={arrivedWith}
+      />
 
-        <section aria-label="Results" className="flex min-w-0 flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <ShortlistDrawer />
-            {/* The order, once there are results to order. On phones it's in the bar with Filters. */}
-            {data && (
-              <div className="hidden md:block">
-                <SortSelect search={search} />
+      {/* Below xl, one column: what was found, then the list or the map. From xl, with the map
+          beside the list, a grid: the list's parts down the first column and the map in the second,
+          beside them all. The middle row takes what is left when the map is taller than the list. */}
+      <section
+        aria-label="Results"
+        className={`flex min-w-0 flex-col gap-4 ${besideMap ? `${widerThanPageClass} xl:grid xl:grid-cols-[minmax(30rem,2fr)_minmax(0,3fr)] xl:grid-rows-[auto_1fr_auto] xl:items-start xl:gap-x-6` : ""}`}
+      >
+        <ListBesideMap>
+          <div className="flex min-w-0 flex-col gap-4 xl:col-start-1">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <ShortlistDrawer />
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Not beside the map: both are in view there, whatever view the address has. */}
+                {mapOffered && (
+                  <div className={besideMap ? "xl:hidden" : undefined}>
+                    <ViewSwitch search={search} />
+                  </div>
+                )}
+                {/* The order, once there is a list to order; pins have none. On phones it's in the
+                    bar with Filters. */}
+                {data && (!mapView || besideMap) && (
+                  <div className={mapView ? "hidden xl:block" : "hidden md:block"}>
+                    <SortSelect search={search} />
+                  </div>
+                )}
               </div>
+            </div>
+
+            {result === null ? (
+              <>
+                {/* The prompt, and from xl up the ways to start in its place, when there is a map
+                    to put beside them. The server can't know the screen's width, so both are in
+                    the page and the classes show one. */}
+                <div className={pins ? "xl:hidden" : undefined}>
+                  <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
+                </div>
+                {pins && (
+                  <WaysToStart search={search} total={start?.ok ? start.data.total : null} points={pins} empty={await sentEmpty(searchParams)} />
+                )}
+              </>
+            ) : result.ok ? (
+              <ResultsHeading search={search} total={result.data.total} />
+            ) : (
+              <SearchError status={result.status} detail={result.detail} />
             )}
           </div>
 
-          {result === null ? (
-            <SearchPrompt empty={await sentEmpty(searchParams)} filters={facets !== null} />
-          ) : result.ok ? (
-            <Results search={search} data={result.data} />
-          ) : (
-            <SearchError status={result.status} detail={result.detail} />
+          {/* Before the map in the page, so the keyboard reaches the list first. With view=map, a
+              screen too narrow for both shows the map alone. */}
+          {data && (!mapView || besideMap) && (
+            <div className={`min-w-0 flex-col gap-4 xl:col-start-1 ${mapView ? "hidden xl:flex" : "flex"}`}>
+              <ResultsList search={search} data={data} />
+            </div>
           )}
-        </section>
-      </div>
+
+          {/* Google's loader has this one place whatever else the page shows, since a search box can
+              ask for it before any search. The map is drawn inside it; keyed by the search, so a new
+              search opens on its own pins. Before a search it has no list to lead back to. Beside the
+              list it stays in view, with the window's height, while the list scrolls. */}
+          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-4 xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh-2rem)]" : ""}`}>
+            <MapWhereShown everywhere={mapView || mapOfEveryHome}>
+              {pins && mapId && (
+                <ResultsMap key={mapKey} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+              )}
+            </MapWhereShown>
+          </div>
+          {/* Only for a map that was asked for. Before a search nobody asked for one, and without its
+              points the page is the prompt alone. Nor did a wide screen ask for the map beside its
+              list: without the points it has the list alone. */}
+          {mapView && points && !pins && <MapUnavailable listHref={listHref} located={points.ok} />}
+
+          {data && (
+            <div className="xl:col-start-1">
+              <Source snapshot={data.register_snapshot} />
+            </div>
+          )}
+        </ListBesideMap>
+      </section>
 
       <ShortlistToast />
 
       {/* The negative bottom margin cancels the page's padding, so it meets the footer. */}
       <ContactsBanner className="-mb-6 md:-mb-10" />
-    </>
+    </GoogleForSearch>
   );
 }
 
 // The top of the page, flush under the header as on the resources page: the heading and a line of
 // welcome on the soft welcome band (welcome-band, globals.css). The results say what was searched,
 // so the heading stays the task.
-function SearchHero() {
+// wide: the results have the map beside the list, and the page is wider than the site's column.
+function SearchHero({ wide }: { wide: boolean }) {
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
-      <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
+      <div className={`page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8 ${wide ? widePageColumnClass : ""}`}>
         <Breadcrumb trail={[]} current="Search for Homes" />
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Find a nursing home
@@ -210,6 +323,8 @@ function SearchHero() {
 // In place of results before anything is searched for: what to enter, in a tinted panel like the
 // no-results one, with the icon in a soft circle, and where to start for a family new to this. If
 // the form was sent empty, it says so instead. filters: the care and amenity filters are offered.
+// The map of every home, where there is one, comes under it; from xl up the ways to start take its
+// place (WaysToStart).
 function SearchPrompt({ empty, filters }: { empty: boolean; filters: boolean }) {
   return (
     <section
@@ -236,10 +351,53 @@ function SearchPrompt({ empty, filters }: { empty: boolean; filters: boolean }) 
   );
 }
 
-function Results({ search, data }: { search: PageSearch; data: SearchResponse }) {
-  const { centres, page, page_size, total, register_snapshot } = data;
-  const lastPage = Math.max(1, Math.ceil(total / page_size));
-  const where = describe(search);
+// In the prompt's place from xl up, beside the map of every home (CCARE-230): ways to start that
+// need no typing. The heading has the register's count. The counties' numbers are counted from the
+// map's points, which the page already has, so no other request is made for them. If the form was
+// sent empty, the heading says so instead, as the prompt's does.
+// total: how many nursing homes the register has, or null when the API couldn't be read.
+function WaysToStart({ search, total, points, empty }: { search: PageSearch; total: number | null; points: CentrePoint[]; empty: boolean }) {
+  return (
+    <section aria-labelledby="start-h" className="hidden flex-col gap-4 xl:flex">
+      <div className="flex flex-col gap-1">
+        <h2 id="start-h" className="font-heading text-2xl font-semibold leading-tight md:text-[1.625rem]">
+          {empty ? "Please enter something to search for" : total === null ? "Nursing homes in Ireland" : `${total} ${noun(total)} in Ireland`}
+        </h2>
+        <p className="text-ink-muted">Type a place above, or start here:</p>
+      </div>
+
+      <HomesNearMe search={search} />
+
+      {/* Every county, in two columns read downwards: 26 short rows are about as tall as the map
+          beside them, so no county is behind a second press. */}
+      <nav aria-labelledby="counties-h" className="rounded-2xl border border-line bg-surface px-4 pb-2 pt-4 adult:rounded-lg">
+        <h3 id="counties-h" className="pb-2 text-xs font-bold uppercase tracking-[0.08em] text-ink-muted">
+          Browse by county
+        </h3>
+        <ul className="columns-2 gap-x-8">
+          {centresByCounty(points).map(({ county, centres }) => (
+            <li key={county} className="break-inside-avoid border-t border-line-soft">
+              {/* Wider than its text by the padding, so the focus outline stands clear of it. */}
+              <Link href={searchHref({ ...search, county })} className="-mx-1.5 flex min-h-11 items-center justify-between gap-3 rounded px-1.5 no-underline">
+                <span className="font-semibold">{county}</span>{" "}
+                <span className="text-sm text-ink-muted">
+                  {centres} {centres === 1 ? "home" : "homes"}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      <Link href="/guides/how-a-family-chooses" className="self-start tap-target">
+        Read how a family chooses a nursing home →
+      </Link>
+    </section>
+  );
+}
+
+// What was found and the filters in use, over the list and over the map alike.
+function ResultsHeading({ search, total }: { search: PageSearch; total: number }) {
   const filters = activeFilters(search.selection);
 
   return (
@@ -279,7 +437,19 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           </Link>
         </div>
       )}
+    </>
+  );
+}
 
+// The results as cards, a page at a time. Each card and its pin on the map beside the list mark one
+// another (ResultOnMap).
+function ResultsList({ search, data }: { search: PageSearch; data: SearchResponse }) {
+  const { centres, page, page_size, total } = data;
+  const lastPage = Math.max(1, Math.ceil(total / page_size));
+  const where = describe(search);
+
+  return (
+    <>
       {total === 0 ? (
         filterCount(search.selection) > 0 ? (
           <NoMatches search={search} />
@@ -311,7 +481,9 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
       ) : (
         <div className="flex flex-col gap-4">
           {centres.map((centre) => (
-            <CardResult key={centre.centre_id} centre={centre} selection={search.selection} />
+            <ResultOnMap key={centre.centre_id} centreId={centre.centre_id}>
+              <CardResult centre={centre} selection={search.selection} />
+            </ResultOnMap>
           ))}
         </div>
       )}
@@ -325,15 +497,19 @@ function Results({ search, data }: { search: PageSearch; data: SearchResponse })
           {page < lastPage ? <Link href={searchHref(search, page + 1)} className="tap-target">Next &rarr;</Link> : <span />}
         </nav>
       )}
-
-      <p className="text-xs text-ink-faint">
-        Source:{" "}
-        <a href={register_snapshot.url} className="text-ink-faint adult:text-primary">
-          HIQA register
-        </a>
-        , downloaded {formatDate(register_snapshot.fetched_at)}.
-      </p>
     </>
+  );
+}
+
+function Source({ snapshot }: { snapshot: RegisterSnapshot }) {
+  return (
+    <p className="text-xs text-ink-faint">
+      Source:{" "}
+      <a href={snapshot.url} className="text-ink-faint adult:text-primary">
+        HIQA register
+      </a>
+      , downloaded {formatDate(snapshot.fetched_at)}.
+    </p>
   );
 }
 

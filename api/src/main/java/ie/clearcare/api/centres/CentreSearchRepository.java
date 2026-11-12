@@ -121,21 +121,23 @@ class CentreSearchRepository {
       """
           .formatted(MATCHING);
 
-  // distance_m is in whole metres in a straight line, from near to the centre's point: on
-  // geography, ST_Distance measures on the WGS 84 spheroid (ADR-0026), and the cast to integer
-  // rounds it to the nearest metre. It is null without near, since a point made of nulls is null,
-  // and for a centre with no point in centre_point (db/V17). Only the page needs the points, so
-  // COUNTS and FACETS do not join them.
+  // In whole metres in a straight line, from near to the centre's point: on geography, ST_Distance
+  // measures on the WGS 84 spheroid (ADR-0026), and the cast to integer rounds it to the nearest
+  // metre. It is null without near, since a point made of nulls is null, and for a centre with no
+  // point in centre_point (db/V17).
+  private static final String DISTANCE_M =
+      "CAST(ST_Distance(centre_point.point,"
+          + " CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography))"
+          + " AS integer)";
+
+  // Only the page needs the points, so COUNTS and FACETS do not join them.
   private static final String PAGE =
       """
       %s
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
           amenities_report_id, amenities_inspection_date, care_types, room_types, activities,
           facilities, fair_deal, latest_report_id, latest_inspection_date,
-          CAST(ST_Distance(
-              centre_point.point,
-              CAST(ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326) AS geography))
-              AS integer) AS distance_m
+          %s AS distance_m
       FROM matching
       LEFT JOIN clearcare.centre_point USING (centre_id)
       ORDER BY %s
@@ -145,16 +147,33 @@ class CentreSearchRepository {
   // Byte order ("C"), not the database's language rules, which skip spaces when comparing.
   private static final String BY_NAME = "name_key COLLATE \"C\", CAST(centre_id AS bigint)";
 
-  private static final String PAGE_BY_NAME = PAGE.formatted(MATCHING, BY_NAME);
+  private static final String PAGE_BY_NAME = PAGE.formatted(MATCHING, DISTANCE_M, BY_NAME);
 
   // A centre whose newest report has no date sorts with those that have no report.
   private static final String PAGE_BY_LATEST_INSPECTION =
-      PAGE.formatted(MATCHING, "latest_inspection_date DESC NULLS LAST, " + BY_NAME);
+      PAGE.formatted(MATCHING, DISTANCE_M, "latest_inspection_date DESC NULLS LAST, " + BY_NAME);
 
   // Nearest first, by the whole metres the result gives, so centres that show the same distance
   // are in name order. Centres without a point come last.
   private static final String PAGE_BY_DISTANCE =
-      PAGE.formatted(MATCHING, "distance_m NULLS LAST, " + BY_NAME);
+      PAGE.formatted(MATCHING, DISTANCE_M, "distance_m NULLS LAST, " + BY_NAME);
+
+  // Every matching centre that has a point in centre_point, with no limit: a map of one page of
+  // them would show empty country where there are centres (ADR-0029). The inner join leaves out a
+  // centre without a point. ST_X and ST_Y read geometry, so the stored point is cast; they give the
+  // longitude and latitude as stored, unrounded.
+  private static final String POINTS =
+      """
+      %s
+      SELECT centre_id, centre_name, address, county,
+          ST_Y(CAST(centre_point.point AS geometry)) AS latitude,
+          ST_X(CAST(centre_point.point AS geometry)) AS longitude,
+          %s AS distance_m
+      FROM matching
+      JOIN clearcare.centre_point USING (centre_id)
+      ORDER BY %s
+      """
+          .formatted(MATCHING, DISTANCE_M, BY_NAME);
 
   // How many centres would match with each item added. An item added to care_type, facility or
   // activity keeps the matching centres that mention it. An item added to room_type widens it: the
@@ -185,8 +204,9 @@ class CentreSearchRepository {
   private static final String CENTRE =
       """
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
-          centre_phone
+          centre_phone, listing.place_id
       FROM clearcare.centre_search
+      LEFT JOIN clearcare.centre_listing AS listing USING (centre_id)
       WHERE centre_id = :centre_id
       """;
 
@@ -243,6 +263,22 @@ class CentreSearchRepository {
             snapshot.get(),
             facets(sqlParameters, counts.fairDeal()),
             parameters.sort()));
+  }
+
+  /**
+   * Returns the point of every centre that matches and has one, in name order, or nothing if no
+   * register snapshot has been published. The snapshot and the points are read in one transaction,
+   * as in search.
+   */
+  @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
+  Optional<CentrePointsResult> points(CentreSearchParameters parameters) {
+    Optional<RegisterSnapshot> snapshot = publishedSnapshot();
+    if (snapshot.isEmpty()) {
+      return Optional.empty();
+    }
+    List<CentrePoint> points =
+        jdbc.sql(POINTS).paramSource(sqlParameters(parameters)).query(CentrePoint.class).list();
+    return Optional.of(new CentrePointsResult(points, snapshot.get()));
   }
 
   /**

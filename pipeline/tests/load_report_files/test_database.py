@@ -41,7 +41,9 @@ def database(server: Database, monkeypatch: pytest.MonkeyPatch) -> Database:
     # Each test starts with no source files. The command finds the database
     # through libpq's variables, as it does on the VM.
     with server.connect(SUPERUSER) as connection:
-        connection.execute("TRUNCATE clearcare.source_file CASCADE")
+        connection.execute(
+            "TRUNCATE clearcare.source_file, clearcare.centre CASCADE"
+        )
     monkeypatch.setenv("PGHOST", server.host)
     monkeypatch.setenv("PGPORT", str(server.port))
     monkeypatch.setenv("PGDATABASE", "clearcare")
@@ -63,15 +65,21 @@ def _report(file_name: str, sha256: str | None) -> Report:
     return replace(listed, sha256=sha256, size=100, fetched_at=FETCHED_AT)
 
 
-def _download_run(data_dir: Path, *reports: Report) -> None:
+def _download_run(
+    data_dir: Path,
+    *reports: Report,
+    centre_id: str = "34",
+    fetched_at: str = FETCHED_AT,
+    error: str | None = None,
+) -> None:
     """Appends a centre's manifest line, as a report download run does."""
     record = CentreRecord(
-        centre_id="34",
+        centre_id=centre_id,
         url="https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall",
-        fetched_at=FETCHED_AT,
+        fetched_at=fetched_at,
         page_sha256="c" * 64,
         reports=reports,
-        error=None,
+        error=error,
     )
     append_record(data_dir / "manifests" / MANIFEST_NAME, record)
 
@@ -122,3 +130,54 @@ def test_running_again_adds_nothing(
     assert (first, second) == (0, 0)
     assert count == (1,)
     assert "0 report files added, 1 already there" in caplog.text
+
+
+def _register(database: Database, *centre_ids: str) -> None:
+    """Adds the centres, as loading the register does."""
+    with database.connect(SUPERUSER) as connection:
+        for centre_id in centre_ids:
+            connection.execute(
+                "INSERT INTO clearcare.centre (centre_id) VALUES (%s)",
+                (centre_id,),
+            )
+
+
+def _checks(database: Database) -> list[tuple[object, ...]]:
+    with database.connect(PIPELINE) as connection:
+        return connection.execute(
+            "SELECT centre_id, checked_at FROM clearcare.centre_page_check"
+            " ORDER BY centre_id"
+        ).fetchall()
+
+
+def test_each_centres_last_page_read_is_stored(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34", "35")
+    _download_run(tmp_path, _report("a.pdf", "a" * 64))
+    _download_run(tmp_path, centre_id="35")
+    # A centre the register does not have yet is left for a later run.
+    _download_run(tmp_path, centre_id="36")
+
+    code = _load(tmp_path)
+
+    assert code == 0
+    checked = datetime(2026, 10, 2, 9, tzinfo=UTC)
+    assert _checks(database) == [("34", checked), ("35", checked)]
+
+
+def test_a_later_read_moves_the_check_on_and_a_failed_one_does_not(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34")
+    _download_run(tmp_path)
+    _load(tmp_path)
+    _download_run(tmp_path, fetched_at="2026-10-03T09:00:00+00:00")
+    _download_run(
+        tmp_path, fetched_at="2026-10-04T09:00:00+00:00", error="HTTP 503"
+    )
+
+    code = _load(tmp_path)
+
+    assert code == 0
+    assert _checks(database) == [("34", datetime(2026, 10, 3, 9, tzinfo=UTC))]

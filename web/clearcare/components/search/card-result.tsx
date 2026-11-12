@@ -6,10 +6,10 @@
 // before that, the card has the name, place and size.
 import { CompareButton } from "@/components/compare/compare-button";
 import { formatDate } from "@/lib/centres";
-import { asEircode } from "@/lib/eircode";
 import { distanceText } from "@/lib/near";
 import type { CentreSummary } from "@/lib/search";
 import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
+import { townAndCounty } from "@/lib/town";
 import Link from "next/link";
 
 interface CardResultProps {
@@ -17,25 +17,10 @@ interface CardResultProps {
   selection: FilterSelection;
 }
 
-// The town: the register has no field for it, so it's the address's last part that isn't the
-// Eircode or the county. The address usually starts with the centre's name, which the card already
-// shows. A part that asEircode reads as the centre's Eircode is its Eircode: the register prints
-// two with a letter O for 0 (A98 C2CO), and the database holds them with the 0.
-function town({ centre_name, address, eircode, county }: CentreSummary) {
-  const prefix = `${centre_name},`.toLowerCase();
-  const rest = address.toLowerCase().startsWith(prefix) ? address.slice(prefix.length) : address;
-  const parts = rest
-    .split(",")
-    .map((part) => part.trim())
-    .filter((part) => part && !(eircode && asEircode(part) === eircode) && !new RegExp(`^(co\\.?|county)\\s+${county}$`, "i").test(part) && part.toLowerCase() !== county.toLowerCase());
-  return parts.at(-1) ?? null;
-}
-
 export function CardResult({ centre, selection }: CardResultProps) {
   const href = `/centres/${centre.centre_id}`;
-  const place = [town(centre), `Co. ${centre.county}`].filter(Boolean).join(", ");
   const facts = [
-    place,
+    townAndCounty(centre),
     // The most residents HIQA allows, not free beds; the register calls them residents.
     centre.maximum_occupancy !== null && `${centre.maximum_occupancy} residents`,
     centre.fair_deal && "Fair Deal",
@@ -96,7 +81,7 @@ export function CardResult({ centre, selection }: CardResultProps) {
             <strong className="text-ink">{inspection.date ? formatDate(inspection.date) : "date not given"}</strong>
           </span>
         )}
-        <Link href={`${href}#history`} className="font-semibold md:ml-auto">
+        <Link href={`${href}/inspections`} className="font-semibold md:ml-auto">
           View inspections →
         </Link>
       </div>

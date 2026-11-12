@@ -44,13 +44,15 @@ import tools.jackson.databind.node.ObjectNode;
 import ie.clearcare.api.DatabaseImage;
 
 /**
- * GET /centres and GET /centres/{centre_id} against PostgreSQL with the roles and schema from this
- * repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
+ * GET /centres, GET /centres/points and GET /centres/{centre_id} against PostgreSQL with the roles
+ * and schema from this repository, logged in as clearcare_api. The cases follow api/openapi.yaml.
  */
-@SpringBootTest
+@SpringBootTest(properties = "clearcare.site.token=the-sites-own-token")
 @AutoConfigureMockMvc
 @Testcontainers
 class CentreSearchTest {
+
+  private static final String TOKEN = "the-sites-own-token";
 
   // Maven runs the tests in api/.
   private static final Path REPOSITORY = Path.of("..");
@@ -83,7 +85,9 @@ class CentreSearchTest {
           "db/V10__centre_contract_price_home_type.sql",
           "db/V12__report_amenities_v2.sql",
           "db/V16__centre_location.sql",
-          "db/V17__centre_point_view.sql");
+          "db/V17__centre_point_view.sql",
+          "db/V19__centre_image.sql",
+          "db/V20__centre_listing_view.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -232,6 +236,14 @@ class CentreSearchTest {
            now() - interval '60 days');
       """;
 
+  // The listing the pipeline matched for one centre (db/V19, ADR-0030). The others have none, so
+  // the page shows its placeholder for them.
+  private static final String IMAGES =
+      """
+      INSERT INTO clearcare.centre_image (centre_id, place_id, updated_at)
+      VALUES ('34', 'ChIJelmHallNursingHome', now());
+      """;
+
   @Container
   static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
@@ -257,6 +269,7 @@ class CentreSearchTest {
     execute(CONTRACT_PRICES);
     execute(REPORTS);
     execute(LOCATIONS);
+    execute(IMAGES);
   }
 
   @Test
@@ -463,6 +476,83 @@ class CentreSearchTest {
     }
   }
 
+  // Strict: any other property, such as eircode or place_id, a total or facets, fails the test.
+  @Test
+  void givesTheMapEachCentresPointWithTheSnapshotItCameFrom() throws Exception {
+    points("name=elm")
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {
+                      "points": [{
+                        "centre_id": "34",
+                        "centre_name": "Elm Hall Nursing Home",
+                        "address": "Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX",
+                        "county": "Kildare",
+                        "latitude": 53.34,
+                        "longitude": -6.54,
+                        "distance_m": null
+                      }],
+                      "register_snapshot": {
+                        "fetched_at": "2026-10-05T06:12:54Z",
+                        "url": "https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv",
+                        "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
+                      }
+                    }
+                    """,
+                    JsonCompareMode.STRICT));
+  }
+
+  // The centres GET /centres finds for the same parameters, in name order and on no pages, less
+  // the two the map has no point for: St Joseph's in Cork, whose only point is too old to serve
+  // (ADR-0027), and Stella Maris, which has none.
+  @ParameterizedTest
+  @ValueSource(strings = {"", "county=Dublin", "care_type=Dementia care", "county=Cork"})
+  void givesAPointForEachCentreTheSearchFindsThatHasOne(String query) throws Exception {
+    List<String> withAPoint = new ArrayList<>();
+    for (JsonNode centre : searchResult(query).get("centres")) {
+      withAPoint.add(centre.get("centre_id").asString());
+    }
+    withAPoint.removeAll(List.of(ST_JOSEPHS_CORK, STELLA_MARIS));
+    points(query)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[*].centre_id", is(withAPoint)));
+  }
+
+  @Test
+  void givesEachPointsDistanceFromNear() throws Exception {
+    points("name=aras&near=" + NEAR)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.points[0].distance_m").value(1113));
+  }
+
+  // The answer has no pages and one order, so these are unknown parameters here.
+  @ParameterizedTest
+  @ValueSource(strings = {"page", "page_size", "sort"})
+  void refusesToPageOrSortThePoints(String parameter) throws Exception {
+    points(parameter + "=1")
+        .andExpect(status().isBadRequest())
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    parameter
+                        + " is not a parameter; use one of name, address, eircode, county,"
+                        + " care_type, room_type, facility, activity, near"));
+  }
+
+  // The points are Google's, which the public API does not give out (ADR-0029).
+  @Test
+  void givesPointsOnlyToTheSite() throws Exception {
+    mvc.perform(get("/centres/points"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON));
+    mvc.perform(get("/centres/points").header("X-ClearCare-Token", "not-the-token"))
+        .andExpect(status().isUnauthorized());
+  }
+
   // near measures the centres, and orders them if asked, but leaves none of them out.
   @Test
   void countsTheSameWithNear() throws Exception {
@@ -624,7 +714,8 @@ class CentreSearchTest {
                         "eircode": "W23P6EX",
                         "maximum_occupancy": 62,
                         "hiqa_url": "https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home",
-                        "centre_phone": "01 555 0123"
+                        "centre_phone": "01 555 0123",
+                        "place_id": "ChIJelmHallNursingHome"
                       },
                       "register_snapshot": {
                         "fetched_at": "2026-10-05T06:12:54Z",
@@ -647,6 +738,19 @@ class CentreSearchTest {
                 .json(
                     """
                     {"centre": {"centre_id": "77", "centre_phone": null}}
+                    """));
+  }
+
+  @Test
+  void returnsNoListingForACentreWithNoPhoto() throws Exception {
+    // No row in centre_image: the page shows its placeholder rather than an empty frame.
+    mvc.perform(get("/centres/" + STELLA_MARIS))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"centre": {"centre_id": "77", "place_id": null}}
                     """));
   }
 
@@ -726,6 +830,10 @@ class CentreSearchTest {
 
   private ResultActions search(String query) throws Exception {
     return mvc.perform(get("/centres?" + query));
+  }
+
+  private ResultActions points(String query) throws Exception {
+    return mvc.perform(get("/centres/points?" + query).header("X-ClearCare-Token", TOKEN));
   }
 
   // Read as bytes: the body is UTF-8, which the response's string form does not assume.

@@ -1,6 +1,8 @@
 package ie.clearcare.api.reports;
 
 import ie.clearcare.api.centres.CentreRegisterChecks;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -33,6 +35,10 @@ class CentreReportsRepository {
       WHERE centre_id = :centre_id
       ORDER BY inspection_date DESC NULLS LAST, report_id
       """;
+
+  // When the centre's page on hiqa.ie was last read (db/V18).
+  private static final String HIQA_CHECK =
+      "SELECT checked_at FROM clearcare.centre_hiqa_check WHERE centre_id = :centre_id";
 
   private static final String REPORT =
       """
@@ -87,9 +93,10 @@ class CentreReportsRepository {
       return Optional.empty();
     }
     if (!register.centreExists(centreId)) {
-      return Optional.of(new CentreReportsResult(centreId, null));
+      return Optional.of(new CentreReportsResult(centreId, null, null));
     }
-    return Optional.of(new CentreReportsResult(centreId, reports(centreId)));
+    return Optional.of(
+        new CentreReportsResult(centreId, reports(centreId), hiqaCheckedAt(centreId)));
   }
 
   /**
@@ -105,6 +112,16 @@ class CentreReportsRepository {
 
   private List<CentreReport> reports(String centreId) {
     return jdbc.sql(REPORTS).param("centre_id", centreId).query(CentreReport.class).list();
+  }
+
+  private Instant hiqaCheckedAt(String centreId) {
+    return jdbc.sql(HIQA_CHECK)
+        .param("centre_id", centreId)
+        .query(OffsetDateTime.class)
+        .optional()
+        // To the second, as the API gives every fetched_at.
+        .map(checkedAt -> checkedAt.toInstant().truncatedTo(ChronoUnit.SECONDS))
+        .orElse(null);
   }
 
   private ReportDetail detail(ReportHeader header) {

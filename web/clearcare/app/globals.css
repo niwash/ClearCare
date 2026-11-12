@@ -393,6 +393,14 @@
   box-shadow: none;
 }
 
+/* A pin or a cluster on the search page's map (map-pins.tsx) shows the keyboard's focus as an
+   outline round its disc. The element Google wraps it in would get the outlines above as a square
+   round that, so it gets none. */
+gmp-advanced-marker:focus-visible,
+:root[data-design="adult-centred"] gmp-advanced-marker:focus-visible {
+  outline: none;
+}
+
 /* WCAG 2.5.5 (AAA): links that stand on their own are at least 44px tall in the adult-centred
    design. tap-target-top keeps the text at the top, for links that sit beside other text.
    Outside any layer so it wins over display utilities such as inline-block. */
@@ -494,6 +502,14 @@
     opacity: 1;
     translate: 0;
   }
+
+  /* A <details> whose content opens over the page rather than in it, such as the panels of the
+     search page's bar, keeps the fade alone: a translate would make ::details-content the box the
+     panel is placed against, and the clip would then cut the panel off. */
+  :root:not([data-design="adult-centred"]) details.opens-over::details-content {
+    overflow: visible;
+    translate: none;
+  }
 }
 
 /* The same slide and fade for a fold that's a button rather than a <details>, such as the search
@@ -556,6 +572,38 @@
    worked examples inside them, not just the section that happens to be open. Blocks still
    waiting to slide up would print blank, so print shows them all. */
 @media print {
+  /* Black on white, whatever the screen's theme: the colour tokens follow color-scheme. Bands and
+     cards lose their fills and shadows, as most printers drop them anyway, and toasts, the tour's
+     offer and side panels, all fixed to the window, are left out. */
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: light !important;
+  }
+
+  body,
+  main {
+    background: white !important;
+    color: black !important;
+  }
+
+  * {
+    box-shadow: none !important;
+  }
+
+  .fixed {
+    display: none !important;
+  }
+
+  /* Every closed section prints open: a home's stories (What happened next), a finding's full
+     passage, and the guides' sections below. */
+  details::details-content {
+    content-visibility: visible !important;
+    display: block !important;
+    block-size: auto !important;
+    opacity: 1 !important;
+    translate: none !important;
+  }
+
   details[name]::details-content,
   details[name] details::details-content {
     content-visibility: visible;
@@ -606,5 +654,82 @@
   @variant adult {
     font-size: var(--text-xs);
     line-height: var(--tw-leading, var(--text-xs--line-height));
+  }
+}
+
+/* The folder tabs of a home's record (CCARE-212, centre-tabs.tsx, template.tsx). The page a tab
+   opens slides in a little from the side its tab is on, as pages turned in a folder, fading in as
+   it comes. Only what is inside each band moves (.page-column): the bands' colours stay where they
+   are, as the tab above already shows the new one, so their edges don't shift and the page's height
+   never moves while it arrives. The tab clicked takes its band's colour smoothly. Nothing moves on
+   arriving at a record from elsewhere. Not in the adult-centred design or with reduced motion
+   (WCAG 2.3.3), where it all changes at once. */
+@keyframes tab-from-right {
+  from {
+    opacity: 0;
+    translate: 1.5rem 0;
+  }
+}
+
+@keyframes tab-from-left {
+  from {
+    opacity: 0;
+    translate: -1.5rem 0;
+  }
+}
+
+/* The spinner on a tab whose page is still on its way (centre-tabs.tsx), and on the record's
+   loading outline. Shown only after a moment, so a page that comes at once never flashes it. With
+   reduced motion it stays still, but is still shown. */
+@keyframes loading-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes loading-appear {
+  from {
+    opacity: 0;
+  }
+}
+
+.loading-spinner {
+  animation: loading-appear 0.2s ease-out 0.15s both;
+}
+
+/* The home's photo on its record (CCARE-209): Google's Place Details element sizes itself to its
+   content, so the frame around it decides the crop. It fills the frame the placeholder would take,
+   and the frame's overflow-hidden trims whatever runs past. */
+.centre-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .loading-spinner {
+    animation:
+      loading-appear 0.2s ease-out 0.15s both,
+      loading-spin 0.8s linear infinite;
+  }
+}
+
+@media screen and (prefers-reduced-motion: no-preference) {
+  :root:not([data-design="adult-centred"]) .folder-tab {
+    transition:
+      background-color 0.25s ease,
+      border-color 0.25s ease,
+      color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  :root:not([data-design="adult-centred"]) .tab-from-right .page-column {
+    animation: tab-from-right 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  :root:not([data-design="adult-centred"]) .tab-from-left .page-column {
+    animation: tab-from-left 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
