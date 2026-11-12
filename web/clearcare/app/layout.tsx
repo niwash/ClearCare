@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
 import { LeavingSiteDialog } from "@/components/layout/leaving-site-dialog";
+import { CursorHighlight } from "@/components/layout/cursor-highlight";
 import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
 import { SLIDE_UP_SCRIPT } from "@/components/ui/slide-up-script";
 import "./globals.css";
@@ -68,6 +69,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col overflow-x-clip font-sans">
         {children}
         <LeavingSiteDialog />
+        {/* A halo around the mouse pointer, in Easier to read only (CCARE-232). */}
+        <CursorHighlight />
       </body>
     </html>
   );
