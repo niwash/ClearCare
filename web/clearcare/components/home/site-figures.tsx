@@ -3,16 +3,18 @@
 // API can't give is left out rather than guessed, as invented figures could be mistaken for real
 // ones (lib/statistics.ts); with none, the section isn't shown. On a tinted band the full width of
 // the window, so it reads as a section of its own; the news banner after it meets it. The cards
-// rise in one after another and their figures count up (CCARE-186).
+// rise in one after another and their figures count up (CCARE-186). From desktop width the heading
+// and how current the figures are sit beside the cards rather than above and below them, so the
+// band is one row deep and the cards aren't stretched wide around a single number.
 import { CountUp } from "@/components/home/count-up";
 import { fullWidthClass } from "@/components/ui/classes";
-import { IconCircle } from "@/components/ui/icon-circle";
+import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon } from "@/components/ui/icons";
 import { formatDate } from "@/lib/centres";
 import type { RegisterSnapshot } from "@/lib/search";
 import type { ReAssessmentStatistics } from "@/lib/statistics";
 
-type Figure = { count: number; label: string; icon: string };
+type Figure = { count: number; label: string; icon: string; tint: Tint };
 
 export function SiteFigures({
   homes,
@@ -25,14 +27,14 @@ export function SiteFigures({
 }) {
   const figures: Figure[] = [];
   if (homes !== null) {
-    figures.push({ count: homes, label: "Registered nursing homes for older people", icon: ICON_PATHS.home });
+    figures.push({ count: homes, label: "Registered nursing homes for older people", icon: ICON_PATHS.home, tint: "blue" });
   }
   if (statistics) {
     const { coverage, matrix } = statistics;
     const results = matrix.reduce((sum, row) => sum + row.total, 0);
     figures.push(
-      { count: coverage.reports_loaded, label: "Inspection reports", icon: ICON_PATHS.report },
-      { count: results, label: "Inspection results read", icon: ICON_PATHS.results },
+      { count: coverage.reports_loaded, label: "Inspection reports", icon: ICON_PATHS.report, tint: "gold" },
+      { count: results, label: "Inspection results read", icon: ICON_PATHS.results, tint: "sage" },
     );
   }
   // How current the figures are, as one line under the cards rather than two more cards.
@@ -45,10 +47,20 @@ export function SiteFigures({
   return (
     <section aria-labelledby="figures-h" className={`${fullWidthClass} bg-band py-8 md:py-10`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
-      <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-        <h2 id="figures-h" className="reveal text-center font-heading text-2xl font-semibold tracking-tight md:text-3xl adult:text-left">
-          What ClearCare currently has
-        </h2>
+      <div className="page-column grid items-center gap-6 px-4 md:px-8 lg:grid-cols-[1fr_2fr] lg:gap-10">
+        <div className="reveal flex flex-col items-center gap-3 text-center lg:items-start lg:text-left adult:items-start adult:text-left">
+          <h2 id="figures-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            What ClearCare currently has
+          </h2>
+          <span aria-hidden className="reveal-bar h-1 w-12 origin-center rounded-full bg-accent lg:origin-left adult:hidden" />
+          {dates.length > 0 && (
+            <p className="flex items-start gap-2 text-sm text-ink-muted">
+              <Icon name="calendar" className="mt-0.5 size-4" />
+              {/* Capitalised here, as either part can come first. */}
+              <span className="block first-letter:uppercase">{dates.join(", ")}.</span>
+            </p>
+          )}
+        </div>
         {/* One row of cards from tablet width; on phones each card is a short row of its own, the icon
             beside the figure, so the three take less height. */}
         <ul className="reveal-stagger grid gap-3 sm:grid-cols-3 md:gap-4">
@@ -57,9 +69,9 @@ export function SiteFigures({
               key={figure.label}
               className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm sm:flex-col sm:gap-2 sm:text-center md:p-5 adult:rounded-lg adult:shadow-none"
             >
-              <IconCircle path={figure.icon} size="large" className="reveal-pop" />
+              <IconCircle path={figure.icon} size="large" tint={figure.tint} className="reveal-pop" />
               <span className="flex flex-col sm:items-center">
-                <span className="font-heading text-2xl font-semibold text-primary md:text-3xl">
+                <span className="font-heading text-3xl font-semibold text-primary md:text-4xl">
                   <CountUp to={figure.count} />
                 </span>
                 <span className="text-sm text-ink-muted">{figure.label}</span>
@@ -67,13 +79,6 @@ export function SiteFigures({
             </li>
           ))}
         </ul>
-        {dates.length > 0 && (
-          <p className="flex items-center justify-center gap-2 text-sm text-ink-muted adult:justify-start">
-            <Icon name="calendar" />
-            {/* Capitalised here, as either part can come first. */}
-            <span className="block first-letter:uppercase">{dates.join(", ")}.</span>
-          </p>
-        )}
       </div>
     </section>
   );

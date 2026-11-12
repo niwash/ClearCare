@@ -55,11 +55,14 @@ export default async function StartPage() {
         aria-labelledby="about-h"
         className={`${fullWidthClass} -mt-6 bg-tint-blue py-10 md:-mt-8 md:py-14`}
       >
-        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-          <div className="reveal flex max-w-3xl flex-col gap-2">
+        {/* From desktop width the heading sits beside the two statements, a third of the band to their
+            two thirds, rather than over them with the rest of its row empty. */}
+        <div className="page-column grid items-center gap-6 px-4 md:px-8 lg:grid-cols-[1fr_2fr] lg:gap-10">
+          <div className="reveal flex max-w-3xl flex-col items-start gap-3">
             <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
               About ClearCare
             </h2>
+            <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
             <p className="text-ink-muted md:text-lg">
               ClearCare is free and independent. It doesn&apos;t rate or recommend homes: it helps you read what HIQA
               has found and understand your options.
@@ -82,7 +85,9 @@ export default async function StartPage() {
           load. The page above arrives first; the example streams in. */}
       <section aria-labelledby="example-h" className="flex flex-col gap-5">
         <div className="reveal flex flex-col items-start gap-2">
-          <h2 id="example-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+          {/* The record card above (site-features.tsx) jumps here; the margin keeps the heading clear of
+              the window's top edge. */}
+          <h2 id="example-h" className="scroll-mt-6 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Here&apos;s an example of how we sum up reports
           </h2>
           <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
@@ -129,8 +134,8 @@ function StartBand() {
   );
 }
 
-// One of the mission and vision cards in About ClearCare: an icon, the title as the card's heading
-// and the statement as plain body text under it.
+// One of the mission and vision cards in About ClearCare: an icon beside the title, the card's
+// heading, and the statement as plain body text under them.
 function StatementCard({
   label,
   icon,
@@ -143,9 +148,12 @@ function StatementCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm md:p-8 adult:rounded-lg adult:shadow-none">
-      <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="reveal-pop" />
-      <h3 className="font-heading text-xl font-semibold md:text-2xl">{label}</h3>
+    <div className="flex h-full flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm adult:rounded-lg adult:shadow-none">
+      {/* The icon beside the title, so the card is no taller than its words need. */}
+      <h3 className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
+        <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="reveal-pop" />
+        {label}
+      </h3>
       <p className="text-ink-muted md:text-lg">{children}</p>
     </div>
   );
