@@ -38,6 +38,9 @@ from clearcare_pipeline.object_store import (
 )
 from clearcare_pipeline.pipeline_run import PipelineRun
 from clearcare_pipeline.price_lists.__main__ import main as price_lists
+from clearcare_pipeline.register_changes.__main__ import (
+    main as register_changes,
+)
 from clearcare_pipeline.reports.__main__ import main as reports
 from clearcare_pipeline.s3_settings import (
     S3Settings,
@@ -55,6 +58,7 @@ STAGES: Mapping[str, Stage] = {
     "snapshots": snapshots,
     "upload": upload,
     "load_register": load_register,
+    "register_changes": register_changes,
     # It reads only the database and Google, so it takes no data directory.
     "geocode": lambda _: geocode([]),
     # It reads only the database and Google, so it takes no data directory.
@@ -256,6 +260,8 @@ def _run_due(
     # writes only what this pipeline version lacks.
     for name in (
         "load_register",
+        # It keeps a change only for a stored centre, so it follows the load.
+        "register_changes",
         "geocode",
         # It needs the point geocode writes, so it follows it.
         "match_places",
@@ -317,7 +323,12 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
             name="register",
             scope="all",
             download=("snapshots",),
-            then=("load_register", "geocode", "match_places"),
+            then=(
+                "load_register",
+                "register_changes",
+                "geocode",
+                "match_places",
+            ),
             wait_after_success=timedelta(days=1),
         ),
         # HSE republishes the lists about once a month.
