@@ -45,3 +45,6 @@ accounts_enabled  = false
 # Google's browser key for the place suggestions. Empty gives a plain text box;
 # README.md, "Place suggestions".
 google_maps_browser_key = ""
+
+# Enable only after scheduled amenities rollout is approved.
+amenities_enabled = false

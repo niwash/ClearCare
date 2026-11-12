@@ -422,3 +422,19 @@ The budget emails `budget_emails` when the month's usage reaches $40 and $80, an
 ## Team access
 
 The account was created with AWS's project sign-up, so people get into the console by invitation, not through IAM users: in [AWS Settings](https://settings.aws.com), open the project and invite the teammate's email address. IAM users in this account can only be used for programmatic access. The Terraform state bucket and the secrets' values stay with the operator; changes go through the workflows.
+
+### Scheduled amenities
+
+`amenities_enabled` defaults to false. The pipeline image includes the shared
+amenities extractor and its prompt; the existing Anthropic secret is supplied to
+the task. Before enabling, verify the secret and database access, confirm the
+CCARE-204 production repair and obtain rollout authorization. Then set
+`amenities_enabled = true`, apply through the normal infrastructure workflow and
+deploy the pipeline revision so the schedule uses that configuration.
+
+The stage archives successful files under `amenities/scheduled/amenities-v2/`
+in the raw bucket before loading them. Existing task-role access covers these
+objects; no bucket deletion or broader permission is required. See
+[amenities operations](../../docs/amenities.md#scheduled-extraction) for limits,
+exit codes and recovery. Verify the scheduled run ledger, archive objects and
+matching amenities API source/evidence after rollout.

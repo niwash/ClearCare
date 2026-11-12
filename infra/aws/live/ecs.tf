@@ -223,6 +223,7 @@ resource "aws_ecs_task_definition" "pipeline" {
       environment = concat(local.libpq_environment, [
         { name = "PGUSER", value = local.database_logins.pipeline },
         { name = "CLEARCARE_CRAWL", value = "all" },
+        { name = "CLEARCARE_AMENITIES", value = var.amenities_enabled ? "on" : "off" },
         # The task role's credentials, not keys (iam.tf).
         { name = "CLEARCARE_S3_AUTH", value = "default" },
         { name = "CLEARCARE_S3_BUCKET", value = aws_s3_bucket.bucket["raw"].id },

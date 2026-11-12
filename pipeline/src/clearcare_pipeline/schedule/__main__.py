@@ -18,6 +18,7 @@ from typing import Protocol
 
 import psycopg
 
+from clearcare_pipeline.amenities.__main__ import main as amenities
 from clearcare_pipeline.contract_prices.__main__ import (
     main as load_contract_prices,
 )
@@ -64,6 +65,7 @@ STAGES: Mapping[str, Stage] = {
     "load_report_files": load_report_files,
     "ingest_reports": ingest_reports,
     "extract_text": extract_text,
+    "amenities": amenities,
     # It reads only stored text, so it takes no data directory.
     "split_commitments": lambda _: split_commitments([]),
 }
@@ -262,6 +264,7 @@ def _run_due(
         "ingest_reports",
         "extract_text",
         "split_commitments",
+        "amenities",
     ):
         _run_stage(stages, (name,), data_dir, attempt)
     jobs = _jobs(crawl)
@@ -334,6 +337,7 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
                 "ingest_reports",
                 "extract_text",
                 "split_commitments",
+                "amenities",
             ),
             wait_after_success=timedelta(days=7),
         ),
