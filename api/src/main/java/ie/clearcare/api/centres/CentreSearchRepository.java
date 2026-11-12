@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Reads centres from the views the clearcare_api role can read (db/V1, db/V3, db/V7, db/V10,
- * db/V12, db/V17).
+ * db/V12, db/V17, db/V24).
  */
 @Repository
 class CentreSearchRepository {
@@ -210,13 +210,36 @@ class CentreSearchRepository {
       WHERE centre_id = :centre_id
       """;
 
-  // One price per centre: the view keeps the latest, so this is a lookup (db/V10).
+  // One price per centre: the view keeps the latest, so this is a lookup (db/V24).
   private static final String CONTRACT_PRICE =
-      "SELECT price, home_type FROM clearcare.centre_contract_price"
+      "SELECT price, home_type, record_date FROM clearcare.centre_contract_price"
           + " WHERE centre_id = :centre_id";
 
-  // The price in force, and the kind of home it is for.
-  private record ContractPrice(BigDecimal price, String homeType) {}
+  // One row per centre of the published snapshot (db/V24).
+  private static final String REGISTRATION =
+      """
+      SELECT registration_date AS registered_from, registration_expiry_date AS registered_until,
+          chief_inspector_note
+      FROM clearcare.centre_registration
+      WHERE centre_id = :centre_id
+      """;
+
+  // In the register's order, which is by number.
+  private static final String EXTRA_CONDITIONS =
+      """
+      SELECT number, text
+      FROM clearcare.centre_extra_condition
+      WHERE centre_id = :centre_id
+      ORDER BY number
+      """;
+
+  // The price in force, the kind of home it is for, and the date of the list it is from.
+  private record ContractPrice(BigDecimal price, String homeType, LocalDate recordDate) {}
+
+  // A centre's row in centre_registration. The dates are null when the snapshot was loaded
+  // before db/V21.
+  private record RegisteredCentre(
+      LocalDate registeredFrom, LocalDate registeredUntil, String chiefInspectorNote) {}
 
   private record Counts(long total, long fairDeal) {}
 
@@ -282,10 +305,10 @@ class CentreSearchRepository {
   }
 
   /**
-   * Returns the centre with this centre_id, the register snapshot it was read from and its contract
-   * price and home type, or nothing if no snapshot has been published. The centre is null if the
-   * snapshot does not have it, and the price and home type are null if no list has been loaded for
-   * it. All of them are read in one transaction, as in search.
+   * Returns the centre with this centre_id, the register snapshot it was read from, its contract
+   * price and its registration, or nothing if no snapshot has been published. The centre is null
+   * if the snapshot does not have it, and the price, home type and date are null if no list has
+   * been loaded for it. All of them are read in one transaction, as in search.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
   Optional<CentreResult> find(String centreId) {
@@ -305,9 +328,27 @@ class CentreSearchRepository {
             .param("centre_id", centreId)
             .query(ContractPrice.class)
             .optional()
-            .orElse(new ContractPrice(null, null));
+            .orElse(new ContractPrice(null, null, null));
+    RegisteredCentre registered =
+        jdbc.sql(REGISTRATION)
+            .param("centre_id", centreId)
+            .query(RegisteredCentre.class)
+            .optional()
+            .orElse(new RegisteredCentre(null, null, null));
+    List<ExtraCondition> extraConditions =
+        jdbc.sql(EXTRA_CONDITIONS).param("centre_id", centreId).query(ExtraCondition.class).list();
     return Optional.of(
-        new CentreResult(centre, snapshot.get(), contractPrice.price(), contractPrice.homeType()));
+        new CentreResult(
+            centre,
+            snapshot.get(),
+            contractPrice.price(),
+            contractPrice.homeType(),
+            contractPrice.recordDate(),
+            registered.registeredFrom() == null
+                ? null
+                : new Registration(registered.registeredFrom(), registered.registeredUntil()),
+            extraConditions,
+            registered.chiefInspectorNote()));
   }
 
   private Optional<RegisterSnapshot> publishedSnapshot() {

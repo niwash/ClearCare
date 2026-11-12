@@ -40,6 +40,7 @@ MIGRATIONS = (
     REPOSITORY / "db" / "V21__register_changes.sql",
     REPOSITORY / "db" / "V22__listed_reports.sql",
     REPOSITORY / "db" / "V23__thematic_reports.sql",
+    REPOSITORY / "db" / "V24__centre_events.sql",
 )
 # The same image as compose.yaml, which says why it is this one.
 POSTGRES_IMAGE = (
