@@ -5,7 +5,6 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { SectionAccordion } from "@/components/guides/section-accordion";
 import { sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { getGuide } from "@/lib/guides";
-import { fullWidthClass } from "@/components/ui/classes";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { Icon } from "@/components/ui/icons";
 import { ShowHide } from "@/components/ui/chevron";
@@ -16,9 +15,20 @@ export const metadata = guideMetadata(guide);
 
 // Text from Research/fair-deal-guide.md (CCARE-86, PR #47), checked against the HSE's pages and
 // the current application form, with the same corrections made in both (CCARE-129).
+//
+// Checked again on 12 Nov 2026 (CCARE-233), against the HSE's Fair Deal pages and the form below:
+// - The form moved: the address it had answers 404. The page numbers cited here still hold in the
+//   one the HSE links to now (40 pages).
+// - The loan is repaid within 18 months of a death on or after 5 September 2026, 12 months before,
+//   and the form now says 18 months too.
+// - The rates, the disregards, the 3-year cap, the appeal and re-application times, HSE Live's
+//   number and hours, and every link were as written here.
+// - The State Pension (Contributory) is 299.30 a week through 2026 and 309.30 from January 2027
+//   (Budget 2027, on gov.ie). The first example gives both years. The worked examples keep the
+//   2026 rate: move them to the 2027 one, and drop the 2026 figure, in January 2027.
 
 const HSE_FORM =
-  "https://assets.hse.ie/media/documents/The_Nursing_Home_Support_Scheme_Application_Form_and_Support_Information_iufvU3b.pdf";
+  "https://www2.hse.ie/documents/5252/The_Nursing_Homes_Support_Scheme_Application_form_and_support_information.pdf";
 const CAG_REPORT =
   "https://www.audit.gov.ie/media/u4kaxxwq/special-report-110-the-nursing-homes-support-scheme-fair-deal-_.pdf";
 const HSE_FINANCIAL = "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/";
@@ -144,6 +154,12 @@ export default function FairDealGuide() {
       {/* The eight sections as an accordion, closed to begin with and one open at a time: their
           headers are the contents, so the whole guide fits on a screen and each part is one tap
           away (CCARE-146). */}
+      {/* On the widest screens the things to remember are beside the sections, in the room a narrower
+          column left empty (CCARE-233), and stay in view as they are opened where the window is tall
+          enough to show the whole list (70rem covers its height in Easier to read, about 1,040px): a
+          list pinned to the top would otherwise hide its last items. The sections' tables and cards
+          need most of the width, so below xl the list follows them, as before. */}
+      <div className="grid items-start gap-8 xl:grid-cols-[minmax(0,1fr)_19rem]">
       <div className="flex max-w-4xl flex-col gap-3">
         <SectionAccordion />
 
@@ -290,9 +306,12 @@ export default function FairDealGuide() {
             </table>
           </div>
           <p className="text-ink-muted italic">
-            For example: if you receive the State Pension (Contributory) of €299.30 per week (
+            For example: if you receive the State Pension (Contributory) of €299.30 per week in 2026 (
             <Source href="https://www.gov.ie/en/department-of-social-protection/publications/budget-2026/">Budget 2026</Source>
-            ), 80% of that is about €239. That amount goes toward your nursing home cost.
+            ), 80% of that is about €239. That amount goes toward your nursing home cost. From January 2027 the
+            pension is €309.30 per week (
+            <Source href="https://www.gov.ie/en/department-of-social-protection/publications/budget-2027/">Budget 2027</Source>
+            ), and 80% of that is about €247. The worked examples below use the 2026 rate.
           </p>
 
           <h3 className="font-heading text-lg font-semibold md:text-xl">Your savings and assets</h3>
@@ -356,7 +375,7 @@ export default function FairDealGuide() {
                   Asset contribution: the €72,000 couple disregard is taken off their combined savings and home together
                   (savings first, then the home): €50,000 + €300,000 − €72,000 = €278,000. At 3.75% a year, that&apos;s
                   €10,425 per year, about €200 per week, for up to 3 years (
-                  <Source href={`${HSE_FORM}#page=22`}>HSE, NHSS Application Form and Support Information, p.22</Source>
+                  <Source href={HSE_FINANCIAL}>HSE, Financial assessment</Source>
                   ). The rate is 3.75% because they are a couple, not because Anne still lives there. This amount can be
                   deferred using the nursing home loan (see below) while Anne continues to live in the home, so Tom and
                   Anne don&apos;t have to pay it week to week.
@@ -485,19 +504,20 @@ export default function FairDealGuide() {
             <Source href={`${HSE_FORM}#page=27`}>same source, p.27</Source>).
           </p>
           <p>
-            After your death, it is paid back within 18 months (
+            After your death, it is paid back to Revenue within 18 months (
             <Source href="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/nursing-home-loan/">
               HSE, Nursing home loan
             </Source>
-            ). The application form still says 12 months (p.27), so confirm this with your local Nursing Homes Support
-            Office. Bankruptcy or false information on the application can also make the loan due immediately.
+            ; <Source href={`${HSE_FORM}#page=27`}>application form, p.27</Source>). The 18 months apply where the
+            person in care died on or after 5 September 2026; before that date, it is 12 months. Bankruptcy or false
+            information on the application can also make the loan due immediately.
           </p>
 
           <Callout title="This is not a commercial bank loan">
             The loan amount is adjusted for inflation or deflation using the Consumer Price Index (CPI) while it builds up.
             If you apply to the HSE for the loan, the HSE pays the amount on your behalf and registers a charge on the
-            property (p.26 of the application form above). If the loan isn&apos;t repaid within 18 months of death,
-            interest is charged from the date of death. After a sale or transfer, interest is
+            property (p.26 of the application form above). If the loan isn&apos;t repaid within 18 months of death
+            (12 months for a death before 5 September 2026), interest is charged from the date of death. After a sale or transfer, interest is
             charged from 6 months after the sale.
           </Callout>
 
@@ -627,14 +647,14 @@ export default function FairDealGuide() {
         </p>
       </div>
 
-      {/* A tinted band the full width of the window, like the HIQA guide's checklist. The negative
-          bottom margin cancels the page's gap, so it meets the band of other guides below. */}
-      <section aria-labelledby="remember-h" className={`${fullWidthClass} -mb-6 bg-band py-8 md:-mb-8 md:py-12`}>
-        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+        <section
+          aria-labelledby="remember-h"
+          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 xl:[@media(min-height:70rem)]:sticky xl:top-6 adult:border adult:border-line"
+        >
+          <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl xl:text-2xl">
             Key things to remember
           </h2>
-          <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
+          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <RememberCard>
               Apply <strong>as early as possible</strong>. Funding only starts from the date of approval.
             </RememberCard>
@@ -653,8 +673,8 @@ export default function FairDealGuide() {
               If you need help filling in the forms, Citizens Information, ALONE, or a solicitor can all assist you.
             </RememberCard>
           </ul>
-        </div>
-      </section>
+        </section>
+      </div>
 
       <GuideEnding current={guide} />
     </>

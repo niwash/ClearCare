@@ -5,6 +5,8 @@ import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
 import { ImageViewer } from "@/components/guides/image-viewer";
 import { StepNumber } from "@/components/guides/step-number";
+import { smallLinkButtonClass } from "@/components/ui/classes";
+import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
 import { MAX_COMPARED } from "@/lib/compare";
 import { getGuide } from "@/lib/guides";
 
@@ -14,14 +16,17 @@ export const metadata = guideMetadata(guide);
 
 // The site is still changing, so the guide says when it was last checked against it. Update this
 // whenever the steps change.
-const LAST_UPDATED = { iso: "2026-11-06", label: "6 November 2026" };
+const LAST_UPDATED = { iso: "2026-11-12", label: "12 November 2026" };
 
 // The "How to use the ClearCare website" flowchart, rendered to PNG at 2.5x. 3120 x 2925. Its third
 // row has Compare homes as step 5 (CCARE-179); the optional guide is Making Sense of a HIQA
 // Inspection Report, and Compare shows up to 5 homes (CCARE-214). The drawing is the inline SVG in
 // the "Adult-centred User Design" artifact, with that third row added.
-// A new name when the drawing changes, so no cached copy of the old one is shown.
-const FLOWCHART = "/guides/using-clearcare-flowchart-making-sense.png";
+// A new name when the drawing changes, so no cached copy of the old one is shown. v3 says "By name,
+// town, county or Eircode, with a map" at step 4, as the search has since CCARE-230 (CCARE-233):
+// rendered from the same SVG with only that line changed, the drawing and a 24px white margin at
+// 2.5x in the light theme.
+const FLOWCHART = "/guides/using-clearcare-flowchart-v3.png";
 
 // One route through the site, in the flowchart's order. An optional step has a question instead of
 // a number: the reader decides whether they need it.
@@ -68,7 +73,16 @@ const STEPS: Step[] = [
   },
   {
     title: "Search for the home",
-    detail: "Search by the home’s name or by county. Select a result to open the home’s page.",
+    // The record's tabs by their own names (lib/centre-record.ts), so this follows them if they change.
+    detail: (
+      <>
+        Search by the home’s name, a town, a county or an Eircode. The results come as a list, and on a map where
+        the map is available. Select a result to open the home’s record. Its <strong>Overview</strong> has the
+        home’s details and what it offers, and the tabs under the home’s name open{" "}
+        <strong>{CENTRE_SECTION_TITLES["look-first"]}</strong>, <strong>{CENTRE_SECTION_TITLES["next-steps"]}</strong>,{" "}
+        <strong>{CENTRE_SECTION_TITLES.inspections}</strong> and <strong>{CENTRE_SECTION_TITLES.questions}</strong>.
+      </>
+    ),
     link: { href: "/search", label: "Search for a home" },
   },
   {
@@ -86,7 +100,7 @@ const STEPS: Step[] = [
     title: "Call the home",
     detail: (
       <>
-        Call the number on the home’s page, under About this home. Ask your questions, such as how many beds are free.
+        Call the number on the home’s Overview, under Contact. Ask your questions, such as how many beds are free.
         ClearCare doesn’t show free beds.
       </>
     ),
@@ -131,8 +145,9 @@ function StepCard({ step, number, position }: { step: Step; number: number | nul
         </h3>
         <p className="max-w-3xl leading-relaxed">{step.detail}</p>
         {step.link && href && (
-          <Link href={href} className="w-fit py-1 font-semibold tap-target">
-            {step.link.label} →
+          // A button, as the site's other links to a page (CCARE-233).
+          <Link href={href} className={`${smallLinkButtonClass} mt-1`}>
+            {step.link.label} <span aria-hidden>→</span>
           </Link>
         )}
       </div>
@@ -156,44 +171,52 @@ export default function UsingClearCareGuide() {
         </p>
       </aside>
 
-      <section aria-labelledby="steps-h" className="flex flex-col gap-4">
-        <h2 id="steps-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-          Recommended steps
-        </h2>
-        {/* Starts the welcome tour on arrival (components/home/welcome-tour.tsx). */}
-        <p className="max-w-3xl">
-          Prefer to be shown around?{" "}
-          <Link href="/?tour" className="font-semibold tap-target">
-            Take the tour on the home page →
-          </Link>
-        </p>
-        <ol className="flex max-w-4xl flex-col gap-3">
-          {/* An optional step has no number, so the numbers run 1 to 6 past the optional steps. */}
-          {STEPS.map((step, index) => (
-            <StepCard
-              key={step.title}
-              step={step}
-              number={step.question ? null : STEPS.slice(0, index).filter((s) => !s.question).length + 1}
-              position={index + 1}
-            />
-          ))}
-        </ol>
-        <p className="max-w-3xl text-ink-muted">
-          Then visit the homes on your list, ask your questions and decide. ClearCare does not rate or recommend homes.
-          Lost? Select <strong>ClearCare</strong> at the top of any page to go back to the home page.
-        </p>
-      </section>
+      {/* From desktop width the steps and the flowchart are side by side, the picture staying in view
+          as the steps scroll, rather than far below a column that left the rest of its row empty
+          (CCARE-233). On narrower screens the steps come first, in words (CCARE-164). */}
+      <div className="grid items-start gap-8 lg:grid-cols-[3fr_2fr]">
+        <section aria-labelledby="steps-h" className="flex flex-col gap-4">
+          <h2 id="steps-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            Recommended steps
+          </h2>
+          {/* Starts the welcome tour on arrival (components/home/welcome-tour.tsx). */}
+          <p className="flex max-w-3xl flex-wrap items-center gap-x-3 gap-y-2">
+            Prefer to be shown around?
+            <Link href="/?tour" className={smallLinkButtonClass}>
+              Take the tour on the home page <span aria-hidden>→</span>
+            </Link>
+          </p>
+          <ol className="flex flex-col gap-3">
+            {/* An optional step has no number, so the numbers run 1 to 6 past the optional steps. */}
+            {STEPS.map((step, index) => (
+              <StepCard
+                key={step.title}
+                step={step}
+                number={step.question ? null : STEPS.slice(0, index).filter((s) => !s.question).length + 1}
+                position={index + 1}
+              />
+            ))}
+          </ol>
+          <p className="max-w-3xl text-ink-muted">
+            Then visit the homes on your list, ask your questions and decide. ClearCare does not rate or recommend homes.
+            Lost? Select <strong>ClearCare</strong> at the top of any page to go back to the home page.
+          </p>
+        </section>
 
-      {/* After the steps in words, which come first (CCARE-164). It opens full size when selected. */}
-      <figure className="flex flex-col gap-2">
-        <ImageViewer
-          src={FLOWCHART}
-          alt="Flowchart of how to use ClearCare, from opening the site to visiting homes. The steps are written out above."
-          width={3120}
-          height={2925}
-        />
-        <figcaption className="text-ink-muted">Select the image to open it in full size.</figcaption>
-      </figure>
+        {/* It opens full size when selected. */}
+        <div className="flex flex-col gap-3 lg:sticky lg:top-6">
+          <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">The steps as a picture</h2>
+          <figure className="flex flex-col gap-2">
+            <ImageViewer
+              src={FLOWCHART}
+              alt="Flowchart of how to use ClearCare, from opening the site to visiting homes. The steps are written out above."
+              width={3120}
+              height={2925}
+            />
+            <figcaption className="text-ink-muted">Select the image to open it in full size.</figcaption>
+          </figure>
+        </div>
+      </div>
 
       <GuideEnding current={guide} />
     </>

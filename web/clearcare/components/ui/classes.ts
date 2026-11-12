@@ -35,6 +35,12 @@ export const stretchedActionClass =
 export const secondaryLinkClass =
   "inline-flex min-h-12 items-center gap-2 rounded-full border border-line bg-surface px-6 py-2 font-semibold text-ink no-underline transition hover:-translate-y-0.5 hover:border-primary hover:text-ink hover:shadow-sm motion-reduce:transition-none motion-reduce:hover:translate-y-0 adult:rounded-md adult:px-5 adult:transition-none adult:hover:translate-y-0 [&>span[aria-hidden]]:transition-transform hover:[&>span[aria-hidden]]:translate-x-1 adult:hover:[&>span[aria-hidden]]:translate-x-0";
 
+// A smaller outlined button for a link inside a card or a step, such as a guide's "Open Fair Deal
+// Explained": the secondary link's shape at the height of a tap target, so a step with a link
+// stays compact. Underlined in the adult-centred design, like its other links.
+export const smallLinkButtonClass =
+  "inline-flex min-h-11 w-fit items-center gap-1.5 rounded-full border border-line bg-surface px-4 py-1.5 text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:underline";
+
 // A card that is a link as a whole, such as the home page's ways to start: it lifts on hover, with a
 // stronger shadow and a primary edge. Add the layout and padding for where it sits.
 export const linkCardClass =

@@ -6,6 +6,7 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
 import { ShowHide } from "@/components/ui/chevron";
+import { smallLinkButtonClass } from "@/components/ui/classes";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
 const guide = getGuide("choosing-a-nursing-home");
@@ -149,7 +150,7 @@ const STAGES: Stage[] = [
         question: "Have you thought about how often family will visit and how far is realistic?",
         answer: (
           <>
-            Regular visits matter a great deal to most residents. Work out how long the journey is for the people who
+            Regular visits can matter a great deal to the person moving in. Work out how long the journey is for the people who
             will visit most, by car and by public transport, and whether that will still work in winter or as they get
             older themselves.
           </>
@@ -185,7 +186,7 @@ const STAGES: Stage[] = [
           <>
             HIQA, the Health Information and Quality Authority, is the independent body that registers and inspects
             nursing homes in Ireland and publishes a report after each inspection. ClearCare brings a home&apos;s
-            reports together on one page, where we have them.{" "}
+            reports together in one record, where we have them.{" "}
             <Link href="/guides/reading-inspection-reports">How to read a report and use what it found →</Link>
           </>
         ),
@@ -229,7 +230,7 @@ export default function ChoosingANursingHomeGuide() {
       <div className="flex max-w-3xl flex-col gap-4">
         <p className="md:text-lg">
           Before you start browsing homes, it helps to pause and ask yourself a few key questions. This checklist walks
-          you through the stages most families go through, so you can search with clarity and confidence.
+          you through five stages of choosing a home, so you can search with clarity and confidence.
         </p>
         <p className="text-ink-muted">
           Open a question for a short answer and where to find out more. Every family&apos;s situation is different, so
@@ -240,7 +241,9 @@ export default function ChoosingANursingHomeGuide() {
       {/* The five stages at a glance, each a link down to its card. */}
       <ContentsNav label="Stages" items={STAGES.map((stage, index) => ({ id: `stage-${index + 1}`, title: stage.title }))} />
 
-      <ol className="flex max-w-4xl flex-col gap-4">
+      {/* Two stages to a row from desktop width, so the page's whole width is used and the guide is
+          shorter (CCARE-233); the fifth takes a row of its own. One under another on narrower screens. */}
+      <ol className="grid items-start gap-4 lg:grid-cols-2">
         {STAGES.map((stage, index) => {
           // A guide that isn't written yet isn't linked, as on the resources page.
           const relatedGuide = stage.relatedGuide && getGuide(stage.relatedGuide);
@@ -250,7 +253,7 @@ export default function ChoosingANursingHomeGuide() {
             <li
               key={stage.title}
               id={`stage-${index + 1}`}
-              className={`flex ${sectionScrollMargin} flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-6`}
+              className={`flex ${sectionScrollMargin} flex-col gap-4 rounded-lg border border-line bg-surface p-5 md:p-6 lg:last:odd:col-span-2`}
             >
               <div className="flex items-center gap-4">
                 <StepNumber number={index + 1} />
@@ -277,9 +280,10 @@ export default function ChoosingANursingHomeGuide() {
                 ))}
               </ul>
               {related && (
-                <p className="text-sm">
-                  <Link href={`/guides/${related.slug}`} className="tap-target">Read: {related.title} →</Link>
-                </p>
+                // A button, as the site's other links to a page (CCARE-233).
+                <Link href={`/guides/${related.slug}`} className={smallLinkButtonClass}>
+                  Read: {related.title} <span aria-hidden>→</span>
+                </Link>
               )}
               <SectionEnd />
             </li>
