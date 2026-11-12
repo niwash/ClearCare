@@ -20,6 +20,56 @@ Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenitie
 - Legacy flags remain true/false/null according to what the report states.
   Null does not mean absence. The default v1 fields are unchanged.
 
+## Scheduled extraction
+
+The scheduler runs `clearcare_pipeline.amenities` after report ingestion, text
+extraction and commitment splitting, both at startup and after a reports crawl.
+It is off unless `CLEARCARE_AMENITIES=on`. On AWS, `amenities_enabled` defaults
+to false; enabling it and deploying the task is a separate rollout step.
+The stage uses the task's existing `ANTHROPIC_API_KEY` secret.
+
+To inspect work without a model call or database write:
+
+```sh
+python -m clearcare_pipeline.amenities --data-dir ./data --dry-run
+```
+
+For an authorized local run, set `CLEARCARE_AMENITIES=on` and run the same
+command without `--dry-run`. The default limit is 20 reports per invocation;
+use `--limit` to change it. Startup and a due reports crawl can each invoke it.
+The stage stops after three consecutive extraction failures. SDK requests use
+60-second timeouts and at most two SDK retries; the existing single retry for
+invalid structured output is retained.
+
+Selection uses each centre's latest parsed database report, then skips reports
+already loaded at amenities-v2. It never chooses an older report just because
+that report lacks amenities. No key or model client is needed when no work is
+pending. Undated sources are logged and skipped.
+
+Local outputs use `scheduled-amenities/amenities-v2/` under the data directory,
+separate from manual outputs. With bucket settings configured, successful files
+are saved under `amenities/scheduled/amenities-v2/<centre>/<hash>.json` before
+loading. A later task reuses that archive if a load failed. The existing task
+role already permits reads and writes in the raw bucket; bucket versioning
+retains history. Corrupt or mismatched archive files fail visibly and are not
+overwritten. In local runs without a bucket, keep the data directory between
+retries. Stopping a task before its archive write can require another model call.
+
+Each successful report is loaded transactionally through the existing v2 loader.
+Failures never write successful empty results or replace existing rows. Missing
+or unreadable PDFs, model refusals, truncation and rate limits leave work pending.
+Failures or deferred work return exit code 3, recorded by the scheduler as an
+incomplete run; database, storage, key or configuration errors return 1 and fail
+the run. Correct the cause and rerun; there is no need to delete stored results.
+
+The shared extractor is packaged in `pipeline/src/clearcare_pipeline/amenities/`;
+the research CLI uses it too. The prompt, model, PDF page numbering and evidence
+rules are unchanged. Stored section text does not cover the full PDF, so the
+amenities stage reads whole pages only for pending reports using the same
+pdfplumber reader as the manual extractor. It does not copy the section parser
+or add About-section storage. Production coverage checks and human evaluation
+remain separate from scheduling.
+
 ## Extract and load
 
 The pipeline must first ingest parsed reports into PostgreSQL and store the PDFs.

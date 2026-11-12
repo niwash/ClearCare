@@ -136,3 +136,12 @@ files after failures.
 - Of the 103 Dublin PDFs in that run, 97 matched the database's latest report
   for their centre by hash. Centres 7, 22, 183, 5590 and 5880 have a newer
   report in the database, and centre 5307 had a newer one locally.
+
+## Shared pipeline implementation
+
+The prompt and extraction/evidence code live in
+`pipeline/src/clearcare_pipeline/amenities/`. This script remains the manual CLI,
+including manifest selection and the optional OpenAI provider. Its output paths,
+CLI options and extraction version are unchanged. Scheduled Anthropic extraction
+uses the same implementation; configuration, archive paths, retries and rollout
+controls are described in `docs/amenities.md` from the repository root.

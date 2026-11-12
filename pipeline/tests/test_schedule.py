@@ -28,6 +28,7 @@ STARTUP = [
     "ingest_reports",
     "extract_text",
     "split_commitments",
+    "amenities",
 ]
 REGISTER_JOB = [
     "snapshots",
@@ -44,6 +45,7 @@ REPORTS_JOB = [
     "ingest_reports",
     "extract_text",
     "split_commitments",
+    "amenities",
 ]
 EVERY_STAGE_OF_EVERY_JOB = [*STARTUP, *REGISTER_JOB, *PRICES_JOB, *REPORTS_JOB]
 CHECKPOINT = "state/pipeline.json"

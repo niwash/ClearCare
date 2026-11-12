@@ -134,6 +134,12 @@ variable "google_maps_browser_key" {
   default     = ""
 }
 
+variable "amenities_enabled" {
+  description = "Enable paid scheduled amenities extraction after rollout approval."
+  type        = bool
+  default     = false
+}
+
 variable "google_maps_map_id" {
   description = "Google's map ID for the map of the search results, from the browser key's project. Every visitor's browser is given it, so it is not a secret; empty leaves the search page without a map."
   type        = string
