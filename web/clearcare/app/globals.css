@@ -247,6 +247,21 @@
   background: linear-gradient(120deg, var(--welcome-from), var(--welcome-to));
 }
 
+/* The home page's welcome, under the carousel: the page's cream with a warm glow from its top
+   right corner and a gold one from its bottom left, so the page opens on warmth rather than on
+   bare page. Both are colours text already stands on (--warm, --tint-gold), thinned further.
+   Plain --band in the adult-centred design. */
+.home-welcome {
+  background: var(--band);
+}
+
+:root:not([data-design="adult-centred"]) .home-welcome {
+  background:
+    radial-gradient(70rem 30rem at 100% 0%, color-mix(in srgb, var(--warm) 75%, transparent), transparent 70%),
+    radial-gradient(50rem 26rem at 0% 100%, color-mix(in srgb, var(--tint-gold) 85%, transparent), transparent 70%),
+    var(--page);
+}
+
 /* A short mark in the warm accent under each page's main heading, the same on every page. Left
    out of the adult-centred design, which keeps decoration to a minimum. */
 :root:not([data-design="adult-centred"]) .welcome-band h1::after {
