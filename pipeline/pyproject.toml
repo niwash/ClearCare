@@ -9,6 +9,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pydantic>=2.14.1",
     "pymupdf>=1.28.2",
+    "pdfplumber==0.11.10",
 ]
 
 [dependency-groups]
@@ -17,6 +18,7 @@ dev = [
     "httpx2>=2.14.0",
     "pyright>=1.1.414",
     "pytest>=8.4",
+    "python-dotenv>=1.2.4",
     "pytest-cov>=6.2",
     "pyyaml>=6.0.3",
     "ruff>=0.16.9",
@@ -32,7 +34,7 @@ build-backend = "hatchling.build"
 packages = ["src/clearcare_pipeline"]
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
+testpaths = ["tests", "../Research/Data Extraction"]
 pythonpath = ["."]
 addopts = "--cov=clearcare_pipeline --cov-report=term-missing --cov-fail-under=80"
 markers = [

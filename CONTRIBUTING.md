@@ -97,3 +97,7 @@ After `extract_text`, the pipeline runs `split_commitments`, which appends commi
 The pipeline runs `geocode` after the register load, at start and after each register download. It first deletes every point 30 or more calendar days old, counted in UTC, since Google lets its coordinates be kept no longer ([ADR-0027](docs/adr/0027-google-coordinates-refreshed-every-23-days-and-deleted-at-30.md)). With `GOOGLE_GEOCODING_API_KEY` set in `.env`, it then asks Google's Geocoding API for each centre in the served register with no point, or with one 23 or more calendar days old: by Eircode, or by address for a centre without one. It stores the point and its `place_id` only when Google's answer has the register's Eircode, or its county, and logs the id of each centre it leaves without one. Without the key it only deletes. A second run on the same day asks only about the centres still due.
 
 On Linux, create the data directory before the first start, and set `CLEARCARE_PIPELINE_UID` and `CLEARCARE_PIPELINE_GID` to its owner. Otherwise Docker creates the directory as root and the pipeline cannot write to it.
+
+The amenities stage follows the report/text stages at startup and after report
+crawls. It is disabled by default. See [Amenities](docs/amenities.md) for enabling
+an authorized run, inspecting pending reports and retrying incomplete work.

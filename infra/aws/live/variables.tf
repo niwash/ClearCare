@@ -133,3 +133,9 @@ variable "google_maps_browser_key" {
   type        = string
   default     = ""
 }
+
+variable "amenities_enabled" {
+  description = "Enable paid scheduled amenities extraction after rollout approval."
+  type        = bool
+  default     = false
+}

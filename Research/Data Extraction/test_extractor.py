@@ -464,7 +464,7 @@ class EvidenceCheckTests(unittest.TestCase):
                 )
             self.assertEqual(
                 logs.output,
-                ["WARNING:extractor:  dropped quote: Bingo: Bingo every Friday."],
+                [f"WARNING:{extractor.log.name}:  dropped quote: Bingo: Bingo every Friday."],
             )
             stored = ExtractionFile.model_validate_json(
                 extractor.output_file(root, "1", digest).read_bytes()
