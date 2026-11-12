@@ -1,6 +1,7 @@
 """The rows a parsed inspection report becomes.
 
-These mirror the tables in db/V2__inspection_reports.sql.
+These mirror the tables in db/V2__inspection_reports.sql and
+db/V23__thematic_reports.sql.
 """
 
 from dataclasses import dataclass
@@ -58,3 +59,20 @@ class InspectionReport:
     regulations: tuple[InspectionRegulation, ...]
     compliance_items: tuple[InspectionComplianceItem, ...]
     text: tuple[ReportText, ...] = ()
+
+
+@dataclass(frozen=True)
+class ThematicReport:
+    """A thematic report's cover values and overall judgment, ready to write.
+
+    The cover also names the provider, who can be a person, so that name is
+    not read (parser/thematic_fields.csv).
+    """
+
+    source_file_id: int
+    centre_id: str
+    centre_code: str
+    inspection_type: str
+    inspection_date: date
+    fieldwork_id: str
+    overall_judgment: str

@@ -233,6 +233,8 @@ def test_the_pipeline_replaces_and_deletes_locations(
         (PIPELINE, "UPDATE clearcare.register_change SET kind = 'name'"),
         (PIPELINE, "DELETE FROM clearcare.register_change"),
         (PIPELINE, "DELETE FROM clearcare.listed_report"),
+        (PIPELINE, "UPDATE clearcare.thematic_report SET fieldwork_id = 'x'"),
+        (PIPELINE, "DELETE FROM clearcare.thematic_report"),
         # The API reads the views, never the tables behind them.
         (API, "SELECT * FROM clearcare.source_file"),
         (API, "SELECT * FROM clearcare.centre"),
@@ -246,6 +248,7 @@ def test_the_pipeline_replaces_and_deletes_locations(
         (API, "SELECT * FROM clearcare.register_extra_condition"),
         (API, "SELECT * FROM clearcare.register_change"),
         (API, "SELECT * FROM clearcare.listed_report"),
+        (API, "SELECT * FROM clearcare.thematic_report"),
     ],
 )
 def test_role_is_refused(
