@@ -16,7 +16,7 @@ This page lists what changed in Sprint 6. What each design does and why, with th
 - In the standard design, phones and tablets get a round **Menu** button in the bottom-right corner. It works from the keyboard: Enter opens it, Tab goes through the links, and Escape closes it and returns focus to the button.
 - In both designs, "Ask about this home" and "Add to list" are no longer faded out. They have a dashed border, readable text and the words "(coming soon)".
 - In both designs, small links (breadcrumbs, "Clear search", links in the history table) are at least 24px tall.
-- In Easier to read, headings are sans serif and small labels are no longer in capitals.
+- In Easier to read, headings are sans serif and small labels are no longer in capitals. (Since CCARE-232, headings are serif in both designs; small labels are still not in capitals.)
 - Repeated class names are defined once, in `web/clearcare/components/ui/classes.ts`.
 
 ## Less text (CCARE-84)
