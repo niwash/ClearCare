@@ -117,7 +117,13 @@ export function SiteHeader() {
           <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>
-                <NavItem item={item} className="inline-block py-3" />
+                {/* On hover or keyboard focus, a bar in the warm accent draws out under the link, as well as
+                    the colour change, which alone was easy to miss (CCARE-232). The standard design
+                    only: the adult-centred one underlines its links already. */}
+                <NavItem
+                  item={item}
+                  className="relative inline-block py-3 after:absolute after:inset-x-0 after:bottom-1.5 after:h-[3px] after:origin-left after:scale-x-0 after:rounded-full after:bg-accent after:transition-transform after:duration-200 hover:after:scale-x-100 focus-visible:after:scale-x-100 motion-reduce:after:transition-none adult:after:hidden"
+                />
               </li>
             ))}
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and
