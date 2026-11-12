@@ -1,5 +1,6 @@
 """The append-only manifest of centre pages and their report files."""
 
+import dataclasses
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -95,3 +96,53 @@ def last_page_checks(path: Path) -> dict[str, str]:
         if error is None and checked_at > checks.get(centre_id, ""):
             checks[centre_id] = checked_at
     return checks
+
+
+def listed_reports(path: Path) -> dict[str, tuple[Report, ...]]:
+    """Returns the reports HIQA lists for each centre, by centre ID.
+
+    They are the reports of the centre's newest page read that worked, in
+    the page's order. A read with an error was not a read of the list, so an
+    earlier one that worked stands. A read that worked holds the whole list
+    even when a report's own download failed: such a report takes the last
+    stored copy of its file, if any read has one.
+
+    Raises:
+        ManifestError: If a line cannot be read as a centre record.
+    """
+    if not path.is_file():
+        return {}
+    stored = stored_report_files(path)
+    newest: dict[str, tuple[str, tuple[Report, ...]]] = {}
+    lines = path.read_text(encoding="utf-8").splitlines()
+    for number, line in enumerate(lines, 1):
+        try:
+            record = json.loads(line)
+            centre_id, fetched_at = record["centre_id"], record["fetched_at"]
+            error = record["error"]
+            reports = tuple(Report(**report) for report in record["reports"])
+        except (ValueError, KeyError, TypeError) as problem:
+            raise ManifestError(
+                f"{path.name} line {number}: not a centre record"
+            ) from problem
+        if error is None and fetched_at >= newest.get(centre_id, ("",))[0]:
+            newest[centre_id] = (fetched_at, reports)
+    return {
+        centre_id: tuple(
+            _with_stored_copy(report, stored) for report in reports
+        )
+        for centre_id, (_, reports) in newest.items()
+    }
+
+
+def _with_stored_copy(report: Report, stored: dict[str, Report]) -> Report:
+    copy = stored.get(report.file_name)
+    if report.sha256 is not None or copy is None:
+        return report
+    return dataclasses.replace(
+        report,
+        sha256=copy.sha256,
+        size=copy.size,
+        fetched_at=copy.fetched_at,
+        error=None,
+    )

@@ -76,7 +76,7 @@ docker compose up migrate
 
 `docker compose up -d` also builds and starts the API and the pipeline once the migrations have run. The API is on `127.0.0.1:8080`; set `CLEARCARE_API_PORT` in `.env` to change the port.
 
-The pipeline keeps its files in `./data`, unless `CLEARCARE_DATA_DIR` names another directory. When it starts, it loads the newest register snapshot there into the database, and then the inspection reports stored there. A report already in the database is not parsed again. `CLEARCARE_CRAWL` sets what it downloads from HIQA:
+The pipeline keeps its files in `./data`, unless `CLEARCARE_DATA_DIR` names another directory. When it starts, it loads the newest register snapshot there into the database, and then the inspection reports stored there. A report already in the database is not parsed again. It also stores the list of reports on each centre's HIQA page, with the day each was published, whether or not the report's file is stored or can be read. `CLEARCARE_CRAWL` sets what it downloads from HIQA:
 
 - `off`, the default: nothing.
 - A county as the register spells it, such as `Kildare`: the registers once a day, and the reports of that county's centres once a week.
