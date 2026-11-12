@@ -7,7 +7,7 @@ package ie.clearcare.api.centres;
  *
  * <p>placeId is the Google listing the centre's photo comes from (CCARE-209, ADR-0030), and null
  * when no listing was matched for it. The page renders the photo from it through Google's Places UI
- * Kit; nothing of Google's is stored. Null also on an API without db/V19.
+ * Kit; nothing of Google's is stored. Null also on an API without db/V20.
  */
 record CentreDetail(
     String centreId,

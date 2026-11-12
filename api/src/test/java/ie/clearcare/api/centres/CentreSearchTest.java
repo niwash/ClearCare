@@ -86,8 +86,8 @@ class CentreSearchTest {
           "db/V12__report_amenities_v2.sql",
           "db/V16__centre_location.sql",
           "db/V17__centre_point_view.sql",
-          "db/V18__centre_image.sql",
-          "db/V19__centre_listing_view.sql");
+          "db/V19__centre_image.sql",
+          "db/V20__centre_listing_view.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
@@ -236,7 +236,7 @@ class CentreSearchTest {
            now() - interval '60 days');
       """;
 
-  // The listing the pipeline matched for one centre (db/V18, ADR-0030). The others have none, so
+  // The listing the pipeline matched for one centre (db/V19, ADR-0030). The others have none, so
   // the page shows its placeholder for them.
   private static final String IMAGES =
       """

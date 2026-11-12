@@ -184,9 +184,10 @@ def run(
         unreached,
         left,
     )
-    # Every centre without a listing is asked again on the next run. Only those
-    # Google never answered, or this run did not ask, make it incomplete: a
-    # rejected answer is logged, and asking again soon is unlikely to change it.
+    # A centre without a listing is not asked again until geocode refreshes its
+    # point (ADR-0027), so a rejection stands for that cycle; --all asks again
+    # straight away. Only those Google never answered, or this run did not ask,
+    # make it incomplete.
     return EXIT_RETRY if unreached or left else EXIT_DONE
 
 
@@ -195,8 +196,8 @@ def choose(
 ) -> tuple[Candidate, int] | str:
     """Picks the listing that belongs to the centre, or says why none does.
 
-    The nearest candidate is preferred over a better-named one far away, so a
-    namesake in another town cannot win over the home at the centre's address.
+    The best-named candidate within MAX_DISTANCE_M wins, so a namesake in
+    another town cannot win over the home at the centre's address.
     """
     if not candidates:
         return "no_listing"
