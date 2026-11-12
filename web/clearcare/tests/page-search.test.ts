@@ -5,7 +5,7 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { hasSearch, leavesHomesOut, readSearch, searchHref } from "../lib/page-search.ts";
+import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref } from "../lib/page-search.ts";
 import { NO_FILTERS } from "../lib/search-filters.ts";
 
 const NOTHING = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name" as const };
@@ -97,5 +97,27 @@ describe("the page address of a search", () => {
 
   test("carries a point with no name for it", () => {
     assert.equal(searchHref({ ...NOTHING, near: "53.35,-6.26", sort: "distance" }), "/search?near=53.35%2C-6.26&sort=distance");
+  });
+});
+
+describe("the view", () => {
+  test("is the list unless the page address says map", () => {
+    assert.equal(readSearch({ name: "elm" }).view, "list");
+    assert.equal(readSearch({ name: "elm", view: "map" }).view, "map");
+    assert.equal(readSearch({ name: "elm", view: "satellite" }).view, "list");
+  });
+
+  test("is the page's own business: GET /centres is not sent it", () => {
+    assert.deepEqual(readSearch({ name: "elm", view: "map" }).query, { name: "elm" });
+  });
+
+  test("stays in the address of a search, so the filters, the tags and the order keep it", () => {
+    assert.equal(searchHref({ ...NOTHING, name: "elm", sort: "latest_inspection", view: "map" }), "/search?name=elm&sort=latest_inspection&view=map");
+    assert.equal(searchHref({ ...NOTHING, name: "elm", view: "list" }), "/search?name=elm");
+  });
+
+  test("goes with the search: an emptied one is the cleared page, not a map of nothing", () => {
+    assert.equal(searchHref({ ...NOTHING, view: "map" }), "/search");
+    assert.equal(filtersClearedHref({ ...NOTHING, view: "map" }), "/search?filtersCleared=true");
   });
 });

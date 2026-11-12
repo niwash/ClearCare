@@ -226,6 +226,8 @@ terraform apply
 
 The key is limited to the Geocoding API. Fargate has no fixed egress IP, so it has no IP restriction; a quota and a billing alert are set in Google Cloud instead.
 
+The pipeline's Google key for Places is in `clearcare/google/places-key` ([ADR-0030](../../docs/adr/0030-centre-image-source.md)). It is a second key, limited to the Places API (New), so that a quota on one API cannot stop the other. Create it the same way, targeting `aws_secretsmanager_secret.google_places`; a pipeline task does not start until it has a value.
+
 Before the deploy that brings V16, install PostGIS once in `clearcare` as the RDS administrator, through the restore task:
 
 ```sh
@@ -352,7 +354,7 @@ To turn the pipeline on, with `pipeline_enabled = false` until the last step:
        --query 'taskDefinition.containerDefinitions[?name==`pipeline`].command'
    ```
 
-4. If Terraform has created the secrets `clearcare/anthropic` and `clearcare/google/geocoding-key`, set their values; a pipeline task does not start without them.
+4. If Terraform has created the secrets `clearcare/anthropic`, `clearcare/google/geocoding-key` and `clearcare/google/places-key`, set their values; a pipeline task does not start without them.
 5. Seed the state from the VM, below.
 6. Set `pipeline_enabled = true` and apply.
 

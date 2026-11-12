@@ -11,3 +11,8 @@ export const sectionHeadingClass =
 // "About this home" box; square-cornered with a 3:1 edge and no shadow in the adult-centred one.
 export const sectionCardClass =
   "rounded-2xl border border-line-soft bg-surface shadow-sm adult:rounded-lg adult:border-line adult:shadow-none";
+
+// Where a jump to a section or a trail lands: a little below the top of the window, so its heading
+// isn't pressed against the edge. The header doesn't stay on screen, and the record's pages have no
+// sticky menu since the sections became pages (CCARE-212), so this is all the room it needs.
+export const sectionScrollMargin = "scroll-mt-6";

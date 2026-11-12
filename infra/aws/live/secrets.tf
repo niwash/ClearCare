@@ -40,6 +40,15 @@ resource "aws_secretsmanager_secret" "google_geocoding" {
   recovery_window_in_days = 7
 }
 
+# The pipeline's Google key for Places, for the match_places stage (ADR-0030).
+# A separate key from the geocoding one, so each is limited to one API and a
+# quota on one cannot stop the other.
+resource "aws_secretsmanager_secret" "google_places" {
+  name                    = "${local.name}/google/places-key"
+  description             = "Google server key of the pipeline, limited to the Places API (New), as plain text"
+  recovery_window_in_days = 7
+}
+
 # The site's session signing key and the Cognito app client secret (CCARE-183). Terraform creates
 # the secrets but not their values, like the database passwords, so neither lands in state. The web
 # task can only start with them once they are set, which is why ecs.tf injects them only when

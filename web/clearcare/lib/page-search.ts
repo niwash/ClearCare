@@ -20,8 +20,13 @@ export interface SearchQuery {
   sort?: string;
 }
 
-// The name, one "Town, area or Eircode" field (place), the point distances are measured from (near),
-// the county, the care and amenity filters, the order and the page. Without near, place goes to the
+// How the results are shown on a screen too narrow for both: the list of cards, or every matching
+// home as a pin on a map (CCARE-229). A wide screen shows the two side by side whichever this is
+// (CCARE-230).
+export type SearchView = "list" | "map";
+
+// The name, the town, area or Eircode (place), the point distances are measured from (near),
+// the county, the care and amenity filters, the order, the view and the page. Without near, place goes to the
 // API as an Eircode if it looks like one, otherwise as an address; links from before it, with address
 // or eircode, still work. With near, place is only the name of the point (CCARE-228): near filters
 // nothing, so a place picked from the suggestions finds every home, nearest first.
@@ -33,6 +38,7 @@ export interface PageSearch {
   county: string; // "" for any county
   selection: FilterSelection;
   sort: SortValue;
+  view: SearchView; // the page's own: GET /centres is not sent it
 }
 
 type PageParams = Record<string, string | string[] | undefined>;
@@ -62,7 +68,9 @@ export function readSearch(params: PageParams): PageSearch {
   if (sort !== "name") query.sort = sort;
   for (const key of ["page", "page_size"] as const) if (first(params, key)) query[key] = first(params, key);
 
-  return { query, name, place, near, county, selection: readSelection(params), sort };
+  const view: SearchView = first(params, "view") === "map" ? "map" : "list";
+
+  return { query, name, place, near, county, selection: readSelection(params), sort, view };
 }
 
 export function hasSearch(search: Pick<PageSearch, "name" | "place" | "near" | "county" | "selection">) {
@@ -76,9 +84,12 @@ export function leavesHomesOut(search: Pick<PageSearch, "name" | "place" | "near
   return Boolean(search.name || (search.place && !search.near) || search.county || filterCount(search.selection) > 0);
 }
 
-type LinkedSearch = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort">;
+// view is left out by the links that only ever lead to the list, such as a saved search's.
+type LinkedSearch = Pick<PageSearch, "name" | "place" | "near" | "county" | "selection" | "sort"> & { view?: SearchView };
 
-// The page address for a search, leaving out what's empty, so a shared link stays short.
+// The page address for a search, leaving out what's empty, so a shared link stays short. The map is
+// a view of a search's results, so it is written only when there is a search: an emptied search
+// leads to the same address from either view (filtersClearedHref).
 export function searchHref(search: LinkedSearch, page = 1) {
   const params = new URLSearchParams();
   if (search.name) params.set("name", search.name);
@@ -87,6 +98,7 @@ export function searchHref(search: LinkedSearch, page = 1) {
   if (search.county) params.set("county", search.county);
   for (const [key, value] of selectionParams(search.selection)) params.set(key, value);
   if (search.sort !== "name") params.set("sort", search.sort);
+  if (search.view === "map" && hasSearch(search)) params.set("view", "map");
   if (page > 1) params.set("page", String(page));
   const text = params.toString();
   return text ? `/search?${text}` : "/search";

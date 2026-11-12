@@ -15,7 +15,7 @@ const FOOTER_LINKS = [
 // clear of the bottom-right corner it sits in, rather than the page leaving room for it below.
 export function SiteFooter() {
   return (
-    <footer className="brand-band brand-band-deep text-sm">
+    <footer className="brand-band brand-band-deep text-sm print:hidden">
       {/* While the welcome tour's offer is in the corner, on phones the footer is taller at the
           bottom by the box's measured height (--tour-offer-room, set in welcome-tour.tsx), so the
           box doesn't cover the links or the licence line. 20rem until it is measured. From md up

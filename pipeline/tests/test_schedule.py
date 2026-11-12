@@ -22,6 +22,7 @@ STARTUP = [
     "upload",
     "load_register",
     "geocode",
+    "match_places",
     "load_contract_prices",
     "load_report_files",
     "ingest_reports",
@@ -29,7 +30,13 @@ STARTUP = [
     "split_commitments",
     "amenities",
 ]
-REGISTER_JOB = ["snapshots", "upload", "load_register", "geocode"]
+REGISTER_JOB = [
+    "snapshots",
+    "upload",
+    "load_register",
+    "geocode",
+    "match_places",
+]
 PRICES_JOB = ["price_lists", "upload", "load_contract_prices"]
 REPORTS_JOB = [
     "reports",

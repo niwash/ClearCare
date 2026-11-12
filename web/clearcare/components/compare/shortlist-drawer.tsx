@@ -1,8 +1,9 @@
 "use client";
 
-// "Your shortlist" on the search page (CCARE-189): a button with the count, at the top of the
-// results, that opens the shortlist in a panel sliding in from the right, as saved items do on
-// shopping sites. The results stay in sight beside it. The panel is a modal dialog, so focus stays
+// "Your shortlist" (CCARE-189): a button with the count that opens the shortlist in a panel sliding
+// in from the right, as saved items do on shopping sites, so it takes no room on the page. On the
+// search page it is at the top of the results, which stay in sight beside it; on a home's record it
+// is under the home's actions (CCARE-212), with that home marked in the list (currentId). The panel is a modal dialog, so focus stays
 // in it and Escape or a click beside it closes it. Once the list is full, a link beside the button
 // goes to Compare Homes, and each result's "Shortlist full" button opens the panel too (openShortlist).
 import Link from "next/link";
@@ -11,7 +12,7 @@ import { compareHref, MAX_COMPARED } from "@/lib/compare";
 import { onOpenShortlist, useComparedHomes } from "./compare-store";
 import { ShortlistBox } from "./shortlist-box";
 
-export function ShortlistDrawer() {
+export function ShortlistDrawer({ currentId }: { currentId?: string }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const homes = useComparedHomes();
   const count = homes?.length ?? 0;
@@ -69,7 +70,7 @@ export function ShortlistDrawer() {
               Close
             </button>
           </div>
-          <ShortlistBox plain />
+          <ShortlistBox currentId={currentId} />
         </div>
       </dialog>
     </>

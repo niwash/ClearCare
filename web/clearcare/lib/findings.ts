@@ -302,6 +302,7 @@ function inspectorHighlight(rule: Highlight["rule"], finding: Finding, regulatio
     dates,
     regulation,
     text: excerpt(text),
+    passage: text,
     sources: [`Inspector · report ${pages(first_page, last_page)}`],
     reportUrl: pageUrl(finding.report_url, first_page),
   };
