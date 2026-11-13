@@ -11,7 +11,11 @@ import psycopg
 
 from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.ingest_reports import database, sources
-from clearcare_pipeline.ingest_reports.run import ingest, parse_report
+from clearcare_pipeline.ingest_reports.run import (
+    ingest,
+    parse_report,
+    parse_thematic_report,
+)
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.object_store import S3ObjectStore
 from clearcare_pipeline.parser.text import EXTRACTOR_VERSION
@@ -22,6 +26,8 @@ DEFAULT_BATCH_SIZE = 50
 PARSER_DIR = Path(__file__).resolve().parents[1] / "parser"
 DEFAULT_MAPPER = PARSER_DIR / "mapper.csv"
 DEFAULT_FIELDS = PARSER_DIR / "fields.csv"
+THEMATIC_MAPPER = PARSER_DIR / "thematic_mapper.csv"
+THEMATIC_FIELDS = PARSER_DIR / "thematic_fields.csv"
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +55,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 catalogue,
                 writer,
                 parse=lambda body: parse_report(body, args.mapper, args.fields),
+                parse_thematic=lambda body: parse_thematic_report(
+                    body, THEMATIC_MAPPER, THEMATIC_FIELDS
+                ),
                 batch_size=args.batch_size,
             )
     except psycopg.Error as error:

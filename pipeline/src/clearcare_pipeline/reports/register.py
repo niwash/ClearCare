@@ -56,12 +56,28 @@ def latest_register_download(manifest: Path) -> RegisterDownload:
         RegisterError: If the manifest has no successful snapshot of the
             register of centres, or a line is not a snapshot record.
     """
+    downloads = register_downloads(manifest)
+    if not downloads:
+        raise RegisterError(
+            f"{manifest.name} has no successful snapshot of the register"
+        )
+    return downloads[-1]
+
+
+def register_downloads(manifest: Path) -> tuple[RegisterDownload, ...]:
+    """Returns every successful download of the register, in manifest order.
+
+    A manifest that is missing has none.
+
+    Raises:
+        RegisterError: If a line is not a snapshot record.
+    """
     lines = (
         manifest.read_text(encoding="utf-8").splitlines()
         if manifest.is_file()
         else []
     )
-    latest: RegisterDownload | None = None
+    downloads: list[RegisterDownload] = []
     for number, line in enumerate(lines, 1):
         try:
             record = json.loads(line)
@@ -70,21 +86,19 @@ def latest_register_download(manifest: Path) -> RegisterDownload:
                 and record["error"] is None
                 and isinstance(record["sha256"], str)
             ):
-                latest = RegisterDownload(
-                    sha256=record["sha256"],
-                    url=record["url"],
-                    fetched_at=datetime.fromisoformat(record["fetched_at"]),
-                    last_modified=_http_date(record["last_modified"]),
+                downloads.append(
+                    RegisterDownload(
+                        sha256=record["sha256"],
+                        url=record["url"],
+                        fetched_at=datetime.fromisoformat(record["fetched_at"]),
+                        last_modified=_http_date(record["last_modified"]),
+                    )
                 )
         except (ValueError, KeyError, TypeError) as problem:
             raise RegisterError(
                 f"{manifest.name} line {number}: not a snapshot record"
             ) from problem
-    if latest is None:
-        raise RegisterError(
-            f"{manifest.name} has no successful snapshot of the register"
-        )
-    return latest
+    return tuple(downloads)
 
 
 def _http_date(value: str | None) -> datetime | None:

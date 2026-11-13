@@ -15,11 +15,15 @@ from pathlib import Path
 import pymupdf
 
 from clearcare_pipeline.ingest_reports.database import Catalogue, Writer
-from clearcare_pipeline.ingest_reports.models import InspectionReport
+from clearcare_pipeline.ingest_reports.models import (
+    InspectionReport,
+    ThematicReport,
+)
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.ingest_reports.transform import (
     TransformError,
     to_inspection_report,
+    to_thematic_report,
 )
 from clearcare_pipeline.parser.fields import Report as ParsedReport
 from clearcare_pipeline.parser.fields import extract, load_fields
@@ -28,6 +32,9 @@ from clearcare_pipeline.parser.text import extract as extract_text
 from clearcare_pipeline.parser.text import validate
 
 logger = logging.getLogger(__name__)
+
+# The section thematic_mapper.csv starts at a thematic report's title.
+THEMATIC_COVER = "cover"
 
 
 @dataclass(frozen=True)
@@ -67,12 +74,34 @@ def parse_report(body: bytes, mapper: Path, fields: Path) -> ParsedReport:
         return replace(parsed, text=text, missing_responses=missing)
 
 
+def parse_thematic_report(
+    body: bytes, mapper: Path, fields: Path
+) -> ParsedReport | None:
+    """Parses a thematic report's bytes, or returns None for any other report.
+
+    Thematic reports have a mapping of their own (ADR-0032). Its first
+    section starts at the title that only a thematic report has, so a report
+    without that section is left to the regulation parse. Its last section,
+    the appendix, is there to end the overall judgment's section before the
+    table of standards the appendix lists.
+    """
+    with tempfile.NamedTemporaryFile(suffix=".pdf") as handle:
+        handle.write(body)
+        handle.flush()
+        path = Path(handle.name)
+        sections = Parser(path, mapper).parse()
+        if not sections[THEMATIC_COVER]:
+            return None
+        return extract(path, sections, load_fields(fields))
+
+
 def ingest(
     source: Iterator[Source],
     catalogue: Catalogue,
     writer: Writer,
     *,
     parse: Callable[[bytes], ParsedReport],
+    parse_thematic: Callable[[bytes], ParsedReport | None],
     batch_size: int,
 ) -> Summary:
     """Parses, transforms and writes every report, a batch at a time.
@@ -83,8 +112,13 @@ def ingest(
     catalogue does not have is skipped, and so is one whose centre it does not
     have; a report the transform rejects, or one that cannot be read, is
     counted failed.
+
+    A thematic report has no regulations (ADR-0032). parse_thematic is asked
+    first and returns None for any other report; what it reads from a
+    thematic report becomes a row of its own kind, counted and written with
+    the others.
     """
-    buffer: list[InspectionReport] = []
+    buffer: list[InspectionReport | ThematicReport] = []
     parsed = written = already_loaded = skipped = failed = 0
     batch_number = 0
     for item in source:
@@ -101,11 +135,16 @@ def ingest(
             logger.warning("%s: no stored file with hash %s", item.name, digest)
             skipped += 1
             continue
+        report: InspectionReport | ThematicReport
         try:
-            extracted = parse(item.body)
-            for regulation, reason in extracted.missing_responses:
-                logger.warning("%s, %s: %s", item.name, regulation, reason)
-            report = to_inspection_report(extracted, source_file_id)
+            thematic = parse_thematic(item.body)
+            if thematic is not None:
+                report = to_thematic_report(thematic, source_file_id)
+            else:
+                extracted = parse(item.body)
+                for regulation, reason in extracted.missing_responses:
+                    logger.warning("%s, %s: %s", item.name, regulation, reason)
+                report = to_inspection_report(extracted, source_file_id)
         except (TransformError, ValueError, pymupdf.FileDataError) as error:
             logger.error("%s: %s", item.name, error)
             failed += 1

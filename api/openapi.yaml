@@ -261,8 +261,10 @@ paths:
       description: |
         Returns the centre with this `centre_id` from the register snapshot
         that ClearCare currently serves, with the fields of a search result,
-        the centre's phone number, the latest contract price published for it
-        and the kind of home that price is for.
+        the centre's phone number, the latest contract price published for it,
+        the kind of home that price is for and the date of its list, and the
+        centre's registration in that snapshot: its dates, its extra
+        conditions and the Chief Inspector's note.
 
         Any value that is not the ID of a centre in that snapshot gives 404,
         including one that is not a number.
@@ -298,6 +300,14 @@ paths:
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
                 contract_price: 1908.00
                 home_type: public
+                contract_price_date: "2026-09-01"
+                registration:
+                  registered_from: "2024-06-01"
+                  registered_until: "2027-05-31"
+                extra_conditions:
+                  - number: 5
+                    text: No resident shall be admitted to Room 12.
+                chief_inspector_note: null
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -388,6 +398,120 @@ paths:
                 status: 503
                 detail: The register has not been loaded yet.
                 instance: /centres/34/reports
+
+  /centres/{centre_id}/events:
+    get:
+      operationId: listCentreEvents
+      summary: List the events of a centre's record
+      description: |
+        Returns every public event ClearCare holds about this centre, newest
+        first: its inspections, the changes to its entry on the register and
+        the changes of its contract price. Each event is a `kind`, a `date`
+        and that kind's fields. It holds no sentence: whatever shows the
+        event writes the words (ADR-0033).
+
+        Every report HIQA lists for the centre is an event. A report that was
+        read is an `inspection` or a `thematic_inspection`, dated by the date
+        the report prints; one that was not is an `unread_report`, dated as
+        HIQA lists it. A listed date that cannot be right, one before 2007 or
+        after the day the report was published, is not given: `date` is
+        `null`. A report that was read and that HIQA no longer lists is still
+        an event, with `published_date` `null`.
+
+        A `registration` is dated by the registration date. Every other
+        register change is dated by the day the register first showed it,
+        which can be later than the day it happened (ADR-0031). A `price` is
+        a contract price that differs from the centre's price in the list
+        before, dated by its list; a centre's first price is not an event.
+
+        The order is newest `date` first; an event with no `date` is placed
+        by its `published_date`. Events of one day are in the order of the
+        kinds in the `CentreEvent` schema, and events of one kind and day are
+        in a fixed order, so the same request gives the same order every time.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no events gives `"events": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's events, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreEventsResult"
+              example:
+                centre_id: "34"
+                events:
+                  - kind: condition_removed
+                    date: "2026-11-09"
+                    condition_number: 4
+                    text: No resident shall be admitted to Rooms 12 and 14.
+                  - kind: provider
+                    date: "2026-10-20"
+                    before: Springwood Nursing Homes Limited
+                    after: Elm Care Limited
+                  - kind: beds
+                    date: "2026-10-20"
+                    before: 60
+                    after: 62
+                  - kind: price
+                    date: "2026-09-01"
+                    before: 1850.00
+                    after: 1908.00
+                    home_type: public
+                  - kind: inspection
+                    date: "2026-05-13"
+                    inspection_type: Unannounced
+                    published_date: "2026-06-20"
+                    report_id: 1
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-13-may-2026.pdf
+                    compliant: 14
+                    substantially_compliant: 3
+                    not_compliant: 1
+                  - kind: unread_report
+                    date: null
+                    published_date: "2026-04-15"
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-9-january-2026.pdf
+                  - kind: thematic_inspection
+                    date: "2025-11-04"
+                    inspection_type: Unannounced
+                    published_date: "2025-12-10"
+                    overall_judgment: Substantially Compliant
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-4-november-2025.pdf
+                  - kind: registration
+                    date: "2024-06-01"
+                    registered_until: "2027-05-31"
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/events
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/events
 
   /centres/{centre_id}/findings:
     get:
@@ -668,8 +792,9 @@ paths:
         later report. Each count comes with its denominator, so the rates can
         be checked.
 
-        Only loaded reports are counted. Reports whose layout cannot be
-        loaded yet, such as thematic reports (ADR-0013), are
+        Only loaded regulation inspections are counted. A thematic report is
+        read (ADR-0032) but judges no regulation, so it is never a centre's
+        next report. Reports whose layout cannot be loaded yet (ADR-0013) are
         passed over, so the next report is the next one ClearCare has
         loaded.
       responses:
@@ -1219,7 +1344,15 @@ components:
 
     CentreResult:
       type: object
-      required: [centre, register_snapshot, contract_price, home_type]
+      required:
+        - centre
+        - register_snapshot
+        - contract_price
+        - home_type
+        - contract_price_date
+        - registration
+        - extra_conditions
+        - chief_inspector_note
       properties:
         centre:
           $ref: "#/components/schemas/CentreDetail"
@@ -1240,6 +1373,62 @@ components:
             from the price list it came from. Null when no price list has been
             loaded for the centre.
           example: public
+        contract_price_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The date of the list the contract price is from: the day a public
+            list's prices start, or the day a private list was published.
+            Null when no price list has been loaded for the centre.
+          example: "2026-09-01"
+        registration:
+          oneOf:
+            - $ref: "#/components/schemas/Registration"
+            - type: "null"
+          description: >
+            The centre's registration in the register snapshot. Null when the
+            snapshot was loaded before ClearCare kept it.
+        extra_conditions:
+          type: array
+          description: >
+            The centre's extra conditions of registration in the register
+            snapshot, in the order of their numbers: every condition numbered
+            4 or more, and condition 3 when it says more than the maximum
+            number of residents. Empty when the centre has none, or the
+            snapshot was loaded before ClearCare kept them.
+          items:
+            $ref: "#/components/schemas/ExtraCondition"
+        chief_inspector_note:
+          type: [string, "null"]
+          description: >
+            The Chief Inspector's note on the registration, as the register
+            prints it. Null when the register gives none, or the snapshot was
+            loaded before ClearCare kept it.
+
+    Registration:
+      type: object
+      description: A centre's registration, as the register prints its dates.
+      required: [registered_from, registered_until]
+      properties:
+        registered_from:
+          type: string
+          format: date
+        registered_until:
+          type: string
+          format: date
+
+    ExtraCondition:
+      type: object
+      description: One extra condition of a centre's registration.
+      required: [number, text]
+      properties:
+        number:
+          type: integer
+          minimum: 3
+          description: The condition's number on the register.
+        text:
+          type: string
+          description: HIQA's words, with each run of whitespace as one space.
 
     CentreDetail:
       description: >
@@ -1417,6 +1606,354 @@ components:
           type: integer
         compliance_item_count:
           type: integer
+
+    CentreEventsResult:
+      type: object
+      required: [centre_id, events]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        events:
+          type: array
+          description: The centre's events, newest first.
+          items:
+            $ref: "#/components/schemas/CentreEvent"
+
+    CentreEvent:
+      description: >
+        One event of a centre's record. `kind` says which of the schemas below
+        it is. They are listed in the order that events of one day are
+        returned in.
+      oneOf:
+        - $ref: "#/components/schemas/InspectionEvent"
+        - $ref: "#/components/schemas/ThematicInspectionEvent"
+        - $ref: "#/components/schemas/UnreadReportEvent"
+        - $ref: "#/components/schemas/RegistrationEvent"
+        - $ref: "#/components/schemas/ProviderEvent"
+        - $ref: "#/components/schemas/NameEvent"
+        - $ref: "#/components/schemas/BedsEvent"
+        - $ref: "#/components/schemas/ConditionAddedEvent"
+        - $ref: "#/components/schemas/ConditionChangedEvent"
+        - $ref: "#/components/schemas/ConditionRemovedEvent"
+        - $ref: "#/components/schemas/NoteAddedEvent"
+        - $ref: "#/components/schemas/NoteRemovedEvent"
+        - $ref: "#/components/schemas/PriceEvent"
+      discriminator:
+        propertyName: kind
+        mapping:
+          inspection: "#/components/schemas/InspectionEvent"
+          thematic_inspection: "#/components/schemas/ThematicInspectionEvent"
+          unread_report: "#/components/schemas/UnreadReportEvent"
+          registration: "#/components/schemas/RegistrationEvent"
+          provider: "#/components/schemas/ProviderEvent"
+          name: "#/components/schemas/NameEvent"
+          beds: "#/components/schemas/BedsEvent"
+          condition_added: "#/components/schemas/ConditionAddedEvent"
+          condition_changed: "#/components/schemas/ConditionChangedEvent"
+          condition_removed: "#/components/schemas/ConditionRemovedEvent"
+          note_added: "#/components/schemas/NoteAddedEvent"
+          note_removed: "#/components/schemas/NoteRemovedEvent"
+          price: "#/components/schemas/PriceEvent"
+
+    InspectionEvent:
+      type: object
+      description: >
+        A regulation inspection whose report was read. The three counts are of
+        its judgments, one per regulation.
+      required:
+        - kind
+        - date
+        - inspection_type
+        - published_date
+        - report_id
+        - report_url
+        - compliant
+        - substantially_compliant
+        - not_compliant
+      properties:
+        kind:
+          const: inspection
+        date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The date of the inspection, as the report prints it. When the
+            report prints none, the date HIQA lists, or null when that date
+            cannot be right.
+        inspection_type:
+          type: [string, "null"]
+          description: >
+            HIQA's "Type of inspection" as printed, such as "Unannounced".
+        published_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The day HIQA published the report. Null when HIQA no longer lists
+            the report on the centre's page.
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            ClearCare's ID for the report. `GET /reports/{report_id}` returns
+            the report in full.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+        compliant:
+          type: integer
+          minimum: 0
+        substantially_compliant:
+          type: integer
+          minimum: 0
+        not_compliant:
+          type: integer
+          minimum: 0
+
+    ThematicInspectionEvent:
+      type: object
+      description: >
+        A thematic inspection whose report was read. It judges the National
+        Standards and has one overall judgment and no regulations.
+      required:
+        - kind
+        - date
+        - inspection_type
+        - published_date
+        - overall_judgment
+        - report_url
+      properties:
+        kind:
+          const: thematic_inspection
+        date:
+          type: string
+          format: date
+          description: The date of the inspection, as the report prints it.
+        inspection_type:
+          type: string
+          description: >
+            HIQA's "Type of inspection" as printed, such as "Unannounced".
+        published_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The day HIQA published the report. Null when HIQA no longer lists
+            the report on the centre's page.
+        overall_judgment:
+          type: string
+          description: The overall judgment, as the report prints it.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+
+    UnreadReportEvent:
+      type: object
+      description: >
+        A report HIQA lists for the centre that ClearCare holds no reading of:
+        its file is not stored yet, or its layout cannot be read.
+      required: [kind, date, published_date, report_url]
+      properties:
+        kind:
+          const: unread_report
+        date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The first day of the inspection, as HIQA lists it. Null when that
+            date cannot be right: it is before 2007, when HIQA was set up, or
+            after the day the report was published.
+        published_date:
+          type: string
+          format: date
+          description: The day HIQA published the report.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+
+    RegistrationEvent:
+      type: object
+      description: >
+        A registration of the centre: its first on the register ClearCare
+        holds, or a renewal, which has a new registration number.
+      required: [kind, date, registered_until]
+      properties:
+        kind:
+          const: registration
+        date:
+          type: string
+          format: date
+          description: The registration date.
+        registered_until:
+          type: string
+          format: date
+          description: The registration's expiry date.
+
+    ProviderEvent:
+      type: object
+      description: >
+        A new registered provider: the CRO number on the register changed. A
+        provider is named only when it has a CRO number, so only companies are
+        named.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: provider
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: [string, "null"]
+          description: >
+            The earlier provider's name. Null when it had no CRO number.
+        after:
+          type: [string, "null"]
+          description: >
+            The later provider's name. Null when it has no CRO number.
+
+    NameEvent:
+      type: object
+      description: A new name of the centre.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: name
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: string
+        after:
+          type: string
+
+    BedsEvent:
+      type: object
+      description: >
+        A change of the most residents HIQA registered the centre for.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: beds
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: [integer, "null"]
+          minimum: 0
+          description: Null when the register gave no number before.
+        after:
+          type: [integer, "null"]
+          minimum: 0
+          description: Null when the register gives no number now.
+
+    ConditionAddedEvent:
+      type: object
+      description: An extra condition of registration that was added.
+      required: [kind, date, condition_number, text]
+      properties:
+        kind:
+          const: condition_added
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        text:
+          type: string
+          description: The condition, in HIQA's words.
+
+    ConditionChangedEvent:
+      type: object
+      description: An extra condition of registration whose words changed.
+      required: [kind, date, condition_number, before, after]
+      properties:
+        kind:
+          const: condition_changed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        before:
+          type: string
+        after:
+          type: string
+
+    ConditionRemovedEvent:
+      type: object
+      description: An extra condition of registration that was removed.
+      required: [kind, date, condition_number, text]
+      properties:
+        kind:
+          const: condition_removed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        text:
+          type: string
+          description: The condition as it was, in HIQA's words.
+
+    NoteAddedEvent:
+      type: object
+      description: >
+        The Chief Inspector's note on the registration was added, or its words
+        changed.
+      required: [kind, date, text]
+      properties:
+        kind:
+          const: note_added
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        text:
+          type: string
+          description: The note, as the register prints it.
+
+    NoteRemovedEvent:
+      type: object
+      description: The Chief Inspector's note on the registration was removed.
+      required: [kind, date, text]
+      properties:
+        kind:
+          const: note_removed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        text:
+          type: string
+          description: The note as it was.
+
+    PriceEvent:
+      type: object
+      description: >
+        A contract price that differs from the centre's price in the list
+        before, in euro per resident per week.
+      required: [kind, date, before, after, home_type]
+      properties:
+        kind:
+          const: price
+        date:
+          type: string
+          format: date
+          description: >
+            The date of the list the new price is from: the day a public
+            list's prices start, or the day a private list was published.
+        before:
+          type: number
+        after:
+          type: number
+        home_type:
+          type: string
+          enum: [public, private]
+          description: The kind of home the list of the new price is for.
+
+    FirstShownDate:
+      type: string
+      format: date
+      description: >
+        The Irish day ClearCare downloaded the first register that showed the
+        change. The register does not say when a change happened, so this can
+        be later than the day it did.
 
     CentreFindingsResult:
       type: object

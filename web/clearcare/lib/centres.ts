@@ -2,29 +2,19 @@
 // What the centre page shows: the register entry from GET /centres/{centre_id}, and what the
 // inspection reports say. Dates are ISO strings ("2026-04-10").
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
-// between the history table and the promise trails) is derived, not sent.
+// between the grid of judgments and the promise trails) is derived, not sent.
 import { cache } from "react";
 import { toJudgement, type CentreFindingsResult, type Finding } from "./findings";
+import { SEVERITY } from "./judgements.ts";
+
+// Still exported from here, where they were before lib/judgements.ts held them, so a file that
+// imports them from "@/lib/centres" keeps working.
+export { SEVERITY, changeFrom, type Change } from "./judgements.ts";
 import { apiUrl, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
 
 export type Judgement = "compliant" | "substantially-compliant" | "not-compliant" | "not-assessed";
-
-// How serious each judgement is, for "same"/"worse"/"better" and for ordering rows.
-export const SEVERITY: Record<Exclude<Judgement, "not-assessed">, number> = {
-  compliant: 0,
-  "substantially-compliant": 1,
-  "not-compliant": 2,
-};
-
-export type Change = "same" | "worse" | "better";
-
-// How a judgement compares with the last one given for the same regulation.
-export function changeFrom(previous: Exclude<Judgement, "not-assessed">, current: Exclude<Judgement, "not-assessed">): Change {
-  const difference = SEVERITY[current] - SEVERITY[previous];
-  return difference === 0 ? "same" : difference > 0 ? "worse" : "better";
-}
 
 export interface Regulation {
   number: number;
@@ -117,29 +107,50 @@ export const HOME_TYPE_LABELS: Record<HomeType, string> = {
   private: "Private or voluntary",
 };
 
-// GET /centres/{centre_id} (CentreResult in api/openapi.yaml): the centre's register entry, the
-// fields of a search result and the centre's phone, the register snapshot it was read from, and
-// the latest Fair Deal contract price with the kind of home it is for.
-// The API returns 404 for an unknown ID or a centre that isn't on the current register.
-interface CentreResult {
-  centre: Omit<CentreDetail, "register_snapshot" | "contract_price" | "home_type">;
-  register_snapshot: RegisterSnapshot;
-  contract_price?: number | null;
-  home_type?: HomeType | null;
+// The home's registration, as the register prints its dates.
+export interface Registration {
+  registered_from: ISODate;
+  registered_until: ISODate;
 }
 
-// What the page uses: the centre with its snapshot and price alongside, flattened from CentreResult.
-export interface CentreDetail extends CentreSummary {
-  // The centre's own line, as the register prints it: usually one number, sometimes "TBC" or two
-  // ("01 555 0123 / 01 555 0124"). null when the register gives none. Missing from an API without
-  // CCARE-118 (PR #72), so the page leaves the row out rather than saying "Not stated".
-  centre_phone?: string | null;
+// A condition of registration beyond the three nearly every home has, in HIQA's words.
+export interface ExtraCondition {
+  number: number;
+  text: string;
+}
+
+// What GET /centres/{centre_id} gives beside the centre itself, from the same register snapshot and
+// from the HSE's price lists. All but the snapshot are missing from an API older than the field.
+interface CentreResultFields {
   register_snapshot: RegisterSnapshot;
   // The newest contract price the HSE published for the home, in euro per resident per week, and
   // whether it came from the public or the private list (CCARE-76, CCARE-133). null when no list
   // has been loaded for it; missing from an API without them, so the page leaves the rows out.
   contract_price?: number | null;
   home_type?: HomeType | null;
+  // The date of the list the price is from: the day a public list's prices start, or the day a
+  // private list was published (CCARE-235).
+  contract_price_date?: ISODate | null;
+  // The registration as it stands, its extra conditions in the order of their numbers, and the
+  // Chief Inspector's note on it (CCARE-235). null, or empty, when the register gives none.
+  registration?: Registration | null;
+  extra_conditions?: ExtraCondition[];
+  chief_inspector_note?: string | null;
+}
+
+// GET /centres/{centre_id} (CentreResult in api/openapi.yaml): the centre's register entry, the
+// fields of a search result and the centre's phone, with the fields above beside it.
+// The API returns 404 for an unknown ID or a centre that isn't on the current register.
+interface CentreResult extends CentreResultFields {
+  centre: Omit<CentreDetail, keyof CentreResultFields>;
+}
+
+// What the page uses: the centre with the fields beside it, flattened from CentreResult.
+export interface CentreDetail extends CentreSummary, CentreResultFields {
+  // The centre's own line, as the register prints it: usually one number, sometimes "TBC" or two
+  // ("01 555 0123 / 01 555 0124"). null when the register gives none. Missing from an API without
+  // CCARE-118 (PR #72), so the page leaves the row out rather than saying "Not stated".
+  centre_phone?: string | null;
   // Google's identifier for the home's listing, which the overview renders the photo from through
   // Google's Places UI Kit (CCARE-209, ADR-0030). null when no listing was matched, so the page
   // shows its placeholder; missing from an API without db/V20, which the page treats the same way.
@@ -177,9 +188,6 @@ export interface CentreReports {
   highlights: Highlight[];
   visitQuestions: string[];
   trails: PromiseTrail[];
-  // When ClearCare last read the home's page on hiqa.ie for new reports (ISO date-time, UTC). null
-  // until it has, and from an API that doesn't serve it yet.
-  hiqaCheckedAt?: string | null;
 }
 
 export type CentreLookup =
@@ -201,8 +209,8 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   }
   if (response.status === 404) return { status: "not-found" };
   if (!response.ok) return { status: "unavailable", httpStatus: response.status };
-  const { centre, register_snapshot, contract_price, home_type }: CentreResult = await response.json();
-  return { status: "found", centre: { ...centre, register_snapshot, contract_price, home_type } };
+  const { centre, ...beside }: CentreResult = await response.json();
+  return { status: "found", centre: { ...centre, ...beside } };
 });
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
@@ -232,13 +240,26 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   }
 }
 
+// The home's list of reports, read once for the reports themselves and for when HIQA was last read.
+const getCentreReportList = cache(async (id: string): Promise<CentreReportsResult | null> => {
+  const url = apiUrl();
+  return url ? fetchJson<CentreReportsResult>(`${url}/centres/${id}/reports`) : null;
+});
+
+// When ClearCare last read the home's page on hiqa.ie for new reports (ISO date-time, UTC). null
+// until it has, and from an API that doesn't serve it yet. Apart from getCentreReports, which is
+// null for a home with no report: that is the home the page needs it for (CCARE-235).
+export const getHiqaCheckedAt = cache(async (id: string): Promise<string | null> => {
+  return (await getCentreReportList(id))?.hiqa_checked_at ?? null;
+});
+
 // null when the home has no reports in ClearCare, or they can't be read right now; the page
 // then points to hiqa.ie.
 export const getCentreReports = cache(async (id: string): Promise<CentreReports | null> => {
   const url = apiUrl();
   if (!url) return null;
 
-  const list = await fetchJson<CentreReportsResult>(`${url}/centres/${id}/reports`);
+  const list = await getCentreReportList(id);
   // A report without an inspection date can't go on the timeline.
   const listed = list?.reports.filter((report) => report.inspection_date) ?? [];
   if (listed.length === 0) return null;
@@ -284,7 +305,7 @@ export const getCentreReports = cache(async (id: string): Promise<CentreReports 
       a.regulation.number - b.regulation.number,
   );
 
-  return { inspections, history, highlights: [], visitQuestions: [], trails: [], hiqaCheckedAt: list?.hiqa_checked_at ?? null };
+  return { inspections, history, highlights: [], visitQuestions: [], trails: [] };
 });
 
 // GET /centres/{centre_id}/findings (CCARE-206): each finding with the inspector's and the
@@ -345,6 +366,8 @@ export const getCentreAmenities = cache(async (id: string): Promise<CentreAmenit
 
 const DAY = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
 const MONTH = new Intl.DateTimeFormat("en-IE", { month: "short", year: "numeric", timeZone: "UTC" });
+const DAY_OF_YEAR = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", timeZone: "UTC" });
+const SHORT_MONTH = new Intl.DateTimeFormat("en-IE", { month: "short", year: "2-digit", timeZone: "UTC" });
 
 // "10 Apr 2026". en-IE writes "Sept", so trim it to match the other months.
 export function formatDate(date: ISODate) {
@@ -353,6 +376,16 @@ export function formatDate(date: ISODate) {
 
 export function formatMonth(date: ISODate) {
   return MONTH.format(new Date(date)).replace("Sept", "Sep");
+}
+
+// "10 Apr", for a date under its year's heading.
+export function formatDayOfYear(date: ISODate) {
+  return DAY_OF_YEAR.format(new Date(date)).replace("Sept", "Sep");
+}
+
+// "Apr 26", for the head of a narrow column.
+export function formatShortMonth(date: ISODate) {
+  return SHORT_MONTH.format(new Date(date)).replace("Sept", "Sep");
 }
 
 export function formatSource({ document, page, lastPage, context }: SourceRef) {
