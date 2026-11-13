@@ -27,8 +27,14 @@ export function ShowAnotherHome({ currentName }: { currentName: string }) {
           startTransition(() => router.refresh());
         }}
         disabled={pending}
-        className="w-fit text-left text-primary underline underline-offset-2 hover:text-primary-hover disabled:cursor-wait disabled:text-ink-muted disabled:no-underline tap-target adult:decoration-2"
+        // An outlined button, as the card's links to the record's tabs beside it (CCARE-232): it was
+        // a small underlined link, easy to miss.
+        className="inline-flex min-h-11 w-fit shrink-0 items-center gap-2 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-ink hover:border-primary disabled:cursor-wait disabled:text-ink-muted disabled:hover:border-line adult:rounded-md"
       >
+        {/* Two arrows in a circle: again, with another. */}
+        <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="size-4 shrink-0">
+          <path d="M20 11a8 8 0 0 0-14.500-4M4 4v3.500h3.500M4 13a8 8 0 0 0 14.500 4M20 20v-3.500h-3.500" />
+        </svg>
         {pending ? "Picking another home…" : "Show another home"}
       </button>
       <p aria-live="polite" className="sr-only">

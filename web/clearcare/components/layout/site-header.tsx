@@ -117,7 +117,16 @@ export function SiteHeader() {
           <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>
-                <NavItem item={item} className="inline-block py-3" />
+                {/* On hover or keyboard focus, a tint of the primary colour grows out from the middle of the
+                    link and fades in behind it, as well as the colour change, which alone was easy to
+                    miss; it presses in a little on a click (CCARE-232). The tint is the link's own
+                    ::before, behind its text (isolate, -z-10). The padding and margins cancel out, so
+                    the links and the band keep their size and place. The standard design only: the
+                    adult-centred one underlines its links already, and keeps still. */}
+                <NavItem
+                  item={item}
+                  className="relative isolate -mx-3 my-1 inline-block px-3 py-2 transition-colors duration-200 before:absolute before:inset-0 before:-z-10 before:scale-75 before:rounded-md before:bg-primary/15 before:opacity-0 before:transition before:duration-200 before:ease-out hover:before:scale-100 hover:before:opacity-100 focus-visible:before:scale-100 focus-visible:before:opacity-100 active:before:scale-95 motion-reduce:before:scale-100 motion-reduce:before:transition-none adult:mx-0 adult:my-0 adult:px-0 adult:py-3 adult:before:hidden"
+                />
               </li>
             ))}
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and

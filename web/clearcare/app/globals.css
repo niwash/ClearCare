@@ -112,9 +112,10 @@
   --line-soft: light-dark(#e5dfd6, #3a352e);
   --field: var(--line);
   --focus: light-dark(#1f1b16, #f4f0ea);
-  /* Sans serif headings, like the body text. NIA/NLM: "Use a sans serif typeface… that is
-     not condensed". */
-  --heading-font: var(--font-public-sans);
+  /* The headings keep the standard design's serif (--heading-font, above), so the two designs share
+     one set of fonts (CCARE-232, the team's choice). NIA/NLM advise a sans serif typeface for older
+     readers; the body text, which is most of what is read, stays sans serif in both. WCAG sets no
+     typeface at any level. */
   /* Tailwind's own corners, as before CCARE-179: plain shapes, nothing to get used to. */
   --radius-control: 0.375rem;
   --radius-card: 0.5rem;
@@ -250,6 +251,24 @@
 .welcome-band,
 :root:not([data-design="adult-centred"]) .feature-panel {
   background: linear-gradient(120deg, var(--welcome-from), var(--welcome-to));
+}
+
+/* The home page's welcome, under the carousel: the page's cream with a warm glow from its top
+   right corner and a gold one from its lower left, so the page opens on warmth rather than on
+   bare page. Both are colours text already stands on (--warm, --tint-gold), thinned further.
+   Plain --band in the adult-centred design. */
+.home-welcome {
+  background: var(--band);
+}
+
+/* The first layer fades the band's foot into the page, so the glows never stop at a line where the
+   band ends; the gold glow sits above that edge, not on it. */
+:root:not([data-design="adult-centred"]) .home-welcome {
+  background:
+    linear-gradient(to bottom, transparent 55%, var(--page)),
+    radial-gradient(70rem 30rem at 100% 0%, color-mix(in srgb, var(--warm) 75%, transparent), transparent 70%),
+    radial-gradient(50rem 26rem at 0% 60%, color-mix(in srgb, var(--tint-gold) 85%, transparent), transparent 70%),
+    var(--page);
 }
 
 /* A short mark in the warm accent under each page's main heading, the same on every page. Left
