@@ -233,11 +233,11 @@ export default function ChoosingANursingHomeGuide() {
           Before you start browsing homes, it helps to pause and ask yourself a few key questions. This checklist walks
           you through five stages of choosing a home, so you can search with clarity and confidence.
         </p>
-        {/* A tip, marked by a light bulb in a light amber box. */}
+        {/* A note to take care, marked by an "i" in a light amber box, as the family guide's note. */}
         <p className="flex items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold p-4 text-ink">
-          <Icon name="vision" className="mt-0.5 size-5 shrink-0 text-on-tint-gold" />
+          <Icon name="info" className="mt-0.5 size-5 shrink-0 text-on-tint-gold" />
           <span>
-            <span className="sr-only">Tip: </span>
+            <span className="sr-only">Note: </span>
             Every family&apos;s situation is different, so check anything important with the HSE, your GP or the home.
           </span>
         </p>
