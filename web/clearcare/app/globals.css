@@ -618,6 +618,13 @@ gmp-advanced-marker:focus-visible,
     display: block;
   }
 
+  /* A button fold that holds part of a list, such as the rest of the always-compliant regulations
+     (more-regulations.tsx), prints open too, so the printed list is whole. */
+  .fold.prints-open {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
   :root:not([data-design="adult-centred"]) :is(.reveal, .reveal-stagger > *, .reveal-pop, .reveal-bar, .scroll-zoom) {
     animation: none !important;
     opacity: 1 !important;

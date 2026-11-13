@@ -4,9 +4,9 @@
 // cell the judgment's mark on a light fill of its colour. A reader sees at a glance which
 // regulations keep coming up and which got better. The readers are mostly older, so the grid has
 // the fewest words that say it: none in a cell, and the key at the top of the card explains the
-// marks. The regulations that were compliant whenever they were judged are one line under it. Which
-// rows, in what order: judgementGrid (lib/judgements.ts).
-import { ShowHide } from "@/components/ui/chevron";
+// marks. The regulations that were compliant whenever they were judged are a bulleted list under it,
+// the first few in view and the rest behind a "Show more" button. Which rows, in what order: judgementGrid
+// (lib/judgements.ts).
 import {
   formatDate,
   formatShortMonth,
@@ -20,6 +20,7 @@ import {
 import { judgementGrid, type Cell } from "@/lib/judgements";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
+import { MoreRegulations } from "./more-regulations";
 
 // What is behind a cell's mark. How strong the fills are is set once, in globals.css
 // (--finding-fill-strength). A regulation the inspection did not judge has no mark and no fill, only
@@ -88,8 +89,30 @@ type JudgementGridProps = {
   trailsHref: string;
 };
 
+// How many of the always-compliant regulations are in view before "Show more": two rows of three
+// columns on a wide screen. A fold that would hide only one or two hides nothing.
+const REST_IN_VIEW = 6;
+const REST_FOLD_AFTER = REST_IN_VIEW + 2;
+
+// The rest of the list follows straight on from the part in view, with no gap between them, so it
+// reads as one list once open (className="mt-2" only on the part in view).
+function RestList({ regulations, className = "" }: { regulations: Regulation[]; className?: string }) {
+  return (
+    <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 lg:columns-3 ${className}`}>
+      {regulations.map((regulation) => (
+        <li key={regulation.number} className="break-inside-avoid py-0.5">
+          {regulation.title}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function JudgementGrid({ inspections, history, trails, trailsHref }: JudgementGridProps) {
   const { columns, rows, rest } = judgementGrid(history, inspections, trails);
+  const folds = rest.length > REST_FOLD_AFTER;
+  const shown = folds ? rest.slice(0, REST_IN_VIEW) : rest;
+  const hidden = folds ? rest.slice(REST_IN_VIEW) : [];
 
   return (
     <div>
@@ -142,21 +165,21 @@ export function JudgementGrid({ inspections, history, trails, trailsHref }: Judg
         </HistoryScroller>
       )}
 
-      {/* The same <details> as the site's other folds: no script, and print opens it (globals.css). */}
+      {/* A bulleted list, the first few in view and the rest behind a "Show more" button, so a family sees
+          what the list is without it outgrowing the grid. Columns on wider screens keep it short. */}
       {rest.length > 0 && (
-        <details className="group mt-1 text-sm text-ink-muted">
-          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 py-2 [&::-webkit-details-marker]:hidden">
-            <span>{restWords(rest.length, rows.length > 0)}</span>
-            <ShowHide className="print:hidden" />
-          </summary>
-          <ul className="gap-x-8 pb-3 sm:columns-2 lg:columns-3">
-            {rest.map((regulation) => (
-              <li key={regulation.number} className="break-inside-avoid py-0.5">
-                {regulation.title}
-              </li>
-            ))}
-          </ul>
-        </details>
+        // A line between it and the grid above; with no grid there is nothing to divide it from.
+        <div className={`mt-3 text-sm ${rows.length > 0 ? "border-t border-line pt-3" : ""}`}>
+          <p id="rest-h" className="text-ink-muted">
+            {restWords(rest.length, rows.length > 0)}
+          </p>
+          <RestList regulations={shown} className="mt-2" />
+          {hidden.length > 0 && (
+            <MoreRegulations count={hidden.length}>
+              <RestList regulations={hidden} />
+            </MoreRegulations>
+          )}
+        </div>
       )}
 
       <p className="mt-3 text-sm text-ink-muted">Reports before 2023 are available from HIQA on request.</p>
