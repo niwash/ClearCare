@@ -21,6 +21,7 @@ BUCKET = {
 STARTUP = [
     "upload",
     "load_register",
+    "register_changes",
     "geocode",
     "match_places",
     "load_contract_prices",
@@ -34,6 +35,7 @@ REGISTER_JOB = [
     "snapshots",
     "upload",
     "load_register",
+    "register_changes",
     "geocode",
     "match_places",
 ]

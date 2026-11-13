@@ -30,8 +30,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Runs the ingest from the command line.
 
     --public and --private each give the list's PDF and the page it was
-    published on, which is stored beside it. --data-dir takes the newest
-    downloaded copy of each list instead, and the PDF's own URL.
+    published on, which is stored beside it. --data-dir takes every
+    downloaded copy of each list instead, oldest first, and the PDF's own
+    URL.
     """
     args = _parse_args(argv)
     logging.basicConfig(
@@ -115,7 +116,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        help="directory that holds raw/ and manifests/; loads the newest"
+        help="directory that holds raw/ and manifests/; loads every"
         " downloaded copy of each list",
     )
     parser.add_argument(

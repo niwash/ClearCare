@@ -1,10 +1,14 @@
 """Reading the register of centres and checking it before it is loaded."""
 
 import csv
+import hashlib
 import io
 import re
 from dataclasses import dataclass
+from datetime import date, datetime
+from pathlib import Path
 
+from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.reports.register import CENTRE_PAGE_PREFIX
 
 COLUMNS = (
@@ -63,6 +67,9 @@ COUNTIES = frozenset(
 # The same pattern as the check on register_entry.eircode in db/.
 EIRCODE = re.compile(r"^([AC-FHKNPRTV-Y][0-9]{2}|D6W)[0-9AC-FHKNPRTV-Y]{4}$")
 DIGITS = re.compile(r"[0-9]+")
+# strptime alone would also read 1-3-2027.
+DAY_MONTH_YEAR = re.compile(r"[0-9]{2}-[0-9]{2}-[0-9]{4}")
+REGISTRATION_NUMBER = re.compile(r"REG-[0-9]{7}")
 NOT_EMPTY = ("Centre_Title", "Centre_Address", "County", "URL")
 
 
@@ -74,6 +81,9 @@ class RegisterEntry:
     HIQA prints it on the centre's public page. The persons in charge, their
     phones, the provider's phone and the management contacts are personal data
     and are left out (db/V7).
+
+    The conditions of registration are read whole, as printed. The database
+    keeps only the extra ones (db/V21).
     """
 
     source_record: int
@@ -87,10 +97,32 @@ class RegisterEntry:
     provider_name: str | None
     provider_cro_number: str | None
     hiqa_url: str
+    registration_number: str
+    registration_date: date
+    registration_expiry_date: date
+    chief_inspector_note: str | None
+    conditions_of_registration: str
 
 
 class RegisterFileError(Exception):
     """The register file is not in the form the loader expects."""
+
+
+def read_stored_register(
+    data_dir: Path, sha256: str
+) -> tuple[RegisterEntry, ...]:
+    """Returns every centre in a register file kept in the raw store.
+
+    Raises:
+        OSError: If the file cannot be read.
+        RegisterFileError: If the file does not match its hash, or is not in
+            the form read_register expects.
+    """
+    path = FileSystemRawStore(data_dir / "raw").path_for(sha256)
+    content = path.read_bytes()
+    if hashlib.sha256(content).hexdigest() != sha256:
+        raise RegisterFileError("the stored file does not match its hash")
+    return read_register(content)
 
 
 def read_register(content: bytes) -> tuple[RegisterEntry, ...]:
@@ -169,6 +201,14 @@ def _entry(number: int, fields: list[str]) -> RegisterEntry:
             "nothing or a whole number of 0 or more",
             occupancy,
         )
+    registration_number = record["Registration_Number"]
+    if not REGISTRATION_NUMBER.fullmatch(registration_number):
+        raise _unexpected(
+            number,
+            "Registration_Number",
+            "REG- and seven digits",
+            registration_number,
+        )
     return RegisterEntry(
         source_record=number,
         centre_id=record["Centre_ID"],
@@ -181,7 +221,29 @@ def _entry(number: int, fields: list[str]) -> RegisterEntry:
         provider_name=record["Registration_Provider"] or None,
         provider_cro_number=record["CRO_Registration_Number"] or None,
         hiqa_url=record["URL"],
+        registration_number=registration_number,
+        registration_date=_date(
+            number, "Registration_Date", record["Registration_Date"]
+        ),
+        registration_expiry_date=_date(
+            number,
+            "Registration_Expiry_Date",
+            record["Registration_Expiry_Date"],
+        ),
+        chief_inspector_note=record["Chief_Inspector_Note"].strip() or None,
+        conditions_of_registration=record["Registration_Conditions"],
     )
+
+
+def _date(number: int, column: str, value: str) -> date:
+    try:
+        if not DAY_MONTH_YEAR.fullmatch(value):
+            raise ValueError(value)
+        return datetime.strptime(value, "%d-%m-%Y").date()
+    except ValueError:
+        raise _unexpected(
+            number, column, "a date as DD-MM-YYYY", value
+        ) from None
 
 
 def _eircode(address: str) -> str | None:

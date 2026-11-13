@@ -1,17 +1,8 @@
 // lib/sample-centre.ts
 // The start page's example: a home picked at random on every load, with what its latest
 // inspection found. Built from the same data as the centre page (getCentre, getCentreReports).
-import {
-  changeFrom,
-  getCentre,
-  getCentreReports,
-  SEVERITY,
-  type CentreDetail,
-  type Change,
-  type Inspection,
-  type Judgement,
-  type Regulation,
-} from "./centres";
+import { getCentre, getCentreReports, type CentreDetail, type Inspection, type Judgement, type Regulation } from "./centres";
+import { changeFrom, SEVERITY, type Change } from "./judgements";
 import { searchCentres } from "./search";
 
 // Homes tried before giving up, in case the first picks have no reports loaded yet.

@@ -6,7 +6,10 @@ from typing import Protocol
 import psycopg
 from psycopg.rows import TupleRow
 
-from clearcare_pipeline.ingest_reports.models import InspectionReport
+from clearcare_pipeline.ingest_reports.models import (
+    InspectionReport,
+    ThematicReport,
+)
 from clearcare_pipeline.parser.text import ReportText
 
 # Held until the transaction ends, so two ingests never write at once. Nothing
@@ -47,6 +50,14 @@ _INSERT_TEXT = (
     " ON CONFLICT DO NOTHING"
 )
 
+_INSERT_THEMATIC = (
+    "INSERT INTO clearcare.thematic_report"
+    " (source_file_id, centre_id, centre_code, inspection_type,"
+    " inspection_date, fieldwork_id, overall_judgment)"
+    " VALUES (%s, %s, %s, %s, %s, %s, %s)"
+    " ON CONFLICT DO NOTHING RETURNING id"
+)
+
 Row = tuple[object, ...]
 
 
@@ -73,7 +84,9 @@ class Catalogue(Protocol):
 class Writer(Protocol):
     """Where the ingest workflow sends its batches."""
 
-    def write_batch(self, reports: Sequence[InspectionReport]) -> int:
+    def write_batch(
+        self, reports: Sequence[InspectionReport | ThematicReport]
+    ) -> int:
         """Writes a batch and returns how many reports were new."""
         ...
 
@@ -109,8 +122,11 @@ class DatabaseCatalogue:
         self._loaded: set[str] = {
             str(row[0])
             for row in connection.execute(
-                "SELECT DISTINCT sha256 FROM clearcare.source_file"
+                "SELECT sha256 FROM clearcare.source_file"
                 " JOIN clearcare.inspection_report USING (source_file_id)"
+                " UNION"
+                " SELECT sha256 FROM clearcare.source_file"
+                " JOIN clearcare.thematic_report USING (source_file_id)"
             ).fetchall()
         }
 
@@ -139,7 +155,9 @@ class ReportWriter:
         self._connection = connection
         self._version = version
 
-    def write_batch(self, reports: Sequence[InspectionReport]) -> int:
+    def write_batch(
+        self, reports: Sequence[InspectionReport | ThematicReport]
+    ) -> int:
         """Writes the batch in one transaction; returns how many were new."""
         inspectors: list[Row] = []
         regulations: list[Row] = []
@@ -152,6 +170,13 @@ class ReportWriter:
         ):
             cursor.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK_KEY,))
             for report in reports:
+                if isinstance(report, ThematicReport):
+                    row = cursor.execute(
+                        _INSERT_THEMATIC, _thematic_params(report)
+                    ).fetchone()
+                    if row is not None:
+                        written += 1
+                    continue
                 row = cursor.execute(
                     _INSERT_REPORT, _report_params(report)
                 ).fetchone()
@@ -234,6 +259,18 @@ def _report_params(report: InspectionReport) -> Row:
         report.inspection_date,
         report.fieldwork_id,
         report.residents,
+    )
+
+
+def _thematic_params(report: ThematicReport) -> Row:
+    return (
+        report.source_file_id,
+        report.centre_id,
+        report.centre_code,
+        report.inspection_type,
+        report.inspection_date,
+        report.fieldwork_id,
+        report.overall_judgment,
     )
 
 

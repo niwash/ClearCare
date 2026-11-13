@@ -9,6 +9,7 @@ from clearcare_pipeline.reports.manifest import (
     ManifestError,
     append_record,
     last_page_checks,
+    listed_reports,
     stored_report_files,
 )
 
@@ -89,3 +90,67 @@ def test_a_page_read_that_never_worked_is_not_a_check(tmp_path: Path) -> None:
     append_record(manifest, replace(_record(), error="HTTP 503"))
 
     assert last_page_checks(manifest) == {}
+
+
+def test_no_manifest_means_no_report_is_listed(tmp_path: Path) -> None:
+    assert listed_reports(tmp_path / "inspection-reports.jsonl") == {}
+
+
+def test_each_centres_listed_reports_are_those_of_its_newest_page_read(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "inspection-reports.jsonl"
+    first, second = _report("a.pdf", "aaa"), _report("b.pdf", "bbb")
+    append_record(manifest, _record(first))
+    later = replace(
+        _record(second, first), fetched_at="2026-10-03T09:00:00+00:00"
+    )
+    append_record(manifest, later)
+    # HIQA has published no report for this centre.
+    append_record(manifest, replace(_record(), centre_id="35"))
+
+    assert listed_reports(manifest) == {"34": (second, first), "35": ()}
+
+
+def test_a_page_read_that_failed_leaves_the_list_of_the_last_that_worked(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "inspection-reports.jsonl"
+    listed = _report("a.pdf", "aaa")
+    append_record(manifest, _record(listed))
+    failed = replace(
+        _record(), fetched_at="2026-10-03T09:00:00+00:00", error="HTTP 503"
+    )
+    append_record(manifest, failed)
+
+    assert listed_reports(manifest) == {"34": (listed,)}
+
+
+def test_a_listed_report_takes_the_last_stored_copy_of_its_file(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "inspection-reports.jsonl"
+    stored = _report("b.pdf", "bbb")
+    append_record(manifest, _record(stored))
+    # A run stops at the first file it cannot get, and lists the reports
+    # after it without their copies.
+    failed = _report("a.pdf", None)
+    not_tried = replace(
+        _report("b.pdf", None), error="not tried: the run stopped"
+    )
+    later = replace(
+        _record(failed, not_tried), fetched_at="2026-10-03T09:00:00+00:00"
+    )
+    append_record(manifest, later)
+
+    assert listed_reports(manifest) == {"34": (failed, stored)}
+
+
+def test_unreadable_line_is_an_error_for_the_listed_reports(
+    tmp_path: Path,
+) -> None:
+    manifest = tmp_path / "inspection-reports.jsonl"
+    manifest.write_text('{"centre_id": "34"}\n')
+
+    with pytest.raises(ManifestError, match="line 1"):
+        listed_reports(manifest)

@@ -73,7 +73,7 @@ export function parseHomesParam(param: string | string[] | undefined): string[] 
 
 type Result = Exclude<Judgement, "not-assessed">;
 
-// As SEVERITY in centres.ts, repeated so this file has no runtime imports.
+// As SEVERITY in judgements.ts, repeated so this file has no runtime imports.
 const SEVERITY: Record<Result, number> = { compliant: 0, "substantially-compliant": 1, "not-compliant": 2 };
 
 // The last judgement a home was given for a regulation, and the inspection it came from.

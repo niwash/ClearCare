@@ -294,3 +294,109 @@ def write_report_pdf(path: Path) -> None:
         document.save(str(path))
     finally:
         document.close()
+
+
+# A thematic report's cover: the labels of COVER under another title. HIQA
+# prints the first label over two lines.
+THEMATIC_COVER: Rows = (
+    ("Name of designated\ncentre:", "Fern Valley Nursing Home"),
+    ("Name of provider:", "Fern Valley Care Limited"),
+    ("Address of centre:", "Sample Street, Carlow"),
+    ("Type of inspection:", "Unannounced"),
+    ("Date of inspection:", "21 August 2025"),
+    ("Centre ID:", "OSV-0000238"),
+    ("Fieldwork ID:", "MON-0047312"),
+)
+
+
+# The standards a thematic inspection is based on, listed after its overall
+# judgment: rows of two cells, as the overall judgment's own row is.
+NATIONAL_STANDARDS: Rows = (
+    ("Theme: Leadership, Governance and Management", None),
+    ("5.1", "The residential service performs its functions as outlined."),
+    ("5.2", "The residential service has effective leadership."),
+)
+
+
+def write_thematic_report_pdf(
+    path: Path,
+    cover: Rows = THEMATIC_COVER,
+    overall_judgment: str | None = "Compliant",
+) -> None:
+    """Writes a small thematic report with the pages its mapping reads.
+
+    The pages copy what a real one prints: the title over three lines, a
+    list of the report's sections that names the overall judgment before the
+    page that gives it, the judgment in a cell beside its description, and
+    the appendix that lists the standards. With None for the overall judgment
+    its cell is empty.
+    """
+    document = pymupdf.open()
+    try:
+        first = document.new_page(width=_WIDTH, height=_HEIGHT)
+        for number, line in enumerate(
+            (
+                "Report of a Restrictive Practice",
+                "Thematic Inspection of a Designated",
+                "Centre for Older People.",
+            )
+        ):
+            first.insert_text((_X, _TOP + 14 * number), line, fontsize=11)
+        # Rows tall enough for the label that runs over two lines.
+        _grid(first, 130, cover, columns=2, column_width=180, row_height=30)
+
+        about = document.new_page(width=_WIDTH, height=_HEIGHT)
+        about.insert_text((_X, _TOP), "About this report", fontsize=11)
+        about.insert_text(
+            (_X, _TOP + 40),
+            "There are three main sections:",
+            fontsize=9,
+        )
+        for number, section in enumerate(
+            (
+                "What the inspector observed and residents said",
+                "Oversight and quality improvement arrangements",
+                "Overall judgment",
+            )
+        ):
+            about.insert_text(
+                (_X + 20, _TOP + 80 + 30 * number), section, fontsize=9
+            )
+
+        judgment = document.new_page(width=_WIDTH, height=_HEIGHT)
+        judgment.insert_text((_X, _TOP), "Overall Judgment", fontsize=11)
+        judgment.insert_textbox(
+            pymupdf.Rect(_X, _TOP + 30, _X + 400, _TOP + 60),
+            "The following section describes the overall judgment made by"
+            " the inspector in respect of how the service performed when"
+            " assessed against the National Standards.",
+            fontsize=9,
+        )
+        _grid(
+            judgment,
+            160,
+            (
+                (
+                    overall_judgment,
+                    "Residents enjoyed a good quality of life.",
+                ),
+            ),
+            columns=2,
+            column_width=180,
+            row_height=36,
+        )
+
+        appendix = document.new_page(width=_WIDTH, height=_HEIGHT)
+        appendix.insert_text((_X, _TOP), "Appendix 1", fontsize=11)
+        _grid(
+            appendix,
+            90,
+            NATIONAL_STANDARDS,
+            columns=2,
+            column_width=220,
+            row_height=24,
+        )
+
+        document.save(str(path))
+    finally:
+        document.close()

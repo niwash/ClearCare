@@ -71,9 +71,10 @@ class CentreSearchTest {
       List.of(ARAS, ELM_HALL, ST_JOSEPHS_CORK, ST_JOSEPHS_DUBLIN, STELLA_MARIS);
 
   // The register migrations, the reports and their views, those that add
-  // centre_phone and the contract prices, the amenities-v2 view, and the
-  // centre locations and their view, as Flyway runs them (ADR-0010). The other
-  // migrations are not needed here.
+  // centre_phone and the contract prices, the amenities-v2 view, the centre
+  // locations and their view, and the registration and its views with the
+  // tables those read, as Flyway runs them (ADR-0010). The other migrations
+  // are not needed here.
   private static final List<String> MIGRATIONS =
       List.of(
           "db/V1__register_entries.sql",
@@ -87,11 +88,16 @@ class CentreSearchTest {
           "db/V16__centre_location.sql",
           "db/V17__centre_point_view.sql",
           "db/V19__centre_image.sql",
-          "db/V20__centre_listing_view.sql");
+          "db/V20__centre_listing_view.sql",
+          "db/V21__register_changes.sql",
+          "db/V22__listed_reports.sql",
+          "db/V23__thematic_reports.sql",
+          "db/V24__centre_events.sql");
 
   // One register snapshot, as the pipeline loads it. fetched_at has a fraction of a second,
   // which the API leaves out. Only Elm Hall has a centre_phone; the others have NULL, as every
-  // row loaded before db/V7 does.
+  // row loaded before db/V7 does. Only Elm Hall has its registration and the Chief Inspector's
+  // note; the others have NULL, as every row loaded before db/V21 does.
   private static final String SNAPSHOT =
       """
       INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
@@ -106,25 +112,65 @@ class CentreSearchTest {
       INSERT INTO clearcare.register_entry (
           source_file_id, centre_id, source_record, centre_name, address, county, eircode,
           maximum_occupancy, provider_name, hiqa_url, extracted_at, extractor_version,
-          centre_phone)
+          centre_phone, registration_number, registration_date, registration_expiry_date,
+          chief_inspector_note)
       VALUES
           (1, '34', 1, 'Elm Hall Nursing Home',
            'Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX', 'Kildare', 'W23P6EX',
            62, 'Springwood Nursing Homes Limited',
            'https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home', now(), 'test',
-           '01 555 0123'),
+           '01 555 0123', 'REG-0030002', '2024-06-01', '2027-05-31',
+           'A notice of proposed decision has issued.'),
           (1, '456', 2, 'Áras Ui Dhomhnaill Nursing Home', 'Main Street, Dublin 9', 'Dublin',
-           NULL, 40, NULL, 'https://www.hiqa.ie/test/456', now(), 'test', NULL),
+           NULL, 40, NULL, 'https://www.hiqa.ie/test/456', now(), 'test', NULL,
+           NULL, NULL, NULL, NULL),
           (1, '9', 3, 'St Joseph''s Nursing Home', 'Main Street, Cork', 'Cork',
-           NULL, NULL, NULL, 'https://www.hiqa.ie/test/9', now(), 'test', NULL),
+           NULL, NULL, NULL, 'https://www.hiqa.ie/test/9', now(), 'test', NULL,
+           NULL, NULL, NULL, NULL),
           (1, '10', 4, 'St Joseph''s Nursing Home', 'Main Street, Dublin 6W, D6W FR07', 'Dublin',
-           'D6WFR07', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test', NULL),
+           'D6WFR07', 30, NULL, 'https://www.hiqa.ie/test/10', now(), 'test', NULL,
+           NULL, NULL, NULL, NULL),
           (1, '77', 5, 'Stella Maris Nursing Home', 'Main Street, Galway', 'Galway',
-           NULL, 25, NULL, 'https://www.hiqa.ie/test/77', now(), 'test', NULL);
+           NULL, 25, NULL, 'https://www.hiqa.ie/test/77', now(), 'test', NULL,
+           NULL, NULL, NULL, NULL);
       """;
 
   private static final String PUBLISH =
       "INSERT INTO clearcare.register_publication (source_file_id, published_at) VALUES (1, now())";
+
+  // Elm Hall's extra conditions in the served snapshot (db/V21), and its entry in the snapshot
+  // of the day before, which is not served: an earlier registration and a condition since
+  // removed.
+  private static final String EXTRA_CONDITIONS =
+      """
+      INSERT INTO clearcare.register_extra_condition (source_file_id, centre_id, number, text)
+      VALUES
+          (1, '34', 5, 'No resident shall be admitted to Room 12.'),
+          (1, '34', 3,
+           'The maximum number of residents is: 62, reducing to 58 when Room 12 closes.');
+
+      INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
+      VALUES (
+          'older_persons_register',
+          'https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv',
+          repeat('e', 64),
+          '2026-10-04 06:10:00+00');
+
+      INSERT INTO clearcare.register_entry (
+          source_file_id, centre_id, source_record, centre_name, address, county,
+          hiqa_url, extracted_at, extractor_version, registration_number, registration_date,
+          registration_expiry_date)
+      VALUES (
+          (SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('e', 64)),
+          '34', 1, 'Elm Hall Nursing Home', 'Celbridge', 'Kildare',
+          'https://www.hiqa.ie/test/34', now(), 'test', 'REG-0030001', '2021-06-01',
+          '2024-05-31');
+
+      INSERT INTO clearcare.register_extra_condition (source_file_id, centre_id, number, text)
+      VALUES (
+          (SELECT source_file_id FROM clearcare.source_file WHERE sha256 = repeat('e', 64)),
+          '34', 4, 'The registered provider shall appoint a person in charge.');
+      """;
 
   // The price lists the pipeline loads (db/V8): one list with three prices, a
   // second version of that same date, and a later list. Centres 77 and 10 have
@@ -266,6 +312,7 @@ class CentreSearchTest {
     }
     execute(SNAPSHOT);
     execute(PUBLISH);
+    execute(EXTRA_CONDITIONS);
     execute(CONTRACT_PRICES);
     execute(REPORTS);
     execute(LOCATIONS);
@@ -696,8 +743,8 @@ class CentreSearchTest {
 
   @Test
   void returnsOneCentreWithTheSnapshotItCameFrom() throws Exception {
-    // Strict: the register fields, centre_phone, contract_price and home_type,
-    // and no others.
+    // Strict: the register fields, centre_phone, the contract price with its home type and
+    // date, the registration, the extra conditions and the Chief Inspector's note, and no others.
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -723,10 +770,45 @@ class CentreSearchTest {
                         "sha256": "c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337"
                       },
                       "contract_price": 1908.00,
-                      "home_type": "public"
+                      "home_type": "public",
+                      "contract_price_date": "2026-09-01",
+                      "registration": {
+                        "registered_from": "2024-06-01",
+                        "registered_until": "2027-05-31"
+                      },
+                      "extra_conditions": [
+                        {
+                          "number": 3,
+                          "text": "The maximum number of residents is: 62, reducing to 58 when Room 12 closes."
+                        },
+                        {"number": 5, "text": "No resident shall be admitted to Room 12."}
+                      ],
+                      "chief_inspector_note": "A notice of proposed decision has issued."
                     }
                     """,
                     JsonCompareMode.STRICT));
+  }
+
+  // Stella Maris's entry is as a snapshot loaded before db/V21 leaves it.
+  @Test
+  void returnsNoRegistrationForAnEntryLoadedBeforeItWasKept() throws Exception {
+    mvc.perform(get("/centres/" + STELLA_MARIS))
+        .andExpect(status().isOk())
+        .andExpect(
+            content()
+                .json(
+                    """
+                    {"registration": null, "extra_conditions": [], "chief_inspector_note": null}
+                    """));
+  }
+
+  // The snapshot of the day before has another registration of Elm Hall and a condition 4.
+  @Test
+  void returnsTheRegistrationAndExtraConditionsOfTheServedSnapshotOnly() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.registration.registered_from").value("2024-06-01"))
+        .andExpect(jsonPath("$.extra_conditions[*].number", is(List.of(3, 5))));
   }
 
   @Test
@@ -759,7 +841,8 @@ class CentreSearchTest {
     mvc.perform(get("/centres/" + ELM_HALL))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.contract_price").value(1908.00))
-        .andExpect(jsonPath("$.home_type").value("public"));
+        .andExpect(jsonPath("$.home_type").value("public"))
+        .andExpect(jsonPath("$.contract_price_date").value("2026-09-01"));
   }
 
   // The view keeps the newest of a centre's prices: 456 has two versions of one
@@ -772,14 +855,15 @@ class CentreSearchTest {
         .andExpect(jsonPath("$.home_type").value("public"));
   }
 
-  // The home type follows the price: 9 is on both lists, and the private list
-  // is the later one.
+  // The home type and the date follow the price: 9 is on both lists, and the
+  // private list is the later one.
   @Test
   void returnsThePriceOfTheLatestList() throws Exception {
     mvc.perform(get("/centres/" + ST_JOSEPHS_CORK))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.contract_price").value(1850.00))
-        .andExpect(jsonPath("$.home_type").value("private"));
+        .andExpect(jsonPath("$.home_type").value("private"))
+        .andExpect(jsonPath("$.contract_price_date").value("2026-09-04"));
   }
 
   @Test
@@ -787,7 +871,8 @@ class CentreSearchTest {
     mvc.perform(get("/centres/" + STELLA_MARIS))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.contract_price").value(nullValue()))
-        .andExpect(jsonPath("$.home_type").value(nullValue()));
+        .andExpect(jsonPath("$.home_type").value(nullValue()))
+        .andExpect(jsonPath("$.contract_price_date").value(nullValue()));
   }
 
   // A value that is not a centre ID at all is not found either, rather than refused.

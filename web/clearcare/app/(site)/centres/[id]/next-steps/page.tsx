@@ -1,7 +1,7 @@
 // app/centres/[id]/next-steps/page.tsx
 // What happened next: for each highlighted regulation, what the inspector found, what the provider
 // said they would do, and when the regulation was next judged (CCARE-207), on a page of its own
-// (CCARE-212). What to look at first and the history table link to a trail by its id, from their own
+// (CCARE-212). What to look at first and the grid of judgments link to a trail by its id, from their own
 // pages, and SectionAccordion opens it on arrival.
 import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";

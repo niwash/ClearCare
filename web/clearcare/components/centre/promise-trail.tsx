@@ -51,7 +51,7 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
 
   return (
     // A card that opens, like a guide's section, but with no shared name, so opening one leaves the
-    // others as they are. The id is what the highlights and the history table link to, from their
+    // others as they are. The id is what the highlights and the grid of judgments link to, from their
     // own pages (CCARE-212); SectionAccordion opens it on arrival. "group/section" keeps Show/Hide to it.
     <details id={trailAnchor(regulation)} className={`group/section ${sectionScrollMargin} ${sectionCardClass}`}>
       <summary className="flex cursor-pointer list-none flex-col gap-3 px-5 py-5 sm:flex-row sm:items-center sm:justify-between md:px-7 [&::-webkit-details-marker]:hidden">
