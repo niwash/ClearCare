@@ -1,12 +1,15 @@
 // app/centres/[id]/page.tsx
-// A home's record: the overview (CCARE-212). The facts and what the home offers, the things a family
-// needs before anything else, and a pointer to what to ask on a visit. What to look at first, what
-// happened next, the inspection history and what to ask have pages of their own (look-first/,
-// next-steps/, inspections/, questions/), with the tabs in the layout.
+// A home's record: the overview (CCARE-212). The extra conditions on its registration when it has
+// any and what changed at it in the last six months (CCARE-235), the facts and what the home offers,
+// the things a family needs before anything else, and a pointer to what to ask on a visit. What to
+// look at first, what happened next, the inspection history and what to ask have pages of their own
+// (look-first/, next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
+import { ExtraConditions } from "@/components/centre/extra-conditions";
+import { RecentChanges } from "@/components/centre/recent-changes";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
@@ -39,12 +42,29 @@ export default async function CentrePage({ params }: CentrePageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports, amenities } = record;
+  const { centre, reports, amenities, events, hiqaCheckedAt } = record;
 
   return (
     <>
       <Band tint="page">
-        <CentreFacts centre={centre} reports={reports} />
+        <div className="flex flex-col gap-6">
+          {/* Empty from an API without them, and for most homes; the box then isn't there. */}
+          <ExtraConditions
+            conditions={centre.extra_conditions ?? []}
+            note={centre.chief_inspector_note ?? null}
+            registerDate={centre.register_snapshot.fetched_at}
+          />
+          {/* Not there when the events couldn't be read, or from an API without them. */}
+          {events && (
+            <RecentChanges
+              events={events}
+              today={new Date().toISOString().slice(0, 10)}
+              currentNote={centre.chief_inspector_note ?? null}
+              timelineHref={centrePath(centre.centre_id, "inspections")}
+            />
+          )}
+          <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} />
+        </div>
       </Band>
 
       {/* On a band of its own, between the facts and the pointer to What to ask (CCARE-212). */}
@@ -125,7 +145,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
 
 // The facts in small cards by what a family asks about them, rather than one long box of rows
 // (CCARE-212): how to reach the home beside the photo, then its size, its cost and its inspections.
-function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
+function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail; reports: CentreReports | null; hiqaCheckedAt: string | null }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
@@ -203,6 +223,8 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
               {centre.contract_price !== null ? (
                 <>
                   {formatWeeklyPrice(centre.contract_price)} per week
+                  {/* Which list the price is from: the HSE publishes a new one a few times a year. */}
+                  {centre.contract_price_date && <Note>HSE price list of {formatDate(centre.contract_price_date)}</Note>}
                   <Note>
                     This does not include extra charges,{" "}
                     <Link href={`/guides/fair-deal?${returnQuery(centre.centre_id)}#what-does-fair-deal-cover`} className="tap-target">
@@ -238,7 +260,7 @@ function CentreFacts({ centre, reports }: { centre: CentreDetail; reports: Centr
               </Note>
               {/* How current the reports are (CCARE-212, from the PR review): when ClearCare last
                   looked on hiqa.ie for a new one. */}
-              {reports.hiqaCheckedAt && <Note>Reports last checked on HIQA: {formatDate(reports.hiqaCheckedAt)}</Note>}
+              {hiqaCheckedAt && <Note>Reports last checked on HIQA: {formatDate(hiqaCheckedAt)}</Note>}
               <Link href={centrePath(centre.centre_id, "inspections")} className="tap-target">
                 See the inspection history
               </Link>

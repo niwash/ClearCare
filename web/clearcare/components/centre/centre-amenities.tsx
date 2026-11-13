@@ -124,7 +124,7 @@ function ListCard({ label, icon, children }: { label: string; icon: ReactNode; c
 }
 
 // The passages for every item at once, in the easier-to-read design only. Closed until opened, the
-// same <details> pattern as the judgements chart (judgements-per-inspection.tsx).
+// same <details> pattern as the timeline's older years (timeline.tsx).
 function Evidence({ lists, reportUrl }: { lists: { label: string; items: AmenityItem[] }[]; reportUrl?: string }) {
   return (
     <details className={`${sectionCardClass} group hidden adult:block print:hidden`}>
