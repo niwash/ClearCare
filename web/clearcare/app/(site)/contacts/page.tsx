@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import type { ReactNode } from "react";
 import { GuidesBand } from "@/components/guides/guide-ending";
-import { fullWidthClass } from "@/components/ui/classes";
+import { fullWidthClass, smallLinkButtonClass } from "@/components/ui/classes";
+import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
-import { Icon } from "@/components/ui/icons";
-import { Chevron, ShowHide } from "@/components/ui/chevron";
+import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
+import { Chevron } from "@/components/ui/chevron";
 import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -34,9 +35,13 @@ type FairDealOffice = {
   hours?: string;
 };
 
-const FAIR_DEAL_CONTACT_URL = "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/contact/";
+// The day the page's contacts were last checked against their sources, shown at the top of the
+// page. Change it whenever they are checked again.
+const LAST_CHECKED = { iso: "2026-11-13", label: "13 November 2026" };
 
-// From the HSE's Fair Deal contact page (FAIR_DEAL_CONTACT_URL), checked 19 Oct 2026. Phone numbers
+const FAIR_DEAL_CONTACT_URL ="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/contact/";
+
+// From the HSE's Fair Deal contact page (FAIR_DEAL_CONTACT_URL), checked 13 Nov 2026. Phone numbers
 // are spaced the same way throughout. Longford and Westmeath's listed address is a Tullamore street
 // with a Tipperary Eircode, so it's left out.
 const FAIR_DEAL_OFFICES: FairDealOffice[] = [
@@ -109,7 +114,8 @@ const FAIR_DEAL_OFFICES: FairDealOffice[] = [
     phones: ["071 932 1337"],
   },
   {
-    area: "Tipperary",
+    // The HSE lists it as Tipperary South; North Tipperary is the Limerick office's.
+    area: "South Tipperary",
     address: ["Community Care Centre", "Western Road, Clonmel", "Co. Tipperary", "E91 HT96"],
     phones: ["052 617 7283"],
   },
@@ -141,6 +147,7 @@ const FAIR_DEAL_CONTACTS: Contact[] = [
     purpose: "Free information on entitlements, including Fair Deal.",
     website: "https://www.citizensinformation.ie",
     phone: "0818 07 4000",
+    hours: "Monday to Friday 9am–8pm",
   },
 ];
 
@@ -148,7 +155,7 @@ const INSPECTION_CONTACTS: Contact[] = [
   {
     name: "HIQA (Health Information and Quality Authority)",
     kind: "regulator",
-    purpose: "Registers and inspects nursing homes. Takes concerns, but can't resolve complaints.",
+    purpose: "Registers and inspects nursing homes, and takes concerns about them.",
     website: "https://www.hiqa.ie",
     phone: "021 240 9646",
     email: "concerns@hiqa.ie",
@@ -156,9 +163,13 @@ const INSPECTION_CONTACTS: Contact[] = [
 ];
 
 // The groups after Fair Deal.
-const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
+const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string; icon: IconName; tint: Tint; contacts: Contact[] }[] = [
   {
+    id: "dementia",
     title: "Dementia",
+    intro: "Helplines, information and local services for people living with dementia and their families.",
+    icon: "talk",
+    tint: "rose",
     contacts: [
       {
         name: "The Alzheimer Society of Ireland",
@@ -167,6 +178,7 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
         website: "https://alzheimer.ie",
         phone: "1800 341 341",
         email: "helpline@alzheimer.ie",
+        hours: "Monday to Friday 10am–5pm, Saturday 10am–4pm",
       },
       {
         name: "Dementia: Understand Together",
@@ -186,7 +198,11 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
     ],
   },
   {
+    id: "support",
     title: "Support and Advocacy",
+    intro: "People who can listen, support you and speak up for the person moving.",
+    icon: "home",
+    tint: "sage",
     contacts: [
       {
         name: "Family Carers Ireland",
@@ -194,6 +210,7 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
         purpose: "Support and a careline for family carers, including during a move into a nursing home.",
         website: "https://familycarers.ie",
         phone: "1800 24 07 24",
+        hours: "Monday to Thursday 9am–5:30pm, Friday 9am–5pm",
       },
       {
         name: "Sage Advocacy",
@@ -209,6 +226,7 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
         purpose: "Support and befriending services for older people.",
         website: "https://alone.ie",
         phone: "0818 222 024",
+        hours: "Every day 8am–8pm",
       },
     ],
   },
@@ -218,27 +236,57 @@ const CONTACT_GROUPS: { title: string; contacts: Contact[] }[] = [
 // long emails and addresses instead of letting them overflow the column.
 const contactLinkClass = "adult:block adult:truncate adult:py-2.5";
 
+type SectionId = "fair-deal" | "concerns" | "offices" | "dementia" | "support";
+
 export default function ContactsPage() {
   return (
     <>
       <ContactsHero />
 
-      <div className="flex max-w-4xl flex-col gap-3">
-        <ContactSection title="Inspections and Concerns">
+      {/* Every organisation in view, none behind a fold: there are nine, and a number that has to be
+          looked for is a call not made. Two sections to a row from desktop width, so the page's whole
+          width is used (CCARE-233). */}
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <ContactSection
+          id="fair-deal"
+          title="Fair Deal"
+          intro="Questions about paying for care, or help with the application form."
+          icon="cost"
+          tint="gold"
+        >
+          <ContactList contacts={FAIR_DEAL_CONTACTS} />
+        </ContactSection>
+
+        <ContactSection
+          id="concerns"
+          title="Inspections and Concerns"
+          intro="Tell the regulator if something at a home worries you."
+          icon="report"
+          tint="blue"
+        >
           <ContactList contacts={INSPECTION_CONTACTS} />
         </ContactSection>
 
-        <ContactSection title="Local Nursing Homes Support Offices">
-          {/* One closed row per office, so a long entry like Cork's seven lines only shows when asked for. */}
-          <ul className="divide-y divide-line rounded-md border border-line">
+        {/* The full width of the page: seventeen offices, three to a row on a wide screen. */}
+        <ContactSection
+          id="offices"
+          title="Local Nursing Homes Support Offices"
+          intro="Your local office handles Fair Deal applications for its area. Select your area for its address and phone numbers."
+          icon="location"
+          tint="sage"
+          className="lg:col-span-2"
+        >
+          {/* One closed row per office, so a long entry like Cork's seven lines only shows when asked
+              for. items-start: an open office grows without stretching the others in its row. */}
+          <ul className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {FAIR_DEAL_OFFICES.map((office) => (
-              <li key={office.area}>
+              <li key={office.area} className="rounded-md border border-line">
                 <details className="group/office">
                   <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-3 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
                     <h3 className="font-semibold">{office.area}</h3>
-                    <Chevron className="size-5 text-ink-muted group-open/office:rotate-90" />
+                    <Chevron className="size-5 shrink-0 text-ink-muted group-open/office:rotate-90" />
                   </summary>
-                  <div className="flex flex-col gap-2 px-3 pb-3 text-sm md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
+                  <div className="flex flex-col gap-2 px-3 pb-3 text-sm">
                     <div className="flex flex-col gap-1">
                       {office.address && (
                         <address className="not-italic text-ink-muted">
@@ -287,20 +335,28 @@ export default function ContactsPage() {
             <a href={FAIR_DEAL_CONTACT_URL} className="text-ink-muted adult:text-primary" target="_blank" rel="noopener noreferrer">
               HSE Fair Deal contacts
             </a>
-            , checked 19 Oct 2026.
+            , checked 13 Nov 2026.
           </p>
         </ContactSection>
 
-        <ContactSection title="Fair Deal">
-          <ContactList contacts={FAIR_DEAL_CONTACTS} />
-        </ContactSection>
-
         {CONTACT_GROUPS.map((group) => (
-          <ContactSection key={group.title} title={group.title}>
+          <ContactSection key={group.id} id={group.id} title={group.title} intro={group.intro} icon={group.icon} tint={group.tint}>
             <ContactList contacts={group.contacts} />
           </ContactSection>
         ))}
       </div>
+
+      {/* When the details were last checked, so a reader knows how far to trust them. An "i" in a
+          light amber box, as the notes in the guides (CCARE-233). */}
+      <aside className="flex max-w-3xl items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold px-4 py-3 text-sm">
+        <Icon name="info" className="size-5 shrink-0 text-on-tint-gold" />
+        <p>
+          <span className="font-semibold">
+            Contacts last checked <time dateTime={LAST_CHECKED.iso}>{LAST_CHECKED.label}</time>.
+          </span>{" "}
+          Phone numbers and opening hours can change. If one doesn&apos;t work, check the organisation&apos;s website.
+        </p>
+      </aside>
 
       {/* So nobody leaves without knowing what to ask. The bottom margin cancels the page's padding,
           so it meets the footer. */}
@@ -341,68 +397,97 @@ function telHref(phone: string) {
   return `tel:${phone.replaceAll(" ", "")}`;
 }
 
-// A section that starts closed, so the page opens as a short list of topics. The same
-// <details> pattern as the guides: no script, "Show" or "Hide" as well as the arrow so it is clear
-// it opens, and the browser's find-in-page still opens it.
-function ContactSection({ title, children }: { title: string; children: ReactNode }) {
+// A section's card, open: an icon in a circle of its own soft colour, its heading, a line saying
+// what the section is for, then its contacts. The id lets a link elsewhere point to the section;
+// scroll-mt keeps the heading clear of the top of the window. Rounded and lifted off the page like
+// the home page's cards; plain in the adult-centred design.
+function ContactSection({
+  id,
+  title,
+  intro,
+  icon,
+  tint,
+  className = "",
+  children,
+}: {
+  id: SectionId;
+  title: string;
+  intro: string;
+  icon: IconName;
+  tint: Tint;
+  className?: string;
+  children: ReactNode;
+}) {
   return (
-    <details className="group rounded-lg border border-line bg-surface hover:border-primary open:border-primary">
-      <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 md:px-6 [&::-webkit-details-marker]:hidden">
-        <h2 className="font-heading text-xl font-semibold md:text-2xl">{title}</h2>
-        <ShowHide />
-      </summary>
-      <div className="flex flex-col gap-3 border-t border-line px-4 py-4 md:px-6">{children}</div>
-    </details>
+    <section
+      id={id}
+      aria-labelledby={`${id}-h`}
+      className={`flex scroll-mt-6 flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-6 adult:rounded-lg adult:shadow-none ${className}`}
+    >
+      <div className="flex items-center gap-4">
+        <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
+        <div className="flex flex-col gap-0.5">
+          <h2 id={`${id}-h`} className="font-heading text-xl font-semibold md:text-2xl">
+            {title}
+          </h2>
+          <p className="text-ink-muted">{intro}</p>
+        </div>
+      </div>
+      {children}
+    </section>
   );
 }
 
-// Inside a ContactSection's box, so the rows are divided but not boxed again.
+// One way to reach an organisation, as a button: 44px tall, so it is easy to tap on a phone. A
+// screen reader hears what it is ("Phone: 1800 700 700") as the icon is not read.
+function ContactButton({ href, icon, label, external, children }: { href: string; icon: IconName; label: string; external?: boolean; children: ReactNode }) {
+  return (
+    <a href={href} className={`${smallLinkButtonClass} max-w-full`} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+      <Icon name={icon} className="size-4 shrink-0 text-primary" />
+      <span className="sr-only">{label}: </span>
+      {/* A long email address is cut short rather than pushed out of its card. */}
+      <span className="truncate">{children}</span>
+    </a>
+  );
+}
+
+// Inside a ContactSection's box, so the rows are divided but not boxed again. Each organisation is
+// its name and what it is for, then a row of buttons: phone first, as most families call. The
+// buttons wrap, so nothing has to line up in columns whatever the card's width.
 function ContactList({ contacts }: { contacts: Contact[] }) {
   return (
-    <ul className="divide-y divide-line">
+    <ul className="divide-y divide-line-soft">
       {contacts.map((contact) => (
-        <li key={contact.name} className="flex flex-col gap-1 py-3 text-sm first:pt-0 md:grid md:grid-cols-[1fr_14rem] md:gap-x-6">
+        <li key={contact.name} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
           <div className="flex flex-col gap-1">
-            <h3 className="flex items-center gap-2 font-semibold">
-              <OrganisationIcon kind={contact.kind} />
+            {/* The icon sits in a column as wide as the section's circle above it (w-12, gap-4), so it
+                is centred under that circle and the name starts where the section's heading does.
+                The words under the name start there too (pl-16). */}
+            <h3 className="flex items-center gap-4 font-semibold">
+              <span className="grid w-12 shrink-0 place-items-center">
+                <OrganisationIcon kind={contact.kind} />
+              </span>
               {contact.name}
             </h3>
-            <p className="text-ink-muted">{contact.purpose}</p>
-            {contact.hours && <p className="text-ink-muted">{contact.hours}</p>}
+            <p className="pl-16 text-sm text-ink-muted">{contact.purpose}</p>
+            {contact.hours && <p className="pl-16 text-sm text-ink-muted">{contact.hours}</p>}
           </div>
-          <dl className="grid grid-cols-[5.5rem_1fr] gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
+          {/* The buttons keep the card's whole width on a phone, where a long email needs it. */}
+          <div className="flex flex-wrap gap-2 sm:pl-16">
             {contact.phone && (
-              <>
-                <dt className="flex items-center gap-1.5">
-                  <Icon name="phone" />
-                  Phone
-                </dt>
-                <dd>
-                  <a className={contactLinkClass} href={telHref(contact.phone)}>{contact.phone}</a>
-                </dd>
-              </>
+              <ContactButton href={telHref(contact.phone)} icon="phone" label="Phone">
+                {contact.phone}
+              </ContactButton>
             )}
             {contact.email && (
-              <>
-                <dt className="flex items-center gap-1.5">
-                  <Icon name="email" />
-                  Email
-                </dt>
-                <dd className="min-w-0 truncate">
-                  <a className={contactLinkClass} href={`mailto:${contact.email}`}>{contact.email}</a>
-                </dd>
-              </>
+              <ContactButton href={`mailto:${contact.email}`} icon="email" label="Email">
+                {contact.email}
+              </ContactButton>
             )}
-            <dt className="flex items-center gap-1.5">
-              <Icon name="website" />
-              Website
-            </dt>
-            <dd className="min-w-0 truncate">
-              <a href={contact.website} className={contactLinkClass} target="_blank" rel="noopener noreferrer">
-                {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
-              </a>
-            </dd>
-          </dl>
+            <ContactButton href={contact.website} icon="website" label="Website" external>
+              {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
+            </ContactButton>
+          </div>
         </li>
       ))}
     </ul>
