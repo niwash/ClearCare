@@ -18,7 +18,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { JudgementIcon } from "@/components/centre/judgement-icon";
 import { StepNumber } from "@/components/guides/step-number";
-import { linkCardClass, secondaryLinkClass, stretchedActionClass } from "@/components/ui/classes";
+import { linkCardClass, stretchedActionClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
 import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
 
@@ -90,13 +90,6 @@ const STEPS: Step[] = [
   },
 ];
 
-// What the steps leave out, so everything in the menu can be reached from here.
-const ELSEWHERE = [
-  { href: "/resources", label: "Guides and resources" },
-  { href: "/contacts", label: "Who to contact" },
-  { href: "/national", label: "National figures" },
-];
-
 export function SiteFeatures() {
   return (
     <section aria-labelledby="help-h" className="flex flex-col gap-8 py-4 md:py-6">
@@ -144,14 +137,6 @@ export function SiteFeatures() {
           </li>
         ))}
       </ol>
-      <div className="flex flex-wrap items-center justify-center gap-3 adult:justify-start">
-        <p className="text-ink-muted">Looking for something else?</p>
-        {ELSEWHERE.map((link) => (
-          <Link key={link.href} href={link.href} className={secondaryLinkClass}>
-            {link.label} <span aria-hidden>→</span>
-          </Link>
-        ))}
-      </div>
     </section>
   );
 }
