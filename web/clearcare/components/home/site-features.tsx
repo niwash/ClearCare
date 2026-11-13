@@ -90,6 +90,21 @@ const STEPS: Step[] = [
   },
 ];
 
+// A link down this page is a plain anchor: Next's Link ignores a click to the address it is already
+// on, so after one jump to #example-h a second click, from further up, would not scroll back down.
+// The browser scrolls to the target on every click.
+function StepLink({ href, className, children }: { href: string; className: string; children: React.ReactNode }) {
+  return href.startsWith("#") ? (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  ) : (
+    <Link href={href} className={className}>
+      {children}
+    </Link>
+  );
+}
+
 export function SiteFeatures() {
   return (
     <section aria-labelledby="help-h" className="flex flex-col gap-8 py-4 md:py-6">
@@ -124,7 +139,7 @@ export function SiteFeatures() {
                 </h3>
               </div>
               <p className="text-ink-muted">{step.text}</p>
-              <Link href={step.href} className={`${stretchedActionClass} mt-auto`}>
+              <StepLink href={step.href} className={`${stretchedActionClass} mt-auto`}>
                 {step.action}
                 <span
                   aria-hidden
@@ -132,7 +147,7 @@ export function SiteFeatures() {
                 >
                   →
                 </span>
-              </Link>
+              </StepLink>
             </div>
           </li>
         ))}
