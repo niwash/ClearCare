@@ -59,7 +59,8 @@ export const GUIDES = [
     photo: "/resources/navigate.jpg",
     // Keep both faces and the phone between them.
     photoFocus: "object-[50%_45%]",
-    status: "draft",
+    // Not marked "draft": its own note says the site is a work in progress, so a label as well
+    // would say it twice (CCARE-233).
   },
 ] as const satisfies readonly Guide[];
 

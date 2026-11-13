@@ -6,6 +6,7 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { ImageViewer } from "@/components/guides/image-viewer";
 import { StepNumber } from "@/components/guides/step-number";
 import { smallLinkButtonClass } from "@/components/ui/classes";
+import { Icon } from "@/components/ui/icons";
 import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
 import { MAX_COMPARED } from "@/lib/compare";
 import { getGuide } from "@/lib/guides";
@@ -160,15 +161,19 @@ export default function UsingClearCareGuide() {
     <>
       <GuideHero guide={guide} />
 
-      {/* The site is still being built, so say so before anyone relies on the steps. */}
-      <aside className="max-w-3xl rounded-lg border border-line border-l-4 border-l-primary bg-surface px-4 py-3 text-sm">
-        <p>
-          <span className="font-semibold">ClearCare is a work in progress.</span> Pages, buttons and menus may move or
-          change, and we’ll update this guide when they do.
-        </p>
-        <p className="mt-1 text-ink-muted">
-          Last updated <time dateTime={LAST_UPDATED.iso}>{LAST_UPDATED.label}</time>
-        </p>
+      {/* The site is still being built, so say so before anyone relies on the steps. An "i" in a light
+          amber box, as the notes in the other guides (CCARE-233). */}
+      <aside className="flex max-w-3xl items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold px-4 py-3 text-sm">
+        <Icon name="info" className="size-5 shrink-0 text-on-tint-gold" />
+        <div>
+          <p>
+            <span className="font-semibold">ClearCare is a work in progress.</span> Pages, buttons and menus may move
+            or change, and we’ll update this guide when they do.
+          </p>
+          <p className="mt-1 text-ink-muted">
+            Last updated <time dateTime={LAST_UPDATED.iso}>{LAST_UPDATED.label}</time>
+          </p>
+        </div>
       </aside>
 
       {/* From desktop width the steps and the flowchart are side by side, the picture staying in view
