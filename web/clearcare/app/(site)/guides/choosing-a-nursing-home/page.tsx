@@ -6,6 +6,7 @@ import { GuideHero } from "@/components/guides/guide-hero";
 import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Placeholder } from "@/components/placeholder/placeholder";
 import { ShowHide } from "@/components/ui/chevron";
+import { Icon } from "@/components/ui/icons";
 import { smallLinkButtonClass } from "@/components/ui/classes";
 import { getGuide, type GuideSlug } from "@/lib/guides";
 
@@ -232,9 +233,13 @@ export default function ChoosingANursingHomeGuide() {
           Before you start browsing homes, it helps to pause and ask yourself a few key questions. This checklist walks
           you through five stages of choosing a home, so you can search with clarity and confidence.
         </p>
-        <p className="text-ink-muted">
-          Open a question for a short answer and where to find out more. Every family&apos;s situation is different, so
-          check anything important with the HSE, your GP or the home.
+        {/* A tip, marked by a light bulb in a light amber box. */}
+        <p className="flex items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold p-4 text-ink">
+          <Icon name="vision" className="mt-0.5 size-5 shrink-0 text-on-tint-gold" />
+          <span>
+            <span className="sr-only">Tip: </span>
+            Every family&apos;s situation is different, so check anything important with the HSE, your GP or the home.
+          </span>
         </p>
       </div>
 
