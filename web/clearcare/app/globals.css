@@ -89,6 +89,11 @@
   /* Judgement markers */
   --not-compliant: var(--danger);
   --substantially: light-dark(#9a5b00, #f0b45a);
+  /* The cells of the judgment grid (judgement-grid.tsx): how much of a judgment's colour shows
+     behind its mark. Set here and nowhere else, as the team may still change it: one strength for
+     the two findings, and one for compliant, whose fill is the ink's so colour only marks problems. */
+  --finding-fill-strength: 14%;
+  --compliant-fill-strength: 5%;
 }
 
 /* Adult-centred colours. */
@@ -297,6 +302,9 @@
   --color-on-danger: var(--on-danger);
   --color-not-compliant: var(--not-compliant);
   --color-substantially: var(--substantially);
+  --color-not-compliant-fill: color-mix(in srgb, var(--not-compliant) var(--finding-fill-strength), transparent);
+  --color-substantially-fill: color-mix(in srgb, var(--substantially) var(--finding-fill-strength), transparent);
+  --color-compliant-fill: color-mix(in srgb, var(--ink) var(--compliant-fill-strength), transparent);
   --color-tint-blue: var(--tint-blue);
   --color-on-tint-blue: var(--on-tint-blue);
   --color-tint-gold: var(--tint-gold);
