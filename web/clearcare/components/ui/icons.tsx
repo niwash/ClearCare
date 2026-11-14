@@ -44,6 +44,9 @@ export const ICON_PATHS = {
   download: "M12 4v11M7 10l5 5 5-5M5 20h14",
   // An "i" in a circle
   info: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01",
+  // An exclamation mark in a circle, the "i" turned over: for a caution, such as the Fair Deal
+  // calculator's estimate
+  caution: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 8v5M12 16h.01",
   // A speech bubble
   talk: "M4 5h16v11H9l-5 4zM8 9.5h8M8 12.5h5",
   // A target
