@@ -281,6 +281,13 @@ describe("text sent with nobody to ask", () => {
   test("is no search when the box was empty", async () => {
     assert.deepEqual(await settled(""), DRAFT);
   });
+
+  // One deadline is shared by every search the server settles. One that never came would keep every
+  // race against it for as long as the server runs (#184).
+  test("is settled against a deadline that has already passed", async () => {
+    const passed = await Promise.race([NOBODY_TO_ASK.deadline.then(() => true), new Promise((resolve) => setTimeout(resolve, 50, false))]);
+    assert.equal(passed, true);
+  });
 });
 
 // What the page's box showed is the search's name, or its place.

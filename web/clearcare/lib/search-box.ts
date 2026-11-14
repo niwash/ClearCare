@@ -117,12 +117,14 @@ interface Lookup {
 }
 
 // On the server there is no Google, so text that is no county and no Eircode ends as a name whether
-// or not a home has it, and the names needn't be asked either.
+// or not a home has it, and the names needn't be asked either. The deadline has already passed:
+// one that never came would be shared by every search the server settles, and each race against it
+// would stay attached to it for good (#184). Too late and "no home has that name" end the same way.
 export const NOBODY_TO_ASK: Omit<Lookup, "searched"> = {
   pick: null,
   hasName: async () => false,
   findFirst: null,
-  deadline: new Promise(() => {}),
+  deadline: Promise.resolve(),
 };
 
 // The draft as Search sends it: a pick still asking Google where it is waited for, and text that
