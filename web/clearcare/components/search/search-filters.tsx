@@ -474,6 +474,11 @@ function BarPanel({
   const closeFromOutside = useEffectEvent((event: PointerEvent) => {
     if (!details.current?.contains(event.target as Node)) onOpenChange(false);
   });
+  // Heard on the document, not the panel: after a click Safari leaves the focus on the page, not on
+  // the checkbox or button clicked, so the key never reaches the panel (#183).
+  const closeOnEscape = useEffectEvent((event: KeyboardEvent) => {
+    if (event.key === "Escape") onOpenChange(false);
+  });
 
   useEffect(() => {
     // Closed with the focus still inside, by Escape or by the button that searches: the focus goes
@@ -487,9 +492,11 @@ function BarPanel({
     const kept = new ResizeObserver(() => panel.current?.scrollIntoView({ block: "nearest" }));
     kept.observe(panel.current!);
     document.addEventListener("pointerdown", closeFromOutside);
+    document.addEventListener("keydown", closeOnEscape);
     return () => {
       kept.disconnect();
       document.removeEventListener("pointerdown", closeFromOutside);
+      document.removeEventListener("keydown", closeOnEscape);
     };
   }, [open]);
 
@@ -500,9 +507,6 @@ function BarPanel({
       name="bar-panel"
       open={open}
       onToggle={(event) => onOpenChange(event.currentTarget.open)}
-      onKeyDown={(event) => {
-        if (event.key === "Escape" && open) onOpenChange(false);
-      }}
       // Tab has moved on. A click is left to closeFromOutside: Safari doesn't move the focus to a
       // button or a checkbox that is clicked, so a click inside the panel has no relatedTarget.
       onBlur={(event) => {
