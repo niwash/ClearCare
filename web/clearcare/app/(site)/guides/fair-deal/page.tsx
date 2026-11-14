@@ -1,4 +1,6 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
+import { actionLinkClass, smallLinkButtonClass } from "@/components/ui/classes";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
@@ -150,6 +152,29 @@ export default function FairDealGuide() {
         <strong>Fair Deal</strong> is the Irish government&apos;s scheme to help pay for long-term nursing home care.{" "}
         <strong>You pay what you can afford. The State (HSE) pays the rest.</strong>
       </p>
+
+      {/* The calculator in view as the guide opens, not only inside How Much Will You Pay? (CCARE-237). */}
+      <section
+        aria-labelledby="calculator-card-h"
+        className="flex max-w-4xl flex-col items-start gap-4 rounded-lg border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between md:p-6"
+      >
+        <div className="flex items-start gap-4">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-tint-blue text-on-tint-blue">
+            <Icon name="cost" className="size-6" />
+          </span>
+          <div className="flex flex-col gap-1">
+            <h2 id="calculator-card-h" className="font-heading text-xl font-semibold tracking-tight md:text-2xl">
+              Fair Deal Calculator
+            </h2>
+            <p className="text-ink-muted">
+              Get a rough weekly figure from income, savings and property. A guide only: the HSE sets the real amount.
+            </p>
+          </div>
+        </div>
+        <Link href="/guides/fair-deal/calculator" className={`${actionLinkClass} shrink-0`}>
+          Estimate your contribution <span aria-hidden>→</span>
+        </Link>
+      </section>
 
       {/* The eight sections as an accordion, closed to begin with and one open at a time: their
           headers are the contents, so the whole guide fits on a screen and each part is one tap
@@ -340,6 +365,17 @@ export default function FairDealGuide() {
             The HSE pays the difference between your contribution and what the nursing home charges (
             <Source href={HSE_APPROVED_HOMES}>HSE, Finding the right nursing home</Source>).
           </Callout>
+
+          {/* The calculator applies the same rates as the worked examples below (CCARE-237). */}
+          <div className="flex flex-col items-start gap-3 rounded-lg bg-band p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p>
+              <strong>Want a rough figure for your own situation?</strong> Our calculator applies these rates to the
+              figures you enter.
+            </p>
+            <Link href="/guides/fair-deal/calculator" className={`${smallLinkButtonClass} shrink-0`}>
+              Open the Fair Deal Calculator <span aria-hidden>→</span>
+            </Link>
+          </div>
 
           <div className="flex flex-col gap-3">
             <h3 className="font-heading text-lg font-semibold md:text-xl">Worked examples</h3>
