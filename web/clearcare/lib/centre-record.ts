@@ -14,7 +14,7 @@ import {
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
-import { getCentreEvents, type CentreEvent } from "@/lib/events";
+import { getCentreEvents, withoutUnpublished, type CentreEvent } from "@/lib/events";
 import { addFindings } from "@/lib/findings";
 
 export type CentreRecord =
@@ -55,7 +55,8 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
     centre: lookup.centre,
     reports: baseReports && addFindings(baseReports, findings),
     amenities,
-    events,
+    // Without the reports HIQA no longer publishes (CCARE-236), as getCentreReports leaves them out.
+    events: events && withoutUnpublished(events, hiqaCheckedAt),
     hiqaCheckedAt,
     findingsRead: findings !== null,
     hasCompliancePlan: (findings ?? []).some(

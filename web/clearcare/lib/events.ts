@@ -252,6 +252,27 @@ export function noListedReport(events: CentreEvent[]) {
   return !events.some((event) => event.kind === "inspection" || event.kind === "thematic_inspection" || event.kind === "unread_report");
 }
 
+// A report HIQA has taken off the home's page: read by ClearCare once, but no longer published, so
+// none of it is shown (CCARE-236). The API gives it no published date. Until the home's page on
+// hiqa.ie has been read (hiqaCheckedAt null) no report has one, so none is taken to be withdrawn.
+function isUnpublished(event: CentreEvent, hiqaCheckedAt: string | null) {
+  return hiqaCheckedAt !== null && (event.kind === "inspection" || event.kind === "thematic_inspection") && event.published_date === null;
+}
+
+// The ids of the regulation inspection reports HIQA no longer publishes.
+export function unpublishedReportIds(events: CentreEvent[], hiqaCheckedAt: string | null): Set<number> {
+  return new Set(
+    events
+      .filter((event): event is InspectionEvent => event.kind === "inspection" && isUnpublished(event, hiqaCheckedAt))
+      .map((event) => event.report_id),
+  );
+}
+
+// The events without the reports HIQA no longer publishes.
+export function withoutUnpublished(events: CentreEvent[], hiqaCheckedAt: string | null): CentreEvent[] {
+  return events.filter((event) => !isUnpublished(event, hiqaCheckedAt));
+}
+
 // What the inspections page says under the timeline of a home with no regulation inspection to show:
 // that HIQA has published no report, that ClearCare hasn't added the reports yet, or nothing, when
 // the timeline already shows the reports HIQA published (a thematic inspection, or a report that

@@ -17,6 +17,8 @@ import {
   priceDifference,
   recentChanges,
   rowsByYear,
+  unpublishedReportIds,
+  withoutUnpublished,
   type CentreEvent,
 } from "../lib/events.ts";
 
@@ -238,6 +240,27 @@ describe("a home with no listed report", () => {
 
   test("is not one with a report HIQA lists that hasn't been read", () => {
     assert.equal(noListedReport([unreadReport]), false);
+  });
+});
+
+describe("reports HIQA no longer publishes (CCARE-236)", () => {
+  const hiqaCheckedAt = "2026-11-13T06:24:29Z";
+  const withdrawn = { ...inspection("2023-06-28", null), report_id: 1660 } as CentreEvent;
+  const withdrawnThematic = { ...thematicInspection, published_date: null } as CentreEvent;
+  const published = inspection("2025-09-25");
+
+  test("are the read reports with no published date", () => {
+    assert.deepEqual(unpublishedReportIds([published, withdrawn, withdrawnThematic], hiqaCheckedAt), new Set([1660]));
+  });
+
+  test("are left off the timeline, thematic ones too, with everything else kept", () => {
+    const events = [published, registration("2025-05-31"), withdrawn, withdrawnThematic, unreadReport];
+    assert.deepEqual(withoutUnpublished(events, hiqaCheckedAt), [published, registration("2025-05-31"), unreadReport]);
+  });
+
+  test("are none until the home's page on hiqa.ie has been read, when no report has a published date", () => {
+    assert.deepEqual(unpublishedReportIds([withdrawn], null), new Set());
+    assert.deepEqual(withoutUnpublished([withdrawn, withdrawnThematic], null), [withdrawn, withdrawnThematic]);
   });
 });
 

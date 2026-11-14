@@ -4,6 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the grid of judgments and the promise trails) is derived, not sent.
 import { cache } from "react";
+import { getCentreEvents, unpublishedReportIds } from "./events";
 import { toJudgement, type CentreFindingsResult, type Finding } from "./findings";
 import { SEVERITY } from "./judgements.ts";
 
@@ -253,15 +254,23 @@ export const getHiqaCheckedAt = cache(async (id: string): Promise<string | null>
   return (await getCentreReportList(id))?.hiqa_checked_at ?? null;
 });
 
+// The reports HIQA has taken off the home's page, which no page shows (CCARE-236). Only the events
+// say which they are; when those can't be read, none is left out.
+const getUnpublishedReportIds = cache(async (id: string): Promise<Set<number>> => {
+  const [events, hiqaCheckedAt] = await Promise.all([getCentreEvents(id), getHiqaCheckedAt(id)]);
+  return events ? unpublishedReportIds(events, hiqaCheckedAt) : new Set();
+});
+
 // null when the home has no reports in ClearCare, or they can't be read right now; the page
 // then points to hiqa.ie.
 export const getCentreReports = cache(async (id: string): Promise<CentreReports | null> => {
   const url = apiUrl();
   if (!url) return null;
 
-  const list = await getCentreReportList(id);
-  // A report without an inspection date can't go on the timeline.
-  const listed = list?.reports.filter((report) => report.inspection_date) ?? [];
+  const [list, unpublished] = await Promise.all([getCentreReportList(id), getUnpublishedReportIds(id)]);
+  // A report without an inspection date can't go on the timeline, and one HIQA no longer
+  // publishes isn't shown.
+  const listed = list?.reports.filter((report) => report.inspection_date && !unpublished.has(report.report_id)) ?? [];
   if (listed.length === 0) return null;
 
   const results = await Promise.all(listed.map((report) => fetchJson<ReportResult>(`${url}/reports/${report.report_id}`)));
@@ -359,9 +368,14 @@ const AMENITIES_VERSION = "amenities-v2";
 export const getCentreAmenities = cache(async (id: string): Promise<CentreAmenities | null> => {
   const url = apiUrl();
   if (!url) return null;
-  const result = await fetchJson<CentreAmenitiesResult>(`${url}/centres/${id}/amenities?version=${AMENITIES_VERSION}`);
+  const [result, unpublished] = await Promise.all([
+    fetchJson<CentreAmenitiesResult>(`${url}/centres/${id}/amenities?version=${AMENITIES_VERSION}`),
+    getUnpublishedReportIds(id),
+  ]);
   const amenities = result?.amenities;
-  return amenities?.extractor_version === AMENITIES_VERSION ? amenities : null;
+  // Nothing read from a report HIQA no longer publishes is shown (CCARE-236).
+  if (!amenities || unpublished.has(amenities.report_id)) return null;
+  return amenities.extractor_version === AMENITIES_VERSION ? amenities : null;
 });
 
 const DAY = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
