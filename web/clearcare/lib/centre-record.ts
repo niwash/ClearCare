@@ -14,7 +14,7 @@ import {
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
-import { getCentreEvents, withoutUnpublished, type CentreEvent } from "@/lib/events";
+import { getCentreEvents, markNoLongerOnline, type CentreEvent } from "@/lib/events";
 import { addFindings } from "@/lib/findings";
 
 export type CentreRecord =
@@ -55,8 +55,9 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
     centre: lookup.centre,
     reports: baseReports && addFindings(baseReports, findings),
     amenities,
-    // Without the reports HIQA no longer publishes (CCARE-236), as getCentreReports leaves them out.
-    events: events && withoutUnpublished(events, hiqaCheckedAt),
+    // A report HIQA no longer has online links to an email asking HIQA for it (CCARE-236), as
+    // getCentreReports leaves out its file.
+    events: events && markNoLongerOnline(events, hiqaCheckedAt, lookup.centre.centre_id),
     hiqaCheckedAt,
     findingsRead: findings !== null,
     hasCompliancePlan: (findings ?? []).some(

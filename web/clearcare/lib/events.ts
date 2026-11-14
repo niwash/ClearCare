@@ -17,6 +17,9 @@ export interface InspectionEvent {
   published_date: ISODate | null; // null when HIQA no longer lists the report
   report_id: number;
   report_url: string;
+  // Not from the API: added by markNoLongerOnline when HIQA no longer has the report online, as an
+  // email asking HIQA for it, which the row links to in place of the file.
+  requestHref?: string;
   compliant: number;
   substantially_compliant: number;
   not_compliant: number;
@@ -30,6 +33,7 @@ export interface ThematicInspectionEvent {
   published_date: ISODate | null;
   overall_judgment: string; // as printed
   report_url: string;
+  requestHref?: string; // as InspectionEvent's
 }
 
 // A report HIQA lists that ClearCare holds no reading of.
@@ -252,25 +256,38 @@ export function noListedReport(events: CentreEvent[]) {
   return !events.some((event) => event.kind === "inspection" || event.kind === "thematic_inspection" || event.kind === "unread_report");
 }
 
-// A report HIQA has taken off the home's page: read by ClearCare once, but no longer published, so
-// none of it is shown (CCARE-236). The API gives it no published date. Until the home's page on
-// hiqa.ie has been read (hiqaCheckedAt null) no report has one, so none is taken to be withdrawn.
-function isUnpublished(event: CentreEvent, hiqaCheckedAt: string | null) {
+// A report HIQA no longer has online (CCARE-236, #198). HIQA keeps three years of reports on a
+// home's page and sends older ones on request, so the report stays on ClearCare, with what was read
+// from it; only its link goes, as hiqa.ie answers 403 for the file. A report read before db/V22 kept
+// HIQA's lists, and no longer listed, has no published date. Until the home's page on hiqa.ie has
+// been read (hiqaCheckedAt null) no report has one, so none is taken to be gone. A report that leaves
+// the list from now on keeps its date: for those the pipeline and the API are to say it is gone.
+function isNoLongerOnline(event: CentreEvent, hiqaCheckedAt: string | null): event is InspectionEvent | ThematicInspectionEvent {
   return hiqaCheckedAt !== null && (event.kind === "inspection" || event.kind === "thematic_inspection") && event.published_date === null;
 }
 
-// The ids of the regulation inspection reports HIQA no longer publishes.
-export function unpublishedReportIds(events: CentreEvent[], hiqaCheckedAt: string | null): Set<number> {
+// The ids of the regulation inspection reports HIQA no longer has online.
+export function noLongerOnlineReportIds(events: CentreEvent[], hiqaCheckedAt: string | null): Set<number> {
   return new Set(
     events
-      .filter((event): event is InspectionEvent => event.kind === "inspection" && isUnpublished(event, hiqaCheckedAt))
+      .filter((event): event is InspectionEvent => event.kind === "inspection" && isNoLongerOnline(event, hiqaCheckedAt))
       .map((event) => event.report_id),
   );
 }
 
-// The events without the reports HIQA no longer publishes.
-export function withoutUnpublished(events: CentreEvent[], hiqaCheckedAt: string | null): CentreEvent[] {
-  return events.filter((event) => !isUnpublished(event, hiqaCheckedAt));
+// The events, with each report HIQA no longer has online given the email that asks HIQA for it.
+export function markNoLongerOnline(events: CentreEvent[], hiqaCheckedAt: string | null, centreId: string): CentreEvent[] {
+  return events.map((event) => (isNoLongerOnline(event, hiqaCheckedAt) ? { ...event, requestHref: reportRequestHref(centreId, event.date) } : event));
+}
+
+const LONG_DATE = new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+
+// An email to HIQA asking for an old report, as the home's page on hiqa.ie offers it ("Request an
+// inspection report here"), with what HIQA asks to be told: the centre ID and the inspection's year.
+export function reportRequestHref(centreId: string, date: ISODate | null): string {
+  const inspection = date ? `\nInspection year: ${date.slice(0, 4)} (inspected ${LONG_DATE.format(new Date(date))})` : "";
+  const body = `Please send me this inspection report.\n\nCentre ID: ${centreId}${inspection}`;
+  return `mailto:info@hiqa.ie?subject=${encodeURIComponent("Request for inspection report")}&body=${encodeURIComponent(body)}`;
 }
 
 // What the inspections page says under the timeline of a home with no regulation inspection to show:

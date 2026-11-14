@@ -206,11 +206,18 @@ export function excerpt(paragraphs: string[], limit = 240): string {
 }
 
 const pages = (first: number, last: number) => (first === last ? `p. ${first}` : `pp. ${first}–${last}`);
-// The report opens at the page in most browsers' PDF viewers.
-const pageUrl = (url: string, page: number) => `${url}#page=${page}`;
+// The report opens at the page in most browsers' PDF viewers. None without a link to the report.
+const pageUrl = (url: string | null, page: number) => (url ? `${url}#page=${page}` : undefined);
 
-function source(document: SourceRef["document"], url: string, first: number, last: number, context?: string): SourceRef {
-  return { document, page: first, ...(last > first && { lastPage: last }), ...(context && { context }), url: pageUrl(url, first) };
+function source(document: SourceRef["document"], url: string | null, first: number, last: number, context?: string): SourceRef {
+  return { document, page: first, ...(last > first && { lastPage: last }), ...(context && { context }), ...(url && { url: pageUrl(url, first) }) };
+}
+
+// A report's link, or none when the report is on the timeline without one because HIQA no longer
+// has it online (CCARE-236): the passage is still quoted, but hiqa.ie answers 403 for the file.
+function linkTo(reportId: number | null, url: string | null, inspections: Inspection[]) {
+  const inspection = inspections.find((candidate) => candidate.id === String(reportId));
+  return inspection && !inspection.reportUrl ? null : url;
 }
 
 // --- Highlights and trails -------------------------------------------------------------------
@@ -261,11 +268,11 @@ export function addFindings(reports: CentreReports, findings: Finding[] | null):
       // The trail follows the finding before, so it shows what was promised and what the latest
       // inspection then found.
       chosen = {
-        highlight: inspectorHighlight("repeated", latest, regulation, run.map((inspection) => inspection.date)),
+        highlight: inspectorHighlight("repeated", latest, regulation, run.map((inspection) => inspection.date), inspections),
         traced: atInspection(run.at(-2)!) ?? latest,
       };
     } else if (latestJudged && String(newest.report_id) === latestJudged.id && toJudgement(newest.judgment) === "not-compliant") {
-      chosen = { highlight: inspectorHighlight("not-compliant-latest", newest, regulation, [latestJudged.date]), traced: newest };
+      chosen = { highlight: inspectorHighlight("not-compliant-latest", newest, regulation, [latestJudged.date], inspections), traced: newest };
     } else {
       chosen = promiseNotRejudged(list, regulation, inspections);
     }
@@ -289,11 +296,12 @@ export function addFindings(reports: CentreReports, findings: Finding[] | null):
   return { ...reports, highlights, trails };
 }
 
-function inspectorHighlight(rule: Highlight["rule"], finding: Finding, regulation: Regulation, dates: ISODate[]): Highlight {
+function inspectorHighlight(rule: Highlight["rule"], finding: Finding, regulation: Regulation, dates: ISODate[], inspections: Inspection[]): Highlight {
   const judgement = toJudgement(finding.judgment)!;
+  const url = linkTo(finding.report_id, finding.report_url, inspections);
   const text = finding.inspector && passage(finding.inspector.text, finding.regulation, finding.title, "inspector");
   if (!finding.inspector || !text?.length) {
-    return { rule, judgement, dates, regulation, text: "Read what the inspector wrote in the report.", sources: [], reportUrl: finding.report_url };
+    return { rule, judgement, dates, regulation, text: "Read what the inspector wrote in the report.", sources: [], ...(url && { reportUrl: url }) };
   }
   const { first_page, last_page } = finding.inspector;
   return {
@@ -304,7 +312,7 @@ function inspectorHighlight(rule: Highlight["rule"], finding: Finding, regulatio
     text: excerpt(text),
     passage: text,
     sources: [`Inspector · report ${pages(first_page, last_page)}`],
-    reportUrl: pageUrl(finding.report_url, first_page),
+    ...(url && { reportUrl: pageUrl(url, first_page) }),
   };
 }
 
@@ -323,7 +331,9 @@ function promiseNotRejudged(list: Finding[], regulation: Regulation, inspections
       regulation,
       text: `“${commitment(deadline.text, finding.regulation, finding.title)}”`,
       sources: [`Provider · plan ${pages(deadline.page, deadline.last_page)}`],
-      reportUrl: pageUrl(finding.report_url, deadline.page),
+      ...(linkTo(finding.report_id, finding.report_url, inspections) && {
+        reportUrl: pageUrl(finding.report_url, deadline.page),
+      }),
     };
     return { highlight, traced: finding };
   }
@@ -335,13 +345,14 @@ export function toTrail(finding: Finding, regulation: Regulation, inspections: I
   const quotes = finding.inspector && passage(finding.inspector.text, finding.regulation, finding.title, "inspector");
   if (!finding.inspector || !quotes?.length) return null;
 
+  const url = linkTo(finding.report_id, finding.report_url, inspections);
   const risks = [...new Set(finding.compliance_items.map((item) => item.risk_rating?.trim().toLowerCase()).filter(Boolean))];
   const datesToComply = [...new Set(finding.compliance_items.map((item) => item.date_to_comply).filter((date) => date !== null))];
   const promises = (finding.stated_deadlines ?? []).map((deadline, index) => ({
     label: String.fromCharCode(65 + index), // "A", "B"…
     quote: commitment(deadline.text, finding.regulation, finding.title),
     due: deadline.stated_deadline_text,
-    source: source("plan", finding.report_url, deadline.page, deadline.last_page),
+    source: source("plan", url, deadline.page, deadline.last_page),
   }));
   // The whole response stands in when no commitment in it states a deadline.
   const responseText =
@@ -356,13 +367,13 @@ export function toTrail(finding: Finding, regulation: Regulation, inspections: I
       judgement: toJudgement(finding.judgment)!,
       ...(risks.length > 0 && { risk: risks.join(" and ") }),
       quotes,
-      source: source("report", finding.report_url, finding.inspector.first_page, finding.inspector.last_page, "Inspector"),
+      source: source("report", url, finding.inspector.first_page, finding.inspector.last_page, "Inspector"),
     },
     promises,
     ...(responseText.length > 0 && {
       response: {
         quotes: responseText,
-        source: source("plan", finding.report_url, finding.provider_response!.first_page, finding.provider_response!.last_page, "Provider"),
+        source: source("plan", url, finding.provider_response!.first_page, finding.provider_response!.last_page, "Provider"),
       },
     }),
     ...(datesToComply.length > 0 && { datesToComply }),
@@ -388,7 +399,10 @@ function followUp(finding: Finding, inspections: Inspection[]): Pick<PromiseTrai
               quotes,
               source: source(
                 "report",
-                reAssessment.report_url ?? finding.report_url,
+                // Each link is checked against its own report, the finding's when it stands in.
+                reAssessment.report_url
+                  ? linkTo(reAssessment.report_id, reAssessment.report_url, inspections)
+                  : linkTo(finding.report_id, finding.report_url, inspections),
                 reAssessment.inspector.first_page,
                 reAssessment.inspector.last_page,
                 "Inspector",
