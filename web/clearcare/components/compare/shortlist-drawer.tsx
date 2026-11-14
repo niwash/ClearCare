@@ -34,7 +34,10 @@ export function ShortlistDrawer({ currentId }: { currentId?: string }) {
           aria-haspopup="dialog"
           className="flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border-2 border-primary bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-muted adult:rounded-md"
         >
-          Your shortlist
+          {/* Shorter on phones, so that on the search page the List / Map switch still fits beside
+              it, clear of the Menu button (#182). */}
+          <span className="sm:hidden">Shortlist</span>
+          <span className="max-sm:hidden">Your shortlist</span>
           {/* The count in a filled circle, as a basket shows its items; read out as "2 of 3". */}
           <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary tabular-nums">
             {homes === null ? "–" : count}
