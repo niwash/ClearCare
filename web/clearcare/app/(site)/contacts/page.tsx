@@ -232,9 +232,10 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
   },
 ];
 
-// Each contact link is its own 44px row in the adult-centred design (WCAG 2.5.5). truncate shortens
-// long emails and addresses instead of letting them overflow the column.
-const contactLinkClass = "adult:block adult:truncate adult:py-2.5";
+// Each contact link is its own 44px row in the adult-centred design (WCAG 2.5.5). A long email
+// wraps onto a second line rather than overflowing the column: cut short, it couldn't be read
+// or copied down.
+const contactLinkClass = "wrap-anywhere adult:block adult:py-2.5";
 
 type SectionId = "fair-deal" | "concerns" | "offices" | "dementia" | "support";
 
@@ -317,9 +318,11 @@ export default function ContactsPage() {
                             <Icon name="email" />
                             Email
                           </dt>
-                          <dd className="min-w-0 truncate">
+                          <dd className="min-w-0">
                             <a className={contactLinkClass} href={`mailto:${office.email}`}>
-                              {office.email}
+                              {/* Where a narrow column breaks it first: "LPF.RespiteLW" / "@hse.ie". */}
+                              {office.email.split("@")[0]}
+                              <wbr />@{office.email.split("@").slice(1).join("@")}
                             </a>
                           </dd>
                         </>
@@ -445,8 +448,8 @@ function ContactButton({ href, icon, label, external, children }: { href: string
     <a href={href} className={`${smallLinkButtonClass} max-w-full`} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
       <Icon name={icon} className="size-4 shrink-0 text-primary" />
       <span className="sr-only">{label}: </span>
-      {/* A long email address is cut short rather than pushed out of its card. */}
-      <span className="truncate">{children}</span>
+      {/* A long email address wraps rather than being pushed out of its card or cut short. */}
+      <span className="min-w-0 wrap-anywhere">{children}</span>
     </a>
   );
 }
