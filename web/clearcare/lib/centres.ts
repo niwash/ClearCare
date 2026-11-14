@@ -4,6 +4,7 @@
 // Anything the page can work out itself (latest report, "same"/"worse" labels, links
 // between the grid of judgments and the promise trails) is derived, not sent.
 import { cache } from "react";
+import { getCentreEvents, noLongerOnlineReportIds } from "./events";
 import { toJudgement, type CentreFindingsResult, type Finding } from "./findings";
 import { SEVERITY } from "./judgements.ts";
 
@@ -35,7 +36,9 @@ export interface Inspection {
   date: ISODate;
   type: string; // as HIQA labels it: "Unannounced", "Announced", "Thematic"…
   publishedDate?: ISODate; // the API doesn't serve it yet
-  reportUrl: string;
+  // HIQA's file. Left out when HIQA no longer has the report online (CCARE-236): what was read from
+  // it is still shown, but hiqa.ie answers 403 for the file. Every link to the report follows this.
+  reportUrl?: string;
   // Thematic inspections are judged against the National Standards, so they have no
   // regulation judgements. The summary is shown in their column instead.
   regulationJudgements: boolean;
@@ -253,13 +256,20 @@ export const getHiqaCheckedAt = cache(async (id: string): Promise<string | null>
   return (await getCentreReportList(id))?.hiqa_checked_at ?? null;
 });
 
+// The reports HIQA no longer has online, which keep everything but their link (CCARE-236). Only the
+// events say which they are; when those can't be read, every report keeps its link.
+const getNoLongerOnlineReportIds = cache(async (id: string): Promise<Set<number>> => {
+  const [events, hiqaCheckedAt] = await Promise.all([getCentreEvents(id), getHiqaCheckedAt(id)]);
+  return events ? noLongerOnlineReportIds(events, hiqaCheckedAt) : new Set();
+});
+
 // null when the home has no reports in ClearCare, or they can't be read right now; the page
 // then points to hiqa.ie.
 export const getCentreReports = cache(async (id: string): Promise<CentreReports | null> => {
   const url = apiUrl();
   if (!url) return null;
 
-  const list = await getCentreReportList(id);
+  const [list, noLongerOnline] = await Promise.all([getCentreReportList(id), getNoLongerOnlineReportIds(id)]);
   // A report without an inspection date can't go on the timeline.
   const listed = list?.reports.filter((report) => report.inspection_date) ?? [];
   if (listed.length === 0) return null;
@@ -276,7 +286,7 @@ export const getCentreReports = cache(async (id: string): Promise<CentreReports 
     id: String(report.report_id),
     date: report.inspection_date!,
     type: report.inspection_type ?? "Inspection",
-    reportUrl: report.report_file.url,
+    ...(!noLongerOnline.has(report.report_id) && { reportUrl: report.report_file.url }),
     regulationJudgements: report.regulations.length > 0,
   }));
 

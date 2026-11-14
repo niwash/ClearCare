@@ -247,6 +247,42 @@ test("a regulation found at the last inspections in a row traces the finding bef
   assert.equal(trail.followUp.between, undefined);
 });
 
+test("a report HIQA no longer has online keeps its passages but no link to it (CCARE-236)", () => {
+  const base = reports([[28, "Fire precautions", { 2: "substantially-compliant", 3: "not-compliant" }]]);
+  // getCentreReports leaves out the link of a report no longer online: here the one of 2024 and,
+  // for the follow-up, the latest.
+  const offline = (ids) => ({ ...base, inspections: base.inspections.map(({ reportUrl, ...rest }) => (ids.includes(rest.id) ? rest : { ...rest, reportUrl })) });
+  const earlier = (followUpUrl) =>
+    finding({
+      report_id: 2,
+      judgment: "Substantially compliant",
+      re_assessment: {
+        status: "re-assessed",
+        report_id: 3,
+        inspection_date: "2025-06-25",
+        report_url: followUpUrl,
+        judgment: "Not Compliant",
+        reports_between: 0,
+        inspector: { text: "Regulation 28: Fire precautions\nStill not cleaned.\nJudgment: Not compliant", first_page: 9, last_page: 9 },
+      },
+    });
+
+  // The 2024 report is gone: its passage is quoted with no link, and the 2025 one keeps its own.
+  const [trail] = addFindings(offline(["2"]), [finding({}), earlier(URL_(3))]).trails;
+  assert.deepEqual(trail.finding.quotes, ["The kitchen ductwork had not been cleaned."]);
+  assert.equal(trail.finding.source.url, undefined);
+  assert.equal(trail.finding.source.page, 11, "still says where in the report");
+  assert.equal(trail.followUp.source.url, `${URL_(3)}#page=9`);
+  // Where the follow-up has no link of its own and the finding's stands in, that one is gone too.
+  assert.equal(addFindings(offline(["2"]), [finding({}), earlier(null)]).trails[0].followUp.source.url, undefined);
+
+  // The 2025 report is gone: the highlight and the follow-up lose their links, the 2024 passage keeps its.
+  const latestOffline = addFindings(offline(["3"]), [finding({}), earlier(URL_(3))]);
+  assert.equal(latestOffline.highlights[0].reportUrl, undefined);
+  assert.equal(latestOffline.trails[0].followUp.source.url, undefined);
+  assert.equal(latestOffline.trails[0].finding.source.url, `${URL_(2)}#page=11`);
+});
+
 test("a promise whose deadline passed with no later judgment is flagged", () => {
   const base = reports([[28, "Fire precautions", { 1: "substantially-compliant" }]]);
   const promised = finding({

@@ -358,11 +358,12 @@ function ReportRow({ event, children }: { event: ReportEvent; children: ReactNod
 type ReportEvent = InspectionEvent | ThematicInspectionEvent | UnreadReportEvent;
 
 // "Report · 13 May 2026": the report itself, and the day HIQA published it. No page of ours shows
-// one inspection's findings on their own, so the link goes to HIQA's file. Reports read in October
-// 2026 that HIQA has since taken off its pages have no published date. The rows' links would all
+// one inspection's findings on their own, so the link goes to HIQA's file. The rows' links would all
 // read the same to a screen reader, which hears "HIQA's report of the inspection on 15 Jan 2026,
-// published 13 May 2026".
+// published 13 May 2026". A report HIQA no longer has online links to an email asking HIQA for it
+// instead (CCARE-236).
 function ReportLink({ event }: { event: ReportEvent }) {
+  if (event.kind !== "unread_report" && event.requestHref) return <ReportRequest event={event} href={event.requestHref} />;
   return (
     // A link can't be followed on paper, where this is the published date, if it has one.
     <a href={event.report_url} className={`shrink-0 ${rowLinkClass} ${event.published_date ? "" : "print:hidden"}`}>
@@ -387,6 +388,25 @@ function ReportLink({ event }: { event: ReportEvent }) {
         </span>
       </span>
     </a>
+  );
+}
+
+// HIQA keeps three years of reports online and sends older ones on request, by email, as the home's
+// page on hiqa.ie says. What was read from the report stays in the row; this says where the report
+// itself can still be had. On paper, where the email can't be opened, it says only that.
+function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspectionEvent; href: string }) {
+  return (
+    <p className={`shrink-0 ${mutedClass} lg:text-right`}>
+      No longer on hiqa.ie
+      <span className="print:hidden">
+        {" "}
+        <span aria-hidden>·</span>{" "}
+        <a href={href} className={rowLinkClass}>
+          Ask HIQA for it
+          <span className="sr-only">{event.date ? `: the report of the inspection on ${formatDate(event.date)}` : ": the report"}</span>
+        </a>
+      </span>
+    </p>
   );
 }
 

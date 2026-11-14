@@ -17,6 +17,9 @@ import {
   priceDifference,
   recentChanges,
   rowsByYear,
+  markNoLongerOnline,
+  noLongerOnlineReportIds,
+  reportRequestHref,
   type CentreEvent,
 } from "../lib/events.ts";
 
@@ -238,6 +241,40 @@ describe("a home with no listed report", () => {
 
   test("is not one with a report HIQA lists that hasn't been read", () => {
     assert.equal(noListedReport([unreadReport]), false);
+  });
+});
+
+describe("reports HIQA no longer has online (CCARE-236)", () => {
+  const hiqaCheckedAt = "2026-11-13T06:24:29Z";
+  const gone = { ...inspection("2023-06-28", null), report_id: 1660 } as CentreEvent;
+  const goneThematic = { ...thematicInspection, published_date: null } as CentreEvent;
+  const published = inspection("2025-09-25");
+
+  test("are the read reports with no published date", () => {
+    assert.deepEqual(noLongerOnlineReportIds([published, gone, goneThematic], hiqaCheckedAt), new Set([1660]));
+  });
+
+  test("stay on the timeline, thematic ones too, each with an email asking HIQA for it", () => {
+    const events = [published, registration("2025-05-31"), gone, goneThematic, unreadReport];
+    const marked = markNoLongerOnline(events, hiqaCheckedAt, "591");
+    assert.equal(marked.length, events.length);
+    assert.deepEqual(marked[2], { ...gone, requestHref: reportRequestHref("591", "2023-06-28") });
+    assert.deepEqual(marked[3], { ...goneThematic, requestHref: reportRequestHref("591", thematicInspection.date) });
+    assert.deepEqual([marked[0], marked[1], marked[4]], [published, registration("2025-05-31"), unreadReport]);
+  });
+
+  test("are none until the home's page on hiqa.ie has been read, when no report has a published date", () => {
+    assert.deepEqual(noLongerOnlineReportIds([gone], null), new Set());
+    assert.deepEqual(markNoLongerOnline([gone, goneThematic], null, "591"), [gone, goneThematic]);
+  });
+
+  test("are asked for as HIQA asks: by email, with the centre ID and the inspection's year", () => {
+    const href = reportRequestHref("591", "2023-06-28");
+    assert.ok(href.startsWith("mailto:info@hiqa.ie?subject=Request%20for%20inspection%20report&body="));
+    const body = decodeURIComponent(href.split("&body=")[1]);
+    assert.match(body, /Centre ID: 591/);
+    assert.match(body, /Inspection year: 2023 \(inspected 28 June 2023\)/);
+    assert.doesNotMatch(decodeURIComponent(reportRequestHref("591", null)), /Inspection year/);
   });
 });
 

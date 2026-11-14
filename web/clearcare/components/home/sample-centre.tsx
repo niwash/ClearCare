@@ -76,9 +76,14 @@ export async function SampleCentre({ total }: { total: number | null }) {
           <div className="flex flex-col gap-3">
             <p>
               Latest inspection (
-              <a href={latest.reportUrl}>
-                {latest.type.toLowerCase()}, {formatDate(latest.date)}
-              </a>
+              {/* No link to a report HIQA no longer has online (CCARE-236). */}
+              {latest.reportUrl ? (
+                <a href={latest.reportUrl}>
+                  {latest.type.toLowerCase()}, {formatDate(latest.date)}
+                </a>
+              ) : (
+                `${latest.type.toLowerCase()}, ${formatDate(latest.date)}`
+              )}
               ): {assessed} {assessed === 1 ? "regulation" : "regulations"} assessed
             </p>
             {/* Each count large, over its judgement's mark and name. */}
