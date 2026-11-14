@@ -223,9 +223,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
         <ListBesideMap>
           <div className="flex min-w-0 flex-col gap-4 xl:col-start-1">
             {/* Where the floating Menu button shows (phones and tablets, standard design), the row
-                keeps clear of the bottom-right corner it sits in, as the footer does: on a short
-                phone the button covered "Map" in the switch when the page first loaded (#182). */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pr-20 lg:pr-0 adult:pr-0">
+                keeps clear of the bottom-right corner it sits in: on a short phone the button
+                covered "Map" in the switch when the page first loaded (#182). 4rem is the button's
+                width less the page's gutter, and a little more; with the shortlist's shorter label
+                on phones, both still fit on one row from 360px, so the switch stays in view. */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pr-16 lg:pr-0 adult:pr-0">
               <ShortlistDrawer />
               <div className="flex flex-wrap items-center gap-3">
                 {/* Not beside the map: both are in view there, whatever view the address has. */}
