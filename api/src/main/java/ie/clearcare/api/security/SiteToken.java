@@ -43,6 +43,14 @@ public class SiteToken {
    * for a request with the wrong token. For a route that is about no account.
    */
   public void requireSite(String token) {
+    requireCaller(token);
+  }
+
+  /**
+   * As requireSite: for a route that names its account in the request itself rather than in a
+   * header, which is the unsubscribe link of an alert email (ADR-0034).
+   */
+  public void requireCaller(String token) {
     if (expected.isEmpty()) {
       throw new ResponseStatusException(
           HttpStatus.SERVICE_UNAVAILABLE, "This API is not configured for the site's requests.");

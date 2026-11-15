@@ -1036,8 +1036,296 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
 
+  /alerts:
+    get:
+      operationId: listAlerts
+      summary: The signed-in visitor's alert subscriptions
+      description: |
+        What this account asked to be told about, oldest first, each row shown
+        with the name of the home or county it is about rather than with its
+        stored context. A stopped subscription is not listed; subscribing again
+        reactivates the row it had.
+
+        The account is named by the site's server with a shared token, as the
+        saved search is (ADR-0020, ADR-0034). A request without that token is
+        refused with 401, and these paths answer 503 while no token is
+        configured.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+      responses:
+        "200":
+          description: The account's live subscriptions.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscriptions"
+              example:
+                subscriptions:
+                  - id: 41
+                    scope: FACILITY
+                    label: Beechlawn Nursing Home
+                    context: {centre_id: "187"}
+                    active: true
+                    created_at: "2026-11-12T08:00:00Z"
+                  - id: 42
+                    scope: COUNTY
+                    label: Dublin
+                    context: {county_id: 11}
+                    active: true
+                    created_at: "2026-11-12T08:01:00Z"
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+    delete:
+      operationId: stopAllAlerts
+      summary: Stop every alert for this account
+      description: |
+        Deactivates all of the account's live subscriptions. Rows are kept, so
+        the notifications under them stay readable and subscribing again
+        reactivates the row it had.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+      responses:
+        "204":
+          description: Every subscription is stopped.
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/{id}:
+    delete:
+      operationId: stopAlert
+      summary: Stop one alert
+      description: |
+        Deactivates one of the account's own subscriptions. An id that belongs to
+        someone else is answered as if it did not exist, so the route says
+        nothing about other accounts.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+        - name: id
+          in: path
+          required: true
+          description: The subscription's id, as GET /alerts returned it.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "204":
+          description: The subscription is stopped.
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: This account has no such subscription.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/facility/{centre_id}:
+    put:
+      operationId: subscribeToFacility
+      summary: Be told about one home
+      description: |
+        Subscribes the account to the home's next inspection report. Asking again
+        is the same subscription and answers with the same row, reactivated if it
+        had been stopped.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+        - name: centre_id
+          in: path
+          required: true
+          description: The centre's id in the register.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The subscription, as stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscription"
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: There is no centre with that id.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/county/{county}:
+    put:
+      operationId: subscribeToCounty
+      summary: Be told about one county
+      description: |
+        Subscribes the account to reports for the homes in a county. The county is
+        named as the site names it; the API resolves it to the id the subscription
+        stores, so a later spelling change does not orphan the row.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+        - name: county
+          in: path
+          required: true
+          description: The county's name, as clearcare.county holds it.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The subscription, as stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscription"
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "404":
+          description: There is no county by that name.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/all:
+    put:
+      operationId: subscribeToEverything
+      summary: Be told about every home
+      description: |
+        Subscribes the account to every report the pipeline brings in. Its stored
+        context is an empty document, because it names nothing.
+      parameters:
+        - $ref: "#/components/parameters/Account"
+        - $ref: "#/components/parameters/SiteToken"
+      responses:
+        "200":
+          description: The subscription, as stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscription"
+        "401":
+          description: No subject, or a token that is not the site's.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/unsubscribe:
+    post:
+      operationId: unsubscribe
+      summary: Stop every alert from a link in an email
+      description: |
+        The route an alert email links to, so it works without a session. The
+        body carries the token the pipeline signed: the account's subject, a dot,
+        and an HMAC of that subject under a secret the API and the pipeline share.
+        A token that is not this deployment's is refused with 401.
+
+        The site posts here rather than linking to a GET, because a mail scanner
+        that follows links would otherwise stop people's alerts.
+      parameters:
+        - $ref: "#/components/parameters/SiteToken"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Unsubscribe"
+            example:
+              token: "1f2e3d4c-0000-4000-8000-000000000001.9c8a..."
+      responses:
+        "204":
+          description: Every subscription for that account is stopped.
+        "401":
+          description: A token that is not one this site signed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+
 components:
   parameters:
+    Account:
+      name: X-ClearCare-Sub
+      in: header
+      required: true
+      description: The account's Cognito subject, sent by the site's server only.
+      schema:
+        type: string
+        maxLength: 128
+
+    SiteToken:
+      name: X-ClearCare-Token
+      in: header
+      required: true
+      description: The token the site's server and the API share.
+      schema:
+        type: string
+
     SearchName:
       name: name
       in: query
@@ -1149,6 +1437,55 @@ components:
       example: "53.35,-6.26"
 
   schemas:
+    AlertSubscription:
+      type: object
+      description: One thing an account asked to be told about, with what it is about.
+      required: [id, scope, label, context, active, created_at]
+      properties:
+        id:
+          type: integer
+          description: The subscription's id, which DELETE /alerts/{id} takes.
+        scope:
+          type: string
+          enum: [FACILITY, COUNTY, ALL]
+          description: Which kind of subscription this is.
+        label:
+          type: string
+          description: >-
+            The home's current name, the county's name, or the package's own name
+            for everything. Read from the register and clearcare.county.
+        context:
+          type: object
+          additionalProperties: true
+          description: >-
+            What the subscription names, as db/V26 stores it: centre_id for a
+            home, county_id for a county, nothing for everything.
+        active:
+          type: boolean
+          description: True while the account is still subscribed.
+        created_at:
+          type: string
+          format: date-time
+          description: When the subscription was first made.
+    AlertSubscriptions:
+      type: object
+      required: [subscriptions]
+      properties:
+        subscriptions:
+          type: array
+          description: The account's live subscriptions, oldest first.
+          items:
+            $ref: "#/components/schemas/AlertSubscription"
+    Unsubscribe:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          maxLength: 512
+          description: >-
+            The account's subject, a dot, and an HMAC of that subject, as the
+            alert email carried it.
     CentreSearchResult:
       type: object
       required: [centres, page, page_size, total, register_snapshot, facets, sort]
