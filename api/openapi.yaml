@@ -1182,7 +1182,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-        "404":
+        "400":
           description: There is no centre with that id.
           content:
             application/problem+json:
@@ -1225,7 +1225,7 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
-        "404":
+        "400":
           description: There is no county by that name.
           content:
             application/problem+json:

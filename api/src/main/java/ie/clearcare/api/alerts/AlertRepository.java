@@ -69,7 +69,9 @@ class AlertRepository {
           + """
            JOIN clearcare.users u ON u.id = s.user_id
            WHERE u.cognito_sub = :sub AND s.is_active
-           ORDER BY s.created_at, s.id
+           -- The id is the order they were made in: it comes from a sequence, so it is stable
+           -- even when two subscriptions carry the same timestamp to the microsecond.
+           ORDER BY s.id
            """;
 
   private static final String ONE = SELECT + " WHERE s.id = :id";

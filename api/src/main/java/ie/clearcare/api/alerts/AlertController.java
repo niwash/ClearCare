@@ -54,7 +54,7 @@ class AlertController {
       @PathVariable String centreId) {
     token.require(cognitoSub, caller);
     if (!repository.centreExists(centreId)) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "There is no centre with that id.");
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is no centre with that id.");
     }
     return repository.subscribe(cognitoSub, "FACILITY", AlertContexts.facility(centreId));
   }
@@ -71,7 +71,7 @@ class AlertController {
             .orElseThrow(
                 () ->
                     new ResponseStatusException(
-                        HttpStatus.NOT_FOUND, "There is no county by that name."));
+                        HttpStatus.BAD_REQUEST, "There is no county by that name."));
     return repository.subscribe(cognitoSub, "COUNTY", AlertContexts.county(countyId));
   }
 
