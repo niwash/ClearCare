@@ -224,9 +224,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className="flex min-w-0 flex-col gap-4 xl:col-start-1">
             {/* Where the floating Menu button shows (phones and tablets, standard design), the row
                 keeps clear of the bottom-right corner it sits in: on a short phone the button
-                covered "Map" in the switch when the page first loaded (#182). 4rem is the button's
-                width less the page's gutter, and a little more; with the shortlist's shorter label
-                on phones, both still fit on one row from 360px, so the switch stays in view. */}
+                covered "Map" in the switch when the page first loaded (#182). The button is 3.5rem
+                wide and 1rem from the edge; less the page's 1rem gutter on phones, 4rem leaves the
+                switch 0.5rem clear of it (more on tablets, where the gutter is wider). With the
+                shortlist's shorter label on phones, both still fit on one row from 360px, so the
+                switch stays in view. */}
             <div className="flex flex-wrap items-center justify-between gap-3 pr-16 lg:pr-0 adult:pr-0">
               <ShortlistDrawer />
               <div className="flex flex-wrap items-center gap-3">
