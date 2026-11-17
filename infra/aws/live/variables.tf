@@ -103,3 +103,45 @@ variable "pipeline_enabled" {
   type        = bool
   default     = false
 }
+
+variable "cognito_issuer" {
+  description = "Cognito pool issuer for public accounts, from the cognito/production output. Empty keeps the account controls switched off."
+  type        = string
+  default     = ""
+}
+
+variable "cognito_client_id" {
+  description = "Cognito app client ID, from the cognito/production output."
+  type        = string
+  default     = ""
+}
+
+variable "cognito_domain" {
+  description = "Cognito managed login domain, from the cognito/production output. Without it Create account cannot be offered."
+  type        = string
+  default     = ""
+}
+
+variable "accounts_enabled" {
+  description = "Whether the web task is given the Cognito app client secret and the session key. Off until both secret values are set, because a task cannot start with an empty secret."
+  type        = bool
+  default     = false
+}
+
+variable "google_maps_browser_key" {
+  description = "Google's browser key for the place suggestions on the search page, limited by referrer to the site's own address. Every visitor's browser is given it, so it is not a secret; empty leaves the place box a plain text box."
+  type        = string
+  default     = ""
+}
+
+variable "amenities_enabled" {
+  description = "Enable paid scheduled amenities extraction after rollout approval."
+  type        = bool
+  default     = false
+}
+
+variable "google_maps_map_id" {
+  description = "Google's map ID for the map of the search results, from the browser key's project. Every visitor's browser is given it, so it is not a secret; empty leaves the search page without a map."
+  type        = string
+  default     = ""
+}

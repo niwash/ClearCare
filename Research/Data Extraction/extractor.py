@@ -1,15 +1,16 @@
 """
 extractor.py
 ------------
-Extracts structured amenities data from HIQA inspection reports using
-GPT-4o-mini and OpenAI's structured outputs.
+Extracts structured amenities data from HIQA inspection reports with a
+model's structured outputs: Claude Haiku 5.5 by default, or GPT-4o-mini with
+--provider openai.
 
 The pipeline already downloads and stores every HIQA report, so this script
-does not download anything. It reads the pipeline's manifest to find the
+does not download anything. It reads parsed database reports to find the
 latest report for each home, opens that PDF from the pipeline's raw store,
 and writes one JSON file per home.
 
-    <data-dir>/manifests/inspection-reports.jsonl   which reports exist
+    PostgreSQL inspection_report and source_file  report catalogue
     <data-dir>/raw/sha256/<2 hex>/<digest>          the stored PDFs
     <data-dir>/amenities/amenities-v2/<centre_id>/<sha256>.json           the output
 
@@ -19,6 +20,7 @@ Usage (from the repository root, so that the root .env is found)
     python "Research/Data Extraction/extractor.py" --dry-run
     python "Research/Data Extraction/extractor.py" --centre-id 1 --centre-id 13
     python "Research/Data Extraction/extractor.py" --force
+    python "Research/Data Extraction/extractor.py" --provider openai
 
 A home is skipped only for a valid output from the same report and version.
 If HIQA has published a newer report since, the home is extracted again.
@@ -27,20 +29,19 @@ If HIQA has published a newer report since, the home is extracted again.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import logging
 import os
 import sys
-import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from amenities_v2 import Amenities, AmenitiesResult, ExtractionFile
+from amenities_v2 import EvidenceCheck
+from clearcare_pipeline.amenities import extractor as shared
 from dotenv import load_dotenv
 
 if TYPE_CHECKING:
+    from anthropic import Anthropic
     from openai import OpenAI
 
 load_dotenv()
@@ -50,12 +51,14 @@ logging.basicConfig(
     format="%(asctime)s  %(levelname)-8s %(message)s",
     datefmt="%H:%M:%S",
 )
-log = logging.getLogger(__name__)
+log = shared.log
 
-MODEL = "gpt-4o-mini"
-# Stored with every output file. Change it when the prompt, the schema or the
-# model changes, so that results from different runs can be told apart.
-EXTRACTOR_VERSION = "amenities-v2"
+# The model asked for on each provider. The output file records the model the
+# API reports instead.
+MODELS = shared.MODELS
+# Stored with every output file. Change it when the prompt or the schema
+# changes; the model is recorded in every output file.
+EXTRACTOR_VERSION = shared.EXTRACTOR_VERSION
 
 MANIFEST_NAME = "inspection-reports.jsonl"
 
@@ -90,6 +93,15 @@ def latest_reports(manifest_path: Path) -> dict[str, dict]:
     return latest
 
 
+def database_reports() -> dict[str, dict]:
+    """Select the latest parsed report per centre using the API's ordering."""
+    import psycopg
+    from clearcare_pipeline.amenities.catalogue import reports
+
+    with psycopg.connect() as connection:
+        return reports(connection)
+
+
 def stored_pdf(data_dir: Path, sha256: str) -> Path:
     """Returns where the pipeline's raw store keeps a file with this hash."""
     return data_dir / "raw" / "sha256" / sha256[:2] / sha256
@@ -100,202 +112,35 @@ def stored_pdf(data_dir: Path, sha256: str) -> Path:
 # ---------------------------------------------------------------------------
 
 # The whole report is sent. Reports run from about 19,000 to 49,000 characters
-# (up to ~12,000 tokens), well inside GPT-4o-mini's 128k context, and amenity
+# (up to ~12,000 tokens), well inside either model's context, and amenity
 # detail turns up all over: the provider's description near the start, the
 # inspectors' observations, and "Regulation 9: Residents' rights". MAX_CHARS is
 # only a safety cap for an unusually long report.
-MAX_CHARS = 200_000
-
-SYSTEM_PROMPT = (
-    Path(__file__).with_name("amenities-v2-prompt.txt").read_text(encoding="utf-8")
-)
-
-USER_PROMPT_TEMPLATE = """
-HIQA inspection report for centre ID {centre_id}.
-Inspection date: {inspection_date}.
-Extract the amenities information as instructed.
-
-Report text:
----
-{report_text}
----
-""".strip()
-
-
-def extract_text_from_pdf(pdf_path: Path) -> tuple[str, int]:
-    """Preserve every PDF page position, including blank pages."""
-    import pdfplumber
-
-    pages = []
-    with pdfplumber.open(pdf_path) as pdf:
-        for number, page in enumerate(pdf.pages, 1):
-            pages.append(f"[PDF PAGE {number}]\n{page.extract_text() or ''}")
-        return "\n".join(pages), len(pdf.pages)
-
-
-def call_llm(
-    client: OpenAI,
-    centre_id: str,
-    inspection_date: str,
-    report_text: str,
-    page_count: int,
-) -> tuple[Amenities, str] | None:
-    """Sends the report to GPT-4o-mini and returns the validated amenities."""
-    if len(report_text) > MAX_CHARS:
-        log.error("Report exceeds the full-report safety limit; not truncating")
-        return None
-    user_message = USER_PROMPT_TEMPLATE.format(
-        centre_id=centre_id,
-        inspection_date=inspection_date,
-        report_text=report_text,
-    )
-    try:
-        response = client.beta.chat.completions.parse(
-            model=MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message},
-            ],
-            response_format=AmenitiesResult,
-            temperature=0,  # Keep sampling settings fixed between runs.
-            # Quote-bearing output needs more room; truncated output remains a failure.
-            max_tokens=16000,
-        )
-    except Exception as error:
-        log.error("  LLM call failed: %s", error)
-        return None
-    if response.usage:
-        log.info(
-            "  tokens: %d in, %d out",
-            response.usage.prompt_tokens,
-            response.usage.completion_tokens,
-        )
-    try:
-        choice = response.choices[0]
-        if (
-            choice.finish_reason != "stop"
-            or choice.message.refusal
-            or not choice.message.parsed
-        ):
-            raise ValueError("Incomplete or refused extraction")
-        result = choice.message.parsed
-        if not response.model or not response.model.strip():
-            raise ValueError("Response is missing its model identifier")
-        return result.amenities.validate_pages(page_count), response.model
-    except (ValueError, IndexError, AttributeError) as error:
-        log.error("Invalid extraction: %s", error)
-        return None
-
-
-def already_done(output_path: Path, sha256: str) -> bool:
-    """Only a valid file for this exact source and extractor version is cached."""
-    try:
-        existing = ExtractionFile.model_validate_json(output_path.read_bytes())
-        return (
-            existing.sha256 == sha256 and existing.centre_id == output_path.parent.name
-        )
-    except (OSError, ValueError):
-        return False
-
-
-def output_file(output_dir: Path, centre_id: str, sha256: str) -> Path:
-    """Keep v1 files and each distinct v2 source report intact."""
-    return output_dir / EXTRACTOR_VERSION / centre_id / f"{sha256}.json"
+MAX_CHARS = shared.MAX_CHARS
+SYSTEM_PROMPT = shared.SYSTEM_PROMPT
+USER_PROMPT_TEMPLATE = shared.USER_PROMPT_TEMPLATE
+extract_text_from_pdf = shared.extract_text_from_pdf
+call_llm = shared.call_llm
+already_done = shared.already_done
+output_file = shared.output_file
+EVIDENCE_LOG = shared.EVIDENCE_LOG
 
 
 def process_centre(
-    client: OpenAI,
-    centre_id: str,
-    report: dict,
-    data_dir: Path,
-    output_dir: Path,
-    force: bool,
-) -> bool:
-    """Extracts one home's amenities. Returns True on success or if done."""
-    try:
-        # Validate provenance before using IDs or hashes in filesystem paths.
-        metadata = ExtractionFile.model_validate(
-            {
-                "centre_id": centre_id,
-                "inspection_date": report["inspection_date"],
-                "file_name": report["file_name"],
-                "hiqa_url": report["url"],
-                "sha256": report["sha256"],
-                "model": MODEL,
-                "extractor_version": EXTRACTOR_VERSION,
-                "extracted_at": datetime.now(UTC),
-                "amenities": {
-                    "care_types": [],
-                    "room_types": [],
-                    "activities": [],
-                    "facilities": [],
-                },
-            }
-        )
-    except (KeyError, ValueError) as error:
-        log.error("Invalid source metadata: %s", error)
-        return False
-    output_path = output_file(output_dir, centre_id, metadata.sha256)
-    if not force and already_done(output_path, report["sha256"]):
-        log.debug("Already done: centre %s", centre_id)
-        return True
-
-    log.info("Processing centre %s (%s)", centre_id, report["inspection_date"])
-    pdf_path = stored_pdf(data_dir, report["sha256"])
-    if not pdf_path.exists():
-        log.error("  PDF not in the raw store: %s", pdf_path)
-        return False
-    try:
-        if hashlib.sha256(pdf_path.read_bytes()).hexdigest() != metadata.sha256:
-            raise ValueError("Stored PDF does not match its source hash")
-        text, page_count = extract_text_from_pdf(pdf_path)
-    except Exception as error:
-        log.error("  PDF text extraction failed: %s", error)
-        return False
-    if not any(
-        line.strip() and not line.startswith("[PDF PAGE ") for line in text.splitlines()
-    ):
-        log.warning(
-            "  No text in %s. It may be a scanned image-only PDF, which "
-            "pdfplumber cannot read.",
-            pdf_path.name,
-        )
-        return False
-
-    extracted = call_llm(client, centre_id, report["inspection_date"], text, page_count)
-    if extracted is None:
-        return False
-
-    amenities, actual_model = extracted
-    output = ExtractionFile.model_validate(
-        metadata.model_dump()
-        | {
-            "amenities": amenities,
-            "model": actual_model,
-            "extracted_at": datetime.now(UTC),
-        }
+    client, provider, centre_id, report, data_dir, output_dir, force
+) -> EvidenceCheck | None:
+    """Use the packaged extractor while retaining the standalone CLI."""
+    return shared.process_centre(
+        client,
+        provider,
+        centre_id,
+        report,
+        data_dir,
+        output_dir,
+        force,
+        extract=call_llm,
+        read_pdf=extract_text_from_pdf,
     )
-    # Atomic replacement means failed writes cannot leave a partial successful file.
-    temporary = None
-    try:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(
-            mode="w",
-            encoding="utf-8",
-            dir=output_path.parent,
-            suffix=".tmp",
-            delete=False,
-        ) as handle:
-            temporary = Path(handle.name)
-            handle.write(output.model_dump_json(indent=2))
-        temporary.replace(output_path)
-    except OSError as error:
-        log.error("Could not write extraction: %s", error)
-        return False
-    finally:
-        if temporary is not None:
-            temporary.unlink(missing_ok=True)
-    return True
 
 
 def centre_ids_from_file(path: Path) -> list[str]:
@@ -332,6 +177,18 @@ def main() -> None:
         type=Path,
         help="only centres in this JSON file (IDs or objects with centre_id)",
     )
+    parser.add_argument(
+        "--provider",
+        choices=list(MODELS),
+        default="anthropic",
+        help="whose model reads the reports (default: anthropic)",
+    )
+    parser.add_argument(
+        "--report-source",
+        choices=["database", "manifest"],
+        default="database",
+        help="report catalogue (default: database via libpq)",
+    )
     parser.add_argument("--limit", type=int, help="stop after this many homes")
     parser.add_argument(
         "--force",
@@ -346,7 +203,7 @@ def main() -> None:
     args = parser.parse_args()
 
     manifest_path = args.data_dir / "manifests" / MANIFEST_NAME
-    if not manifest_path.exists():
+    if args.report_source == "manifest" and not manifest_path.exists():
         log.error(
             "No manifest at %s. Run the pipeline's reports download first, "
             "or pass --data-dir.",
@@ -355,7 +212,11 @@ def main() -> None:
         sys.exit(1)
     output_dir = args.output_dir or args.data_dir / "amenities"
 
-    latest = latest_reports(manifest_path)
+    latest = (
+        database_reports()
+        if args.report_source == "database"
+        else latest_reports(manifest_path)
+    )
     wanted = list(args.centre_id)
     if args.centres_file:
         wanted += centre_ids_from_file(args.centres_file)
@@ -381,22 +242,45 @@ def main() -> None:
             )
         return
 
-    from openai import OpenAI
+    # Each client reads its key, ANTHROPIC_API_KEY or OPENAI_API_KEY, from the
+    # environment or .env.
+    client: Anthropic | OpenAI
+    if args.provider == "anthropic":
+        from anthropic import Anthropic
 
-    client = OpenAI()  # reads OPENAI_API_KEY from the environment or .env
+        client = Anthropic()
+    else:
+        from openai import OpenAI
+
+        client = OpenAI()
     failed = []
+    items_kept = items_dropped = evidence_corrected = evidence_dropped = 0
     for centre_id in centres:
-        ok = process_centre(
+        check = process_centre(
             client,
+            args.provider,
             centre_id,
             latest[centre_id],
             args.data_dir,
             output_dir,
             args.force,
         )
-        if not ok:
+        if check is None:
             failed.append(centre_id)
+            continue
+        items_kept += check.items_kept
+        items_dropped += check.items_dropped
+        evidence_corrected += check.evidence_corrected
+        evidence_dropped += check.evidence_dropped
 
+    log.info(
+        EVIDENCE_LOG,
+        "Evidence check, all homes",
+        items_kept,
+        items_dropped,
+        evidence_corrected,
+        evidence_dropped,
+    )
     log.info("Done. %d succeeded, %d failed.", len(centres) - len(failed), len(failed))
     if failed:
         log.warning("Failed centre IDs: %s", failed)

@@ -75,6 +75,32 @@ export function clearCompared() {
   write([]);
 }
 
+// Opens the search page's shortlist panel (ShortlistDrawer) from elsewhere on the page: a result's
+// button, once the list is full, so the way to make room is one click away (CCARE-189).
+const OPEN_SHORTLIST_EVENT = "clearcare:open-shortlist";
+
+export function openShortlist() {
+  dispatchEvent(new Event(OPEN_SHORTLIST_EVENT));
+}
+
+export function onOpenShortlist(listener: () => void) {
+  addEventListener(OPEN_SHORTLIST_EVENT, listener);
+  return () => removeEventListener(OPEN_SHORTLIST_EVENT, listener);
+}
+
+// Tells the search page's toast that a home couldn't be added because the list is full: on phones
+// it says so there, as the shortlist panel would cover the results (CCARE-189).
+const SHORTLIST_FULL_EVENT = "clearcare:shortlist-full";
+
+export function notifyShortlistFull() {
+  dispatchEvent(new Event(SHORTLIST_FULL_EVENT));
+}
+
+export function onShortlistFull(listener: () => void) {
+  addEventListener(SHORTLIST_FULL_EVENT, listener);
+  return () => removeEventListener(SHORTLIST_FULL_EVENT, listener);
+}
+
 // What the last change to the list was, for the one status message on the page (CompareStatus).
 // Kept here, not in the button that made the change: a Remove button can go with its home in the
 // same update, and a message inside it would go too.

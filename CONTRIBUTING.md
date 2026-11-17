@@ -9,7 +9,7 @@ Each part of the project has its own top-level folder:
 | `pipeline/` | Python pipeline |
 | `db/` | SQL migrations, applied by Flyway ([ADR-0010](docs/adr/0010-schema-in-sql-migrations.md)) |
 | `infra/` | VM setup: the Compose file for the VM, the deploy script and install notes |
-| `infra/postgres/` | Database roles, created once before the first migration |
+| `infra/postgres/` | PostGIS and the database roles, set up once before the first migration |
 | `web/` | Next.js site |
 | `api/` | Spring Boot API |
 
@@ -50,6 +50,21 @@ The database is `clearcare` on `127.0.0.1`, port 5432. If another PostgreSQL alr
 
 To start again from an empty database, run `docker compose down -v`, which deletes the volume and all local data, then `docker compose up migrate`.
 
+V16 needs PostGIS ([ADR-0026](docs/adr/0026-centre-locations-as-postgis-points.md)). A new volume gets it from `infra/postgres/postgis.sh`; for a volume created before V16, run:
+
+```sh
+docker compose pull db
+docker compose up -d --wait db
+docker compose exec db psql -U postgres -d clearcare -c 'CREATE EXTENSION postgis'
+docker compose up migrate
+```
+
+A volume first started with the image's own PostGIS script, before `postgis.sh` replaced it, also has three extensions that RDS lacks, and a dump of it fails to restore there. Drop them:
+
+```sh
+docker compose exec db psql -U postgres -d clearcare -c 'DROP EXTENSION postgis_tiger_geocoder, postgis_topology, fuzzystrmatch; DROP SCHEMA tiger, topology'
+```
+
 If `roles.sql` fails on the first run, the `db` log shows the error and Flyway cannot log in. The image runs `roles.sql` only when it starts on an empty volume, so restarting does not retry it. Delete the volume as above, or keep it and fix the cause: run `docker compose up -d db` so the container picks up any change to `.env`, then run `roles.sql` again as the superuser and apply the migrations:
 
 ```sh
@@ -61,15 +76,15 @@ docker compose up migrate
 
 `docker compose up -d` also builds and starts the API and the pipeline once the migrations have run. The API is on `127.0.0.1:8080`; set `CLEARCARE_API_PORT` in `.env` to change the port.
 
-The pipeline keeps its files in `./data`, unless `CLEARCARE_DATA_DIR` names another directory. When it starts, it loads the newest register snapshot there into the database, and then the inspection reports stored there. A report already in the database is not parsed again. `CLEARCARE_CRAWL` sets what it downloads from HIQA:
+The pipeline keeps its files in `./data`, unless `CLEARCARE_DATA_DIR` names another directory. When it starts, it loads the newest register snapshot there into the database, and then the inspection reports stored there. A report already in the database is not parsed again. It also stores the list of reports on each centre's HIQA page, with the day each was published, whether or not the report's file is stored or can be read. `CLEARCARE_CRAWL` sets what it downloads from HIQA:
 
 - `off`, the default: nothing.
 - A county as the register spells it, such as `Kildare`: the registers once a day, and the reports of that county's centres once a week.
 - `all`: the same for every centre in the register. The first run makes a few thousand requests at least 3 seconds apart, so it takes a few hours.
 
-Unless `CLEARCARE_CRAWL` is `off`, it also downloads the two HSE contract price lists from the [Fair Deal page](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/about/) once a week, and records each download in `manifests/price-lists.jsonl`. It loads the newest stored copy of each list after every download and when it starts, after the register; a list already loaded from the same bytes writes nothing.
+Unless `CLEARCARE_CRAWL` is `off`, it also downloads the two HSE contract price lists from the [Fair Deal page](https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/about/) once a week, and records each download in `manifests/price-lists.jsonl`. It loads every stored copy of each list, oldest download first, after every download and when it starts, after the register, so a new database gets the same price history; a list already loaded from the same bytes writes nothing.
 
-If the five `CLEARCARE_S3_*` settings are set, the pipeline copies new files to the bucket when it starts and after each download, failed or not. After a register download it also loads the register, and after a report download the reports. A failed report download is tried again a day later. Some report layouts (Restrictive Practice thematic and National Standards reports) cannot be loaded yet ([ADR-0013](docs/adr/0013-parsed-inspection-reports-loaded-in-batches.md)), so they count as failed on every run and `ingest_reports` exits 1, while the other reports still load.
+If the five `CLEARCARE_S3_*` settings are set, the pipeline copies new files to the bucket when it starts and after each download, failed or not. After a register download it also loads the register, and after a report download the reports. A failed report download is tried again a day later. A thematic report (Restrictive Practice) is loaded from its cover and its overall judgment ([ADR-0032](docs/adr/0032-thematic-reports-read-from-their-cover.md)). A few other layouts cannot be loaded yet: some regulation reports the mapping cannot read, and a report against the National Standards for another service ([ADR-0013](docs/adr/0013-parsed-inspection-reports-loaded-in-batches.md)). They count as failed on every run, while the other reports still load. Those retries are not alarms: the stage exits 3 rather than 1 ([ADR-0022](docs/adr/0022-one-pipeline-run-at-a-time.md)).
 
 `schedule-state.json` in the data directory holds each job's last success and next attempt. To run every job now, stop the pipeline with `docker compose stop pipeline`, delete the file, and start it again with `docker compose start pipeline`.
 
@@ -79,4 +94,14 @@ Ingest also stores the inspector narrative and Section 1 responses, with PDF pag
 
 After `extract_text`, the pipeline runs `split_commitments`, which appends commitments from stored responses and their page offsets. It needs no local PDFs. It uses the splitter's `rules-v3` version; change that version when changing its rules. Repeat runs write nothing new. Month-only stated deadlines retain month precision; their stored date is the last day of that month. Dates need an explicit link to the commitment or a Timeframe or Time Frame label; uncertain wording stays in the response span without a parsed deadline.
 
+The pipeline runs `register_changes` straight after the register load, at start and after each register download. It compares every stored register snapshot with the ones before it and appends what changed for each centre: a registration, a new provider, name or number of beds, an extra condition added, removed or changed, and the Chief Inspector's note ([ADR-0031](docs/adr/0031-register-changes-found-by-comparing-snapshots.md)). It reads every snapshot on every run and adds only the changes not stored yet, so the first run adds the history and repeat runs add nothing. It uses the differ's `rules-v1` version; change that version when changing its rules or the condition splitter's. A stored snapshot it cannot read is logged as a warning and passed over.
+
+The pipeline runs `geocode` after the register load, at start and after each register download. It first deletes every point 30 or more calendar days old, counted in UTC, since Google lets its coordinates be kept no longer ([ADR-0027](docs/adr/0027-google-coordinates-refreshed-every-23-days-and-deleted-at-30.md)). With `GOOGLE_GEOCODING_API_KEY` set in `.env`, it then asks Google's Geocoding API for each centre in the served register with no point, or with one 23 or more calendar days old: by Eircode, or by address for a centre without one. It stores the point and its `place_id` only when Google's answer has the register's Eircode, or its county, and logs the id of each centre it leaves without one. Without the key it only deletes. A second run on the same day asks only about the centres still due.
+
+The pipeline runs `match_places` straight after `geocode`, on every run. It asks Google's Places API, by the register's name and address, for each centre in the served register whose point was geocoded on the day of the run, and keeps the one listing whose name agrees and which lies within 300 m of the point. That condition rides `geocode`'s 23-day refresh: on the day the register's points are re-fetched, every centre is matched again; on the days between, only a centre new to the register is. A home that fails the rule is therefore asked about once every 23 days, not once a night. It stores the identifier of the one listing that agrees with the name, sits within 300 m of the point, and has at least one photo ([ADR-0030](docs/adr/0030-centre-image-source.md)). A centre with no stored row shows our placeholder, and a centre whose point is missing or expired is not asked about at all. With `GOOGLE_PLACES_API_KEY` unset it asks Google nothing and logs how many centres are due; `--dry-run` reports what it would store, `--limit N` asks about the first N only, and `--all` asks about every centre whose point is still inside Google's thirty days, for the first run and for a re-match after the rule changes.
+
 On Linux, create the data directory before the first start, and set `CLEARCARE_PIPELINE_UID` and `CLEARCARE_PIPELINE_GID` to its owner. Otherwise Docker creates the directory as root and the pipeline cannot write to it.
+
+The amenities stage follows the report/text stages at startup and after report
+crawls. It is disabled by default. See [Amenities](docs/amenities.md) for enabling
+an authorized run, inspecting pending reports and retrying incomplete work.

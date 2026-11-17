@@ -1,0 +1,3803 @@
+[
+ {
+  "centre_name": "Beechwood Nursing Home",
+  "google_name": "Beechwood Nursing Home",
+  "distance_m": 3,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Borris Lodge Nursing Home",
+  "google_name": "Borris Lodge Nursing Home",
+  "distance_m": 28,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Hillview Convalescence & Nursing Home",
+  "google_name": "Hillview Convalescence & Nursing Home",
+  "distance_m": 10,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Sacred Heart Hospital",
+  "google_name": "Sacred Heart Catholic Hospital",
+  "distance_m": 121,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "SignaCare Killerig",
+  "google_name": "SignaCare - Killerig",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sonas Nursing Home Tullow",
+  "google_name": "Sonas Nursing Home Tullow",
+  "distance_m": 17,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Fiacc's House",
+  "google_name": "Saint Fiacc's House",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Lazerian's House",
+  "google_name": "St. Lazerian's House",
+  "distance_m": 97,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Breffni Care Centre",
+  "google_name": "Breffni Care Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Castlemanor Nursing Home",
+  "google_name": "Castlemanor Nursing Home, Co. Cavan",
+  "distance_m": 22,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "College View Nursing Home",
+  "google_name": "College View Nursing Home",
+  "distance_m": 16,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "Esker Lodge Nursing Home",
+  "google_name": "Esker Lodge Nursing Home",
+  "distance_m": 6,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Fairlawns Nursing Home",
+  "google_name": "Fairlawns Private Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oak View Nursing Home",
+  "google_name": "Oakview Nursing Home",
+  "distance_m": 41,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Sheelin Nursing Home",
+  "google_name": "Sheelin nursing Home",
+  "distance_m": 9,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Josephs Nursing Home",
+  "google_name": "St. Joseph's Nursing Home",
+  "distance_m": 16,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sullivan Centre",
+  "google_name": "John O Sullivan Care Home",
+  "distance_m": 64,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Virginia Community Health Centre",
+  "google_name": "Virginia Primary Care",
+  "distance_m": 40,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "Athlunkard House Nursing Home",
+  "google_name": "Athlunkard Nursing Home",
+  "distance_m": 32,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Cahercalla Community Care",
+  "google_name": "Cahercalla Community Hospital",
+  "distance_m": 65,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Carrigoran House",
+  "google_name": "Carrigoran House",
+  "distance_m": 155,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Cratloe Nursing Home",
+  "google_name": "Cratloe Nursing Home",
+  "distance_m": 8,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Ennis Nursing Home",
+  "google_name": "Ennis Nursing Home",
+  "distance_m": 42,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Ennis Road Care Facility",
+  "google_name": "Ennis Road Care Facility",
+  "distance_m": 50,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ennistymon Community Hospital",
+  "google_name": "Ennistymon Community Hospital",
+  "distance_m": 9,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Kilrush Nursing Home",
+  "google_name": "Kilrush Nursing Home",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Lakes Nursing Home",
+  "google_name": "Lakes Nursing Home",
+  "distance_m": 11,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Raheen Community Hospital",
+  "google_name": "Raheen Community Hospital",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Regina House Community Nursing Unit",
+  "google_name": "Regina House Community Nursing Unit",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Riverdale House Nursing Home",
+  "google_name": "Riverdale House Nursing Home",
+  "distance_m": 16,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Dominic Savio Nursing Home",
+  "google_name": "St Dominic Savio Nursing Home",
+  "distance_m": 35,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St. Joseph's Hospital",
+  "google_name": "St. Joseph's Hospital",
+  "distance_m": 4,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Senan's Community Nursing Unit",
+  "google_name": "Kilrush Community Hospital",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "West Clare Nursing Home St Theresa's Kilrush",
+  "google_name": "St Theresas Nursing Home Kilrush",
+  "distance_m": 5,
+  "photo_count": 9,
+  "approved": false
+ },
+ {
+  "centre_name": "Abbeylands Nursing Home",
+  "google_name": "Abbeylands Nursing Home",
+  "distance_m": 82,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Amberley Home and Retirement Cottages",
+  "google_name": "Amberley Home & Retirement Cottages",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Aperee Living Conna",
+  "google_name": "Aperee Living Conna",
+  "distance_m": 38,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Araglen House Nursing Home",
+  "google_name": "Araglen House Nursing Home",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Ballincollig Community Nursing Unit",
+  "google_name": "Ballincollig Community Nursing Unit",
+  "distance_m": 16,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Ballincurrig Care Centre",
+  "google_name": "Ballincurrig Care Centre (Silver Stream Healthcare Group)",
+  "distance_m": 30,
+  "photo_count": 9,
+  "approved": false
+ },
+ {
+  "centre_name": "Bandon Community Hospital",
+  "google_name": "Bandon Community Hospital",
+  "distance_m": 19,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Beaumont Residential Care",
+  "google_name": "Beaumont Residential Care",
+  "distance_m": 19,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Bishopscourt Nursing Home Limited",
+  "google_name": "Bishopscourt Nursing Home Ltd",
+  "distance_m": 14,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Blarney Nursing and Retirement Home",
+  "google_name": "Blarney Nursing & Retirement Home Ltd",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Bridhaven Nursing Home",
+  "google_name": "Brídhaven Nursing Care",
+  "distance_m": 26,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Brookfield Care Centre",
+  "google_name": "Brookfield Care Centre",
+  "distance_m": 43,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Bushmount Nursing Home",
+  "google_name": "Bushmount Nursing Home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Cahereen Residential Care Centre",
+  "google_name": "Cahereen Nursing Home",
+  "distance_m": 19,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "CareChoice Ballynoe",
+  "google_name": "CareChoice Ballynoe",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "CareChoice Clonakilty",
+  "google_name": "Carechoice Clonakilty",
+  "distance_m": 51,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "CareChoice Macroom",
+  "google_name": "Carechoice Macroom",
+  "distance_m": 30,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Carechoice Montenotte",
+  "google_name": "CareChoice Montenotte",
+  "distance_m": 6,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Castletownbere Community Hospital",
+  "google_name": "St Joseph's Community Hospital",
+  "distance_m": 2,
+  "photo_count": 1,
+  "approved": false
+ },
+ {
+  "centre_name": "Charleville Nursing Home",
+  "google_name": "Charleville Nursing Home",
+  "distance_m": 53,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Clonakilty Community Hospital",
+  "google_name": "Clonakilty Community Hospital",
+  "distance_m": 26,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cobh Community Hospital",
+  "google_name": "Cobh Community Hospital",
+  "distance_m": 17,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cois Abhainn Residential Centre",
+  "google_name": "P36 Y525",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Corpus Christi Nursing Home",
+  "google_name": "Corpus Christi Nursing Home",
+  "distance_m": 33,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Curam Care Home Carrigaline",
+  "google_name": "Curam Care Home Carrigaline",
+  "distance_m": 40,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Darraglynn Nursing Home",
+  "google_name": "Darraglynn Nursing Home",
+  "distance_m": 18,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Deerpark Care Home",
+  "google_name": "Aperee Living Bantry",
+  "distance_m": 31,
+  "photo_count": 3,
+  "approved": false
+ },
+ {
+  "centre_name": "Douglas Nursing and Retirement Home",
+  "google_name": "Douglas nursing home",
+  "distance_m": 21,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Dunmanway Community Hospital",
+  "google_name": "Dunmanway Community Hospital",
+  "distance_m": 6,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Fairfield Nursing Home",
+  "google_name": "Fairfield Nursing Home",
+  "distance_m": 10,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Fairy Hill Nursing Home",
+  "google_name": "Fairyhill Nursing Home",
+  "distance_m": 66,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Farranlea Road Community Nursing Unit",
+  "google_name": "Farranlea Road Community Nursing Unit",
+  "distance_m": 71,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Fermoy Community Hospital",
+  "google_name": "Fermoy Community Hospital",
+  "distance_m": 27,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Glendonagh Residential Home",
+  "google_name": "Glendonagh Nursing Home",
+  "distance_m": 20,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Glyntown Care Centre",
+  "google_name": "Glyntown Care Centre",
+  "distance_m": 2,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Grange Con Nursing Home",
+  "google_name": "Grange Con Nursing Home",
+  "distance_m": 18,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Haven Bay Care Centre",
+  "google_name": "Haven Bay Care Centre",
+  "distance_m": 4,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Heather House Community Nursing Unit",
+  "google_name": "Heather House",
+  "distance_m": 22,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Kanturk Community Hospital",
+  "google_name": "Kanturk Community Hospital",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Kinsale Community Hospital",
+  "google_name": "Kinsale Community Hospital",
+  "distance_m": 16,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Macroom Community Hospital",
+  "google_name": "Macroom Community Hospital",
+  "distance_m": 31,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Maryborough Nursing Home",
+  "google_name": "Maryborough Nursing Home",
+  "distance_m": 20,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Marymount University Hospital & Hospice",
+  "google_name": "Marymount University Hospital & Hospice",
+  "distance_m": 39,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Midleton Community Hospital",
+  "google_name": "Midleton Community Hospital",
+  "distance_m": 8,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Midleton Community Nursing Unit",
+  "google_name": "Midleton Community Hospital",
+  "distance_m": 143,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Mount Alvernia Hospital",
+  "google_name": "Mount Alvernia Hospital",
+  "distance_m": 10,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Mount Cara Nursing Home",
+  "google_name": "Mount Cara",
+  "distance_m": 7,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Nazareth House Mallow",
+  "google_name": "Nazareth House Mallow",
+  "distance_m": 35,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Norwood Grange",
+  "google_name": "Norwood Grange Care Home",
+  "distance_m": 11,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oaklodge Nursing Home",
+  "google_name": "Oaklodge Nursing Home",
+  "distance_m": 31,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Padre Pio Care Centre",
+  "google_name": "Padre Pio Care Centre",
+  "distance_m": 0,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "Padre Pio Nursing Home",
+  "google_name": "Padre Pio Nursing Home",
+  "distance_m": 4,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Powdermill Nursing Home & Care Centre",
+  "google_name": "Powdermill Nursing Home",
+  "distance_m": 0,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Riverstick Care Centre",
+  "google_name": "Riverstick Care Centre (Silver Stream Healthcare Group)",
+  "distance_m": 9,
+  "photo_count": 2,
+  "approved": false
+ },
+ {
+  "centre_name": "Rochestown Nursing Home",
+  "google_name": "Rochestown Nursing Home",
+  "distance_m": 6,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Rosenalee Care Centre",
+  "google_name": "Rosenalee care centre Ltd",
+  "distance_m": 14,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Skibbereen Community Hospital",
+  "google_name": "Skibbereen Health Centre",
+  "distance_m": 81,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Skibbereen Residential Care Centre",
+  "google_name": "Skibbereen Residential Care Centre",
+  "distance_m": 22,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "St Finbarr's Hospital",
+  "google_name": "St Finbarr's Hospital",
+  "distance_m": 139,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Gabriel's Community Hospital",
+  "google_name": "Schull Community Hospital (St Gabriels)",
+  "distance_m": 32,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "St Joseph's Community Hospital",
+  "google_name": "Millstreet Community Hospital",
+  "distance_m": 10,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Joseph's Hospital",
+  "google_name": "Bon Secours Care Village",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": false
+ },
+ {
+  "centre_name": "St Joseph's Unit",
+  "google_name": "Bantry General Hospital",
+  "distance_m": 60,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "St Luke's Home",
+  "google_name": "St Lukes Home",
+  "distance_m": 30,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Martha's Nursing Home",
+  "google_name": "St Martha’s Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Teach Altra Nursing Home",
+  "google_name": "Teach Altra",
+  "distance_m": 37,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Unit 1 St Stephen's Hospital",
+  "google_name": "St Stephens Psychiatric Hospital",
+  "distance_m": 32,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Windmill House Care Centre",
+  "google_name": "Windmill House Care Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Youghal and District Nursing Home",
+  "google_name": "Youghal & District Nursing Home",
+  "distance_m": 9,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Youghal Community Hospital",
+  "google_name": "Youghal Community Hospital",
+  "distance_m": 55,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Aras Gaoth Dobhair",
+  "google_name": "Aras Ghaoth Dobhair",
+  "distance_m": 7,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Aras Mhic Shuibhne",
+  "google_name": "Aras Mhic Shuibhne",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Áras Ui Dhomhnaill Nursing Home",
+  "google_name": "Áras Uí Dhomhnaill Nursing Home",
+  "distance_m": 28,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Archview Lodge Nursing Home",
+  "google_name": "Archview Lodge Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballyshannon Community Hospital",
+  "google_name": "Ballyshannon Health Campus",
+  "distance_m": 94,
+  "photo_count": 3,
+  "approved": false
+ },
+ {
+  "centre_name": "Beach Hill Manor Private Nursing Home",
+  "google_name": "Beach Hill Manor Private Nursing Home",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Brentwood Manor Private Nursing Home",
+  "google_name": "Brentwood Nursing home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Brindley Manor Private Nursing Home",
+  "google_name": "Brindley Manor Private Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Buncrana Community Hospital",
+  "google_name": "Buncrana Community Hospital",
+  "distance_m": 39,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Carndonagh Community Hospital",
+  "google_name": "Carndonagh Community Hospital",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Dungloe Community Hospital",
+  "google_name": "Dungloe Community Hospital",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Falcarragh Community Hospital",
+  "google_name": "Falcarragh Medical Centre",
+  "distance_m": 76,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Harbour Lights Nursing Home",
+  "google_name": "Harbour Lights Private Nursing Home",
+  "distance_m": 26,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Hillcrest House Nursing Home",
+  "google_name": "Hillcrest House Nursing Home",
+  "distance_m": 20,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Killybegs Community Hospital",
+  "google_name": "Killybegs Community Hospital",
+  "distance_m": 0,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Lake House Nursing Home",
+  "google_name": "The Lake House Private Nursing Home",
+  "distance_m": 9,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Larissa Lodge Nursing Home",
+  "google_name": "Larissa Lodge Nursing Home",
+  "distance_m": 12,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Nazareth House",
+  "google_name": "Nazareth House",
+  "distance_m": 210,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Ramelton Community Hospital",
+  "google_name": "Ramelton Community Hospital",
+  "distance_m": 2,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St. Eunan's Nursing Home",
+  "google_name": "St. Eunan's Nursing Home",
+  "distance_m": 13,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Joseph's Community Hospital",
+  "google_name": "St Josephs Hospital",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Aclare House Nursing Home",
+  "google_name": "Aclare House",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Altadore Nursing Home",
+  "google_name": "Altadore Retirement Nursing Home",
+  "distance_m": 21,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Alzheimer's Care Centre",
+  "google_name": "Highfield Healthcare",
+  "distance_m": 61,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Anam Cara Housing with Care",
+  "google_name": "Anam Cara",
+  "distance_m": 41,
+  "photo_count": 1,
+  "approved": false
+ },
+ {
+  "centre_name": "Annabeg Nursing Home",
+  "google_name": "Annabeg Nursing Home, South Dublin",
+  "distance_m": 7,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Anna Gaynor House",
+  "google_name": "Our Lady's Hospice & Care Services",
+  "distance_m": 100,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "AnovoCare Nursing Home",
+  "google_name": "AnovoCare Nursing Home",
+  "distance_m": 32,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Ashbury Nursing Home",
+  "google_name": "Ashbury Nursing Home",
+  "distance_m": 8,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Ashford House Nursing Home",
+  "google_name": "Ashford House Nursing Home",
+  "distance_m": 5,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Beechfield Manor Nursing Home",
+  "google_name": "Beechfield Manor Nursing Home",
+  "distance_m": 0,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Beechlawn House Nursing Home",
+  "google_name": "Beech Lawn Nursing Home",
+  "distance_m": 24,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Beechtree Nursing Home",
+  "google_name": "Beechtree Nursing Home",
+  "distance_m": 41,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Bellvilla Community Unit",
+  "google_name": "Bellvilla Community Unit",
+  "distance_m": 25,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Belmont House Private Nursing Home",
+  "google_name": "Belmont House Nursing Home",
+  "distance_m": 28,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Brabazon House",
+  "google_name": "Brabazon House",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cara Care Centre",
+  "google_name": "Cara Care Centre",
+  "distance_m": 174,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "CareChoice Malahide",
+  "google_name": "CareChoice Malahide Road",
+  "distance_m": 7,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Carechoice Swords",
+  "google_name": "CareChoice Swords",
+  "distance_m": 8,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Carysfort Nursing Home",
+  "google_name": "Carysfort Nursing Home",
+  "distance_m": 48,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Catherine McAuley House",
+  "google_name": "Catherine McAuley House",
+  "distance_m": 4325,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cherryfield Housing with Care",
+  "google_name": "Cherryfield Lodge",
+  "distance_m": 14303,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cherryfield Lodge Nursing Home",
+  "google_name": "Cherryfield Lodge",
+  "distance_m": 20,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cherry Orchard Hospital",
+  "google_name": "Cherry Orchard Hospital",
+  "distance_m": 83,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Clarehaven",
+  "google_name": "Clarehaven",
+  "distance_m": 99,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Clearbrook Nursing Home",
+  "google_name": "Clearbrook Nursing Home",
+  "distance_m": 11,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Clondalkin Lodge Residential Home",
+  "google_name": "Clondalkin Lodge",
+  "distance_m": 51,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Clonskeagh Community Nursing Unit",
+  "google_name": "Community Nursing Unit (CNU)",
+  "distance_m": 139,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Croft Nursing Home",
+  "google_name": "The Croft Nursing Home (Silver Stream Healthcare Group)",
+  "distance_m": 17,
+  "photo_count": 1,
+  "approved": false
+ },
+ {
+  "centre_name": "Curam Care Home,  Navan Road",
+  "google_name": "Curam Care Home Navan Road",
+  "distance_m": 43,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Dalkey Community Unit for Older Persons",
+  "google_name": "Dalkey Community Unit",
+  "distance_m": 10,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Elm Green Nursing Home",
+  "google_name": "Elm Green Nursing Home, Castleknock",
+  "distance_m": 298,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Elmhurst Nursing Home",
+  "google_name": "Elmhurst Day Hospital & Nursing Home",
+  "distance_m": 32,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Firstcare Beneavin House",
+  "google_name": "Beneavin House",
+  "distance_m": 26,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Firstcare Beneavin Lodge",
+  "google_name": "Beneavin Lodge",
+  "distance_m": 18,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Firstcare Beneavin Manor",
+  "google_name": "Beneavin Manor Nursing Home",
+  "distance_m": 125,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Foxrock Nursing Home",
+  "google_name": "Foxrock Nursing Home, Dublin 18",
+  "distance_m": 7,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Gascoigne House Nursing Home",
+  "google_name": "Gascoigne House Nursing Home, Cowper Care LTD",
+  "distance_m": 25,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Glebe House Nursing Home",
+  "google_name": "Cowper Care",
+  "distance_m": 9126,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Glenaulin Nursing Home",
+  "google_name": "Glenaulin Nursing Home",
+  "distance_m": 1,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Glengara Park Nursing Home",
+  "google_name": "Glengara Park",
+  "distance_m": 3,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Griffeen Valley Nursing Home",
+  "google_name": "Griffeen Valley Nursing Home",
+  "distance_m": 14,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Hamilton Park Care Facility",
+  "google_name": "Hamilton Park Care Facility",
+  "distance_m": 22,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Hollybrook Lodge",
+  "google_name": "Hollybrook Lodge Residential Units",
+  "distance_m": 74,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Holy Family Residence",
+  "google_name": "Holy Family Residence",
+  "distance_m": 22,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Howth Hill Lodge",
+  "google_name": "Howth Hill Lodge Nursing Home",
+  "distance_m": 8,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Kiltipper Woods Care Centre",
+  "google_name": "Kiltipper Woods Care Centre",
+  "distance_m": 67,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Leeson Park House Nursing Home",
+  "google_name": "Leeson Park Nursing Home",
+  "distance_m": 4,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Leopardstown Care Centre",
+  "google_name": "Leopardstown Care Centre",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Leopardstown Park Hospital",
+  "google_name": "Leopardstown Park Hospital",
+  "distance_m": 37,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Lexington House",
+  "google_name": "Lexington House",
+  "distance_m": 16,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Lisheen Nursing Home",
+  "google_name": "Lisheen Nursing Home",
+  "distance_m": 90,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Loughshinny Residential Home",
+  "google_name": "Bartra Loughshinny Residential Nursing Home",
+  "distance_m": 32,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Lusk Community Unit",
+  "google_name": "Lusk Community Unit",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Marian House",
+  "google_name": "Holy Faith Sisters Generalate",
+  "distance_m": 61,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Maryfield Nursing Home",
+  "google_name": "Maryfield Nursing Home",
+  "distance_m": 31,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Marymount Care Centre",
+  "google_name": "Marymount Care Centre",
+  "distance_m": 7,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Millbrook Manor Nursing Home",
+  "google_name": "Millbrook Manor Nursing Home",
+  "distance_m": 25,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Moorehall Lodge Balbriggan",
+  "google_name": "Moorehall Lodge Balbriggan",
+  "distance_m": 44,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Mount Hybla Private",
+  "google_name": "Mount Hybla Nursing Home",
+  "distance_m": 27,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Mount Sackville Nursing Home",
+  "google_name": "Mount Sackville Nursing Home",
+  "distance_m": 60,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Mount Tabor Nursing Home and Care Centre",
+  "google_name": "Mount Tabor/Dublin central mission",
+  "distance_m": 14,
+  "photo_count": 2,
+  "approved": false
+ },
+ {
+  "centre_name": "Navan Road Community Unit",
+  "google_name": "Navan Road Primary Care Centre",
+  "distance_m": 1825,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Nazareth House,  Dublin",
+  "google_name": "Nazareth House",
+  "distance_m": 24,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Nephin Nursing Home",
+  "google_name": "Nephin Nursing Home",
+  "distance_m": 11,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Newpark Care Centre",
+  "google_name": "Newpark Care Centre",
+  "distance_m": 0,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Newtownpark House",
+  "google_name": "Newtownpark House Nursing Home",
+  "distance_m": 25,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Northwood Residential Home",
+  "google_name": "Northwood Nursing Home",
+  "distance_m": 15,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Oakwood Lodge Nursing Home",
+  "google_name": "Oakwood Lodge Nursing Home",
+  "distance_m": 10,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "Orwell Private",
+  "google_name": "Orwell Healthcare",
+  "distance_m": 22,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Orwell Queen of Peace",
+  "google_name": "Garville Private",
+  "distance_m": 69,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Our Lady's Manor",
+  "google_name": "Our Lady's Manor Nursing Home",
+  "distance_m": 109,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Peamount Healthcare Older Persons Service",
+  "google_name": "Peamount Healthcare",
+  "distance_m": 212,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Phoenix Park Community Nursing Units",
+  "google_name": "Phoenix Park Community Nursing Unit",
+  "distance_m": 135,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Raheny Community Nursing Unit",
+  "google_name": "Raheny Community Nursing Unit",
+  "distance_m": 22,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Raheny House Nursing Home",
+  "google_name": "Raheny House Nursing Home",
+  "distance_m": 12,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Rathborne Nursing Home",
+  "google_name": "Rathborne Nursing Home, Dublin 15",
+  "distance_m": 29,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Rush Nursing Home",
+  "google_name": "Rush Nursing Home",
+  "distance_m": 17,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Sacred Heart Residence",
+  "google_name": "Sacred Heart Residence",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Santa Sabina House",
+  "google_name": "Santa Sabina House Nursing Home",
+  "distance_m": 38,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Shrewsbury House Nursing Home",
+  "google_name": "Nazareth House",
+  "distance_m": 1989,
+  "photo_count": 7,
+  "approved": false
+ },
+ {
+  "centre_name": "Simpson's Hospital",
+  "google_name": "Simpson's Hospital",
+  "distance_m": 104,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "St Doolagh's Park Care and Rehabilitation Centre",
+  "google_name": "St Doolagh's Park Care & Rehabilitation Centre",
+  "distance_m": 29,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "St Gabriel's Nursing Home",
+  "google_name": "St. Gabriel's Nursing Home",
+  "distance_m": 31,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Gladys Nursing Home",
+  "google_name": "St. Glady's Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St John's House",
+  "google_name": "St John's House",
+  "distance_m": 24,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Joseph's Centre",
+  "google_name": "St. Joseph's Centre",
+  "distance_m": 27276,
+  "photo_count": 2,
+  "approved": false
+ },
+ {
+  "centre_name": "St Pappin's Nursing Home",
+  "google_name": "St. Pappin's Nursing Home",
+  "distance_m": 32,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Patrick's Care Centre",
+  "google_name": "St. Patrick's Care Centre",
+  "distance_m": 35,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Swords Nursing Home",
+  "google_name": "Swords Nursing Home",
+  "distance_m": 70,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Talbot Lodge Nursing Home",
+  "google_name": "Talbot Lodge",
+  "distance_m": 103,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Tara Winthrop Private Clinic",
+  "google_name": "Tara Winthrop Private Clinic",
+  "distance_m": 34,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Terenure Nursing Home",
+  "google_name": "Terenure Nursing Home",
+  "distance_m": 1,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "The Ardmore",
+  "google_name": "The Ardmore By CareChoice - Finglas Nursing Home",
+  "distance_m": 28,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "The Fern Dean",
+  "google_name": "The Fern Dean Blackrock",
+  "distance_m": 17,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "The Fern Dean Stepaside",
+  "google_name": "The Fern Dean Stepaside",
+  "distance_m": 16,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "The Four Ferns",
+  "google_name": "The Four Ferns",
+  "distance_m": 12,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "The Marlay Nursing Home",
+  "google_name": "The Marlay Nursing Home",
+  "distance_m": 28,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "The Meath Community Unit",
+  "google_name": "The Meath Community Unit",
+  "distance_m": 69,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Carton",
+  "google_name": "The Residence Carton",
+  "distance_m": 89,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Citywest",
+  "google_name": "The Residence Citywest",
+  "distance_m": 18,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Portmarnock",
+  "google_name": "The Residence Portmarnock",
+  "distance_m": 12,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Santry",
+  "google_name": "The Residence Santry",
+  "distance_m": 14,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "The Royal Hospital Donnybrook",
+  "google_name": "The Royal Hospital Donnybrook",
+  "distance_m": 30,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Tymon North Community Unit",
+  "google_name": "Tymon North Community Unit",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Woodlawn Manor Nursing Home",
+  "google_name": "Woodlawn Manor Nursing Home",
+  "distance_m": 47,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "An Teaghlach Uilinn Nursing Home",
+  "google_name": "An Teaghlach Uilinn",
+  "distance_m": 7,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Aras Chois Fharraige",
+  "google_name": "Aras Chois Fharraige",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Áras Mhic Dara Community Nursing Unit",
+  "google_name": "Aras Mac Dara",
+  "distance_m": 35,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Áras Ronáin Community Nursing Unit",
+  "google_name": "Aras Ronain Nursing Home",
+  "distance_m": 23,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballinasloe Care Centre",
+  "google_name": "Mowlam ballinasloe",
+  "distance_m": 7,
+  "photo_count": 6,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballinasloe Community Nursing Unit",
+  "google_name": "St. Brigid's Community Nursing Home",
+  "distance_m": 27,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballinderry Nursing Home",
+  "google_name": "Ballinderry Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Blake Manor Nursing Home",
+  "google_name": "Blake Manor Nursing Home",
+  "distance_m": 6,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Brampton Care & Rehabilitation Centre",
+  "google_name": "Brampton Care & Rehabilitation Centre",
+  "distance_m": 16,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Brooklodge Nursing Home Lmited",
+  "google_name": "Brooklodge or brooklawn Nursing Home",
+  "distance_m": 264,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Bushfield Care Centre",
+  "google_name": "BUSHFIELD CARE CENTRE",
+  "distance_m": 25,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Caiseal Geal Teach Altranais",
+  "google_name": "Castlegar Nursing Home",
+  "distance_m": 5,
+  "photo_count": 9,
+  "approved": false
+ },
+ {
+  "centre_name": "Carna Nursing and Retirement Home",
+  "google_name": "Teach Altranais Charna",
+  "distance_m": 23,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Central Park Nursing Home",
+  "google_name": "Central Park Nursing Home",
+  "distance_m": 61,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Clarinbridge Care Centre",
+  "google_name": "Clarinbridge Care Centre",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Flannery's Nursing Home",
+  "google_name": "Flannery's Nursing Home",
+  "distance_m": 10,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Garbally View Nursing Home",
+  "google_name": "Garbally View Nursing Home",
+  "distance_m": 0,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Greenpark Nursing Home",
+  "google_name": "Green Park Nursing Home",
+  "distance_m": 19,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Hillside Nursing Home",
+  "google_name": "Hillside Nursing Home",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Holy Family Nursing Home",
+  "google_name": "The Holy Family Nursing Home",
+  "distance_m": 12,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "Joe & Helen O'Toole Community Nursing Unit",
+  "google_name": "Joe & Helen O'Toole Community Nursing Home",
+  "distance_m": 27,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Kilcolgan Nursing Home",
+  "google_name": "Kilcolgan Nursing Home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Little Flower Nursing Home",
+  "google_name": "Little Flower Nursing Home",
+  "distance_m": 55,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Maryfield Nursing Home",
+  "google_name": "Maryfield Nursing Home",
+  "distance_m": 7,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Merlin Park Community Nursing Unit 6",
+  "google_name": "Unit 5 & 6 Merlin Park University Hospital",
+  "distance_m": 189,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Mountbellew Nursing Home",
+  "google_name": "Mountbellew Private Nursing Home",
+  "distance_m": 0,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Moycullen Nursing Home",
+  "google_name": "Moycullen Nursing Home",
+  "distance_m": 6,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Mystical Rose Private Nursing Home",
+  "google_name": "Mystical Rose Nursing Home",
+  "distance_m": 11,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Nightingale Nursing Home",
+  "google_name": "Nightingale Nursing Home",
+  "distance_m": 31,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Portumna Retirement Village",
+  "google_name": "Portumna Retirement Village",
+  "distance_m": 53,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Rosemount House Nursing Home",
+  "google_name": "Rosemount Nursing Home",
+  "distance_m": 16,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Rushmore",
+  "google_name": "Rushmore Nursing Home",
+  "distance_m": 5,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "St Anne's Community Nursing Unit",
+  "google_name": "St Annes Community Nursing Unit",
+  "distance_m": 43,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Brendan's Community Nursing Unit",
+  "google_name": "St. Brendan's Community Nursing Unit",
+  "distance_m": 30111,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "St David's Nursing Home",
+  "google_name": "St David's Retirement Home",
+  "distance_m": 0,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Stella Maris Nursing Home",
+  "google_name": "Stella Maris Nursing Home",
+  "distance_m": 13,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "St Francis Nursing Home",
+  "google_name": "Nursing Home",
+  "distance_m": 23,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Mary's Residential Care Centre",
+  "google_name": "St Mary’s Nursing Home",
+  "distance_m": 6,
+  "photo_count": 3,
+  "approved": false
+ },
+ {
+  "centre_name": "Aras Mhuire Nursing Home",
+  "google_name": "Áras Mhuire Nursing Home",
+  "distance_m": 258,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Caherciveen Community Hospital",
+  "google_name": "Cahirciveen Community Hospital (St Anne's)",
+  "distance_m": 27,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Kenmare Community Nursing Unit",
+  "google_name": "Kenmare Community Nursing Unit",
+  "distance_m": 51,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Kenmare Nursing Home",
+  "google_name": "Kenmare Nursing Home",
+  "distance_m": 7,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Kilcara House Nursing Home",
+  "google_name": "Kilcara House Nursing Home",
+  "distance_m": 19,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Killarney Community Nursing Unit",
+  "google_name": "HSE Killarney Community Nursing Unit",
+  "distance_m": 77,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Killarney Nursing Home",
+  "google_name": "Kilarney Nursing Home",
+  "distance_m": 32,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Lystoll Lodge Nursing Home",
+  "google_name": "Lystoll Lodge Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ocean View Care Home",
+  "google_name": "Ocean View Care Home",
+  "distance_m": 17,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ospideal Pobal Chorca Dhuibhne (West Kerry Community Hospital)",
+  "google_name": "West Kerry Community Hospital (HSE)",
+  "distance_m": 18,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "Our Lady of Fatima Home",
+  "google_name": "Our Lady of Fatima Home",
+  "distance_m": 2,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Our Lady of Lourdes Care Facility",
+  "google_name": "Our Lady of Lourdes Nursing Home",
+  "distance_m": 28,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Riverside Nursing Home",
+  "google_name": "MR",
+  "distance_m": 41,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Saint Louis Nursing Home",
+  "google_name": "St Louis Nursing Home",
+  "distance_m": 1,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sonas Nursing Home Ashborough",
+  "google_name": "Sonas Nursing Home Ashborough",
+  "distance_m": 0,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "St Joseph's Home",
+  "google_name": "Saint Joseph's Nursing Home, Killorglin",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St. Joseph's Nursing Home",
+  "google_name": "St Joseph's Nursing Home",
+  "distance_m": 11,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Josephs Unit,  Listowel Community Hospital",
+  "google_name": "Listowel Community Hospital",
+  "distance_m": 15,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Tralee Community Nursing Unit",
+  "google_name": "Community Nursing Unit",
+  "distance_m": 7,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Valentia Hospital",
+  "google_name": "Valentia Hospital",
+  "distance_m": 0,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Whitethorn Lodge Care Home Tralee",
+  "google_name": "Whitethorn Lodge Care Home Tralee",
+  "distance_m": 1,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Willow Brooke Care Centre",
+  "google_name": "Willow Brooke Care Centre",
+  "distance_m": 18,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Ashley Lodge Nursing Home",
+  "google_name": "Ashley Lodge Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Beech Park Nursing Home",
+  "google_name": "Beech Park Nursing Home",
+  "distance_m": 40,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cloverlodge Nursing Home",
+  "google_name": "Cloverlodge Nursing Home",
+  "distance_m": 24,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Craddock House Nursing Home",
+  "google_name": "Craddockhouse Nursing Home",
+  "distance_m": 9,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Curragh Lawn Nursing Home",
+  "google_name": "Curragh Lawn Nursing Home",
+  "distance_m": 8,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Elm Hall Nursing Home",
+  "google_name": "Elm Hall Nursing Home",
+  "distance_m": 10,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Firstcare Mountpleasant Lodge",
+  "google_name": "Mountpleasant Lodge by First Care",
+  "distance_m": 35,
+  "photo_count": 3,
+  "approved": false
+ },
+ {
+  "centre_name": "Glenashling Nursing Home",
+  "google_name": "Glenashling Nursing Home",
+  "distance_m": 8,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Hazel Hall Nursing Home",
+  "google_name": "Hazel Hall Nursing Home",
+  "distance_m": 20,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Larchfield Park Nursing Home",
+  "google_name": "Larchfield Nursing Home",
+  "distance_m": 11,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Lourdesville Nursing Home",
+  "google_name": "Lourdesville Nursing Home",
+  "distance_m": 30,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Maynooth Community Care Unit",
+  "google_name": "Maynooth Community Care Unit",
+  "distance_m": 12,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Maynooth Lodge Nursing Home",
+  "google_name": "Maynooth Lodge Nursing Home",
+  "distance_m": 12,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Mill Lane Manor Private Nursing Home",
+  "google_name": "Mill Lane Manor Nursing Home",
+  "distance_m": 44,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Moyglare Nursing Home",
+  "google_name": "MOYGLARE NURSING HOME",
+  "distance_m": 23,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Oghill Nursing Home",
+  "google_name": "Oghill Nursing Home",
+  "distance_m": 15,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Parke House Nursing Home",
+  "google_name": "Parke House Nursing Home",
+  "distance_m": 4,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Ryevale Nursing Home",
+  "google_name": "Ryevale Nursing Home",
+  "distance_m": 63,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Vincent's Hospital",
+  "google_name": "St. Vincent’s Hospital Nursing Home",
+  "distance_m": 2,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Suncroft Lodge Nursing Home",
+  "google_name": "Suncroft Lodge Nursing Home, Co. Kildare",
+  "distance_m": 8,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Maynooth",
+  "google_name": "The Residence Maynooth",
+  "distance_m": 6,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Willowbrook Nursing Home",
+  "google_name": "Willowbrook Nursing Home",
+  "distance_m": 42,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Archersrath Nursing Home",
+  "google_name": "Archersrath Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Brookhaven Nursing Home",
+  "google_name": "Brookhaven Nursing Home",
+  "distance_m": 0,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Drakelands House Nursing Home",
+  "google_name": "Drakelands House Nursing Home",
+  "distance_m": 1,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Fennor Hill Care Facility",
+  "google_name": "Fennor Hill care facility",
+  "distance_m": 28,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Gahan House",
+  "google_name": "Gahan house",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Gowran Abbey Nursing Home",
+  "google_name": "Gowran Abbey Nursing Home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Kilkenny Care Centre",
+  "google_name": "Kilkenny Care Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Mooncoin Residential Care Centre",
+  "google_name": "Mooncoin Residential Care Centre",
+  "distance_m": 13,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Mount Carmel Supported Care Home",
+  "google_name": "Mount Carmel Care of the Elderly",
+  "distance_m": 13,
+  "photo_count": 1,
+  "approved": false
+ },
+ {
+  "centre_name": "Prague House Care Company Limited By Guarantee",
+  "google_name": "Prague House Care Home",
+  "distance_m": 25,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Rosedale Residential Home",
+  "google_name": "Rosedale Kilmacow Voluntary Housing Association Ltd",
+  "distance_m": 29,
+  "photo_count": 5,
+  "approved": false
+ },
+ {
+  "centre_name": "Sacred Heart Nursing Home",
+  "google_name": "Sacred Heart Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Columba's Hospital",
+  "google_name": "HSE St. Columba’s Hospital",
+  "distance_m": 0,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "St Joseph's Supported Care Home",
+  "google_name": "St. Joseph's Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "The Residence Kilkenny",
+  "google_name": "The Residence Kilkenny",
+  "distance_m": 5,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Tinnypark Nursing Home",
+  "google_name": "Tinnypark Nursing Home",
+  "distance_m": 11,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Kilminchy Lodge Nursing Home",
+  "google_name": "Kilminchy Lodge Nursing Home",
+  "distance_m": 88,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oakdale Nursing Home",
+  "google_name": "Oakdale nursing home",
+  "distance_m": 37,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Sliabh Bladhma Lodge",
+  "google_name": "St. Vincent's Community Nursing Unit",
+  "distance_m": 15,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "St Brigid's Hospital",
+  "google_name": "St Brigids Hospital",
+  "distance_m": 25,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Portlaoise",
+  "google_name": "The Residence Portlaoise",
+  "distance_m": 22,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Arus Breffni Nursing Unit",
+  "google_name": "HSE - West Arus Breffni Nursing Unit",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Arus Carolan Nursing Unit",
+  "google_name": "Arus Carolan (HSE)",
+  "distance_m": 14,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballinamore Nursing Unit",
+  "google_name": "NURSING UNIT, Ballinamore",
+  "distance_m": 47807,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Lough Erril Private Nursing Home",
+  "google_name": "Lough Erril Nursing Home",
+  "distance_m": 1,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Patrick's Community Hospital",
+  "google_name": "St Patricks Community Hospital",
+  "distance_m": 36,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "St Phelim's Nursing Home",
+  "google_name": "St.Phelim's Nursing Home",
+  "distance_m": 52,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Abbot Close Care Centre",
+  "google_name": "Abbot Close Nursing Home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Adare and District Nursing Home",
+  "google_name": "Adare & District Nursing Home",
+  "distance_m": 4,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ard Na Rí Nursing Home",
+  "google_name": "Ard Na Rí Nursing Home",
+  "distance_m": 12,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Beech Lodge Care Facility",
+  "google_name": "Beech Lodge Care Facility",
+  "distance_m": 24,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Beechwood House Nursing Home",
+  "google_name": "Beechwood House Nursing Home",
+  "distance_m": 13,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Caherass Nursing Home",
+  "google_name": "Caherass Nursing Home",
+  "distance_m": 6,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "CareBright Community",
+  "google_name": "CareBright CLG",
+  "distance_m": 15,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Catherine McAuley House",
+  "google_name": "Catherine McAuley House",
+  "distance_m": 14,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Corbally House Nursing Home",
+  "google_name": "Corbally House Nursing Home",
+  "distance_m": 50,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Good Counsel Nursing Home",
+  "google_name": "Good Counsel Nursing Home",
+  "distance_m": 6,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Killeline Care Centre",
+  "google_name": "Killeline Care Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Maria Goretti Nursing Home",
+  "google_name": "Marie Goretti Nursing Home",
+  "distance_m": 15,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Milford Nursing Home",
+  "google_name": "Milford Care Centre",
+  "distance_m": 120,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Raheen Lodge",
+  "google_name": "Raheen Lodge",
+  "distance_m": 23,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Roseville House Nursing Home",
+  "google_name": "Roseville House Nursing Home",
+  "distance_m": 10,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St. Anthony's Nursing Home",
+  "google_name": "St. Anthony's Nursing Home",
+  "distance_m": 40,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "St Camillus Community Hospital",
+  "google_name": "St Camillus' Hospital",
+  "distance_m": 10,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Camillus Community Nursing Unit",
+  "google_name": "St Camillus' Hospital",
+  "distance_m": 10,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Catherine's Nursing Home",
+  "google_name": "St Catherine's Nursing Home & Retirement Village",
+  "distance_m": 31,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Gobnaits Nursing Home",
+  "google_name": "St Gobnait's Nursing Home",
+  "distance_m": 32,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Ita's Community Hospital",
+  "google_name": "St Itas Hospital",
+  "distance_m": 105,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Michael's Nursing Home",
+  "google_name": "St. Michael’s Nursing Home",
+  "distance_m": 13,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Paul's Nursing Home",
+  "google_name": "Saint Paul's Nursing Home",
+  "distance_m": 25,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "The Park Nursing Home",
+  "google_name": "The Park Nursing Home",
+  "distance_m": 107,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Thorpe's Nursing Home",
+  "google_name": "Thorpes Nursing Home",
+  "distance_m": 3,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Laurel Lodge Nursing Home",
+  "google_name": "Laurel Lodge Nursing Home",
+  "distance_m": 10,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Our Lady's Manor Nursing Home",
+  "google_name": "Our Lady's Manor Nursing Home (Edgeworthtown)",
+  "distance_m": 27,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Joseph's Care Centre",
+  "google_name": "St Josephs Care Centre",
+  "distance_m": 17,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Thomond Lodge Nursing Home",
+  "google_name": "Thomond Lodge Nursing Home",
+  "distance_m": 26,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Aras Mhuire Nursing Facility",
+  "google_name": "Aras Mhuire Nursing Facility",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Blackrock Abbey Nursing Home",
+  "google_name": "Blackrock Abbey Nursing Home",
+  "distance_m": 68,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Carlingford Nursing Home",
+  "google_name": "Carlingford Nursing Home",
+  "distance_m": 42,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Curam Care Home Dundalk",
+  "google_name": "Curam Care Home Dundalk",
+  "distance_m": 24,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Dundalk Care Centre",
+  "google_name": "Dundalk Care Centre (Silver Stream Healthcare Group)",
+  "distance_m": 22,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Ferdia Lodge Community Nursing Unit",
+  "google_name": "Ferdia Homevalue",
+  "distance_m": 888,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Moorehall Lodge Ardee",
+  "google_name": "Paddy Joe - Moorehall Lodge",
+  "distance_m": 34,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "St Francis' Nursing Home",
+  "google_name": "St Francis Nursing Home (Mount Oliver) Ltd",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Oliver Plunkett Community Unit",
+  "google_name": "St Oliver Plunkett Hospital",
+  "distance_m": 54,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St. Peter's Nursing Home",
+  "google_name": "St. Peter's Nursing Home, Co Louth",
+  "distance_m": 85,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sunhill Nursing Home",
+  "google_name": "Sunhill Nursing Home",
+  "distance_m": 38,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "The Village Residence",
+  "google_name": "The Village Residence",
+  "distance_m": 111,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "AbbeyBreaffy Nursing Home",
+  "google_name": "AbbeyBreaffy Nursing Home",
+  "distance_m": 11,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Áras Deirbhle Community Nursing Unit",
+  "google_name": "Aras Deirbhle Nursing Home",
+  "distance_m": 56,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ave Maria Nursing Home",
+  "google_name": "Ave Maria Nursing Home",
+  "distance_m": 15,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballinamore House Nursing Home",
+  "google_name": "Ballinamore House Nursing Home",
+  "distance_m": 40,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Blackrocks Nursing Home",
+  "google_name": "Blackrocks Nursing Home",
+  "distance_m": 27,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Brookvale Manor Private Nursing Home",
+  "google_name": "Brookvale Manor Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Claremount Nursing Home",
+  "google_name": "Claremount Nursing Home",
+  "distance_m": 2,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Cuan Chaitriona Nursing Home",
+  "google_name": "Cuan Chaitríona Nursing Home",
+  "distance_m": 6,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "D'Alton Community Nursing Unit",
+  "google_name": "Dalton Community Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Friars Lodge Nursing Home",
+  "google_name": "Friars Lodge Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Hollymount Private Nursing and Retirement Home",
+  "google_name": "Hollymount Private Nursing & Retirement Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Marian House Alzheimer Unit",
+  "google_name": "Marian House Respite Home",
+  "distance_m": 0,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Pilgrims Rest Nursing Home",
+  "google_name": "Pilgrims Rest Nursing Home",
+  "distance_m": 12,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Queen of Peace Nursing Home",
+  "google_name": "Queen of Peace Nursing Home",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Sacred Heart Hospital Castlebar",
+  "google_name": "Sacred Heart Hospital",
+  "distance_m": 43,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Belmullet",
+  "google_name": "Sonas Nursing Home Belmullet",
+  "distance_m": 79,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Knock",
+  "google_name": "Sonas Nursing Home Knock",
+  "distance_m": 11,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Moyridge",
+  "google_name": "Sonas Nursing Home Moyridge",
+  "distance_m": 15,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Riverview",
+  "google_name": "Sonas Nursing Home Riverview",
+  "distance_m": 73,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Attracta's Residence",
+  "google_name": "St. Attracta's Nursing Home",
+  "distance_m": 14,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "St Augustine's Community Nursing Unit",
+  "google_name": "St. Augustine's Community Nursing Unit",
+  "distance_m": 16,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Brendan's High Support Unit",
+  "google_name": "St Brendan's Village",
+  "distance_m": 42,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Fionnan's Community Nursing Unit",
+  "google_name": "St. Fionnan's Community Nursing Unit St",
+  "distance_m": 43,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "The Mac Bride Community Nursing Unit",
+  "google_name": "MacBríde Community Nursing Unit",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Beaufort House",
+  "google_name": "Beaufort House nursing home",
+  "distance_m": 46,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "CareChoice Trim",
+  "google_name": "CareChoice Trim",
+  "distance_m": 20,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Duleek Care Centre",
+  "google_name": "Duleek Care Centre (Silver Stream Healthcare Group)",
+  "distance_m": 2,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Dunboyne Nursing Home",
+  "google_name": "Dunboyne Nursing Home",
+  "distance_m": 21,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Dunshaughlin Care Home",
+  "google_name": "Dunshaughlin care home",
+  "distance_m": 35,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Gormanston Wood Nursing Home",
+  "google_name": "Gormanston Wood Nursing Home, Co Meath",
+  "distance_m": 70,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Hillview Private Nursing & Retirement Residence",
+  "google_name": "Hill View Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Kilmainhamwood Nursing Home",
+  "google_name": "Kilmainhamwood Nursing Home",
+  "distance_m": 3,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Millbury Nursing Home",
+  "google_name": "Millbury Nursing Home",
+  "distance_m": 122,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Moorehall Lodge Drogheda",
+  "google_name": "Moorehall Lodge",
+  "distance_m": 32,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Ratoath Manor Nursing Home",
+  "google_name": "Silver Stream Healthcare Group Management",
+  "distance_m": 28,
+  "photo_count": 2,
+  "approved": false
+ },
+ {
+  "centre_name": "Sancta Maria Nursing Home",
+  "google_name": "Sancta Maria Nursing Home",
+  "distance_m": 0,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Silvergrove Nursing Home Limited",
+  "google_name": "Silvergrove Nursing Home",
+  "distance_m": 7,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Colmcille's Nursing Home",
+  "google_name": "St. Colmcille's Nursing Home",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Columban's Retirement Home",
+  "google_name": "St Columban Missionaries",
+  "distance_m": 108,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "St Elizabeth's Nursing Home",
+  "google_name": "St. Elizabeth's Nursing Home, Athboy",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "St Joseph's Community Nursing Unit",
+  "google_name": "St Joseph's Community Nursing Unit",
+  "distance_m": 33,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "St Ursula's Nursing Home",
+  "google_name": "St Ursulas Nursing Home",
+  "distance_m": 24,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "The Residence Ashbourne",
+  "google_name": "The Residence Ashbourne",
+  "distance_m": 48,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Woodlands House Nursing Home",
+  "google_name": "Woodlands House Nursing Home",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Castleross",
+  "google_name": "A81 X242",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Drumbear Lodge Nursing Home",
+  "google_name": "Drumbear Lodge Limited Nursing Home",
+  "distance_m": 9,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Mullinahinch House Private Nursing Home",
+  "google_name": "Mullinahinch House Private Nursing Home",
+  "distance_m": 7,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "St Anne's Nursing Home",
+  "google_name": "St Anne's Nursing Home",
+  "distance_m": 10,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Mary's Residential Centre",
+  "google_name": "St Marys Hospital Castleblayney",
+  "distance_m": 65,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Birr Community Nursing Unit",
+  "google_name": "Birr Community Nursing Unit",
+  "distance_m": 7,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "Carthage Nursing Home",
+  "google_name": "Carthage Nursing Home",
+  "distance_m": 27,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ealga Lodge Nursing Home",
+  "google_name": "Ealga Lodge Nursing Home",
+  "distance_m": 90,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Edenderry Community Nursing Unit",
+  "google_name": "Ofalia House",
+  "distance_m": 67,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "Eliza Lodge Nursing Home",
+  "google_name": "Eliza Lodge Nursing Home",
+  "distance_m": 68,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Esker Ri Nursing Home",
+  "google_name": "Esker Rí Nursing Home",
+  "distance_m": 151,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Ferbane Care Centre",
+  "google_name": "Ferbane Care Centre",
+  "distance_m": 10,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Riada House Community Nursing Unit",
+  "google_name": "Riada House Nursing Home",
+  "distance_m": 4,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Abbey Haven Care Centre & Nursing Home",
+  "google_name": "Abbey Haven Care Centre & Nursing Home",
+  "distance_m": 55,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Aras Mhathair Phoil",
+  "google_name": "Aras Mhathair Phoíl",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Drumderrig House",
+  "google_name": "Drumderrig House",
+  "distance_m": 38,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Fearna Manor Nursing Home",
+  "google_name": "Fearna Manor Nursing Home",
+  "distance_m": 47,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oakwood Private Nursing Home",
+  "google_name": "Oakwood Nursing Home",
+  "distance_m": 99,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oakwood Private Nursing Home",
+  "google_name": "Oakwood Private Nursing Homes in Ballaghaderreen and Roscommon",
+  "distance_m": 12,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Plunkett Community Nursing Unit",
+  "google_name": "The Plunkett Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sacred Heart Hospital & Care Home",
+  "google_name": "Sacred Heart Hospital.",
+  "distance_m": 68,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Shannon Lodge Nursing Home",
+  "google_name": "Shannon Lodge Nursing Home",
+  "distance_m": 67,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Cloverhill",
+  "google_name": "Sonas Nursing Home Cloverhill",
+  "distance_m": 31,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Innis Ree",
+  "google_name": "Sonas Nursing Home Innis Ree",
+  "distance_m": 0,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Bailey's Nursing Home",
+  "google_name": "Bailey's Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ballymote Community Nursing Unit",
+  "google_name": "Ballymote Community Nursing Unit",
+  "distance_m": 17,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Nazareth House Nursing Home Sligo",
+  "google_name": "Nazareth House Nursing Home",
+  "distance_m": 53,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Sligo Nursing Home",
+  "google_name": "Mowlam Nursing Home",
+  "distance_m": 21,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Ard Na Greine",
+  "google_name": "Sonas Ard na Gréine Nursing Home",
+  "distance_m": 9,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St. John's Community Hospital",
+  "google_name": "Health Service Executive, St Johns Hospital",
+  "distance_m": 14,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "Summerville Healthcare",
+  "google_name": "Summerville Healthcare",
+  "distance_m": 29,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Acorn Lodge",
+  "google_name": "Acorn Lodge",
+  "distance_m": 10,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Ardeen Nursing Home",
+  "google_name": "Ardeen Nursing Home",
+  "distance_m": 52,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Ashlawn House Nursing Home",
+  "google_name": "Ashlawn House Nursing Home",
+  "distance_m": 21,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Bramleigh Lodge Nursing Home",
+  "google_name": "Bramleigh Lodge",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Bushy Park Nursing Home",
+  "google_name": "Bushy Park Nursing Home",
+  "distance_m": 4,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cashel Residential Older Persons Services",
+  "google_name": "Cashel Residential Older Person's Services",
+  "distance_m": 12,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Clonmel Residential Care Centre",
+  "google_name": "Clonmel Residential Care Centre",
+  "distance_m": 76,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Cluain Arann Welfare Home & Community Nursing Unit",
+  "google_name": "Cluain Arran Nursing Home",
+  "distance_m": 28,
+  "photo_count": 4,
+  "approved": false
+ },
+ {
+  "centre_name": "Community Hospital of the Assumption",
+  "google_name": "Community Hospital of the Assumption",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Dean Maxwell Community Nursing Unit",
+  "google_name": "Dean Maxwell Community",
+  "distance_m": 136,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Deerpark Nursing Home",
+  "google_name": "Deerpark Nursing Home",
+  "distance_m": 4,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Greenhill Nursing Home",
+  "google_name": "Greenhill Nursing home",
+  "distance_m": 17,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Millbrae Lodge Nursing Home",
+  "google_name": "Millbrae Lodge Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Mount Carmel Nursing Home",
+  "google_name": "Mount Carmel Nursing Home",
+  "distance_m": 23,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Nenagh Community Nursing Unit",
+  "google_name": "Nenagh Community Nursing Unit",
+  "distance_m": 64,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Nenagh Manor Nursing Home",
+  "google_name": "Nenagh Manor Nursing Home (Silver Stream Healthcare Group)",
+  "distance_m": 14,
+  "photo_count": 8,
+  "approved": false
+ },
+ {
+  "centre_name": "Padre Pio Nursing Home",
+  "google_name": "Padre Pio Nursing Home",
+  "distance_m": 9,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Patterson's Nursing Home",
+  "google_name": "Pattersons Nursing Home",
+  "distance_m": 3,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Rathkeevan Nursing Home",
+  "google_name": "Rathkeevan Nursing Home",
+  "distance_m": 11,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Rivervale Nursing Home",
+  "google_name": "Rivervale Nursing Home",
+  "distance_m": 7,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Sacré Coeur Nursing Home",
+  "google_name": "Sacré Coeur Nursing Home",
+  "distance_m": 7,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Carrick-on-Suir",
+  "google_name": "Sonas Nursing Home Carrick-on-Suir",
+  "distance_m": 2,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Sonas Nursing Home Melview",
+  "google_name": "Sonas Melview Nursing Home",
+  "distance_m": 10,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Anthony's Unit",
+  "google_name": "St Anthony’s unit",
+  "distance_m": 22,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Martha's Nursing Home",
+  "google_name": "St. Martha's Nursing Home",
+  "distance_m": 10,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "St Teresa's Nursing Home",
+  "google_name": "St Teresa's Nursing Home",
+  "distance_m": 89,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "St. Theresa's Nursing Home",
+  "google_name": "St. Theresa's Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "The Cottage Nursing Home",
+  "google_name": "Cottage Nursing Home",
+  "distance_m": 1,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Villa Marie Nursing Home",
+  "google_name": "Villa Marie Nursing Home",
+  "distance_m": 3,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Willowbrook Lodge Nursing Home",
+  "google_name": "Willowbrook Lodge Nursing Home",
+  "distance_m": 45,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Woodlands Nursing Home",
+  "google_name": "Woodlands Nursing Home",
+  "distance_m": 0,
+  "photo_count": 7,
+  "approved": true
+ },
+ {
+  "centre_name": "Carechoice Dungarvan",
+  "google_name": "CareChoice Dungarvan",
+  "distance_m": 141,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Dunabbey House",
+  "google_name": "Dunabbey House",
+  "distance_m": 1,
+  "photo_count": 5,
+  "approved": true
+ },
+ {
+  "centre_name": "Dungarvan Community Hospital",
+  "google_name": "Dungarvan Community Hospital",
+  "distance_m": 44,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Holy Ghost Residential Home",
+  "google_name": "Holy Ghost Residential Home",
+  "distance_m": 16,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Kilbarry Care Centre",
+  "google_name": "Kilbarry Care Centre",
+  "distance_m": 38,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Killure Bridge Nursing Home",
+  "google_name": "Killure Bridge Nursing Home",
+  "distance_m": 18,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "SignaCare Waterford",
+  "google_name": "SignaCare Ferrybank",
+  "distance_m": 4,
+  "photo_count": 2,
+  "approved": false
+ },
+ {
+  "centre_name": "St Carthage's House",
+  "google_name": "St. Carthage's House",
+  "distance_m": 24,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "St Joseph's Home",
+  "google_name": "St Joseph's Nursing Home",
+  "distance_m": 27,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Tramore Nursing Home",
+  "google_name": "Tramore Nursing Home",
+  "distance_m": 21,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Waterford Nursing Home",
+  "google_name": "Mowlam Healthcare Waterford",
+  "distance_m": 1,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Waterford Residential Care Centre",
+  "google_name": "...",
+  "distance_m": 73,
+  "photo_count": 10,
+  "approved": false
+ },
+ {
+  "centre_name": "Bethany House Nursing Home",
+  "google_name": "Bethany House Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cluain Lir Community Nursing Unit",
+  "google_name": "Cluain Lir Care Centre",
+  "distance_m": 27,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Heartlands Care Centre",
+  "google_name": "Clonbrusk Primary Care Centre",
+  "distance_m": 122,
+  "photo_count": 6,
+  "approved": false
+ },
+ {
+  "centre_name": "Moate Nursing Home",
+  "google_name": "Moate Nursing Home Care & Convalescent Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": false
+ },
+ {
+  "centre_name": "Newbrook Nursing Home",
+  "google_name": "Newbrook Nursing Home",
+  "distance_m": 31,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "Portiuncula Nursing Home",
+  "google_name": "Portiuncula Nursing Home",
+  "distance_m": 11,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Retreat Nursing Home",
+  "google_name": "Retreat Nursing Home",
+  "distance_m": 56,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Roselodge Nursing Home",
+  "google_name": "Rose Lodge Nursing Home",
+  "distance_m": 78,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Sonas Nursing Home Athlone",
+  "google_name": "Sonas Nursing Home Athlone",
+  "distance_m": 55,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "St Camillus Nursing Centre",
+  "google_name": "St Camillus Nursing Centre",
+  "distance_m": 54,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Abbeygale House",
+  "google_name": "Farnogue Residential Unit",
+  "distance_m": 15,
+  "photo_count": 3,
+  "approved": false
+ },
+ {
+  "centre_name": "Castlebridge Manor Nursing Home",
+  "google_name": "Castlebridge Manor Nursing Home",
+  "distance_m": 40,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Castle Gardens Nursing Home",
+  "google_name": "Castle Gardens Nursing Home & Memory Care Centre",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Cherry Grove Nursing Home",
+  "google_name": "Cherry Grove Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Gorey Care Centre",
+  "google_name": "Gorey Health Centre",
+  "distance_m": 1710,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Kerlogue Nursing Home",
+  "google_name": "Kerlogue Nursing Home",
+  "distance_m": 4,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Knockeen Nursing Home",
+  "google_name": "Knockeen Nursing Home",
+  "distance_m": 0,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Lawson House Nursing Home",
+  "google_name": "Lawson House Nursing Home",
+  "distance_m": 19,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Middletown House Nursing Home",
+  "google_name": "Middletown House Nursing Home & Retirement Village",
+  "distance_m": 15,
+  "photo_count": 2,
+  "approved": true
+ },
+ {
+  "centre_name": "New Houghton Hospital",
+  "google_name": "New Haughton Hospital",
+  "distance_m": 0,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "New Ross Community Hospital",
+  "google_name": "New Ross Community Hospital",
+  "distance_m": 8,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Oakfield Nursing Home",
+  "google_name": "Oakfield Nursing Home",
+  "distance_m": 4,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "SignaCare Bunclody",
+  "google_name": "SignaCare - Bunclody",
+  "distance_m": 14,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "SignaCare New Ross",
+  "google_name": "SignaCare - New Ross",
+  "distance_m": 35,
+  "photo_count": 9,
+  "approved": true
+ },
+ {
+  "centre_name": "St John's Community Hospital",
+  "google_name": "St. John's Community Hospital",
+  "distance_m": 55,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Valentia Nursing Home",
+  "google_name": "Valentia Nursing Home",
+  "distance_m": 12,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Wygram Nursing Home",
+  "google_name": "Wygram",
+  "distance_m": 75,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Aisling House Nursing Home",
+  "google_name": "Aisling House Nursing Home",
+  "distance_m": 15,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Asgard Lodge Nursing Home",
+  "google_name": "Asgard Lodge Nursing Home",
+  "distance_m": 7,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Atlanta Nursing Home",
+  "google_name": "Atlanta House Nursing Home",
+  "distance_m": 8,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Baltinglass Community Hospital",
+  "google_name": "Baltinglass community hospital",
+  "distance_m": 113,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Cairnhill Nursing Home",
+  "google_name": "Cairnhill Nursing Home, Bray",
+  "distance_m": 12,
+  "photo_count": 4,
+  "approved": true
+ },
+ {
+  "centre_name": "Carnew Nursing Home",
+  "google_name": "Carnew Nursing Home",
+  "distance_m": 43,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Dargle Valley Nursing Home",
+  "google_name": "Dargle Valley Nursing Home",
+  "distance_m": 22,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Dunlavin Nursing Home",
+  "google_name": "Dunlavin Nursing Home",
+  "distance_m": 40,
+  "photo_count": 6,
+  "approved": true
+ },
+ {
+  "centre_name": "Eyrefield Manor Nursing Home",
+  "google_name": "Eyrefield Manor Nursing Home",
+  "distance_m": 5,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Firstcare Blainroe Lodge",
+  "google_name": "Blainroe Lodge",
+  "distance_m": 0,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Firstcare Earlsbrook House",
+  "google_name": "Earlsbrook House",
+  "distance_m": 6,
+  "photo_count": 1,
+  "approved": true
+ },
+ {
+  "centre_name": "Greystones Nursing Home",
+  "google_name": "Greystones Nursing Home",
+  "distance_m": 22,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Kilcoole Lodge Nursing Home",
+  "google_name": "Kilcoole Lodge Nursing Home",
+  "distance_m": 57,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "Kinvara House Nursing Home",
+  "google_name": "Kinvara House Nursing Home",
+  "distance_m": 2,
+  "photo_count": 3,
+  "approved": true
+ },
+ {
+  "centre_name": "Knockrobin Hill Care Home",
+  "google_name": "Knockrobin Hill Care Home",
+  "distance_m": 34,
+  "photo_count": 8,
+  "approved": true
+ },
+ {
+  "centre_name": "Roseville Nursing Home",
+  "google_name": "Roseville Nursing Home Bray",
+  "distance_m": 2,
+  "photo_count": 10,
+  "approved": true
+ },
+ {
+  "centre_name": "St Colman's Residential Care Centre",
+  "google_name": "St. Colmans",
+  "distance_m": 67,
+  "photo_count": 0,
+  "approved": false
+ },
+ {
+  "centre_name": "Tara Care Centre",
+  "google_name": "Tara Care Centre",
+  "distance_m": 4,
+  "photo_count": 2,
+  "approved": true
+ }
+]

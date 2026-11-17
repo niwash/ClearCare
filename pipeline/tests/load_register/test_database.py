@@ -1,17 +1,14 @@
 # Loads register files through the command line into a real PostgreSQL
 # (tests/database.py), as the pipeline's role, and reads them back.
 
-from collections.abc import Iterator, Mapping
+from collections.abc import Iterator
+from datetime import date
 from pathlib import Path
 
 import pytest
 from psycopg.rows import dict_row
 
 from clearcare_pipeline.load_register.__main__ import main
-from clearcare_pipeline.raw_store import FileSystemRawStore
-from clearcare_pipeline.snapshots.manifest import MANIFEST_NAME, append_records
-from clearcare_pipeline.snapshots.snapshot import SnapshotRecord
-from clearcare_pipeline.snapshots.sources import OLDER_PERSONS_REGISTER
 from tests.database import (
     API,
     PASSWORDS,
@@ -20,7 +17,7 @@ from tests.database import (
     Database,
     migrated_database,
 )
-from tests.load_register.fakes import ELM_HALL, centre, register_csv
+from tests.load_register.fakes import ELM_HALL, centre, store_snapshot
 
 pytestmark = pytest.mark.database
 
@@ -53,27 +50,6 @@ def database(server: Database, monkeypatch: pytest.MonkeyPatch) -> Database:
     return server
 
 
-def _snapshot(
-    data_dir: Path, fetched_at: str, *records: Mapping[str, str]
-) -> None:
-    """Stores a register file and its manifest line, as a snapshot run does."""
-    content = register_csv(*records)
-    record = SnapshotRecord(
-        source=OLDER_PERSONS_REGISTER.name,
-        url=OLDER_PERSONS_REGISTER.url,
-        fetched_at=fetched_at,
-        attempts=1,
-        http_status=200,
-        content_type="text/csv",
-        size=len(content),
-        sha256=FileSystemRawStore(data_dir / "raw").put(content),
-        last_modified="Mon, 05 Oct 2026 06:00:00 GMT",
-        etag=None,
-        error=None,
-    )
-    append_records(data_dir / "manifests" / MANIFEST_NAME, [record])
-
-
 def _load(data_dir: Path, *options: str) -> int:
     return main(["--data-dir", str(data_dir), *options])
 
@@ -90,7 +66,7 @@ def _published_names(database: Database) -> list[str]:
 def test_loaded_register_is_what_search_reads(
     database: Database, tmp_path: Path
 ) -> None:
-    _snapshot(
+    store_snapshot(
         tmp_path,
         MONDAY,
         ELM_HALL,
@@ -134,14 +110,86 @@ def test_loaded_register_is_what_search_reads(
     ]
 
 
+def test_registration_and_extra_conditions_are_stored_with_the_entry(
+    database: Database, tmp_path: Path
+) -> None:
+    usual_three = (
+        "Condition 1 The designated centre shall be operated in accordance"
+        " with the Statement of Purpose.Condition 2Only persons aged 18 years"
+        " or older shall be accommodated at the designated centre at any"
+        " time.Condition 3The maximum number of persons that may be"
+        " accommodated at the designated centre is: 62."
+    )
+    store_snapshot(
+        tmp_path,
+        MONDAY,
+        {
+            **ELM_HALL,
+            "Chief_Inspector_Note": "The provider has applied to renew.",
+            "Registration_Conditions": (
+                f"{usual_three}Condition 4No new residents may be admitted to"
+                " rooms 28,  29 and 48.Condition 6All orange rated fire risks"
+                " must be addressed by 31 May 2027."
+            ),
+        },
+        centre("35", Registration_Conditions=usual_three),
+    )
+
+    code = _load(tmp_path)
+
+    with (
+        database.connect(PIPELINE) as connection,
+        connection.cursor(row_factory=dict_row) as cursor,
+    ):
+        entries = cursor.execute(
+            "SELECT centre_id, registration_number, registration_date,"
+            " registration_expiry_date, chief_inspector_note"
+            " FROM clearcare.register_entry ORDER BY centre_id"
+        ).fetchall()
+        extras = cursor.execute(
+            "SELECT centre_id, number, text"
+            " FROM clearcare.register_extra_condition ORDER BY number"
+        ).fetchall()
+    assert code == 0
+    assert entries == [
+        {
+            "centre_id": "34",
+            "registration_number": "REG-0012345",
+            "registration_date": date(2024, 3, 14),
+            "registration_expiry_date": date(2027, 3, 13),
+            "chief_inspector_note": "The provider has applied to renew.",
+        },
+        {
+            "centre_id": "35",
+            "registration_number": "REG-0012345",
+            "registration_date": date(2024, 3, 14),
+            "registration_expiry_date": date(2027, 3, 13),
+            "chief_inspector_note": None,
+        },
+    ]
+    assert extras == [
+        {
+            "centre_id": "34",
+            "number": 4,
+            "text": "No new residents may be admitted to rooms 28, 29 and 48.",
+        },
+        {
+            "centre_id": "34",
+            "number": 6,
+            "text": "All orange rated fire risks must be addressed by 31 May"
+            " 2027.",
+        },
+    ]
+
+
 def test_loading_the_same_snapshot_again_adds_nothing(
     database: Database, tmp_path: Path
 ) -> None:
-    _snapshot(tmp_path, MONDAY, ELM_HALL)
+    store_snapshot(tmp_path, MONDAY, ELM_HALL)
 
     codes = (_load(tmp_path), _load(tmp_path))
     # The same download recorded with another file is refused.
-    _snapshot(tmp_path, MONDAY, centre("34", Centre_Title="Elm Hall Care"))
+    store_snapshot(tmp_path, MONDAY, centre("34", Centre_Title="Elm Hall Care"))
     conflicting = _load(tmp_path)
 
     with database.connect(PIPELINE) as connection:
@@ -158,9 +206,9 @@ def test_loading_the_same_snapshot_again_adds_nothing(
 def test_snapshot_older_than_the_published_one_is_refused(
     database: Database, tmp_path: Path
 ) -> None:
-    _snapshot(tmp_path, TUESDAY, ELM_HALL)
+    store_snapshot(tmp_path, TUESDAY, ELM_HALL)
     _load(tmp_path)
-    _snapshot(tmp_path, MONDAY, centre("34", Centre_Title="Elm Hall Care"))
+    store_snapshot(tmp_path, MONDAY, centre("34", Centre_Title="Elm Hall Care"))
 
     code = _load(tmp_path)
 
@@ -171,9 +219,9 @@ def test_snapshot_older_than_the_published_one_is_refused(
 def test_register_that_lost_over_five_centres_needs_allow_shrink(
     database: Database, tmp_path: Path
 ) -> None:
-    _snapshot(tmp_path, MONDAY, *(centre(str(n)) for n in range(1, 8)))
+    store_snapshot(tmp_path, MONDAY, *(centre(str(n)) for n in range(1, 8)))
     _load(tmp_path)
-    _snapshot(tmp_path, TUESDAY, centre("1", Centre_Title="Elm Hall Care"))
+    store_snapshot(tmp_path, TUESDAY, centre("1", Centre_Title="Elm Hall Care"))
 
     refused = _load(tmp_path)
     names_after_refusal = _published_names(database)

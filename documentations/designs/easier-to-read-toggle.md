@@ -23,7 +23,7 @@ How the toggle works:
 | **Link and button colour** | Navy | Saturated rust. Saturated colours are clearer for older eyes than pale ones [[8]](#ref-8), [[9]](#ref-9). A warm hue rather than blue because, for older eyes, hues can look tinted toward yellow, making "green, blue, and violet hard to distinguish" (Johnson & Finn, 2017, as cited in [[7]](#ref-7)) |
 | **Form field borders** | At least 3:1 (WCAG 1.4.11, AA) [[10]](#ref-10). Card edges stay light because they are decorative | Darker borders on cards as well as fields |
 | **Text size** | 16px body text, i.e. 12 point, the lower of the NIA/NLM sizes [[5]](#ref-5). Some smaller labels | 18px body text and header links, i.e. 13.5 point, just under the larger NIA/NLM size of 14 point (about 18.7px) ("Use 12 point or 14 point type size for body text" [[5]](#ref-5)). Small labels are at least about 16px. NN/g found text in apps "too small … for older adults to read comfortably" [[4]](#ref-4) |
-| **Headings** | Serif | Sans serif, like the body text. NIA/NLM: "Use a sans serif typeface… that is not condensed" [[5]](#ref-5) |
+| **Headings** | Serif | Serif, the same as the standard design, so both designs share one set of fonts (CCARE-232). NIA/NLM advise a sans serif typeface for older readers [[5]](#ref-5); the body text stays sans serif in both. WCAG sets no typeface |
 | **Small labels** | Some in small capitals, such as "Randomly picked centre" on the start page | Normal case. NIA/NLM: "Use all capital letters and italics in headlines only" [[5]](#ref-5) |
 | **Line spacing** | Browser and Tailwind defaults | At least 1.5 (WCAG 1.4.8, AAA) [[10]](#ref-10) |
 | **Line length** | Not limited | At most 80 characters (WCAG 1.4.8, AAA) [[10]](#ref-10) |

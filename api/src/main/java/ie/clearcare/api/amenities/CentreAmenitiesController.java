@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 /** GET /centres/{centre_id}/amenities, as described in api/openapi.yaml. */
@@ -19,10 +20,16 @@ class CentreAmenitiesController {
   // centre_id is not checked against the ID pattern: a value that is not an ID is not a centre
   // either, so it gets the same 404 as one the register does not have.
   @GetMapping("/centres/{centre_id}/amenities")
-  CentreAmenitiesResult get(@PathVariable("centre_id") String centreId) {
+  CentreAmenitiesResult get(
+      @PathVariable("centre_id") String centreId,
+      @RequestParam(name = "version", defaultValue = "amenities-v1") String version) {
+    if (!version.equals("amenities-v1") && !version.equals("amenities-v2")) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, "version must be amenities-v1 or amenities-v2.");
+    }
     CentreAmenitiesLookup lookup =
         repository
-            .find(centreId)
+            .find(centreId, version)
             .orElseThrow(
                 () ->
                     new ResponseStatusException(

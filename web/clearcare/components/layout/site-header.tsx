@@ -1,19 +1,24 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { AccountControls } from "@/components/auth/account-controls";
 import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
+import { LastSearchLink } from "@/components/search/last-search";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 // An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
-// Compare Homes link, which shows how many homes are saved (CCARE-127).
-type NavEntry = { label: string; href: string | null; compare?: true };
+// Compare Homes link, which shows how many homes are saved (CCARE-127). "search" marks Search for
+// Homes, which goes back to the visitor's last search on this visit (CCARE-214).
+type NavEntry = { label: string; href: string | null; compare?: true; search?: true };
 
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
-  { label: "Search for Homes", href: "/search" },
+  // First, as well as the ClearCare name, which not everyone knows leads home (CCARE-186).
+  { label: "Home", href: "/" },
+  { label: "Search for Homes", href: "/search", search: true },
   { label: "Compare Homes", href: "/compare", compare: true },
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
@@ -27,9 +32,26 @@ export const NAV_ITEMS: NavEntry[] = [
   { label: "Survey", href: "/survey" },
 ];
 
+// The ClearCare logo (CCARE-185), the link home, for the header and footer's blue brand band: the
+// house from the logo files, and the name as text in the site's heading font, so it matches the
+// rest of the site (site-logo-mark, globals.css). className sets the size, by font size, and the
+// layout. The house is decorative: the name gives the link its name. unoptimized: an SVG is served
+// as it is.
+export function SiteLogo({ className }: { className: string }) {
+  return (
+    <Link href="/" className={`${className} font-heading font-semibold text-ink no-underline hover:text-ink`}>
+      <Image src="/logos/clearcare-mark-for-blue.svg" alt="" width={64} height={64} unoptimized className="site-logo-mark" />
+      <span>
+        Clear<span className="site-logo-care">Care</span>
+      </span>
+    </Link>
+  );
+}
+
 function NavItem({ item, className }: { item: NavEntry; className: string }) {
   const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
   if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
+  if (item.search) return <LastSearchLink className={linkClass}>{item.label}</LastSearchLink>;
   return item.href ? (
     <Link href={item.href} className={linkClass}>
       {item.label}
@@ -47,19 +69,18 @@ function NavItem({ item, className }: { item: NavEntry; className: string }) {
 // the adult-centred design keeps the band visible there, scrolling sideways if it has to.
 export function SiteHeader() {
   return (
-    <header className="border-b border-line bg-surface">
+    <header className="border-b border-line bg-surface print:hidden">
       {/* Says when a home is added to or removed from the shortlist, on every page (CCARE-127). */}
       <CompareStatus />
       {/* brand-band (globals.css) recolours everything inside it for the brand background. */}
       <div className="brand-band brand-band-deep">
         <div className="page-column flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3 md:gap-x-8 md:px-8 md:py-5 lg:py-6">
-          {/* The name, and under it the motto: what the site is, in one line, on every page (CCARE-179).
-              Only the name is the link home. */}
-          <div className="flex flex-col">
-            <Link href="/" className="w-fit font-heading text-2xl font-semibold text-ink no-underline hover:text-ink md:text-3xl lg:text-4xl tap-target">
-              ClearCare
-            </Link>
-            <p className="text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
+          {/* The logo, and under it the motto: what the site is, in one line, on every page (CCARE-179).
+              Only the logo is the link home. A grid, so the motto starts under the name, not the
+              house: the logo's subgrid shares the columns. */}
+          <div className="grid grid-cols-[auto_1fr] items-center">
+            <SiteLogo className="col-span-2 grid grid-cols-subgrid items-center text-2xl md:text-3xl lg:text-4xl adult:min-h-11" />
+            <p className="col-start-2 text-xs text-ink-muted md:text-sm">Nursing home inspections, made clear</p>
           </div>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
@@ -96,7 +117,16 @@ export function SiteHeader() {
           <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>
-                <NavItem item={item} className="inline-block py-3" />
+                {/* On hover or keyboard focus, a tint of the primary colour grows out from the middle of the
+                    link and fades in behind it, as well as the colour change, which alone was easy to
+                    miss; it presses in a little on a click (CCARE-232). The tint is the link's own
+                    ::before, behind its text (isolate, -z-10). The padding and margins cancel out, so
+                    the links and the band keep their size and place. The standard design only: the
+                    adult-centred one underlines its links already, and keeps still. */}
+                <NavItem
+                  item={item}
+                  className="relative isolate -mx-3 my-1 inline-block px-3 py-2 transition-colors duration-200 before:absolute before:inset-0 before:-z-10 before:scale-75 before:rounded-md before:bg-primary/15 before:opacity-0 before:transition before:duration-200 before:ease-out hover:before:scale-100 hover:before:opacity-100 focus-visible:before:scale-100 focus-visible:before:opacity-100 active:before:scale-95 motion-reduce:before:scale-100 motion-reduce:before:transition-none adult:mx-0 adult:my-0 adult:px-0 adult:py-3 adult:before:hidden"
+                />
               </li>
             ))}
             {/* Only seen in the adult-centred design on phones, where the header button is hidden and

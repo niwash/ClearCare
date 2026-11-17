@@ -5,4 +5,4 @@ package ie.clearcare.api.amenities;
  * none have been extracted for the centre yet. The controller turns a centre that the served
  * register snapshot does not have into 404, so this is never built for one.
  */
-record CentreAmenitiesResult(String centreId, CentreAmenities amenities) {}
+record CentreAmenitiesResult(String centreId, AmenitiesResponse amenities) {}

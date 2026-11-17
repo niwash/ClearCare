@@ -1,26 +1,23 @@
 "use client";
 
-// "Your shortlist" on the search page (CCARE-127), under the filters: the homes saved to compare,
-// each with a ✕, an empty slot for each one still free, and a link to Compare Homes. With nothing
-// saved it says how to add a home, in the left column only; on phones it waits until a home is
-// saved, so it doesn't push the results further down. Once the list is full, the note saying so is
-// here, once, and the results' buttons point to it. A centre page shows it too, beside the home's
-// own actions, with that home marked as "This home" (currentId) (CCARE-179).
+// "Your shortlist" (CCARE-127, CCARE-179): the homes saved to compare, each with a ✕, an empty slot
+// for each one still free, and a link to Compare Homes. With nothing saved it says how to add a
+// home; once the list is full, it says so. It is the content of the panel that slides in from the
+// side (ShortlistDrawer), on the search page and on a home's record, where that home is marked as
+// "This home" (currentId). On the record it was a box under the home's actions until CCARE-212,
+// which took more height than the actions themselves.
 import Link from "next/link";
 import { actionLinkClass } from "@/components/ui/classes";
 import { compareHref, MAX_COMPARED, SHORTLIST_FULL_ID } from "@/lib/compare";
 import { CompareButton } from "./compare-button";
 import { useComparedHomes } from "./compare-store";
 
-export function ShortlistBox({ className = "", currentId }: { className?: string; currentId?: string }) {
+export function ShortlistBox({ currentId }: { currentId?: string }) {
   const homes = useComparedHomes() ?? [];
   const room = MAX_COMPARED - homes.length;
 
   return (
-    <section
-      aria-labelledby="shortlist-h"
-      className={`${className} flex-col gap-3 rounded-lg border-2 border-primary bg-surface p-4 md:p-5 ${homes.length > 0 ? "flex" : "hidden lg:flex"}`}
-    >
+    <section aria-labelledby="shortlist-h" className="flex flex-col gap-3">
       {/* tabIndex -1: focus comes here when a ✕ takes its home, and itself, away. */}
       <h2 id="shortlist-h" tabIndex={-1} className="font-heading text-lg font-semibold md:text-xl">
         Your shortlist{" "}

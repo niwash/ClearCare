@@ -16,6 +16,7 @@ import {
   removeHome,
   repeatedNotCompliant,
 } from "../lib/compare.ts";
+import { toCsv } from "../lib/csv.ts";
 
 const home = (id) => ({ id, name: `Home ${id}` });
 
@@ -27,13 +28,13 @@ test("reads a saved list and drops anything malformed", () => {
   assert.deepEqual(parseCompared(raw), [home("1"), home("3")]);
 });
 
-test("keeps at most three homes", () => {
-  const raw = JSON.stringify([home("1"), home("2"), home("3"), home("4")]);
+test("keeps at most five homes", () => {
+  const raw = JSON.stringify([home("1"), home("2"), home("3"), home("4"), home("5"), home("6")]);
   assert.equal(parseCompared(raw).length, MAX_COMPARED);
 
   let homes = [];
-  for (const id of ["1", "2", "3", "4"]) homes = addHome(homes, home(id));
-  assert.deepEqual(homes.map((h) => h.id), ["1", "2", "3"]);
+  for (const id of ["1", "2", "3", "4", "5", "6"]) homes = addHome(homes, home(id));
+  assert.deepEqual(homes.map((h) => h.id), ["1", "2", "3", "4", "5"]);
 });
 
 test("adds a home once and removes it", () => {
@@ -45,9 +46,23 @@ test("adds a home once and removes it", () => {
 test("puts the IDs in the address and reads them back", () => {
   assert.equal(compareHref([]), "/compare");
   assert.equal(compareHref(["101", "34"]), "/compare?homes=101,34");
-  assert.deepEqual(parseHomesParam("101, 34,abc,101,5,6"), ["101", "34", "5"]);
+  assert.deepEqual(parseHomesParam("101, 34,abc,101,5,6,7,8"), ["101", "34", "5", "6", "7"]);
   assert.deepEqual(parseHomesParam(["7,8", "9"]), ["7", "8"]);
   assert.deepEqual(parseHomesParam(undefined), []);
+});
+
+test("writes CSV a spreadsheet opens safely", () => {
+  const csv = toCsv([
+    ["", "St. Brigid's, Co. Cork"],
+    ['Said "hello"', "line\nbreak"],
+    ["=HYPERLINK(1)", "+353 1 234"],
+    ["Change", -3],
+  ]);
+  assert.ok(csv.startsWith("﻿"));
+  assert.equal(
+    csv.slice(1),
+    `,"St. Brigid's, Co. Cork"\r\n"Said ""hello""","line\nbreak"\r\n'=HYPERLINK(1),'+353 1 234\r\nChange,-3\r\n`,
+  );
 });
 
 // Two homes: A inspected twice, B once. Regulation 5 was only judged at A's first inspection.

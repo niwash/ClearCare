@@ -49,11 +49,14 @@ export async function signOut(): Promise<void> {
   await authRuntime().signOut({ redirect: false });
 
   const current = await headers();
-  const origin = originFrom({
-    "x-forwarded-host": current.get("x-forwarded-host"),
-    "x-forwarded-proto": current.get("x-forwarded-proto"),
-    host: current.get("host"),
-  });
+  const origin = originFrom(
+    {
+      "x-forwarded-host": current.get("x-forwarded-host"),
+      "x-forwarded-proto": current.get("x-forwarded-proto"),
+      host: current.get("host"),
+    },
+    process.env.AUTH_URL,
+  );
 
   redirect(cognitoLogoutUrl(process.env, origin) ?? "/");
 }

@@ -17,7 +17,7 @@ export function NewsBanner() {
       aria-labelledby="news-h"
       className={`${fullWidthClass} brand-band -mt-6 md:-mt-8 [[aria-labelledby=not-alone-h]+&]:mt-0`}
     >
-      <div className="reveal page-column grid items-center gap-8 px-4 py-8 md:grid-cols-[2fr_1fr] md:px-8 md:py-10">
+      <div className="reveal page-column grid items-center gap-8 px-4 py-8 md:grid-cols-[3fr_2fr] md:px-8 md:py-10 lg:gap-14">
         <div className="flex flex-col items-start gap-4">
           <p className="text-sm font-semibold uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">
             In the news · ESRI, 30 June 2025
@@ -41,12 +41,16 @@ export function NewsBanner() {
           </a>
         </div>
 
-        {/* The headline figure, large, in place of nhi.ie's photo. Hidden from screen readers,
-            which already hear it in the heading, and on phones, where it would only repeat it
-            under the button. */}
-        <div aria-hidden className="hidden flex-col items-end gap-1 text-right md:flex">
+        {/* The headline figure, large, in place of nhi.ie's photo, on a lighter panel that fills its
+            column, so the band has no empty stretch between the words and the figure. Hidden from
+            screen readers, which already hear it in the heading, and on phones, where it would only
+            repeat it under the button. */}
+        <div
+          aria-hidden
+          className="hidden flex-col items-center justify-center gap-2 self-stretch rounded-3xl border border-white/15 bg-white/10 px-6 py-8 text-center md:flex adult:rounded-lg"
+        >
           <span className="font-heading text-6xl font-semibold leading-none text-ink md:text-8xl">60%+</span>
-          <span className="max-w-56 text-ink-muted">more care beds and home support hours needed by 2040</span>
+          <span className="max-w-64 text-ink-muted md:text-lg">more care beds and home support hours needed by 2040</span>
         </div>
       </div>
     </section>

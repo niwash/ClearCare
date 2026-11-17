@@ -12,6 +12,7 @@ from clearcare_pipeline.ingest_reports.models import (
 from clearcare_pipeline.ingest_reports.transform import (
     TransformError,
     to_inspection_report,
+    to_thematic_report,
 )
 from clearcare_pipeline.parser.fields import Record, Value
 from clearcare_pipeline.parser.fields import Report as ParsedReport
@@ -163,3 +164,69 @@ def test_compliance_item_is_read() -> None:
             date_to_comply=date(2026, 9, 1),
         ),
     )
+
+
+def _thematic(
+    judgments: tuple[str, ...] = ("Compliant",),
+    cover: dict[str, Value] | None = None,
+) -> ParsedReport:
+    fields: dict[str, Value] = {
+        "inspection_type": "Unannounced",
+        "inspection_date": "21 August 2025",
+        "centre_code": "OSV-0000117",
+        "fieldwork_id": "MON-0047312",
+    }
+    fields.update(cover or {})
+    described: list[Record] = [
+        {"judgment": judgment, "description": "Residents had a good life."}
+        for judgment in judgments
+    ]
+    return ParsedReport(fields=fields, records={"overall_judgment": described})
+
+
+def test_thematic_report_becomes_one_row() -> None:
+    report = to_thematic_report(_thematic(), SOURCE_FILE_ID)
+
+    assert report.source_file_id == SOURCE_FILE_ID
+    assert report.centre_id == "117"
+    assert report.centre_code == "OSV-0000117"
+    assert report.inspection_type == "Unannounced"
+    assert report.inspection_date == date(2025, 8, 21)
+    assert report.fieldwork_id == "MON-0047312"
+    assert report.overall_judgment == "Compliant"
+
+
+def test_overall_judgment_is_kept_as_the_report_prints_it() -> None:
+    # No thematic report so far prints this one.
+    parsed = _thematic(judgments=("Not Compliant",))
+
+    report = to_thematic_report(parsed, SOURCE_FILE_ID)
+
+    assert report.overall_judgment == "Not Compliant"
+
+
+@pytest.mark.parametrize(
+    "key", ["centre_code", "inspection_type", "inspection_date", "fieldwork_id"]
+)
+def test_thematic_report_missing_a_cover_value_is_rejected(key: str) -> None:
+    with pytest.raises(TransformError):
+        to_thematic_report(_thematic(cover={key: None}), SOURCE_FILE_ID)
+
+
+def test_thematic_report_dated_in_another_form_is_rejected() -> None:
+    parsed = _thematic(cover={"inspection_date": "September 25th 2024"})
+
+    with pytest.raises(TransformError, match="September 25th 2024"):
+        to_thematic_report(parsed, SOURCE_FILE_ID)
+
+
+def test_thematic_report_without_an_overall_judgment_is_rejected() -> None:
+    with pytest.raises(TransformError, match="found 0"):
+        to_thematic_report(_thematic(judgments=()), SOURCE_FILE_ID)
+
+
+def test_thematic_report_with_two_overall_judgments_is_rejected() -> None:
+    parsed = _thematic(judgments=("Compliant", "Substantially Compliant"))
+
+    with pytest.raises(TransformError, match="found 2"):
+        to_thematic_report(parsed, SOURCE_FILE_ID)

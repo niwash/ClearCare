@@ -9,8 +9,13 @@ from pathlib import Path
 
 import psycopg
 
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.ingest_reports import database, sources
-from clearcare_pipeline.ingest_reports.run import ingest, parse_report
+from clearcare_pipeline.ingest_reports.run import (
+    ingest,
+    parse_report,
+    parse_thematic_report,
+)
 from clearcare_pipeline.ingest_reports.sources import Source
 from clearcare_pipeline.object_store import S3ObjectStore
 from clearcare_pipeline.parser.text import EXTRACTOR_VERSION
@@ -21,6 +26,8 @@ DEFAULT_BATCH_SIZE = 50
 PARSER_DIR = Path(__file__).resolve().parents[1] / "parser"
 DEFAULT_MAPPER = PARSER_DIR / "mapper.csv"
 DEFAULT_FIELDS = PARSER_DIR / "fields.csv"
+THEMATIC_MAPPER = PARSER_DIR / "thematic_mapper.csv"
+THEMATIC_FIELDS = PARSER_DIR / "thematic_fields.csv"
 
 logger = logging.getLogger(__name__)
 
@@ -48,14 +55,17 @@ def main(argv: Sequence[str] | None = None) -> int:
                 catalogue,
                 writer,
                 parse=lambda body: parse_report(body, args.mapper, args.fields),
+                parse_thematic=lambda body: parse_thematic_report(
+                    body, THEMATIC_MAPPER, THEMATIC_FIELDS
+                ),
                 batch_size=args.batch_size,
             )
     except psycopg.Error as error:
         logger.error("database error: %s", error)
-        return 1
+        return EXIT_FAILED
     except (ManifestError, OSError) as error:
         logger.error("%s", error)
-        return 1
+        return EXIT_FAILED
     logger.info(
         "parsed %d, wrote %d, already loaded %d, skipped %d, failed %d",
         summary.parsed,
@@ -64,7 +74,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         summary.skipped,
         summary.failed,
     )
-    return 0 if summary.failed == 0 else 1
+    if summary.failed == 0:
+        return EXIT_DONE
+    # A layout this version cannot load (ADR-0013) is counted and the next
+    # run tries it again, whatever else that run parsed.
+    return EXIT_RETRY
 
 
 def _source(args: argparse.Namespace) -> Iterator[Source]:

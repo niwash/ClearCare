@@ -37,8 +37,8 @@ export const GUIDES = [
   },
   {
     slug: "reading-inspection-reports",
-    title: "How to Read a HIQA Inspection Report",
-    summary: "What each part of a report means.",
+    title: "Making Sense of a HIQA Inspection Report",
+    summary: "How to use what HIQA found to compare homes and ask informed questions.",
     photo: "/home/report.jpg",
     // Keep her glasses and the documents she is holding.
     photoFocus: "object-[50%_45%]",
@@ -59,7 +59,8 @@ export const GUIDES = [
     photo: "/resources/navigate.jpg",
     // Keep both faces and the phone between them.
     photoFocus: "object-[50%_45%]",
-    status: "draft",
+    // Not marked "draft": its own note says the site is a work in progress, so a label as well
+    // would say it twice (CCARE-233).
   },
 ] as const satisfies readonly Guide[];
 

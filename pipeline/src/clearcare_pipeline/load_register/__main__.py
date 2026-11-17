@@ -1,7 +1,6 @@
 """Command line entry point: ``python -m clearcare_pipeline.load_register``."""
 
 import argparse
-import hashlib
 import logging
 import os
 import sys
@@ -16,11 +15,9 @@ from clearcare_pipeline.load_register.database import (
     publish_snapshot,
 )
 from clearcare_pipeline.load_register.register_csv import (
-    RegisterEntry,
     RegisterFileError,
-    read_register,
+    read_stored_register,
 )
-from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.reports.register import (
     RegisterError,
     latest_register_download,
@@ -53,7 +50,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         logger.error("%s", error)
         return 1
     try:
-        entries = _read_entries(data_dir, download.sha256)
+        entries = read_stored_register(data_dir, download.sha256)
     except (OSError, RegisterFileError) as error:
         logger.error("register snapshot %s: %s", download.sha256, error)
         return 1
@@ -92,14 +89,6 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         help=f"publish even if more than {SHRINK_LIMIT} centres left",
     )
     return parser.parse_args(argv)
-
-
-def _read_entries(data_dir: Path, sha256: str) -> tuple[RegisterEntry, ...]:
-    path = FileSystemRawStore(data_dir / "raw").path_for(sha256)
-    content = path.read_bytes()
-    if hashlib.sha256(content).hexdigest() != sha256:
-        raise RegisterFileError("the stored file does not match its hash")
-    return read_register(content)
 
 
 if __name__ == "__main__":

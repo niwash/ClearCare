@@ -1,54 +1,132 @@
 # Amenities
 
-What each nursing home offers its residents, read from its HIQA inspection reports and served at `GET /centres/{centre_id}/amenities`. Design reasons are in [ADR-0021](adr/0021-amenities-read-from-reports.md). Historical v1 findings are in `Research/Data Extraction/README.md`. Human v2 revision and evaluation are tracked in [CCARE-192](https://niwash.atlassian.net/browse/CCARE-192) and [CCARE-193](https://niwash.atlassian.net/browse/CCARE-193).
+The API serves report-derived amenities with their report ID, inspection date,
+extractor version and model. The values are model output, not established fact.
+Human gold-set evaluation remains separate. Design: [ADR-0021](adr/0021-amenities-read-from-reports.md).
 
-## What the fields mean
+## API versions
 
-The values are what a model (gpt-4o-mini) read from the whole report text, stored with the report they came from. Provider text and inspector observations are not separated yet, and the values have not been checked against a gold set.
+- `GET /centres/{centre_id}/amenities` keeps the v1 response. Explicit
+  `?version=amenities-v1` does the same, including stored v0/v1 results.
+- `GET /centres/{centre_id}/amenities?version=amenities-v2` returns four lists:
+  care_types, room_types, activities and facilities. Each entry has an exact
+  approved item and evidence objects with quote, page_start and page_end.
+- Both use the existing centre_id/amenities envelope and report metadata.
+  A centre with no data for the requested version returns amenities: null,
+  without falling back to another version. An unknown centre gives 404;
+  an unpublished register gives 503. An unsupported version gives 400.
+- V2 omission means not confirmed, not absent. Page numbers include the cover
+  and blank pages. Structural validation does not verify quote truth.
+- Legacy flags remain true/false/null according to what the report states.
+  Null does not mean absence. The default v1 fields are unchanged.
 
-- `care_types`, `room_types`, `activities`, `special_units`: lists of what the report names, such as dementia care, en-suite rooms or a memory care unit. They are not normalised yet, so "physio" and "physiotherapy" are different values.
-- `has_outdoor_space`, `has_transport`, `has_chapel_or_religious_services`: true or false when the report says so, null when it is silent. Null does not mean the home has none. Transport counts only when the centre itself provides it for residents; public transport nearby does not.
-- `dining_notes`, `other_notes`: free text, empty when the report says nothing.
+## Scheduled extraction
 
-Nothing in production fills the table yet. The extractor is not in the pipeline image and needs an OpenAI key, so the endpoint answers `"amenities": null` for every centre until the steps below are run by hand.
+The scheduler runs `clearcare_pipeline.amenities` after report ingestion, text
+extraction and commitment splitting, both at startup and after a reports crawl.
+It is off unless `CLEARCARE_AMENITIES=on`. On AWS, `amenities_enabled` defaults
+to false; enabling it and deploying the task is a separate rollout step.
+The stage uses the task's existing `ANTHROPIC_API_KEY` secret.
 
-## How to run it
+To inspect work without a model call or database write:
 
-The pipeline must have downloaded the reports first, so that `data/raw/` and `data/manifests/inspection-reports.jsonl` exist. The extractor now writes v2 files under `data/amenities/amenities-v2/<centre_id>/<sha256>.json`; the current v1 loader cannot read them until integration PR #133 is ready. Step 2 below is for existing v1 files only.
+```sh
+python -m clearcare_pipeline.amenities --data-dir ./data --dry-run
+```
 
-1. **Run the extractor.** Put `OPENAI_API_KEY=` and your key in `.env` and install the packages listed in `Research/Data Extraction/README.md`. From the repository root:
+For an authorized local run, set `CLEARCARE_AMENITIES=on` and run the same
+command without `--dry-run`. The default limit is 20 reports per invocation;
+use `--limit` to change it. Startup and a due reports crawl can each invoke it.
+The stage stops after three consecutive extraction failures. SDK requests use
+60-second timeouts and at most two SDK retries; the existing single retry for
+invalid structured output is retained.
 
-   ```sh
-   python "Research/Data Extraction/extractor.py" --dry-run --limit 5
-   python "Research/Data Extraction/extractor.py" --limit 5
-   ```
+Selection uses each centre's latest parsed database report, then skips reports
+already loaded at amenities-v2. It never chooses an older report just because
+that report lacks amenities. No key or model client is needed when no work is
+pending. Undated sources are logged and skipped.
 
-   The first command lists which report it would read for 5 homes and calls nothing. The second writes those 5 homes to the versioned v2 paths above. Drop `--limit` to do every home.
+Local outputs use `scheduled-amenities/amenities-v2/` under the data directory,
+separate from manual outputs. With bucket settings configured, successful files
+are saved under `amenities/scheduled/amenities-v2/<centre>/<hash>.json` before
+loading. A later task reuses that archive if a load failed. The existing task
+role already permits reads and writes in the raw bucket; bucket versioning
+retains history. Corrupt or mismatched archive files fail visibly and are not
+overwritten. In local runs without a bucket, keep the data directory between
+retries. Stopping a task before its archive write can require another model call.
 
-2. **Load existing v1 results only.**
+Each successful report is loaded transactionally through the existing v2 loader.
+Failures never write successful empty results or replace existing rows. Missing
+or unreadable PDFs, model refusals, truncation and rate limits leave work pending.
+Failures or deferred work return exit code 3, recorded by the scheduler as an
+incomplete run; database, storage, key or configuration errors return 1 and fail
+the run. Correct the cause and rerun; there is no need to delete stored results.
 
-   ```sh
-   docker compose run --rm --build pipeline clearcare_pipeline.load_amenities --input /data/amenities
-   ```
+The shared extractor is packaged in `pipeline/src/clearcare_pipeline/amenities/`;
+the research CLI uses it too. The prompt, model, PDF page numbering and evidence
+rules are unchanged. Stored section text does not cover the full PDF, so the
+amenities stage reads whole pages only for pending reports using the same
+pdfplumber reader as the manual extractor. It does not copy the section parser
+or add About-section storage. Production coverage checks and human evaluation
+remain separate from scheduling.
 
-   `--build` makes sure the image has the loader. Each file is matched to a stored report by the hash of its PDF. Running it twice adds nothing. `--input` also takes one JSON file holding a list of records.
+## Extract and load
 
-3. **Ask the API.**
+The pipeline must first ingest parsed reports into PostgreSQL and store the PDFs.
+Configure standard libpq connection settings (PGHOST, PGPORT, PGDATABASE, PGUSER
+and PGPASSWORD or a password file) for the extractor. Database selection uses
+inspection date descending, nulls last, then report ID ascending. Undated-only
+centres are logged and skipped because v2 requires a source inspection date.
+Use --report-source manifest explicitly for offline manifest-based extraction.
+Set ANTHROPIC_API_KEY in the environment or root .env; install extractor dependencies
+from Research/Data Extraction/README.md. From the repository root:
 
-   ```sh
-   docker compose up -d --build api
-   curl http://127.0.0.1:8080/centres/1/amenities
-   ```
+```sh
+python "Research/Data Extraction/extractor.py" --dry-run --limit 5
+python "Research/Data Extraction/extractor.py" --limit 5
+docker compose run --rm --build pipeline clearcare_pipeline.load_amenities --input /data/amenities/amenities-v2 --data-dir /data
+```
 
-## Version labels
+The dry run makes no model call; the second command is paid extraction.
+Before writing a file, the extractor checks each quote against the report text
+(Research/Data Extraction/README.md, "Evidence check").
+V2 files live under data/amenities/amenities-v2/<centre_id>/<sha256>.json,
+preserving v1 files and distinct reports. The loader accepts recursive directories
+or one JSON list file. V2 loads need the exact original PDF in the raw store for
+hash/page-bound checks and must match stored centre and PDF hash uniquely.
+A differing inspection date is logged, rather than blocking an exact source
+match. Original output files are retained; the API date comes from the matched
+database report. Ambiguous matches fail the transaction instead of choosing
+arbitrarily.
+The entire load is transactional. Existing report/version rows are never replaced.
 
-| Label | Meaning |
-| --- | --- |
-| `amenities-v0` | The first extraction: the first 12,000 characters of each PDF. |
-| `amenities-v1` | The current extractor: the whole report. |
+The extractor version names the prompt and the schema, not the model, so a run
+with another model writes the same file paths and the same (report_id,
+extractor_version) rows. To replace one model's results with another's, extract
+with `--force`, which rewrites the output files, and load into a database that
+has no amenities-v2 rows for those reports: the loader keeps existing rows, so
+an administrator deletes the rows to replace first, for example
+`DELETE FROM clearcare.report_amenities_v2 WHERE model LIKE 'gpt-%'`. The model
+column on every row says which run it came from.
 
-Rows are append-only. Re-running at the same version adds nothing, so a changed prompt or model needs a new `extractor_version`. The API serves the newest extraction of each centre's newest report.
+V2 files require a timezone-aware UTC extracted_at value. The legacy loader
+keeps its existing optional timestamp and load-time fallback for files without
+one. Existing database rows remain untouched.
 
-## Troubleshooting
+Apply migrations through the normal Flyway process before loading v2. V12 adds
+a separate v2 table and read-only API view; V11 and existing data are not reset.
+Rebuild the API after code changes, then request v2 explicitly:
 
-- **The loader reports unmatched records.** The file was read from a PDF whose hash is not in the database, usually because HIQA has published a newer report since, or the pipeline on this machine has not stored that report. Run the extractor again for that home, after the pipeline has downloaded its latest report.
+```sh
+curl 'http://127.0.0.1:8080/centres/1/amenities?version=amenities-v2'
+```
+
+Both views choose the newest inspection report with matching data, with report
+ID ascending for equal dates, then extraction time descending and insertion ID
+descending. Version labels do not determine recency. A changed prompt or schema
+requires a new extractor version; the model is recorded on every row. V0 was
+truncated text, v1 was whole-report free lists/flags, and v2 uses the approved 93
+categories and item-level evidence.
+
+Unmatched inputs are reported and skipped; correct source identities and ingestion
+before retrying rather than attaching evidence to another report.

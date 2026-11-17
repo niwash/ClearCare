@@ -16,6 +16,7 @@ from clearcare_pipeline.ingest_reports.models import (
     InspectionInspector,
     InspectionRegulation,
     InspectionReport,
+    ThematicReport,
 )
 from clearcare_pipeline.parser.fields import Record, Value
 from clearcare_pipeline.parser.fields import Report as ParsedReport
@@ -47,13 +48,10 @@ def to_inspection_report(
             ID is missing, or the Centre ID is not OSV followed by digits.
     """
     centre_code = _required(parsed, "centre_code")
-    match = CENTRE_CODE.match(centre_code)
-    if match is None:
-        raise TransformError(f"Centre ID is not OSV-nnnnnnn: {centre_code!r}")
     return InspectionReport(
         source_file_id=source_file_id,
         text=parsed.text,
-        centre_id=str(int(match.group(1))),
+        centre_id=register_centre_id(centre_code),
         centre_code=centre_code,
         centre_name=_required(parsed, "centre_name"),
         provider_name=_text(parsed.fields.get("provider_name")),
@@ -74,6 +72,52 @@ def to_inspection_report(
             _item(row) for row in parsed.records.get("compliance_items", ())
         ),
     )
+
+
+def to_thematic_report(
+    parsed: ParsedReport, source_file_id: int
+) -> ThematicReport:
+    """Turns a parsed thematic report into the row the database stores.
+
+    Which overall judgments there are is HIQA's to say, so the judgment is
+    kept as the report prints it.
+
+    Raises:
+        TransformError: If a cover value is missing, the Centre ID is not OSV
+            followed by digits, the date of inspection is not a date, or the
+            report does not have exactly one overall judgment.
+    """
+    centre_code = _required(parsed, "centre_code")
+    judgments = parsed.records.get("overall_judgment", ())
+    if len(judgments) != 1:
+        raise TransformError(
+            f"expected one overall judgment, found {len(judgments)}"
+        )
+    return ThematicReport(
+        source_file_id=source_file_id,
+        centre_id=register_centre_id(centre_code),
+        centre_code=centre_code,
+        inspection_type=_required(parsed, "inspection_type"),
+        inspection_date=_required_date(
+            parsed.fields.get("inspection_date"),
+            INSPECTION_DATE,
+            "the date of inspection",
+        ),
+        fieldwork_id=_required(parsed, "fieldwork_id"),
+        overall_judgment=_field(judgments[0], "judgment"),
+    )
+
+
+def register_centre_id(centre_code: str) -> str:
+    """Returns the register's centre ID for the Centre ID a report prints.
+
+    Raises:
+        TransformError: If the Centre ID is not OSV followed by digits.
+    """
+    match = CENTRE_CODE.match(centre_code)
+    if match is None:
+        raise TransformError(f"Centre ID is not OSV-nnnnnnn: {centre_code!r}")
+    return str(int(match.group(1)))
 
 
 def _text(value: Value) -> str | None:

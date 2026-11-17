@@ -18,6 +18,7 @@ from clearcare_pipeline.contract_prices.stored import (
     StoredPriceListsError,
     stored_price_lists,
 )
+from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 
 PARSER_DIR = Path(__file__).resolve().parents[1] / "parser"
 DEFAULT_MAPPER = PARSER_DIR / "contract_price_mapper.csv"
@@ -29,8 +30,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Runs the ingest from the command line.
 
     --public and --private each give the list's PDF and the page it was
-    published on, which is stored beside it. --data-dir takes the newest
-    downloaded copy of each list instead, and the PDF's own URL.
+    published on, which is stored beside it. --data-dir takes every
+    downloaded copy of each list instead, oldest first, and the PDF's own
+    URL.
     """
     args = _parse_args(argv)
     logging.basicConfig(
@@ -43,11 +45,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             files = stored_price_lists(args.data_dir)
         except StoredPriceListsError as error:
             logger.error("%s", error)
-            return 1
+            return EXIT_FAILED
         if not files:
             # Nothing has been downloaded yet, as on a fresh clone.
             logger.info("no stored price lists")
-            return 0
+            return EXIT_DONE
     try:
         # autocommit: the writer commits each list in its own transaction.
         with psycopg.connect(autocommit=True) as connection:
@@ -64,7 +66,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
     except psycopg.Error as error:
         logger.error("database error: %s", error)
-        return 1
+        return EXIT_FAILED
     logger.info(
         "parsed %d lists, wrote %d, already loaded %d, %d prices,"
         " skipped %d, failed %d",
@@ -75,7 +77,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         summary.skipped,
         summary.failed,
     )
-    return 0 if summary.failed == 0 else 1
+    if summary.failed == 0:
+        return EXIT_DONE
+    # A list this version cannot read is counted and tried again.
+    return EXIT_RETRY
 
 
 def _files(args: argparse.Namespace) -> list[PriceListFile]:
@@ -111,7 +116,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        help="directory that holds raw/ and manifests/; loads the newest"
+        help="directory that holds raw/ and manifests/; loads every"
         " downloaded copy of each list",
     )
     parser.add_argument(

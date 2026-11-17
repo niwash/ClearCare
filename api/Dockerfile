@@ -8,6 +8,8 @@ COPY mvnw pom.xml ./
 COPY .mvn .mvn
 RUN ./mvnw -q dependency:go-offline
 COPY src src
+# The API reads the amenity item names from the contract (pom.xml).
+COPY openapi.yaml ./
 # The tests need Docker, so they run in the checks, not here.
 RUN ./mvnw -q -DskipTests package
 

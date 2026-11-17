@@ -4,9 +4,10 @@ import Link from "next/link";
 import { DraftLabel } from "@/components/guides/guide-header";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
-import { comingSoonClass, fullWidthClass, linkCardClass, stretchedActionClass } from "@/components/ui/classes";
+import { comingSoonClass, eyebrowClass, fullWidthClass, linkCardClass, stretchedActionClass } from "@/components/ui/classes";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
+import { SlideUp } from "@/components/ui/slide-up";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export const metadata: Metadata = {
@@ -29,7 +30,7 @@ const PUBLISHER_KINDS: Record<string, OrganisationKind> = {
   HIQA: "regulator",
 };
 
-// Checked 19 Oct 2026.
+// Every link answered on 12 Nov 2026 (CCARE-233).
 const OFFICIAL_LINKS: OfficialLink[] = [
   {
     title: "Fair Deal scheme",
@@ -56,7 +57,9 @@ const OFFICIAL_LINKS: OfficialLink[] = [
     href: "https://www.ccpc.ie/manage-your-money/planning-for-the-future/how-to-plan-for-the-future/moving-into-a-nursing-home",
   },
   {
-    // HIQA's national standards page still lists the 2016 standards as current (checked 19 Oct 2026).
+    // HIQA's national standards page still lists the 2016 standards as current: checked 19 Oct 2026,
+    // and confirmed by the team on hiqa.ie on 12 Nov 2026, as its pages refuse automated requests
+    // (https://www.hiqa.ie/reports-and-publications/standard/national-standards-residential-care-settings-older-people-ireland).
     title: "Your guide to the National Standards, 2016 (PDF)",
     publisher: "HIQA",
     summary: "What good care in a nursing home looks like. Published in 2016, and still the current standards.",
@@ -68,18 +71,24 @@ const OFFICIAL_LINKS: OfficialLink[] = [
 export default function ResourcesPage() {
   return (
     <>
+      {/* The headings and cards further down slide up as they come into view (CCARE-186). */}
+      <SlideUp slideOnOpen={false} />
+
       <ResourcesHero />
 
       <section aria-labelledby="guides-h" className="flex flex-col gap-6">
-        <div className="flex max-w-3xl flex-col gap-2">
+        <div className="reveal flex max-w-3xl flex-col gap-2">
           <h2 id="guides-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Our Guides
           </h2>
         </div>
-        <ul className="grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
+        {/* Five cards: from desktop width two larger ones over three, so no row ends in a gap
+            (CCARE-233). The first, the overview, is marked as the place to start, as How to navigate
+            ClearCare says it is. */}
+        <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-6">
           {GUIDES.map((guide, index) => (
             // The first card's photo is the largest thing near the top of the page, so it loads first.
-            <GuideCard key={guide.slug} guide={guide} priority={index === 0} />
+            <GuideCard key={guide.slug} guide={guide} priority={index === 0} startHere={index === 0} wide={index < 2} />
           ))}
         </ul>
       </section>
@@ -114,12 +123,22 @@ function ResourcesHero() {
 // photo beside the words; from sm up a card with a wide, shallow photo, three to a row from lg. A
 // guide that isn't written yet has no link, "Coming soon" in its place, and the dashed look of
 // other unfinished features.
-function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boolean }) {
+function GuideCard({
+  guide,
+  priority = false,
+  startHere = false,
+  wide = false,
+}: {
+  guide: Guide;
+  priority?: boolean;
+  startHere?: boolean; // marks the guide to read first
+  wide?: boolean; // half the row from desktop width, rather than a third
+}) {
   const comingSoon = guide.status === "coming-soon";
 
   return (
     <li
-      className={`relative flex overflow-hidden sm:flex-col ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
+      className={`relative flex overflow-hidden sm:flex-col ${wide ? "lg:col-span-3" : "lg:col-span-2"} ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
     >
       <div className="relative w-28 shrink-0 sm:aspect-[2/1] sm:w-auto">
         <Image
@@ -127,23 +146,22 @@ function GuideCard({ guide, priority = false }: { guide: Guide; priority?: boole
           alt=""
           fill
           priority={priority}
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 7rem"
+          sizes="(min-width: 1024px) 50vw, (min-width: 640px) 50vw, 7rem"
           // A slow, slight zoom as the card lifts (linkCardClass); not for reduced motion or the
           // adult-centred design.
           className={`object-cover transition-transform duration-700 motion-safe:group-hover:scale-105 adult:transition-none adult:group-hover:scale-100 ${guide.photoFocus ?? "object-[50%_30%]"}`}
         />
       </div>
       <div className="flex flex-1 flex-col items-start gap-1.5 p-4 md:p-5">
+        {startHere && <span className={eyebrowClass}>Start here</span>}
         <h3 className="font-heading text-lg font-semibold text-ink md:text-xl">{guide.title}</h3>
         {guide.status === "draft" && <DraftLabel />}
         <p className="flex-1 text-ink-muted">{guide.summary}</p>
         {comingSoon ? (
           <span className="mt-1 font-semibold text-ink-muted">Coming soon</span>
         ) : (
-          <Link
-            href={`/guides/${guide.slug}`}
-            className="mt-1 inline-flex items-center gap-1.5 font-semibold no-underline after:absolute after:inset-0 hover:underline"
-          >
+          // The same button as the guide cards elsewhere and the official sites below (CCARE-214).
+          <Link href={`/guides/${guide.slug}`} className={`${stretchedActionClass} mt-2`}>
             Read guide<span className="sr-only">: {guide.title}</span>
             <span aria-hidden>→</span>
           </Link>
@@ -166,7 +184,7 @@ function OfficialInformation() {
     >
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-        <div className="flex max-w-3xl flex-col gap-2">
+        <div className="reveal flex max-w-3xl flex-col gap-2">
           <h2 id="official-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Official Information
           </h2>
@@ -177,13 +195,14 @@ function OfficialInformation() {
             These organisations do not endorse ClearCare.
           </p>
         </div>
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {OFFICIAL_LINKS.map((link) => {
+        {/* Five cards, two over three from desktop width, like the guides above. */}
+        <ul className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          {OFFICIAL_LINKS.map((link, index) => {
             const isPdf = link.href.toLowerCase().endsWith(".pdf");
             return (
               <li
                 key={link.href}
-                className={`${linkCardClass} relative flex flex-col items-start gap-2 p-5`}
+                className={`${linkCardClass} relative flex flex-col items-start gap-2 p-5 ${index < 2 ? "lg:col-span-3" : "lg:col-span-2"}`}
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-ink">
                   <OrganisationIcon kind={PUBLISHER_KINDS[link.publisher] ?? "public-body"} />

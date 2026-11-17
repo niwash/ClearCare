@@ -1,0 +1,11 @@
+kind,group,key,location,source,match,index,transform
+# The cover also names the provider, who can be a person, so no row reads it.
+field,,inspection_type,cover,table_cell,Type of inspection:,,collapse_ws
+field,,inspection_date,cover,table_cell,Date of inspection:,,collapse_ws
+field,,centre_code,cover,regex,OSV-[0-9]+,,strip
+field,,fieldwork_id,cover,table_cell,Fieldwork ID:,,strip
+# The overall judgment has no label. It is the first cell of the one table row
+# in its section that has two cells; the second is HIQA's description of the
+# judgment, read so that the row is told from the rows of one cell around it.
+record,overall_judgment,judgment,overall_judgment,table_row,,0,collapse_ws
+record,overall_judgment,description,overall_judgment,table_row,,1,collapse_ws

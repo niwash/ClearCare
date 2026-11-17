@@ -1,12 +1,16 @@
 """Database tests for the ingest's catalogue and writer. These need Docker."""
 
+import hashlib
+import logging
 from dataclasses import replace
 from datetime import date, time
 from pathlib import Path
 
 import pytest
 
+from clearcare_pipeline.exit_codes import EXIT_DONE
 from clearcare_pipeline.extract_text import backfill
+from clearcare_pipeline.ingest_reports.__main__ import main
 from clearcare_pipeline.ingest_reports.database import (
     DatabaseCatalogue,
     ReportWriter,
@@ -16,11 +20,13 @@ from clearcare_pipeline.ingest_reports.models import (
     InspectionInspector,
     InspectionRegulation,
     InspectionReport,
+    ThematicReport,
 )
 from clearcare_pipeline.ingest_reports.run import parse_report
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.split_commitments import backfill as split_commitments
-from tests.database import API, PIPELINE, migrated_database
+from tests.database import API, PASSWORDS, PIPELINE, migrated_database
+from tests.report_fixtures import write_thematic_report_pdf
 
 SHA = "ab" * 32
 
@@ -133,6 +139,109 @@ def test_batch_is_written_once() -> None:
                 "SELECT count(*) FROM clearcare.inspection_report"
             ).fetchone()
         assert seen == (1,)
+
+
+@pytest.mark.database
+def test_thematic_report_is_written_once() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        stored = connection.execute(
+            STORE, ("https://example.test/thematic.pdf", SHA)
+        ).fetchone()
+        assert stored is not None
+        report = ThematicReport(
+            source_file_id=stored[0],
+            centre_id="117",
+            centre_code="OSV-0000117",
+            inspection_type="Unannounced",
+            inspection_date=date(2025, 8, 21),
+            fieldwork_id="MON-0047312",
+            overall_judgment="Substantially Compliant",
+        )
+        writer = ReportWriter(connection, "test-version")
+
+        assert not DatabaseCatalogue(connection).report_loaded(SHA)
+        assert writer.write_batch([report]) == 1
+        assert writer.write_batch([report]) == 0
+        # Loaded, so the next run does not read the file again.
+        assert DatabaseCatalogue(connection).report_loaded(SHA)
+
+        rows = connection.execute(
+            "SELECT source_file_id, centre_id, centre_code, inspection_type,"
+            " inspection_date, fieldwork_id, overall_judgment"
+            " FROM clearcare.thematic_report"
+        ).fetchall()
+        assert rows == [
+            (
+                stored[0],
+                "117",
+                "OSV-0000117",
+                "Unannounced",
+                date(2025, 8, 21),
+                "MON-0047312",
+                "Substantially Compliant",
+            )
+        ]
+
+
+@pytest.mark.database
+def test_thematic_report_file_is_loaded_apart_from_inspection_reports(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    path = tmp_path / "thematic.pdf"
+    write_thematic_report_pdf(path)
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('238')"
+        )
+        connection.execute(STORE, ("https://example.test/thematic.pdf", digest))
+        # The command finds the database through libpq's variables.
+        monkeypatch.setenv("PGHOST", database.host)
+        monkeypatch.setenv("PGPORT", str(database.port))
+        monkeypatch.setenv("PGDATABASE", "clearcare")
+        monkeypatch.setenv("PGUSER", PIPELINE)
+        monkeypatch.setenv("PGPASSWORD", PASSWORDS[PIPELINE])
+        # The command's summary is logged at INFO.
+        caplog.set_level(logging.INFO)
+
+        assert main(["--report", str(path)]) == EXIT_DONE
+        assert "wrote 1, already loaded 0, skipped 0, failed 0" in caplog.text
+        assert main(["--report", str(path)]) == EXIT_DONE
+        assert "wrote 0, already loaded 1, skipped 0, failed 0" in caplog.text
+
+        rows = connection.execute(
+            "SELECT centre_id, centre_code, inspection_type, inspection_date,"
+            " fieldwork_id, overall_judgment FROM clearcare.thematic_report"
+        ).fetchall()
+        assert rows == [
+            (
+                "238",
+                "OSV-0000238",
+                "Unannounced",
+                date(2025, 8, 21),
+                "MON-0047312",
+                "Compliant",
+            )
+        ]
+        # The re-assessment views and the stages after the ingest read
+        # inspection_report, so a thematic report must not be a row of it.
+        regulation_reports = connection.execute(
+            "SELECT count(*) FROM clearcare.inspection_report"
+        ).fetchone()
+        assert regulation_reports == (0,)
 
 
 @pytest.mark.database

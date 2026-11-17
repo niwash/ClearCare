@@ -1,3 +1,5 @@
+from datetime import date
+
 import pytest
 
 from clearcare_pipeline.load_register.register_csv import (
@@ -15,12 +17,21 @@ from tests.load_register.fakes import (
 )
 
 BOM = "﻿".encode()
+# Centre 715's note, as HIQA prints it.
+NOTE = (
+    "The registered provider has notified the chief inspector of their"
+    " intention to cease and close the designated centre."
+)
 
 
 def test_register_is_read_in_file_order() -> None:
     register = BOM + register_csv(
         # A condition over two lines is still one record.
-        {**ELM_HALL, "Registration_Conditions": "Condition 1\nCondition 2"},
+        {
+            **ELM_HALL,
+            "Registration_Conditions": "Condition 1\nCondition 2",
+            "Chief_Inspector_Note": NOTE,
+        },
         centre(
             "1",
             Centre_Title="Aclare House Nursing Home",
@@ -30,6 +41,9 @@ def test_register_is_read_in_file_order() -> None:
             Centre_Phone="",
             Registration_Provider="Health Service Executive",
             CRO_Registration_Number="",
+            Registration_Date="01-07-2025",
+            Registration_Expiry_Date="30-06-2028",
+            Registration_Number="REG-0023456",
         ),
     )
 
@@ -46,6 +60,11 @@ def test_register_is_read_in_file_order() -> None:
             provider_name="Springwood Nursing Homes Limited",
             provider_cro_number="409166",
             hiqa_url=ELM_HALL_URL,
+            registration_number="REG-0012345",
+            registration_date=date(2024, 3, 14),
+            registration_expiry_date=date(2027, 3, 13),
+            chief_inspector_note=NOTE,
+            conditions_of_registration="Condition 1\nCondition 2",
         ),
         RegisterEntry(
             source_record=2,
@@ -59,15 +78,54 @@ def test_register_is_read_in_file_order() -> None:
             provider_name="Health Service Executive",
             provider_cro_number=None,
             hiqa_url=ELM_HALL_URL,
+            registration_number="REG-0023456",
+            registration_date=date(2025, 7, 1),
+            registration_expiry_date=date(2028, 6, 30),
+            chief_inspector_note=None,
+            conditions_of_registration="",
         ),
     )
 
 
-def test_address_without_an_eircode_has_none() -> None:
-    address = "Elm Hall Nursing Home, Loughlinstown Road, Celbridge"
+@pytest.mark.parametrize(
+    "address",
+    [
+        pytest.param(
+            "Elm Hall Nursing Home, Loughlinstown Road, Celbridge",
+            id="town",
+        ),
+        # Seven letters that read as an Eircode once O is taken for 0.
+        pytest.param("Main Street, Doonane", id="townland with Os"),
+        # Reads as one too, but its routing key, DOO, has no digit.
+        pytest.param("Main Street, Doonan 1", id="word with Os and a digit"),
+    ],
+)
+def test_address_without_an_eircode_has_none(address: str) -> None:
     register = register_csv(centre("34", Centre_Address=address))
 
     assert read_register(register)[0].eircode is None
+
+
+# The addresses of centres 8793 and 9276, as HIQA prints them.
+@pytest.mark.parametrize(
+    ("address", "eircode"),
+    [
+        pytest.param(
+            "Kilmacanogue South, Kilmacanogue, A98 C2CO",
+            "A98C2C0",
+            id="centre 8793",
+        ),
+        pytest.param(
+            "Finisklin Road, Sligo, F91 PPHO", "F91PPH0", id="centre 9276"
+        ),
+    ],
+)
+def test_letter_o_in_an_eircode_is_read_as_zero(
+    address: str, eircode: str
+) -> None:
+    register = register_csv(centre("34", Centre_Address=address))
+
+    assert read_register(register)[0].eircode == eircode
 
 
 # The register does not always print one number, and the value is kept as it
@@ -150,6 +208,35 @@ def test_centre_phone_is_kept_as_printed(
             register_csv(centre("34", Maximum_Occupancy="-1")),
             "record 1, column Maximum_Occupancy: expected nothing or a whole",
             id="negative occupancy",
+        ),
+        pytest.param(
+            register_csv(centre("34", Registration_Date="2024-03-14")),
+            "record 1, column Registration_Date: expected a date as DD-MM-YYYY,"
+            " got '2024-03-14'",
+            id="registration date year first",
+        ),
+        pytest.param(
+            register_csv(centre("34", Registration_Date="")),
+            "record 1, column Registration_Date: expected a date as DD-MM-YYYY",
+            id="no registration date",
+        ),
+        pytest.param(
+            register_csv(centre("34", Registration_Expiry_Date="31-02-2027")),
+            "record 1, column Registration_Expiry_Date: expected a date as"
+            " DD-MM-YYYY, got '31-02-2027'",
+            id="expiry on a day the month lacks",
+        ),
+        pytest.param(
+            register_csv(centre("34", Registration_Expiry_Date="1-3-2027")),
+            "record 1, column Registration_Expiry_Date: expected a date as"
+            " DD-MM-YYYY",
+            id="expiry without leading zeros",
+        ),
+        pytest.param(
+            register_csv(centre("34", Registration_Number="0012345")),
+            "record 1, column Registration_Number: expected REG- and seven"
+            " digits, got '0012345'",
+            id="registration number without REG-",
         ),
         pytest.param(
             register_csv(),

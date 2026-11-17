@@ -27,46 +27,47 @@ paths:
         `Saint` are different words. A value that is blank, or has no letters
         or digits, is ignored.
 
-        Centres are sorted by their folded name, character by character in
-        code order (so a space comes before any letter), then by `centre_id`
-        as a number. Results are not ranked.
+        `care_type`, `room_type`, `facility` and `activity` filter by what
+        the centre's latest extracted inspection report mentions, read by a
+        model: the same record `GET /centres/{centre_id}/amenities` serves
+        with `version=amenities-v2`. Each takes exact item names from the
+        amenities-v2 lists and may be repeated. A centre matches `care_type`,
+        `facility` and `activity` when its report mentions every value given,
+        and `room_type` when it mentions any of them. A report that does not
+        mention an item does not show the centre lacks it, and a centre with
+        no extracted report matches none of these four.
 
-        An unknown parameter, or a parameter given more than once, is
-        refused with 400.
+        `sort=name` orders centres by their folded name, character by
+        character in code order (so a space comes before any letter), then by
+        `centre_id` as a number. `sort=latest_inspection` orders them by the
+        inspection date of their newest loaded report, newest first; centres
+        whose newest report has no date come last, together with centres
+        without a report, and ties are in name order. `sort=distance` orders
+        them by `distance_m`, nearest first, and needs `near`; centres without
+        a distance come last, and ties are in name order. Results are not
+        ranked.
+
+        An unknown parameter, an unknown item name or sort, `sort=distance`
+        without `near`, or a parameter other than the four filters given more
+        than once, is refused with 400. A filter value given twice counts
+        once.
       parameters:
-        - name: name
+        - $ref: "#/components/parameters/SearchName"
+        - $ref: "#/components/parameters/SearchAddress"
+        - $ref: "#/components/parameters/SearchEircode"
+        - $ref: "#/components/parameters/SearchCounty"
+        - $ref: "#/components/parameters/SearchCareType"
+        - $ref: "#/components/parameters/SearchRoomType"
+        - $ref: "#/components/parameters/SearchFacility"
+        - $ref: "#/components/parameters/SearchActivity"
+        - $ref: "#/components/parameters/SearchNear"
+        - name: sort
           in: query
-          description: Words that start words of the centre's name.
+          description: The order of the results, as described above.
           schema:
             type: string
-            maxLength: 100
-          example: hall elm
-        - name: address
-          in: query
-          description: >
-            Words that start words of the centre's address, such as a town.
-            Most addresses do not name their county, so use `county` to search
-            by county.
-          schema:
-            type: string
-            maxLength: 100
-          example: celbridge
-        - name: eircode
-          in: query
-          description: >
-            A routing key (`W23`, `D6W`) finds every Eircode that starts with
-            it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
-            removed and letters made upper case first. Only the letters and
-            digits used in Eircodes are accepted, and `O` is not read as `0`.
-          schema:
-            type: string
-          example: W23
-        - name: county
-          in: query
-          description: A county, spelt as on the register. Case matters.
-          schema:
-            $ref: "#/components/schemas/County"
-          example: Dublin
+            enum: [name, latest_inspection, distance]
+            default: name
         - name: page
           in: query
           schema:
@@ -86,7 +87,8 @@ paths:
           description: >
             One page of the matching centres. A page past the last one has no
             centres, and `total` is still the number of matches. No matches
-            give `"centres": []` and `"total": 0`.
+            give `"centres": []` and `"total": 0`. `facets` and `sort` are
+            present on every page, whatever `page_size`.
           content:
             application/json:
               schema:
@@ -100,6 +102,17 @@ paths:
                     eircode: W23P6EX
                     maximum_occupancy: 62
                     hiqa_url: https://www.hiqa.ie/areas-we-work/find-a-centre/elm-hall-nursing-home
+                    amenities:
+                      report_id: 112
+                      inspection_date: "2026-01-15"
+                      care_types: ["Long-term residential care", "Respite care"]
+                      room_types: ["Single room", "Twin/double room"]
+                      activities: ["Music and singing", "Bingo"]
+                      facilities: ["Garden", "Lounge/day room"]
+                    fair_deal: true
+                    latest_inspection:
+                      date: "2026-01-15"
+                    distance_m: null
                 page: 1
                 page_size: 20
                 total: 1
@@ -107,10 +120,19 @@ paths:
                   fetched_at: "2026-10-05T06:12:54Z"
                   url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+                facets:
+                  care_type: {"Dementia care": 0, "Respite care": 1}
+                  room_type: {"Single room": 1, "Twin/double room": 1}
+                  facility: {"Garden": 1, "Courtyard": 0}
+                  activity: {"Bingo": 1, "Dancing": 0}
+                  fair_deal: 1
+                sort: name
         "400":
           description: >
-            A parameter is unknown, given more than once, too long, out of
-            range, or not of the expected type or shape.
+            A parameter is unknown, given more than once where it may not be,
+            too long, out of range, not of the expected type or shape, or an
+            item name or sort the API does not know, or `sort=distance` is
+            given without `near`.
           content:
             application/problem+json:
               schema:
@@ -132,6 +154,106 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres
 
+  /centres/points:
+    get:
+      operationId: listCentrePoints
+      summary: The points of the centres a search matches, for the site's map
+      description: |
+        Returns a point for every centre that `GET /centres` matches with the
+        same parameters, so that the search page can draw them all on a map.
+        A centre that ClearCare has no location for under 30 days old is left
+        out. The answer has no pages and one order, that of `sort=name`, so
+        `sort`, `page` and `page_size` are refused with 400 like any unknown
+        parameter.
+
+        Only the site's own server may call this path. The coordinates are
+        Google's geocoding results, which no other answer of this API carries
+        (ADR-0029). The site sends the token it shares with the API
+        (ADR-0025): a request without that token is refused with 401, and the
+        path answers 503 while no token is configured. The site asks again
+        for every page that may draw the map (the search page with nothing
+        searched, and every search with results) and does not keep the
+        answer.
+      parameters:
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          description: The token the site's server and the API share.
+          schema:
+            type: string
+        - $ref: "#/components/parameters/SearchName"
+        - $ref: "#/components/parameters/SearchAddress"
+        - $ref: "#/components/parameters/SearchEircode"
+        - $ref: "#/components/parameters/SearchCounty"
+        - $ref: "#/components/parameters/SearchCareType"
+        - $ref: "#/components/parameters/SearchRoomType"
+        - $ref: "#/components/parameters/SearchFacility"
+        - $ref: "#/components/parameters/SearchActivity"
+        - $ref: "#/components/parameters/SearchNear"
+      responses:
+        "200":
+          description: >
+            The point of every matching centre that has one. No matches, or
+            none with a point, give `"points": []`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentrePointsResult"
+              example:
+                points:
+                  - centre_id: "34"
+                    centre_name: Elm Hall Nursing Home
+                    address: Elm Hall Nursing Home, Loughlinstown Road, Celbridge, W23 P6EX
+                    county: Kildare
+                    latitude: 53.34
+                    longitude: -6.54
+                    distance_m: null
+                register_snapshot:
+                  fetched_at: "2026-10-05T06:12:54Z"
+                  url: https://www.hiqa.ie/centre/export/older_persons_register.csv?_format=csv
+                  sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
+        "400":
+          description: >
+            As for `GET /centres`; `sort`, `page` and `page_size` are unknown
+            parameters here.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Bad Request
+                status: 400
+                detail: >-
+                  page is not a parameter; use one of name, address, eircode,
+                  county, care_type, room_type, facility, activity, near
+                instance: /centres/points
+        "401":
+          description: >
+            No token, or one that is not the site's: the request did not come
+            from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Unauthorized
+                status: 401
+                detail: The request is not from the site.
+                instance: /centres/points
+        "503":
+          description: >
+            This API has no token configured, so it gives no points; or no
+            register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: This API is not configured for the site's requests.
+                instance: /centres/points
+
   /centres/{centre_id}:
     get:
       operationId: getCentre
@@ -139,8 +261,10 @@ paths:
       description: |
         Returns the centre with this `centre_id` from the register snapshot
         that ClearCare currently serves, with the fields of a search result,
-        the centre's phone number, the latest contract price published for it
-        and the kind of home that price is for.
+        the centre's phone number, the latest contract price published for it,
+        the kind of home that price is for and the date of its list, and the
+        centre's registration in that snapshot: its dates, its extra
+        conditions and the Chief Inspector's note.
 
         Any value that is not the ID of a centre in that snapshot gives 404,
         including one that is not a number.
@@ -176,6 +300,14 @@ paths:
                   sha256: c24a105a5f1df7026a9e1a86977273f9987b07c3137fb21fed8265a18cd90337
                 contract_price: 1908.00
                 home_type: public
+                contract_price_date: "2026-09-01"
+                registration:
+                  registered_from: "2024-06-01"
+                  registered_until: "2027-05-31"
+                extra_conditions:
+                  - number: 5
+                    text: No resident shall be admitted to Room 12.
+                chief_inspector_note: null
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -212,6 +344,10 @@ paths:
         The centre must be in the register snapshot ClearCare currently serves.
         Any value that is not the ID of such a centre gives 404, including one
         that is not a number. A centre with no reports gives `"reports": []`.
+
+        `hiqa_checked_at` says when ClearCare last read the centre's page on
+        hiqa.ie, where HIQA lists the centre's reports, so a reader can tell
+        how recently ClearCare looked for a new one.
       parameters:
         - name: centre_id
           in: path
@@ -239,6 +375,7 @@ paths:
                     inspector_count: 2
                     regulation_count: 12
                     compliance_item_count: 18
+                hiqa_checked_at: "2026-11-10T06:20:31Z"
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -262,11 +399,238 @@ paths:
                 detail: The register has not been loaded yet.
                 instance: /centres/34/reports
 
+  /centres/{centre_id}/events:
+    get:
+      operationId: listCentreEvents
+      summary: List the events of a centre's record
+      description: |
+        Returns every public event ClearCare holds about this centre, newest
+        first: its inspections, the changes to its entry on the register and
+        the changes of its contract price. Each event is a `kind`, a `date`
+        and that kind's fields. It holds no sentence: whatever shows the
+        event writes the words (ADR-0033).
+
+        Every report HIQA lists for the centre is an event. A report that was
+        read is an `inspection` or a `thematic_inspection`, dated by the date
+        the report prints; one that was not is an `unread_report`, dated as
+        HIQA lists it. A listed date that cannot be right, one before 2007 or
+        after the day the report was published, is not given: `date` is
+        `null`. A report that was read and that HIQA no longer lists is still
+        an event, with `published_date` `null`.
+
+        A `registration` is dated by the registration date. Every other
+        register change is dated by the day the register first showed it,
+        which can be later than the day it happened (ADR-0031). A `price` is
+        a contract price that differs from the centre's price in the list
+        before, dated by its list; a centre's first price is not an event.
+
+        The order is newest `date` first; an event with no `date` is placed
+        by its `published_date`. Events of one day are in the order of the
+        kinds in the `CentreEvent` schema, and events of one kind and day are
+        in a fixed order, so the same request gives the same order every time.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no events gives `"events": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's events, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreEventsResult"
+              example:
+                centre_id: "34"
+                events:
+                  - kind: condition_removed
+                    date: "2026-11-09"
+                    condition_number: 4
+                    text: No resident shall be admitted to Rooms 12 and 14.
+                  - kind: provider
+                    date: "2026-10-20"
+                    before: Springwood Nursing Homes Limited
+                    after: Elm Care Limited
+                  - kind: beds
+                    date: "2026-10-20"
+                    before: 60
+                    after: 62
+                  - kind: price
+                    date: "2026-09-01"
+                    before: 1850.00
+                    after: 1908.00
+                    home_type: public
+                  - kind: inspection
+                    date: "2026-05-13"
+                    inspection_type: Unannounced
+                    published_date: "2026-06-20"
+                    report_id: 1
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-13-may-2026.pdf
+                    compliant: 14
+                    substantially_compliant: 3
+                    not_compliant: 1
+                  - kind: unread_report
+                    date: null
+                    published_date: "2026-04-15"
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-9-january-2026.pdf
+                  - kind: thematic_inspection
+                    date: "2025-11-04"
+                    inspection_type: Unannounced
+                    published_date: "2025-12-10"
+                    overall_judgment: Substantially Compliant
+                    report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-4-november-2025.pdf
+                  - kind: registration
+                    date: "2024-06-01"
+                    registered_until: "2027-05-31"
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/events
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/events
+
+  /centres/{centre_id}/findings:
+    get:
+      operationId: listCentreFindings
+      summary: List a centre's findings, with their report text and re-assessment
+      description: |
+        Returns the findings of the reports ClearCare has loaded for this
+        centre: each regulation a report judged Substantially compliant or Not
+        compliant. Each comes with what the inspector wrote about it, the
+        provider's response, the deadlines the provider stated, and when the
+        regulation was next judged (ADR-0024). Newest inspection first, each
+        report's findings together, by regulation number.
+
+        Text is served verbatim, as extracted at one pinned extractor version:
+        headings, "Judgment:" lines and the words of the response form
+        included. Text that was not extracted at that version is null; that
+        does not mean the report has none. Pages are PDF page positions,
+        counted from the first page, cover included.
+
+        The centre must be in the register snapshot ClearCare currently serves.
+        Any value that is not the ID of such a centre gives 404, including one
+        that is not a number. A centre with no findings gives `"findings": []`.
+      parameters:
+        - name: centre_id
+          in: path
+          required: true
+          description: HIQA's centre ID.
+          schema:
+            type: string
+            pattern: "^[0-9]+$"
+          example: "34"
+      responses:
+        "200":
+          description: The centre's findings, newest inspection first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CentreFindingsResult"
+              example:
+                centre_id: "34"
+                findings:
+                  - report_id: 1
+                    inspection_date: "2024-08-16"
+                    report_url: https://www.hiqa.ie/sites/default/files/2024-10/elm-hall.pdf
+                    regulation: Regulation 28
+                    title: Fire precautions
+                    judgment: Not compliant
+                    compliance_items:
+                      - regulation: Regulation 28(1)(a)
+                        risk_rating: Yellow
+                        date_to_comply: "2024-10-16"
+                    inspector:
+                      text: |
+                        Regulation 28: Fire precautions
+                        The kitchen ductwork had not been cleaned.
+                        Judgment: Not compliant
+                      first_page: 11
+                      last_page: 12
+                    provider_response:
+                      text: |
+                        Regulation 28: Fire precautions Not Compliant
+                        The ductwork will be cleaned by 30/09/2024.
+                      first_page: 18
+                      last_page: 18
+                    stated_deadlines:
+                      - text: The ductwork will be cleaned by 30/09/2024.
+                        stated_deadline: "2024-09-30"
+                        stated_deadline_text: 30/09/2024
+                        deadline_precision: day
+                        page: 18
+                        last_page: 18
+                    re_assessment:
+                      status: re-assessed
+                      report_id: 2
+                      inspection_date: "2025-01-11"
+                      report_url: https://www.hiqa.ie/sites/default/files/2025-02/elm-hall.pdf
+                      judgment: Compliant
+                      reports_between: 0
+                      inspector:
+                        text: |
+                          Regulation 28: Fire precautions
+                          Fire drills were held regularly.
+                          Judgment: Compliant
+                        first_page: 11
+                        last_page: 11
+        "404":
+          description: The register snapshot has no centre with this ID.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: The register has no centre with this centre_id.
+                instance: /centres/999/findings
+        "503":
+          description: No register snapshot has been loaded yet.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: The register has not been loaded yet.
+                instance: /centres/34/findings
+
   /centres/{centre_id}/amenities:
     get:
       operationId: getCentreAmenities
       summary: Get what a centre offers its residents
       description: |
+        The default (or version=amenities-v1) preserves the legacy response,
+        including amenities-v0/v1 extractions. Request version=amenities-v2
+        for the four fixed-category lists with item-level quote/page evidence.
+        Versions never fall back to each other's data. Empty v2 lists mean
+        no confirmed items, not absence. Quotes are model output, not verified fact.
+
         Returns the amenities read from the centre's newest inspection report
         that has them: the types of care and room, activities, special units,
         and whether there is outdoor space, transport or a chapel or religious
@@ -284,6 +648,14 @@ paths:
         that is not a number. A centre with no amenities yet gives
         `"amenities": null`.
       parameters:
+        - name: version
+          in: query
+          required: false
+          description: Select the response contract; defaults to legacy v1.
+          schema:
+            type: string
+            enum: [amenities-v1, amenities-v2]
+            default: amenities-v1
         - name: centre_id
           in: path
           required: true
@@ -315,6 +687,12 @@ paths:
                   other_notes: Views over the garden.
                   extractor_version: amenities-v1
                   model: gpt-4o-mini
+        "400":
+          description: Unsupported amenities version.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
         "404":
           description: The register snapshot has no centre with this ID.
           content:
@@ -414,8 +792,9 @@ paths:
         later report. Each count comes with its denominator, so the rates can
         be checked.
 
-        Only loaded reports are counted. Reports whose layout cannot be
-        loaded yet, such as thematic reports (ADR-0013), are
+        Only loaded regulation inspections are counted. A thematic report is
+        read (ADR-0032) but judges no regulation, so it is never a centre's
+        next report. Reports whose layout cannot be loaded yet (ADR-0013) are
         passed over, so the next report is the next one ClearCare has
         loaded.
       responses:
@@ -481,16 +860,303 @@ paths:
                 detail: No inspection reports have been loaded yet.
                 instance: /statistics/re-assessment
 
+  /preferences:
+    get:
+      operationId: getSavedSearch
+      summary: The signed-in visitor's saved search
+      description: |
+        Returns the search this account asked the site to remember: the county,
+        the order and the ticked filter options, so the search page can offer it
+        again on a later visit. With nothing saved, `preferences` and
+        `updated_at` are null.
+
+        The account is named by the site's own server, not by the browser: the
+        site reads its session cookie (ADR-0020), takes the account's Cognito
+        subject and sends it with a token the site and the API share (ADR-0025).
+        A request without that token is refused with 401, and these paths answer
+        503 while no token is configured, so a deployment without one keeps
+        working as it did.
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          description: >
+            The account's Cognito subject claim, sent by the site's server only.
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          description: The token the site's server and the API share.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The saved search, or null when the account has not saved one.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedSearchResult"
+              example:
+                preferences:
+                  county: Cork
+                  care_types: [dementia, respite]
+                  room_types: []
+                  facilities: [garden]
+                  activities: []
+                  sort_by: latest_inspection
+                updated_at: "2026-11-05T09:12:44Z"
+        "401":
+          description: >
+            No subject, or a token that is not the site's: the request did not
+            come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Unauthorized
+                status: 401
+                detail: The request is not from the site.
+                instance: /preferences
+        "503":
+          description: This API has no token configured, so it keeps no saved searches.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Service Unavailable
+                status: 503
+                detail: Saved searches are not configured on this API.
+                instance: /preferences
+
+    put:
+      operationId: saveSearch
+      summary: Keep a search for this account
+      description: |
+        Replaces the account's saved search with this one. There is one per
+        account, so saving again is a change of the same choice rather than a
+        second search. The answer is what was stored.
+
+        A document the search page could not have produced is refused with 400:
+        an option that is not a slug of lower-case letters, digits and hyphens,
+        an order that is not `name` or `latest_inspection`, or more options than
+        a page can hold. Lists that are left out are stored empty, and a missing
+        `sort` is stored as `name`.
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedSearch"
+            example:
+              county: Cork
+              care_types: [dementia]
+              room_types: []
+              facilities: [garden]
+              activities: []
+              sort_by: name
+      responses:
+        "200":
+          description: The saved search as it is now stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SavedSearchResult"
+        "400":
+          description: >
+            Not a search the site could have sent.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Bad Request
+                status: 400
+                detail: sort must be name or latest_inspection
+                instance: /preferences
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    delete:
+      operationId: forgetSavedSearch
+      summary: Forget this account's saved search
+      description: >
+        Deletes the account's saved search. An account with nothing saved is
+        answered the same way, so this can be repeated.
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The account has no saved search now.
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
 components:
+  parameters:
+    SearchName:
+      name: name
+      in: query
+      description: Words that start words of the centre's name.
+      schema:
+        type: string
+        maxLength: 100
+      example: hall elm
+
+    SearchAddress:
+      name: address
+      in: query
+      description: >
+        Words that start words of the centre's address, such as a town.
+        Most addresses do not name their county, so use `county` to search
+        by county.
+      schema:
+        type: string
+        maxLength: 100
+      example: celbridge
+
+    SearchEircode:
+      name: eircode
+      in: query
+      description: >
+        A routing key (`W23`, `D6W`) finds every Eircode that starts with
+        it. A full Eircode (`W23 P6EX`) finds only itself. Spaces are
+        removed, letters made upper case and `O` read as `0` when the
+        first three characters hold a digit, since Eircodes have no
+        letter O. Only the letters and digits used in Eircodes are
+        accepted.
+      schema:
+        type: string
+      example: W23
+
+    SearchCounty:
+      name: county
+      in: query
+      description: A county, spelt as on the register. Case matters.
+      schema:
+        $ref: "#/components/schemas/County"
+      example: Dublin
+
+    SearchCareType:
+      name: care_type
+      in: query
+      description: >
+        Care types the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/CareTypeItem"
+      example: ["Dementia care", "Respite care"]
+
+    SearchRoomType:
+      name: room_type
+      in: query
+      description: >
+        Room types of which the centre's latest extracted report must mention at least one. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/RoomTypeItem"
+      example: ["Single room"]
+
+    SearchFacility:
+      name: facility
+      in: query
+      description: >
+        Facilities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/FacilityItem"
+      example: ["Garden"]
+
+    SearchActivity:
+      name: activity
+      in: query
+      description: >
+        Activities the centre's latest extracted report must all mention. Exact item names; case matters. May be repeated.
+      style: form
+      explode: true
+      schema:
+        type: array
+        items:
+          $ref: "#/components/schemas/ActivityItem"
+      example: ["Bingo"]
+
+    SearchNear:
+      name: near
+      in: query
+      description: >
+        Where each centre's `distance_m` is measured from: a latitude from
+        -90 to 90 and a longitude from -180 to 180, in degrees on WGS 84,
+        separated by a comma. Each has at most two decimal places, which
+        is about 1 km: round a visitor's location before sending it, as
+        more are refused. `near` filters nothing: every matching centre is
+        still returned.
+      schema:
+        type: string
+        pattern: "^-?[0-9]{1,3}(\\.[0-9]{1,2})?,-?[0-9]{1,3}(\\.[0-9]{1,2})?$"
+      example: "53.35,-6.26"
+
   schemas:
     CentreSearchResult:
       type: object
-      required: [centres, page, page_size, total, register_snapshot]
+      required: [centres, page, page_size, total, register_snapshot, facets, sort]
       properties:
         centres:
           type: array
           items:
-            $ref: "#/components/schemas/Centre"
+            $ref: "#/components/schemas/CentreSummary"
         page:
           type: integer
         page_size:
@@ -500,10 +1166,193 @@ components:
           description: The number of matching centres on all pages.
         register_snapshot:
           $ref: "#/components/schemas/RegisterSnapshot"
+        facets:
+          $ref: "#/components/schemas/Facets"
+        sort:
+          type: string
+          enum: [name, latest_inspection, distance]
+          description: The order applied to the results.
+
+    CentreSummary:
+      description: >
+        A centre as a search result: its register entry, what its latest
+        extracted report mentions, and the date of its newest inspection.
+      allOf:
+        - $ref: "#/components/schemas/Centre"
+        - type: object
+          required: [amenities, fair_deal, latest_inspection, distance_m]
+          properties:
+            amenities:
+              description: >
+                The items the centre's latest extracted report mentions, as
+                `GET /centres/{centre_id}/amenities?version=amenities-v2`
+                serves them but without the evidence. null when no report of
+                the centre has been read yet. An item that is missing is not
+                confirmed absent.
+              oneOf:
+                - $ref: "#/components/schemas/MentionedAmenities"
+                - type: "null"
+            fair_deal:
+              type: boolean
+              description: >
+                Whether a contract price is stored for the centre, the one
+                `GET /centres/{centre_id}` returns as `contract_price`. It
+                does not show that the centre is on the newest HSE list.
+            latest_inspection:
+              description: >
+                The centre's newest loaded inspection report, or null when
+                none has been loaded.
+              oneOf:
+                - type: object
+                  required: [date]
+                  properties:
+                    date:
+                      type: [string, "null"]
+                      format: date
+                      description: >
+                        The inspection date; null when the report does not
+                        give one.
+                - type: "null"
+            distance_m:
+              type: [integer, "null"]
+              description: >
+                How far the centre is from `near`, in whole metres in a
+                straight line on the WGS 84 spheroid. null when `near` is not
+                given, or when ClearCare has no location for the centre under
+                30 days old.
+
+    CentrePointsResult:
+      type: object
+      required: [points, register_snapshot]
+      properties:
+        points:
+          type: array
+          description: In the order of `sort=name` on `GET /centres`.
+          items:
+            $ref: "#/components/schemas/CentrePoint"
+        register_snapshot:
+          $ref: "#/components/schemas/RegisterSnapshot"
+
+    CentrePoint:
+      type: object
+      description: >
+        A centre as a pin on the search page's map: enough of its register
+        entry to label the pin, and where the pin goes.
+      required: [centre_id, centre_name, address, county, latitude, longitude, distance_m]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        centre_name:
+          type: string
+          minLength: 1
+        address:
+          type: string
+          minLength: 1
+        county:
+          type: string
+          minLength: 1
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: >
+            In degrees on WGS 84, as Google's Geocoding API gave it, not
+            rounded.
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: As `latitude`.
+        distance_m:
+          type: [integer, "null"]
+          description: >
+            As in `CentreSummary`: how far the centre is from `near` in whole
+            metres, or null when `near` is not given.
+
+    MentionedAmenities:
+      type: object
+      additionalProperties: false
+      required: [report_id, inspection_date, care_types, room_types, activities, facilities]
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            The report the items were read from, for `GET /reports/{report_id}`.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            That report's inspection date. It can be older than
+            `latest_inspection`, because the newest report may not have been
+            read yet.
+        care_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareTypeItem"
+        room_types:
+          type: array
+          items:
+            $ref: "#/components/schemas/RoomTypeItem"
+        activities:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+        facilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/FacilityItem"
+
+    Facets:
+      type: object
+      description: >
+        For every item of every list, how many centres would match if that
+        item were also given, with the other parameters as they are: added to
+        the all-of values for `care_type`, `facility` and `activity`, and to
+        the any-of values for `room_type`. Every item is a key, those that
+        match no centre with 0. `fair_deal` is how many of the matching
+        centres have a stored contract price.
+      required: [care_type, room_type, facility, activity, fair_deal]
+      properties:
+        care_type:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        room_type:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        facility:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        activity:
+          type: object
+          additionalProperties:
+            type: integer
+            minimum: 0
+        fair_deal:
+          type: integer
+          minimum: 0
 
     CentreResult:
       type: object
-      required: [centre, register_snapshot, contract_price, home_type]
+      required:
+        - centre
+        - register_snapshot
+        - contract_price
+        - home_type
+        - contract_price_date
+        - registration
+        - extra_conditions
+        - chief_inspector_note
       properties:
         centre:
           $ref: "#/components/schemas/CentreDetail"
@@ -524,6 +1373,62 @@ components:
             from the price list it came from. Null when no price list has been
             loaded for the centre.
           example: public
+        contract_price_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The date of the list the contract price is from: the day a public
+            list's prices start, or the day a private list was published.
+            Null when no price list has been loaded for the centre.
+          example: "2026-09-01"
+        registration:
+          oneOf:
+            - $ref: "#/components/schemas/Registration"
+            - type: "null"
+          description: >
+            The centre's registration in the register snapshot. Null when the
+            snapshot was loaded before ClearCare kept it.
+        extra_conditions:
+          type: array
+          description: >
+            The centre's extra conditions of registration in the register
+            snapshot, in the order of their numbers: every condition numbered
+            4 or more, and condition 3 when it says more than the maximum
+            number of residents. Empty when the centre has none, or the
+            snapshot was loaded before ClearCare kept them.
+          items:
+            $ref: "#/components/schemas/ExtraCondition"
+        chief_inspector_note:
+          type: [string, "null"]
+          description: >
+            The Chief Inspector's note on the registration, as the register
+            prints it. Null when the register gives none, or the snapshot was
+            loaded before ClearCare kept it.
+
+    Registration:
+      type: object
+      description: A centre's registration, as the register prints its dates.
+      required: [registered_from, registered_until]
+      properties:
+        registered_from:
+          type: string
+          format: date
+        registered_until:
+          type: string
+          format: date
+
+    ExtraCondition:
+      type: object
+      description: One extra condition of a centre's registration.
+      required: [number, text]
+      properties:
+        number:
+          type: integer
+          minimum: 3
+          description: The condition's number on the register.
+        text:
+          type: string
+          description: HIQA's words, with each run of whitespace as one space.
 
     CentreDetail:
       description: >
@@ -532,7 +1437,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [centre_phone]
+          required: [centre_phone, place_id]
           properties:
             centre_phone:
               type: [string, "null"]
@@ -541,6 +1446,15 @@ components:
                 not always one number: a few say TBC or give two. null when the
                 register gives none, or the snapshot was loaded before
                 ClearCare kept it.
+            place_id:
+              type: [string, "null"]
+              description: >
+                Google's identifier for the centre's listing, which the page
+                renders the home's photo from through Google's Places UI Kit.
+                Nothing of Google's is stored. null when no listing was
+                matched for the centre, and the page shows a placeholder
+                instead.
+              example: ChIJN1t_tDeuEmsRUsoyG83frY4
 
     Centre:
       type: object
@@ -634,7 +1548,7 @@ components:
 
     CentreReportsResult:
       type: object
-      required: [centre_id, reports]
+      required: [centre_id, reports, hiqa_checked_at]
       properties:
         centre_id:
           type: string
@@ -645,6 +1559,13 @@ components:
           description: The centre's reports, newest inspection first.
           items:
             $ref: "#/components/schemas/CentreReport"
+        hiqa_checked_at:
+          type: [string, "null"]
+          format: date-time
+          description: >
+            When ClearCare last read the centre's page on hiqa.ie and could use
+            it, in UTC, to the second. A read that failed, or a page for another
+            centre, does not count. `null` until the page has been read.
 
     CentreReport:
       type: object
@@ -686,6 +1607,574 @@ components:
         compliance_item_count:
           type: integer
 
+    CentreEventsResult:
+      type: object
+      required: [centre_id, events]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        events:
+          type: array
+          description: The centre's events, newest first.
+          items:
+            $ref: "#/components/schemas/CentreEvent"
+
+    CentreEvent:
+      description: >
+        One event of a centre's record. `kind` says which of the schemas below
+        it is. They are listed in the order that events of one day are
+        returned in.
+      oneOf:
+        - $ref: "#/components/schemas/InspectionEvent"
+        - $ref: "#/components/schemas/ThematicInspectionEvent"
+        - $ref: "#/components/schemas/UnreadReportEvent"
+        - $ref: "#/components/schemas/RegistrationEvent"
+        - $ref: "#/components/schemas/ProviderEvent"
+        - $ref: "#/components/schemas/NameEvent"
+        - $ref: "#/components/schemas/BedsEvent"
+        - $ref: "#/components/schemas/ConditionAddedEvent"
+        - $ref: "#/components/schemas/ConditionChangedEvent"
+        - $ref: "#/components/schemas/ConditionRemovedEvent"
+        - $ref: "#/components/schemas/NoteAddedEvent"
+        - $ref: "#/components/schemas/NoteRemovedEvent"
+        - $ref: "#/components/schemas/PriceEvent"
+      discriminator:
+        propertyName: kind
+        mapping:
+          inspection: "#/components/schemas/InspectionEvent"
+          thematic_inspection: "#/components/schemas/ThematicInspectionEvent"
+          unread_report: "#/components/schemas/UnreadReportEvent"
+          registration: "#/components/schemas/RegistrationEvent"
+          provider: "#/components/schemas/ProviderEvent"
+          name: "#/components/schemas/NameEvent"
+          beds: "#/components/schemas/BedsEvent"
+          condition_added: "#/components/schemas/ConditionAddedEvent"
+          condition_changed: "#/components/schemas/ConditionChangedEvent"
+          condition_removed: "#/components/schemas/ConditionRemovedEvent"
+          note_added: "#/components/schemas/NoteAddedEvent"
+          note_removed: "#/components/schemas/NoteRemovedEvent"
+          price: "#/components/schemas/PriceEvent"
+
+    InspectionEvent:
+      type: object
+      description: >
+        A regulation inspection whose report was read. The three counts are of
+        its judgments, one per regulation.
+      required:
+        - kind
+        - date
+        - inspection_type
+        - published_date
+        - report_id
+        - report_url
+        - compliant
+        - substantially_compliant
+        - not_compliant
+      properties:
+        kind:
+          const: inspection
+        date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The date of the inspection, as the report prints it. When the
+            report prints none, the date HIQA lists, or null when that date
+            cannot be right.
+        inspection_type:
+          type: [string, "null"]
+          description: >
+            HIQA's "Type of inspection" as printed, such as "Unannounced".
+        published_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The day HIQA published the report. Null when HIQA no longer lists
+            the report on the centre's page.
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            ClearCare's ID for the report. `GET /reports/{report_id}` returns
+            the report in full.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+        compliant:
+          type: integer
+          minimum: 0
+        substantially_compliant:
+          type: integer
+          minimum: 0
+        not_compliant:
+          type: integer
+          minimum: 0
+
+    ThematicInspectionEvent:
+      type: object
+      description: >
+        A thematic inspection whose report was read. It judges the National
+        Standards and has one overall judgment and no regulations.
+      required:
+        - kind
+        - date
+        - inspection_type
+        - published_date
+        - overall_judgment
+        - report_url
+      properties:
+        kind:
+          const: thematic_inspection
+        date:
+          type: string
+          format: date
+          description: The date of the inspection, as the report prints it.
+        inspection_type:
+          type: string
+          description: >
+            HIQA's "Type of inspection" as printed, such as "Unannounced".
+        published_date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The day HIQA published the report. Null when HIQA no longer lists
+            the report on the centre's page.
+        overall_judgment:
+          type: string
+          description: The overall judgment, as the report prints it.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+
+    UnreadReportEvent:
+      type: object
+      description: >
+        A report HIQA lists for the centre that ClearCare holds no reading of:
+        its file is not stored yet, or its layout cannot be read.
+      required: [kind, date, published_date, report_url]
+      properties:
+        kind:
+          const: unread_report
+        date:
+          type: [string, "null"]
+          format: date
+          description: >
+            The first day of the inspection, as HIQA lists it. Null when that
+            date cannot be right: it is before 2007, when HIQA was set up, or
+            after the day the report was published.
+        published_date:
+          type: string
+          format: date
+          description: The day HIQA published the report.
+        report_url:
+          type: string
+          format: uri
+          description: HIQA's file.
+
+    RegistrationEvent:
+      type: object
+      description: >
+        A registration of the centre: its first on the register ClearCare
+        holds, or a renewal, which has a new registration number.
+      required: [kind, date, registered_until]
+      properties:
+        kind:
+          const: registration
+        date:
+          type: string
+          format: date
+          description: The registration date.
+        registered_until:
+          type: string
+          format: date
+          description: The registration's expiry date.
+
+    ProviderEvent:
+      type: object
+      description: >
+        A new registered provider: the CRO number on the register changed. A
+        provider is named only when it has a CRO number, so only companies are
+        named.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: provider
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: [string, "null"]
+          description: >
+            The earlier provider's name. Null when it had no CRO number.
+        after:
+          type: [string, "null"]
+          description: >
+            The later provider's name. Null when it has no CRO number.
+
+    NameEvent:
+      type: object
+      description: A new name of the centre.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: name
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: string
+        after:
+          type: string
+
+    BedsEvent:
+      type: object
+      description: >
+        A change of the most residents HIQA registered the centre for.
+      required: [kind, date, before, after]
+      properties:
+        kind:
+          const: beds
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        before:
+          type: [integer, "null"]
+          minimum: 0
+          description: Null when the register gave no number before.
+        after:
+          type: [integer, "null"]
+          minimum: 0
+          description: Null when the register gives no number now.
+
+    ConditionAddedEvent:
+      type: object
+      description: An extra condition of registration that was added.
+      required: [kind, date, condition_number, text]
+      properties:
+        kind:
+          const: condition_added
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        text:
+          type: string
+          description: The condition, in HIQA's words.
+
+    ConditionChangedEvent:
+      type: object
+      description: An extra condition of registration whose words changed.
+      required: [kind, date, condition_number, before, after]
+      properties:
+        kind:
+          const: condition_changed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        before:
+          type: string
+        after:
+          type: string
+
+    ConditionRemovedEvent:
+      type: object
+      description: An extra condition of registration that was removed.
+      required: [kind, date, condition_number, text]
+      properties:
+        kind:
+          const: condition_removed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        condition_number:
+          type: integer
+          minimum: 3
+        text:
+          type: string
+          description: The condition as it was, in HIQA's words.
+
+    NoteAddedEvent:
+      type: object
+      description: >
+        The Chief Inspector's note on the registration was added, or its words
+        changed.
+      required: [kind, date, text]
+      properties:
+        kind:
+          const: note_added
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        text:
+          type: string
+          description: The note, as the register prints it.
+
+    NoteRemovedEvent:
+      type: object
+      description: The Chief Inspector's note on the registration was removed.
+      required: [kind, date, text]
+      properties:
+        kind:
+          const: note_removed
+        date:
+          $ref: "#/components/schemas/FirstShownDate"
+        text:
+          type: string
+          description: The note as it was.
+
+    PriceEvent:
+      type: object
+      description: >
+        A contract price that differs from the centre's price in the list
+        before, in euro per resident per week.
+      required: [kind, date, before, after, home_type]
+      properties:
+        kind:
+          const: price
+        date:
+          type: string
+          format: date
+          description: >
+            The date of the list the new price is from: the day a public
+            list's prices start, or the day a private list was published.
+        before:
+          type: number
+        after:
+          type: number
+        home_type:
+          type: string
+          enum: [public, private]
+          description: The kind of home the list of the new price is for.
+
+    FirstShownDate:
+      type: string
+      format: date
+      description: >
+        The Irish day ClearCare downloaded the first register that showed the
+        change. The register does not say when a change happened, so this can
+        be later than the day it did.
+
+    CentreFindingsResult:
+      type: object
+      required: [centre_id, findings]
+      properties:
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: HIQA's centre ID.
+        findings:
+          type: array
+          description: >
+            The centre's findings, newest inspection first, each report's
+            findings together, by regulation number.
+          items:
+            $ref: "#/components/schemas/Finding"
+
+    Finding:
+      type: object
+      description: >
+        One regulation a report judged Substantially compliant or Not
+        compliant. A regulation the report lists twice is one finding, with
+        the judgment Appendix 1 gives.
+      required:
+        - report_id
+        - inspection_date
+        - report_url
+        - regulation
+        - title
+        - judgment
+        - compliance_items
+        - inspector
+        - provider_response
+        - stated_deadlines
+        - re_assessment
+      properties:
+        report_id:
+          type: integer
+          format: int64
+          description: >
+            The report that made the finding. `GET /reports/{report_id}`
+            returns it in full.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        report_url:
+          type: string
+          format: uri
+          description: The report's PDF, the `report_file.url` of the report.
+        regulation:
+          type: string
+          minLength: 1
+          description: The regulation's number, such as Regulation 28.
+        title:
+          type: string
+          minLength: 1
+          description: Its title, such as Fire precautions.
+        judgment:
+          type: string
+          minLength: 1
+          description: >
+            As the report prints it: Substantially compliant or Not compliant,
+            in any capitalisation.
+        compliance_items:
+          type: array
+          description: >
+            The items of the report's compliance plan under this regulation,
+            such as Regulation 28(1)(a), in the order the report prints them.
+          items:
+            $ref: "#/components/schemas/FindingComplianceItem"
+        inspector:
+          description: What the inspector wrote under this regulation, or null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
+        provider_response:
+          description: >
+            The provider's response to the finding in the compliance plan, or
+            null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
+        stated_deadlines:
+          type: [array, "null"]
+          description: >
+            The commitments in the response that state a deadline the splitter
+            could read, in the order the response gives them. The response's
+            other words are in `provider_response`. `[]` when the response was
+            split and no commitment states such a deadline; null when there is
+            no response, or it has not been split at the pinned splitter
+            version.
+          items:
+            $ref: "#/components/schemas/StatedDeadline"
+        re_assessment:
+          $ref: "#/components/schemas/ReAssessment"
+
+    FindingComplianceItem:
+      type: object
+      description: One item of the compliance plan under a finding's regulation.
+      required: [regulation, risk_rating, date_to_comply]
+      properties:
+        regulation:
+          type: string
+          minLength: 1
+          description: The requirement's number, such as Regulation 28(1)(a).
+        risk_rating:
+          type: [string, "null"]
+        date_to_comply:
+          type: [string, "null"]
+          format: date
+
+    ReportText:
+      type: object
+      description: A passage of a report, verbatim, with the pages it spans.
+      required: [text, first_page, last_page]
+      properties:
+        text:
+          type: string
+          minLength: 1
+        first_page:
+          type: integer
+          minimum: 1
+        last_page:
+          type: integer
+          minimum: 1
+          description: At least first_page.
+
+    StatedDeadline:
+      type: object
+      description: >
+        A commitment in the provider's response, with the deadline the
+        provider stated for it (ADR-0017).
+      required:
+        - text
+        - stated_deadline
+        - stated_deadline_text
+        - deadline_precision
+        - page
+        - last_page
+      properties:
+        text:
+          type: string
+          minLength: 1
+          description: >
+            The commitment's words, an exact span of the response. A span can
+            combine actions or carry context, so it is not one promise.
+        stated_deadline:
+          type: string
+          format: date
+          description: >
+            The deadline as a date. With month precision it is the last day of
+            that month, which the provider did not state.
+        stated_deadline_text:
+          type: string
+          minLength: 1
+          description: The deadline as the response prints it.
+        deadline_precision:
+          type: string
+          enum: [day, month]
+        page:
+          type: integer
+          minimum: 1
+        last_page:
+          type: integer
+          minimum: 1
+          description: At least page.
+
+    ReAssessment:
+      type: object
+      description: >
+        When the finding's regulation was next judged: the first later report
+        of the same centre that judges it, with any judgment (ADR-0024). Only
+        loaded reports with an inspection date are later reports.
+      required:
+        - status
+        - report_id
+        - inspection_date
+        - report_url
+        - judgment
+        - reports_between
+        - inspector
+      properties:
+        status:
+          type: string
+          enum: [re-assessed, not re-assessed, no later report, order unknown]
+          description: >
+            `re-assessed`: a later report judged the regulation again, and the
+            other properties describe it. `not re-assessed`: the centre has
+            later reports, and none of them judges the regulation. `no later
+            report`: the finding's report is the centre's latest.
+            `order unknown`: the finding's report has no inspection date, or
+            the centre has two reports on the date the regulation was next
+            judged, so which came first is not known. The other properties are
+            null unless the status is `re-assessed`.
+        report_id:
+          type: [integer, "null"]
+          format: int64
+          description: The report that judged the regulation again.
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        report_url:
+          type: [string, "null"]
+          format: uri
+          description: That report's PDF.
+        judgment:
+          type: [string, "null"]
+          description: That report's judgment of the regulation, as printed.
+        reports_between:
+          type: [integer, "null"]
+          minimum: 0
+          description: >
+            The centre's dated reports between the two inspections, none of
+            which judged the regulation.
+        inspector:
+          description: >
+            What that report's inspector wrote under the regulation, or null.
+          oneOf:
+            - $ref: "#/components/schemas/ReportText"
+            - type: "null"
+
     CentreAmenitiesResult:
       type: object
       required: [centre_id, amenities]
@@ -698,7 +2187,119 @@ components:
           description: The centre's amenities, or null if none have been read yet.
           oneOf:
             - $ref: "#/components/schemas/CentreAmenities"
+            - $ref: "#/components/schemas/CentreAmenitiesV2"
             - type: "null"
+
+    AmenityEvidence:
+      type: object
+      additionalProperties: false
+      required: [quote, page_start, page_end]
+      properties:
+        quote:
+          type: string
+          minLength: 1
+          description: Exact continuous source passage; content is not automatically verified.
+        page_start:
+          type: integer
+          minimum: 1
+        page_end:
+          type: integer
+          minimum: 1
+          description: Inclusive end, at least page_start; same-page evidence repeats the page.
+
+    CareTypeItem:
+      type: string
+      description: A care type from the amenities-v2 list, as the extractor names it.
+      enum: ["General nursing care", "Long-term residential care", "Short-term care", "Respite care", "Convalescent care", "Transitional care", "Step-down care", "Rehabilitation", "Day care", "Dementia care", "Palliative care", "End-of-life care", "Acquired brain injury care", "Physical disability care", "Sensory impairment care", "Neurological care", "Intellectual disability care", "Mental health care"]
+
+    RoomTypeItem:
+      type: string
+      description: A room type from the amenities-v2 list, as the extractor names it.
+      enum: ["Single room", "Twin/double room", "Multi-bed room", "Shared room, occupancy unspecified", "En-suite facilities", "Shared bathroom facilities"]
+
+    ActivityItem:
+      type: string
+      description: An activity from the amenities-v2 list, as the extractor names it.
+      enum: ["Music and singing", "Dancing", "Drama and performances", "Arts and crafts", "Knitting and sewing", "Cooking and baking", "Gardening and flower arranging", "Bingo", "Quizzes and word games", "Board and card games", "Ball and movement games", "Reading and writing", "Talks and discussion groups", "Exercise classes", "Walking", "Outings", "Social gatherings and celebrations", "Men’s groups", "Films and television", "Radio", "Reminiscence activities", "Sensory activities", "Cognitive stimulation therapy", "Sonas", "Physiotherapy", "Occupational therapy", "Music therapy", "Art therapy", "Pet therapy", "Aromatherapy", "Meditation and relaxation", "Hairdressing", "Beauty and nail care", "Massage", "Religious services and prayer"]
+
+    FacilityItem:
+      type: string
+      description: A facility from the amenities-v2 list, as the extractor names it.
+      enum: ["Garden", "Courtyard", "Patio/terrace", "Balcony", "Outdoor space, type unspecified", "Lounge/day room", "Dining room", "Activities room", "Private visitors/family room", "Conservatory/sun room", "Quiet/relaxation room", "Chapel/oratory", "Prayer/reflection room", "Library", "Cinema room", "Games room", "Sensory room", "Gym", "Café/coffee dock", "Shop", "Hairdressing/beauty salon", "Designated smoking area", "Physiotherapy room", "Occupational therapy room", "Hydrotherapy pool/bathroom", "Resident internet/Wi-Fi", "Visitor parking", "Passenger lift", "Stairlift", "Dementia-specific unit", "Mental-health-specific unit", "Acquired-brain-injury unit", "Convalescence unit", "Centre-provided bus/car transport"]
+
+    CentreAmenitiesV2:
+      type: object
+      additionalProperties: false
+      required: [report_id, inspection_date, care_types, room_types, activities, facilities, extractor_version, model]
+      properties:
+        report_id:
+          type: integer
+          format: int64
+        inspection_date:
+          type: [string, "null"]
+          format: date
+        care_types:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [item, evidence]
+            properties:
+              item:
+                $ref: "#/components/schemas/CareTypeItem"
+              evidence:
+                type: array
+                minItems: 1
+                items:
+                  $ref: "#/components/schemas/AmenityEvidence"
+        room_types:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [item, evidence]
+            properties:
+              item:
+                $ref: "#/components/schemas/RoomTypeItem"
+              evidence:
+                type: array
+                minItems: 1
+                items:
+                  $ref: "#/components/schemas/AmenityEvidence"
+        activities:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [item, evidence]
+            properties:
+              item:
+                $ref: "#/components/schemas/ActivityItem"
+              evidence:
+                type: array
+                minItems: 1
+                items:
+                  $ref: "#/components/schemas/AmenityEvidence"
+        facilities:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [item, evidence]
+            properties:
+              item:
+                $ref: "#/components/schemas/FacilityItem"
+              evidence:
+                type: array
+                minItems: 1
+                items:
+                  $ref: "#/components/schemas/AmenityEvidence"
+        extractor_version:
+          type: string
+          const: amenities-v2
+        model:
+          type: string
+          minLength: 1
 
     CentreAmenities:
       type: object
@@ -1042,3 +2643,68 @@ components:
         instance:
           type: string
           description: The path of the request.
+
+    SavedSearch:
+      type: object
+      description: >
+        The search an account asked the site to remember: the county, the
+        order, and the ticked options by their slug from the page address
+        (`en-suite`), not the amenity item names the rest of this API takes
+        (`En-suite facilities`). The four list keys are the ones a centre
+        carries, so a stored preference reads the same way as the data it
+        searches. One document rather than a column per filter, so a filter
+        added to the site needs nothing here.
+      required: [county, care_types, room_types, facilities, activities, sort_by]
+      properties:
+        county:
+          type: [string, "null"]
+          description: >
+            One county as the register spells it, or null for any county. The
+            site drops a county the register does not have rather than storing
+            it.
+        care_types:
+          type: array
+          description: The ticked care-type slugs, in the order the page offers them.
+          items:
+            type: string
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        room_types:
+          type: array
+          description: The ticked room-type slugs.
+          items:
+            type: string
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        facilities:
+          type: array
+          description: The ticked facility slugs.
+          items:
+            type: string
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        activities:
+          type: array
+          description: The ticked activity slugs.
+          items:
+            type: string
+            pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+        sort_by:
+          type: string
+          enum: [name, latest_inspection]
+          description: >
+            `distance` cannot be saved, because it needs `near` and a place is
+            never stored.
+
+    SavedSearchResult:
+      type: object
+      description: >
+        The account's saved search, and when it was last saved. Both are null
+        when the account has not saved one.
+      required: [preferences, updated_at]
+      properties:
+        preferences:
+          oneOf:
+            - $ref: "#/components/schemas/SavedSearch"
+            - type: "null"
+        updated_at:
+          type: [string, "null"]
+          format: date-time
+          description: When the saved search was last stored, to the second.

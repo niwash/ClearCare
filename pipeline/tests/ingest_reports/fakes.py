@@ -3,7 +3,10 @@
 from collections.abc import Collection, Mapping, Sequence
 from pathlib import Path
 
-from clearcare_pipeline.ingest_reports.models import InspectionReport
+from clearcare_pipeline.ingest_reports.models import (
+    InspectionReport,
+    ThematicReport,
+)
 from clearcare_pipeline.reports.centre_page import Report
 from clearcare_pipeline.reports.manifest import (
     MANIFEST_NAME,
@@ -74,8 +77,10 @@ class FakeReportWriter:
     """A report writer that keeps its batches in memory."""
 
     def __init__(self) -> None:
-        self.batches: list[list[InspectionReport]] = []
+        self.batches: list[list[InspectionReport | ThematicReport]] = []
 
-    def write_batch(self, reports: Sequence[InspectionReport]) -> int:
+    def write_batch(
+        self, reports: Sequence[InspectionReport | ThematicReport]
+    ) -> int:
         self.batches.append(list(reports))
         return len(reports)

@@ -5,8 +5,8 @@ import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
 import { StepNumber } from "@/components/guides/step-number";
 import type { Judgement } from "@/lib/centres";
+import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
 import { getGuide } from "@/lib/guides";
-import { fullWidthClass } from "@/components/ui/classes";
 import { ShowHide } from "@/components/ui/chevron";
 
 const guide = getGuide("reading-inspection-reports");
@@ -73,7 +73,12 @@ export default function ReadingInspectionReportsGuide() {
     <>
       <GuideHero guide={guide} />
 
-      <ol className="flex max-w-4xl flex-col gap-3">
+      {/* From desktop width the quick checklist is beside the steps, rather than on a band below a
+          column that left the rest of its row empty (CCARE-233). It stays in view as they are opened
+          where the window is tall enough to show all of it (56rem covers its height in Easier to read,
+          about 790px), so its last items are never hidden. On narrower screens it follows the steps. */}
+      <div className="grid items-start gap-8 lg:grid-cols-[3fr_2fr]">
+      <ol className="flex flex-col gap-3">
         <Step number={1} title="Start with the basic information">
           <Prose>
             <p>
@@ -89,8 +94,8 @@ export default function ReadingInspectionReportsGuide() {
           <Prose>
             <p>
               HIQA uses judgement labels to show how the service met the relevant requirement at the time of inspection.
-              On each home’s page, ClearCare shows every label with its own symbol, so you can spot them in the inspection
-              history at a glance. Common labels include:
+              On each home’s record, ClearCare shows every label with its own symbol, so you can spot them on its{" "}
+              <strong>{CENTRE_SECTION_TITLES.inspections}</strong> page at a glance. Common labels include:
             </p>
             <ul className="divide-y divide-line-soft rounded-lg border border-line bg-surface">
               {JUDGEMENTS.map(({ judgement, label, meaning }) => (
@@ -134,6 +139,10 @@ export default function ReadingInspectionReportsGuide() {
               whether concerns remain. A single report may not show the full history, so avoid drawing conclusions
               without checking the available context.
             </p>
+            <p>
+              On ClearCare, a home’s <strong>{CENTRE_SECTION_TITLES.inspections}</strong> page shows each regulation’s
+              result at every inspection we have, side by side.
+            </p>
           </Prose>
         </Step>
 
@@ -143,6 +152,11 @@ export default function ReadingInspectionReportsGuide() {
               A provider may set out actions it intends to take in a compliance plan. Keep that response distinct from
               the inspector’s judgement: a promise or planned action is not proof that the issue was later resolved. Look
               for evidence in a subsequent report where available.
+            </p>
+            <p>
+              On ClearCare, a home’s <strong>{CENTRE_SECTION_TITLES["next-steps"]}</strong> page takes the findings
+              worth reading first and sets out what the inspector found, what the home said it would do, and how the
+              regulation was judged when it was next checked.
             </p>
           </Prose>
         </Step>
@@ -159,16 +173,14 @@ export default function ReadingInspectionReportsGuide() {
         </Step>
       </ol>
 
-      {/* A tinted band the full width of the window, like the home page's welcome. */}
-      <section
-        aria-labelledby="checklist-h"
-        className={`${fullWidthClass} bg-band py-8 md:py-12`}
-      >
-        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
+        <section
+          aria-labelledby="checklist-h"
+          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 lg:[@media(min-height:56rem)]:sticky lg:top-6 adult:border adult:border-line"
+        >
           <h2 id="checklist-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Quick checklist
           </h2>
-          <ul className="grid max-w-4xl gap-3 sm:grid-cols-2">
+          <ul className="flex flex-col gap-3">
             {CHECKLIST.map((item) => (
               <li key={item} className="flex items-start gap-3 rounded-lg border border-line bg-surface p-4">
                 <svg
@@ -187,8 +199,8 @@ export default function ReadingInspectionReportsGuide() {
               </li>
             ))}
           </ul>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* The one thing to remember, set apart in the brand colour. */}
       <section aria-labelledby="takeaway-h" className="brand-band flex max-w-4xl flex-col gap-3 rounded-lg p-5 md:p-6">

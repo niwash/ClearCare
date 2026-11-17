@@ -2,8 +2,9 @@
 // is asked for its own address and answers with the container's (0.0.0.0:3000 in the image), so
 // anything built from that address is wrong for a URL the identity provider has to match.
 //
-// X-Forwarded-* win because they are what the browser actually typed; Host is the fallback for a
-// direct request, and localhost is the only place http is assumed.
+// AUTH_URL wins where it is set. Otherwise X-Forwarded-* win because they are what the browser
+// actually typed; Host is the fallback for a direct request, and localhost is the only place http is
+// assumed.
 
 type IncomingHeaders = {
   "x-forwarded-host"?: string | null;
@@ -14,7 +15,16 @@ type IncomingHeaders = {
 const first = (value: string | null | undefined): string | undefined =>
   value?.split(",")[0]?.trim() || undefined;
 
-export function originFrom(headers: IncomingHeaders): string {
+export function originFrom(headers: IncomingHeaders, authUrl?: string): string {
+  // AUTH_URL is set where the headers cannot be relied on (the ECS task): the origin Auth.js signs
+  // in with, so the way out uses the same one. One that isn't a URL falls through to the headers,
+  // so signing out still ends at Cognito's logout rather than an error page.
+  if (authUrl?.trim()) {
+    try {
+      return new URL(authUrl).origin;
+    } catch {}
+  }
+
   const host = first(headers["x-forwarded-host"]) ?? first(headers.host) ?? "localhost:3000";
   const proto =
     first(headers["x-forwarded-proto"]) ??

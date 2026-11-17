@@ -1,4 +1,4 @@
-"""The newest stored copy of each price list, from the download manifest."""
+"""Every stored copy of the price lists, from the download manifest."""
 
 import json
 from pathlib import Path
@@ -13,10 +13,10 @@ class StoredPriceListsError(Exception):
 
 
 def stored_price_lists(data_dir: Path) -> list[PriceListFile]:
-    """Returns the newest successful download of each list in the data dir.
+    """Returns every successful download in the data dir, oldest first.
 
-    A list that was never downloaded successfully is left out, so the result
-    is empty when nothing has been downloaded yet.
+    A file downloaded more than once is returned once, as it was first
+    downloaded. The result is empty when nothing has been downloaded yet.
 
     Raises:
         StoredPriceListsError: If a line of the manifest is not a record.
@@ -29,8 +29,13 @@ def stored_price_lists(data_dir: Path) -> list[PriceListFile]:
     )
     home_types = {source: home_type for home_type, source in SOURCES.items()}
     store = FileSystemRawStore(data_dir / "raw")
-    newest: dict[str, PriceListFile] = {}
-    # The manifest is appended to, so a later line is a newer download.
+    # Keyed by hash: most weeks HSE has not changed a list, so the same file
+    # is downloaded again.
+    files: dict[str, PriceListFile] = {}
+    # The manifest is appended to, so its order is the order of download. The
+    # lists are loaded in that order, so a database built from the bucket
+    # gives a re-issued list the same version as one that loaded it on the
+    # day (ADR-0018).
     for number, line in enumerate(lines, 1):
         try:
             record = json.loads(line)
@@ -40,11 +45,16 @@ def stored_price_lists(data_dir: Path) -> list[PriceListFile]:
                 and record["error"] is None
                 and isinstance(record["sha256"], str)
             ):
-                newest[home_type] = PriceListFile(
-                    home_type, record["url"], store.path_for(record["sha256"])
+                files.setdefault(
+                    record["sha256"],
+                    PriceListFile(
+                        home_type,
+                        record["url"],
+                        store.path_for(record["sha256"]),
+                    ),
                 )
         except (ValueError, KeyError, TypeError) as problem:
             raise StoredPriceListsError(
                 f"{manifest.name} line {number}: not a download record"
             ) from problem
-    return [newest[home_type] for home_type in SOURCES if home_type in newest]
+    return list(files.values())

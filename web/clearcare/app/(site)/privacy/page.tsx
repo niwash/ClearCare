@@ -16,7 +16,7 @@ const CONTACT_EMAIL = "hello@clearcare.ie";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "2 November 2026";
+const LAST_UPDATED = "11 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -45,9 +45,105 @@ export default function PrivacyPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>
               Some choices you make are saved in your own browser: the colour theme, the easier-to-read design,
-              whether you&apos;ve closed the welcome tour&apos;s box on this visit, and the homes on your Compare Homes
-              shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
+              whether you&apos;ve closed the welcome tour&apos;s box on this visit, your last search on this visit, so
+              Compare Homes can take you back to it, and the homes on your Compare Homes shortlist. Clearing your browser&apos;s site data removes them. When you open Compare Homes, your shortlist&apos;s homes are in
               the page address, like any other page you visit, so they appear in the technical logs below.
+            </li>
+            {/* The search box (CCARE-228, CCARE-230; components/search/search-box.tsx and
+                google-places.tsx): one box takes a home's name and a place, so Google's Places library,
+                which loads only once something is typed in it, is sent a home's name as it is typed
+                too. The site's own server is sent the same text, to suggest homes by name
+                (app/(site)/search/names). Google is asked for the location of a picked town, area or
+                Eircode. When Search is pressed with text that wasn't picked and isn't a county, Google
+                is asked for its first suggestion, and for that place's location when the search is
+                made from it (settleBox, lib/search-box.ts). Text searched from the home page box that
+                is no county and no Eircode is settled the same way as the search page opens
+                (settleArrival, components/search/search-filters.tsx), so it goes to Google with
+                nothing typed in the search page's box.
+
+                Measured on 11 Nov 2026 in headless Chrome with an empty profile, typing a town into
+                the box: the suggestions asked places.googleapis.com, and nothing was stored in the
+                site's cookies, localStorage or sessionStorage. */}
+            <li>
+              When you type in the search box on the search page, what you type goes to our own server, which
+              suggests nursing homes by name, and to Google, which suggests places. Google gets it whether you
+              are typing a nursing home&apos;s name, a town, an area or an Eircode. Like any request your browser
+              makes, it carries your IP address. When you pick a town, an area or an Eircode, Google is also
+              asked where that place is. When you search for what you typed without picking, Google is asked
+              which place it could be, unless it is a county, and where that place is if we search from it.
+              The same happens when you search from the box on the home page, unless what you typed is a
+              county or an Eircode. Nothing goes to Google for this until you type in the search box or
+              search from the home page.{" "}
+              <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
+              with these requests.
+            </li>
+            {/* A home's photo (CCARE-209, components/centre/centre-photo.tsx): the Places UI Kit is
+                not loaded until the visitor presses "Show photos", and the agreement lasts the visit
+                (sessionStorage, key "photos-agreed"). The request carries their IP address as any
+                request does, and the photo comes from Google into their browser; nothing of Google's
+                is stored on our servers (ADR-0030). Measured on 11 Nov 2026. */}
+            <li>
+              A home&apos;s page can show photos of it from Google. They load only when you press
+              &ldquo;Show photos&rdquo;: that request carries your IP address, like any request your browser
+              makes, and the photos come from Google straight to your browser rather than through our servers.
+              If you don&apos;t press it, nothing goes to Google.{" "}
+              <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it
+              does with these requests.
+            </li>
+
+            {/* "Use my location" and, before a search on a wide screen, "Homes near me" (askLocation): the browser's Geolocation API, asked only on the click; nearFrom
+                (lib/near.ts) rounds the point to two decimals before it goes into the search, and the
+                API refuses anything finer (api/openapi.yaml, near). It isn't sent to Google, though the
+                map of the results opens around it (the next item but one). */}
+            <li>
+              &ldquo;Use my location&rdquo; and &ldquo;Homes near me&rdquo; ask your browser where you are, only when you press
+              one of them. The page rounds
+              that to about 1 km before it goes anywhere, so our servers never get anything more precise. We
+              don&apos;t store it, though like any page address it can appear in the technical logs below.
+            </li>
+            {/* place and near are in the page address (lib/page-search.ts), so they are in the history
+                and in shared links, and in the last search (components/search/last-search.tsx), which
+                keeps them on purpose. Only near is rounded (lib/near.ts); place is the box's text as typed
+                or picked. Neither goes into a saved search (lib/preferences.ts). */}
+            <li>
+              The place you search from is in the page address, so it stays in your browser&apos;s history and in
+              any link you share. It&apos;s also in your last search on this visit, which your browser keeps until
+              you close the tab. Only the point we measure distances from is rounded to about 1 km: the name in the
+              box stays as you typed or picked it, and a full Eircode there is an exact address.
+            </li>
+            {/* The search page's map (CCARE-229, components/search/results-map.tsx). Google's Maps
+                JavaScript loads for it in three cases, the first two without anything being pressed:
+                when the search page opens with nothing searched, for the map of every home under the
+                prompt; when a search has results on a wide screen, where the map is beside the list
+                (CCARE-230; from 80rem, which is 1280px at the browser's own text size, MapWhereShown in
+                components/search/list-beside-map.tsx); and on a narrower screen once Map is chosen for
+                a search's results (view=map in the page address). It asks Google for
+                the map's pictures as it is moved. The homes' positions come from ClearCare's API
+                through the site's server (ADR-0029) and are drawn in the browser. With a place or a
+                location in the search, the map of the results opens around that point (firstView,
+                lib/search-map.ts).
+
+                Measured on 11 Nov 2026 in headless Chrome with an empty profile, on the search page
+                with nothing searched: requests went to maps.googleapis.com,
+                mapsresources-pa.googleapis.com, maps.gstatic.com, fonts.googleapis.com and
+                fonts.gstatic.com, and Google's scripts set nothing in cookies, localStorage or
+                sessionStorage.
+
+                Measured on 11 Nov 2026 in headless Chrome with an empty profile: a list of results
+                opened 1440px wide asked the same Google hosts as the page with nothing searched, and
+                Google's scripts stored nothing; the same list opened 390px wide sent no request to
+                Google and loaded no Maps script. */}
+            <li>
+              The search page shows a map of every nursing home before you search. After a search, a wide
+              screen, such as a laptop or a desktop computer, shows a map of your results beside the list. A
+              narrower screen, such as a phone, shows the map when you choose &ldquo;Map&rdquo;. The map comes
+              from Google, so opening the search page with nothing searched, or seeing your results on a wide
+              screen, is enough for your browser to ask Google for it. Your browser asks Google for
+              each part of the map you look at, and like any request this carries your IP address. If you
+              searched from a place or from your location, the map of your results opens around it. The nursing
+              homes&apos; positions come from ClearCare, not from you.{" "}
+              <a href="https://policies.google.com/privacy">Google&apos;s privacy policy</a> covers what it does
+              with these requests.
             </li>
             <li>
               Like any website, our servers keep short technical logs of requests. Finding faults and keeping the site
@@ -74,13 +170,14 @@ export default function PrivacyPage() {
         </PrivacySection>
 
         <PrivacySection id="accounts" title="If you create an account">
-          <p>
-            Accounts aren&apos;t open yet. When they are, this is what we&apos;ll hold:
-          </p>
+          {/* Accounts are live since CCARE-183 wired the production pool into the deployment. */}
+          <p>You don&apos;t need an account to use ClearCare. If you create one, this is what we hold:</p>
           <ul className="flex list-disc flex-col gap-2 pl-5">
+            {/* The pool signs in by email and asks for nothing else (infra/aws/modules/cognito/main.tf):
+                no name is collected. If that changes, this changes in the same pull request. */}
             <li>
-              Your email address, and your name if you give it, held by Amazon Cognito in the EU. We use them to sign
-              you in and to contact you about your account. The legal basis is providing the service you asked for.
+              Your email address, held by Amazon Cognito in the EU. We use it to sign you in and to contact you about
+              your account. The legal basis is providing the service you asked for.
             </li>
             {/* Auth.js (PR #107) sets the session cookie, and short-lived state, PKCE and CSRF cookies
                 while you sign in. */}
@@ -90,7 +187,21 @@ export default function PrivacyPage() {
               keep the sign-in itself secure. None of them needs your consent, because signing in can&apos;t work
               without them.
             </li>
-            <li>We keep your account until you delete it, or ask us to by email.</li>
+            {/* The saved search (ADR-0025): clearcare.user_preferences, keyed on the account's id in
+                clearcare.users, holding the county, the order and the ticked filter options only. */}
+            <li>
+              A search you ask us to remember: the county, the order and the care and amenity options you chose.
+              It&apos;s kept with your account so it&apos;s there on your next visit, on any device, and what you
+              type into the search box isn&apos;t kept. Saving one also keeps a number for your account, which
+              the search is filed against. You can forget the search on the search page at any time; that leaves
+              your account as it is, and if you ask us by email we remove the saved search along with the account.
+            </li>
+            {/* There's no delete route yet: an operator follows documentations/operations/account_deletion.md.
+                The database's automatic backups are kept for 7 days (infra/aws/live/rds.tf). */}
+            <li>
+              We keep your account until you ask us by email to delete it. Once we have, copies left in our database
+              backups are gone within 7 days.
+            </li>
           </ul>
         </PrivacySection>
 
@@ -119,21 +230,27 @@ export default function PrivacyPage() {
           </ul>
 
           <PrivacySubheading>How we use them</PrivacySubheading>
-          {/* Amenities: Research/Data Extraction/extractor.py (OpenAI). Research: the outcome pilot,
-              pipeline/src/clearcare_pipeline/outcome_pilot.py (Anthropic), run by hand and not served by
-              the API. Everything else the site shows from reports is worked out by rules (ADR-0015, -0017). */}
+          {/* Amenities: Research/Data Extraction/extractor.py, Anthropic (Claude Haiku 5.5) by default since
+              CCARE-198 (#135), OpenAI (GPT-4o-mini) with --provider openai; the rows loaded before it were
+              read by GPT-4o-mini. Research: the outcome pilot, pipeline/src/clearcare_pipeline/outcome_pilot.py
+              (Anthropic), run by hand and not served by the API. Everything else the site shows from reports
+              is worked out by rules (ADR-0015, -0017). */}
           <ul className="flex list-disc flex-col gap-2 pl-5">
             <li>To show each home&apos;s inspection history and what its reports say.</li>
-            {/* What the extractor does today: free-text dining_notes and other_notes, which aren't quotes,
-                and a prompt that accepts what is "clearly implied" (extractor.py:120, 127, 193). Once it
-                only keeps values it can quote from the report, this can say it extracts and doesn't write.
-                Nothing it finds is shown on the site yet: the care types and amenities filters, the centre
-                page and Compare Homes all say "Coming soon". Change this when they show it. */}
+            {/* The amenities-v2 extractor (CCARE-195): items from a fixed list of 93, each kept only with
+                a quote from the report and its pages, and no free-text notes; since CCARE-199 (#137) a quote
+                not found in the report's text is dropped before storing. The centre page and Compare Homes
+                show them with the quotes (CCARE-163). The search filters and the ticks on search results
+                use the same items (centre_amenities_v2), once GET /centres filters by them. The checking is
+                the gold set and evaluation, CCARE-192 and -193: change "We're now checking" here and in
+                centre-amenities.tsx when it's done. */}
             <li>
-              To find details such as care types and amenities. An AI service reads each report and records what it
-              finds, including short notes that summarise what the report says. This tool is still being developed:
-              its results haven&apos;t yet been checked against the reports, and none of them are shown on ClearCare
-              yet. We&apos;ll update this notice before they are.
+              To show what each home offers, such as its types of care, rooms, activities and facilities, and to let
+              you search for homes by them. An AI service reads each report, picks these out from a fixed list and
+              keeps the passage of the report each one comes from. Each home&apos;s page shows them with those
+              passages, and Compare Homes shows them side by side, both saying they were read by an AI tool.
+              We&apos;re now checking these results against the reports, so until that&apos;s done some may be wrong
+              or missing.
             </li>
             <li>
               For research on how findings change from one inspection to the next. An AI service reads the reports
@@ -161,14 +278,22 @@ export default function PrivacyPage() {
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
               the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
-              code on 29 Oct 2026: AWS in eu-north-1 (infra/aws), Vercel for previews of the site, OpenAI
-              (Research/Data Extraction/extractor.py) and Anthropic
-              (pipeline/src/clearcare_pipeline/outcome_pilot.py), the last three in the US. Cloudflare
-              only holds DNS records, so it sees no visits. Update this when a service changes. */}
+              code on 11 Nov 2026, after CCARE-228 and CCARE-209: AWS in eu-north-1 (infra/aws), Vercel for
+              previews of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
+              pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
+              openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
+              search box's place suggestions, components/search/google-places.tsx, since CCARE-229 the search
+              page's map, components/search/results-map.tsx, and the photos on a home's page,
+              components/centre/centre-photo.tsx), which may handle these requests
+              outside the EU. The pipeline's geocoding (ADR-0027) sends Google only the centres' register
+              addresses, which name no visitor. Cloudflare only holds DNS records, so it sees no visits.
+              Update this when a service changes. */}
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
-            Service providers handle data for us: hosting providers run the site and store its data in the EU, and
-            AI services read the reports. Some of these providers are in the United States, where data is protected
+            Service providers handle data for us: hosting providers run the site and store its data in the EU, AI
+            services read the reports, and a maps service suggests places as you type in the search, draws the
+            map on the search page and shows the photos on a home&apos;s page. Some of these
+            providers are in the United States, where data is protected
             by the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
             Commission&apos;s standard contractual clauses. Email us for a copy of these safeguards.
           </p>
@@ -188,8 +313,8 @@ export default function PrivacyPage() {
 
         <PrivacySection id="changes" title="Changes to this notice">
           <p>
-            We&apos;ll update this page when ClearCare changes how it uses data, such as when accounts open.
-            Last updated {LAST_UPDATED}.
+            {/* A change to the data ClearCare handles updates this page in the same pull request. */}
+            We&apos;ll update this page whenever ClearCare changes how it uses data. Last updated {LAST_UPDATED}.
           </p>
         </PrivacySection>
       </div>

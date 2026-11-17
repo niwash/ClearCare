@@ -4,7 +4,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.nio.file.Path;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
 
 /**
  * GET /actuator/health, which the load balancer calls to decide whether the API can take requests.
@@ -28,21 +26,11 @@ import org.testcontainers.utility.MountableFile;
 @Testcontainers
 class HealthTest {
 
-  // Maven runs the tests in api/.
-  private static final Path REPOSITORY = Path.of("..");
   // roles.sql needs a password for each role; only the API's is used here.
   private static final String PASSWORD = UUID.randomUUID().toString();
 
   @Container
-  static final PostgreSQLContainer database =
-      new PostgreSQLContainer("postgres:18.6")
-          .withDatabaseName("clearcare")
-          .withCopyFileToContainer(
-              MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
-              "/docker-entrypoint-initdb.d/roles.sql")
-          .withEnv("CLEARCARE_MIGRATOR_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_PIPELINE_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_API_PASSWORD", PASSWORD);
+  static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
   // The user name comes from application.properties.
   @DynamicPropertySource

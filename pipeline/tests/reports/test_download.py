@@ -73,6 +73,29 @@ def _run(
     return summary, fetcher
 
 
+def test_a_verification_page_is_recorded_as_blocked(tmp_path: Path) -> None:
+    summary, _ = _run(tmp_path, {ELM_HALL.url: [VERIFICATION]})
+
+    assert summary.failure == "centre 34: browser verification page (HTTP 503)"
+    assert summary.blocked is True
+
+
+def test_a_page_the_pipeline_cannot_read_is_not_blocked(
+    tmp_path: Path,
+) -> None:
+    summary, _ = _run(tmp_path, {ELM_HALL.url: [html(b"<html>Busy</html>")]})
+
+    assert summary.failure is not None
+    assert summary.blocked is False
+
+
+def test_a_page_that_stays_unavailable_is_blocked(tmp_path: Path) -> None:
+    summary, _ = _run(tmp_path, {ELM_HALL.url: [UNAVAILABLE] * 3})
+
+    assert summary.failure == "centre 34: HTTP 503"
+    assert summary.blocked is True
+
+
 def test_downloads_every_listed_report(tmp_path: Path) -> None:
     summary, _ = _run(tmp_path, _outcomes())
 

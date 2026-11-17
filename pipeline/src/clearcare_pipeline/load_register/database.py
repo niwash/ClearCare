@@ -6,6 +6,7 @@ from dataclasses import asdict
 import psycopg
 from psycopg.rows import TupleRow
 
+from clearcare_pipeline.load_register.conditions import extra_conditions
 from clearcare_pipeline.load_register.register_csv import RegisterEntry
 from clearcare_pipeline.reports.register import RegisterDownload
 from clearcare_pipeline.snapshots.sources import OLDER_PERSONS_REGISTER
@@ -122,11 +123,15 @@ def _insert_and_publish(
             "INSERT INTO clearcare.register_entry (source_file_id,"
             " source_record, centre_id, centre_name, address, county,"
             " eircode, maximum_occupancy, centre_phone, provider_name,"
-            " provider_cro_number, hiqa_url, extracted_at, extractor_version)"
+            " provider_cro_number, hiqa_url, registration_number,"
+            " registration_date, registration_expiry_date,"
+            " chief_inspector_note, extracted_at, extractor_version)"
             " VALUES (%(source_file_id)s, %(source_record)s, %(centre_id)s,"
             " %(centre_name)s, %(address)s, %(county)s, %(eircode)s,"
             " %(maximum_occupancy)s, %(centre_phone)s, %(provider_name)s,"
-            " %(provider_cro_number)s, %(hiqa_url)s, now(),"
+            " %(provider_cro_number)s, %(hiqa_url)s,"
+            " %(registration_number)s, %(registration_date)s,"
+            " %(registration_expiry_date)s, %(chief_inspector_note)s, now(),"
             " %(extractor_version)s)",
             [
                 {
@@ -135,6 +140,18 @@ def _insert_and_publish(
                     "extractor_version": extractor_version,
                 }
                 for entry in entries
+            ],
+        )
+        # Only the extras: nearly every centre has the same three conditions,
+        # and the whole column stays in the raw store (db/V21).
+        cursor.executemany(
+            "INSERT INTO clearcare.register_extra_condition"
+            " (source_file_id, centre_id, number, text)"
+            " VALUES (%s, %s, %s, %s)",
+            [
+                (source_file_id, entry.centre_id, extra.number, extra.text)
+                for entry in entries
+                for extra in extra_conditions(entry.conditions_of_registration)
             ],
         )
     connection.execute(

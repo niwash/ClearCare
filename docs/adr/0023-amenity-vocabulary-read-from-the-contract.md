@@ -1,0 +1,7 @@
+# The API reads the amenity vocabulary from its own contract
+
+`GET /centres` filters by the item names of the four amenities-v2 lists and counts every one of them in its facets, so the API needs the whole vocabulary. It reads it from `api/openapi.yaml`, where the names are the enums of `CareTypeItem`, `RoomTypeItem`, `ActivityItem` and `FacilityItem`. Maven copies the file onto the classpath and `api/Dockerfile` copies it into the image. `AmenityItemNames` reads the four enums once at startup, and a missing or empty enum stops the API from starting. The names check the four parameters, so an unknown name is a 400, and they are the keys of the facets.
+
+A copy of the 93 names in Java, guarded by a test against the contract, would be a third copy of the same list, and a new category would need an edit in Python, the contract and Java. Generating the contract's enums, or a Java file, from the `Literal` lists in `pipeline/src/clearcare_pipeline/amenities_v2.py` would leave a single copy. The API's build would then depend on the pipeline's code, though, and a generator is more to maintain than one test.
+
+From now on a new or renamed category is one edit to the `Literal` list in Python and one to its enum in `openapi.yaml`. `pipeline/tests/test_api_contract.py` fails when the two lists differ in names or order, so CI catches an edit made in one place only. The contract ships in the image, so an edit to it reaches the API at the next deploy. The API's tests read the same file, so a broken enum fails `./mvnw verify` before it is merged.

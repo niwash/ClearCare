@@ -18,6 +18,7 @@ files are `week_6.md` / `week_6.pdf`.
 | `meetings/` | Week-by-week minutes, `week_N.md` (attendance, agenda, decisions, actions) |
 | `presentations/` | The weekly deck as a PDF, `week_N.pdf`, one per sprint-week |
 | `designs/` | Design and research write-ups, named by sprint or by task (`sprint-6-ui-changes.md`, `easier-to-read-toggle.md`) |
+| `operations/` | Runbooks: what to do to the running system (`account_deletion.md`, `live_smoke_test.md`, `rollback.md`) |
 
 ## Adding weekly files
 

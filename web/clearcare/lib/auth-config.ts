@@ -90,3 +90,14 @@ export function authUnavailable(): Response {
     { status: 503 },
   );
 }
+
+/**
+ * The account id a server route keys on, taken from the session this file projected. A route that
+ * reads it gets a string it can use as a key or nothing at all, never another field of the user.
+ */
+export function sessionSubject(session: { user?: unknown } | null | undefined): string | null {
+  const user = session?.user;
+  if (typeof user !== "object" || user === null) return null;
+  const sub = (user as { sub?: unknown }).sub;
+  return typeof sub === "string" && sub.trim() ? sub.trim() : null;
+}

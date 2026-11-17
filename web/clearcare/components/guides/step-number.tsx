@@ -26,15 +26,18 @@ export function StepNumber({ number, size = "large" }: { number: number; size?: 
 // target of each section's "Back to contents".
 export function ContentsNav({ label, items }: { label: string; items: readonly { id: string; title: string }[] }) {
   return (
-    <nav id={CONTENTS_ID} aria-label={label} className="max-w-4xl scroll-mt-6">
-      <ol className="flex flex-wrap gap-2">
+    // One row across the page's whole width from desktop width, each link an equal share of it, rather
+    // than wrapping onto a second row with the first one's end left empty (CCARE-233). Two to a row
+    // on tablets, one under another on phones.
+    <nav id={CONTENTS_ID} aria-label={label} className="scroll-mt-6">
+      <ol className="grid gap-2 sm:grid-cols-2 lg:auto-cols-fr lg:grid-flow-col lg:grid-cols-none">
         {items.map((item, index) => (
           <li key={item.id}>
             <a
               href={`#${item.id}`}
-              className="flex min-h-11 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink"
+              className="flex h-full min-h-11 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm leading-snug font-semibold text-ink no-underline hover:border-primary hover:text-ink"
             >
-              <span aria-hidden className="grid size-8 place-items-center rounded-full bg-primary text-on-primary">
+              <span aria-hidden className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-on-primary">
                 {index + 1}
               </span>
               {item.title}

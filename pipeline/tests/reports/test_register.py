@@ -7,6 +7,7 @@ from clearcare_pipeline.reports.register import (
     RegisteredCentre,
     RegisterError,
     latest_register_sha256,
+    register_downloads,
     registered_centres,
 )
 
@@ -52,6 +53,22 @@ def test_latest_register_is_the_last_successful_snapshot(
     )
 
     assert latest_register_sha256(manifest) == "bbb"
+
+
+def test_every_successful_register_download_is_returned_in_manifest_order(
+    tmp_path: Path,
+) -> None:
+    manifest = _manifest(
+        tmp_path,
+        _snapshot_line("older_persons_register", "aaa", None),
+        _snapshot_line("section_64_register", "ccc", None),
+        _snapshot_line("older_persons_register", None, "HTTP 503"),
+        _snapshot_line("older_persons_register", "bbb", None),
+    )
+
+    downloads = register_downloads(manifest)
+
+    assert [download.sha256 for download in downloads] == ["aaa", "bbb"]
 
 
 def test_no_successful_register_snapshot_is_an_error(tmp_path: Path) -> None:

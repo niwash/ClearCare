@@ -15,9 +15,9 @@ resource "aws_ecs_cluster" "main" {
 
 locals {
   # Images that CI does not build, from ECR Public by digest, so a task runs
-  # the same bytes every time. The same PostgreSQL as compose.yaml, for
-  # pg_restore. Each digest names the multi-platform index, which has
-  # linux/arm64.
+  # the same bytes every time. The restore task needs only pg_restore and psql
+  # of the same major version as RDS. Each digest names the multi-platform
+  # index, which has linux/arm64.
   postgres_image = "public.ecr.aws/docker/library/postgres:18.6@sha256:edb0c08dc33befd0262ab3b5cf1c4f3f8cfd8b09e88c05b45adee29d6761ddb6"
   aws_cli_image  = "public.ecr.aws/aws-cli/aws-cli:2.38.5@sha256:c8156a0e74e13929a42d7e60f0d4e14e7d28d980cd21822505d4bff80e5460c1"
   busybox_image  = "public.ecr.aws/docker/library/busybox:1.37.0@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e"
@@ -92,7 +92,32 @@ resource "aws_ecs_task_definition" "web" {
         { name = "API_URL", value = "https://${var.api_hostname}" },
         # The standalone server listens on HOSTNAME; the health check calls it on loopback.
         { name = "HOSTNAME", value = "0.0.0.0" },
+        # The public address for the sign-in URLs Cognito must match. Behind the load balancer a
+        # request's URL carries the container's own address (0.0.0.0:3000), which Auth.js would
+        # otherwise build its callback URLs from.
+        { name = "AUTH_URL", value = "https://${var.site_hostname}" },
+        # Public accounts (CCARE-183), empty until the production pool exists. While any of them is
+        # missing the account controls stay hidden and the authentication routes answer 503, so the
+        # site behaves exactly as it does today.
+        { name = "AUTH_COGNITO_ISSUER", value = var.cognito_issuer },
+        { name = "AUTH_COGNITO_ID", value = var.cognito_client_id },
+        { name = "COGNITO_DOMAIN", value = var.cognito_domain },
+        # The place suggestions on the search page (CCARE-228). Every visitor's browser is given the
+        # key, so it is a plain value rather than a secret, and the task starts with or without it.
+        { name = "GOOGLE_MAPS_BROWSER_KEY", value = var.google_maps_browser_key },
+        # The map of the search results (CCARE-229): a plain value like the key, and the task starts
+        # with or without it.
+        { name = "GOOGLE_MAPS_MAP_ID", value = var.google_maps_map_id },
       ]
+      # ECS refuses to start a container whose secret has no value, so these arrive only once
+      # accounts_enabled is on, which is after both values have been set.
+      secrets = var.accounts_enabled ? [
+        { name = "AUTH_COGNITO_SECRET", valueFrom = aws_secretsmanager_secret.cognito_client_secret.arn },
+        { name = "AUTH_SECRET", valueFrom = aws_secretsmanager_secret.auth_session.arn },
+        # What the API is sent when it keeps a signed-in visitor's saved search (ADR-0025). Without
+        # it the save controls on the search page never appear.
+        { name = "SITE_TOKEN", valueFrom = aws_secretsmanager_secret.site_token.arn },
+      ] : []
       # The image has node but no curl.
       healthCheck = {
         command     = ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
@@ -142,9 +167,15 @@ resource "aws_ecs_task_definition" "api" {
         { name = "SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE", value = "5" },
         { name = "SPRING_DATASOURCE_HIKARI_MINIMUMIDLE", value = "1" },
       ]
-      secrets = [
-        { name = "CLEARCARE_API_PASSWORD", valueFrom = aws_secretsmanager_secret.database["api"].arn },
-      ]
+      secrets = concat(
+        [{ name = "CLEARCARE_API_PASSWORD", valueFrom = aws_secretsmanager_secret.database["api"].arn }],
+        # The token a saved search is written with (ADR-0025). Injected only once accounts are on,
+        # and so only once it has a value: an ECS container cannot start with an empty secret. Until
+        # then /preferences answers 503 and the site offers no saved search.
+        var.accounts_enabled ? [
+          { name = "SITE_TOKEN", valueFrom = aws_secretsmanager_secret.site_token.arn },
+        ] : [],
+      )
       healthCheck = {
         command     = ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://127.0.0.1:8080/actuator/health"]
         interval    = 30
@@ -192,6 +223,7 @@ resource "aws_ecs_task_definition" "pipeline" {
       environment = concat(local.libpq_environment, [
         { name = "PGUSER", value = local.database_logins.pipeline },
         { name = "CLEARCARE_CRAWL", value = "all" },
+        { name = "CLEARCARE_AMENITIES", value = var.amenities_enabled ? "on" : "off" },
         # The task role's credentials, not keys (iam.tf).
         { name = "CLEARCARE_S3_AUTH", value = "default" },
         { name = "CLEARCARE_S3_BUCKET", value = aws_s3_bucket.bucket["raw"].id },
@@ -199,7 +231,9 @@ resource "aws_ecs_task_definition" "pipeline" {
       ])
       secrets = [
         { name = "PGPASSWORD", valueFrom = aws_secretsmanager_secret.database["pipeline"].arn },
-        { name = "OPENAI_API_KEY", valueFrom = aws_secretsmanager_secret.openai.arn },
+        { name = "ANTHROPIC_API_KEY", valueFrom = aws_secretsmanager_secret.anthropic.arn },
+        { name = "GOOGLE_GEOCODING_API_KEY", valueFrom = aws_secretsmanager_secret.google_geocoding.arn },
+        { name = "GOOGLE_PLACES_API_KEY", valueFrom = aws_secretsmanager_secret.google_places.arn },
       ]
       # Passes the stop signal on to Python, which ignores it as process 1,
       # as init: true does in compose.yaml.
@@ -236,7 +270,9 @@ resource "aws_ecs_task_definition" "migrate" {
       dependsOn   = [local.rds_ca_dependency]
       mountPoints = [local.rds_ca_mount]
       # The image runs flyway migrate unless the command names another
-      # Flyway command, such as info or validate.
+      # Flyway command, such as info or validate. Before it migrates it takes
+      # the run lock a pipeline task holds (ADR-0022), on a psql session it
+      # opens from these same variables, so its settings do not change.
       environment = [
         { name = "FLYWAY_URL", value = local.jdbc_url },
         { name = "FLYWAY_USER", value = local.database_logins.migrator },

@@ -29,7 +29,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
-import org.testcontainers.utility.MountableFile;
+
+import ie.clearcare.api.DatabaseImage;
 
 /**
  * GET /centres/{centre_id}/amenities against PostgreSQL with the roles and schema from this
@@ -54,7 +55,8 @@ class CentreAmenitiesTest {
           "db/V1__register_entries.sql",
           "db/V2__inspection_reports.sql",
           "db/V3__inspection_report_views.sql",
-          "db/V11__report_amenities.sql");
+          "db/V11__report_amenities.sql",
+          "db/V12__report_amenities_v2.sql");
 
   // A register snapshot, so that the centres exist (db/V1), and two reports of Elm Hall
   // (db/V2). The newer report has two extractions, as after a re-run with a new prompt, and the
@@ -117,17 +119,8 @@ class CentreAmenitiesTest {
            '2026-10-27 12:00:00+00');
       """;
 
-  // roles.sql runs from the image's init scripts, as it does for a new local database.
   @Container
-  static final PostgreSQLContainer database =
-      new PostgreSQLContainer("postgres:18.6")
-          .withDatabaseName("clearcare")
-          .withCopyFileToContainer(
-              MountableFile.forHostPath(REPOSITORY.resolve("infra/postgres/roles.sql")),
-              "/docker-entrypoint-initdb.d/roles.sql")
-          .withEnv("CLEARCARE_MIGRATOR_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_PIPELINE_PASSWORD", PASSWORD)
-          .withEnv("CLEARCARE_API_PASSWORD", PASSWORD);
+  static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 
   // The user name comes from application.properties.
   @DynamicPropertySource
@@ -145,6 +138,7 @@ class CentreAmenitiesTest {
       execute("SET ROLE clearcare_owner;\n" + Files.readString(REPOSITORY.resolve(migration)));
     }
     execute(SEED);
+    seedV2();
   }
 
   @Test
@@ -203,6 +197,94 @@ class CentreAmenitiesTest {
                      "instance": "/centres/%s/amenities"}
                     """
                         .formatted(centreId)));
+  }
+
+  @Test
+  void returnsV2EvidenceOnlyWhenRequested() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(content().json(
+            """
+            {"centre_id":"34","amenities":{
+              "report_id":2,"inspection_date":"2026-05-13",
+              "care_types":[],"room_types":[],"activities":[],
+              "facilities":[{"item":"Garden","evidence":[
+                {"quote":"Residents used the garden.","page_start":3,"page_end":3},
+                {"quote":"Staff assisted access.","page_start":5,"page_end":6}]}],
+              "extractor_version":"amenities-v2","model":"gpt-4o-mini"}}
+            """, JsonCompareMode.STRICT));
+  }
+
+  @Test
+  void returnsNullWithoutFallingBackToV1() throws Exception {
+    execute("DELETE FROM clearcare.report_amenities_v2");
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.amenities").value(nullValue()));
+    } finally {
+      seedV2();
+    }
+  }
+
+  @Test
+  void rejectsAnUnsupportedVersion() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v99"))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+        .andExpect(jsonPath("$.detail", is("version must be amenities-v1 or amenities-v2.")));
+  }
+
+  @Test
+  void v2PreservesNotFoundAndUnavailableResponses() throws Exception {
+    mvc.perform(get("/centres/999/amenities").param("version", "amenities-v2"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.detail", is("The register has no centre with this centre_id.")));
+    execute("DELETE FROM clearcare.register_publication");
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL + "/amenities").param("version", "amenities-v2"))
+          .andExpect(status().isServiceUnavailable())
+          .andExpect(jsonPath("$.detail", is("The register has not been loaded yet.")));
+    } finally {
+      execute("INSERT INTO clearcare.register_publication (source_file_id, published_at) VALUES (1, now())");
+    }
+  }
+
+  private static void seedV2() throws SQLException {
+    execute(
+        """
+        INSERT INTO clearcare.report_amenities_v2
+            (report_id, amenities, file_name, hiqa_url, extractor_version, model, extracted_at)
+        VALUES (2,
+          '{"care_types":[],"room_types":[],"activities":[],"facilities":[
+            {"item":"Garden","evidence":[
+              {"quote":"Residents used the garden.","page_start":3,"page_end":3},
+              {"quote":"Staff assisted access.","page_start":5,"page_end":6}]}]}',
+          'elm-hall.pdf', 'https://www.hiqa.ie/report.pdf', 'amenities-v2',
+          'gpt-4o-mini', '2026-11-03 02:00:00+00');
+        """);
+  }
+
+  @Test
+  void isUnavailableUntilASnapshotIsPublished() throws Exception {
+    execute("DELETE FROM clearcare.register_publication");
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL + "/amenities"))
+          .andExpect(status().isServiceUnavailable())
+          .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
+          .andExpect(
+              content()
+                  .json(
+                      """
+                      {"title": "Service Unavailable", "status": 503,
+                       "detail": "The register has not been loaded yet."}
+                      """));
+    } finally {
+      execute(
+          "INSERT INTO clearcare.register_publication (source_file_id, published_at)"
+              + " VALUES (1, now())");
+    }
   }
 
   private static void execute(String sql) throws SQLException {

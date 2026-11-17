@@ -1,0 +1,7 @@
+# The migrate image builds with the repository root as its context
+# (aws-build.yml), so keep the context to the two files it copies: the
+# migrations and its own entrypoint. Every other image builds from its own
+# folder and has its own ignore file.
+*
+!db/*.sql
+!infra/aws/migrate/migrate-with-lock.sh

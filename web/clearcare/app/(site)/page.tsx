@@ -8,6 +8,7 @@ import { NotAlone } from "@/components/home/not-alone";
 import { SampleCentre, SampleCentreFallback } from "@/components/home/sample-centre";
 import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
+import { SlideUp } from "@/components/ui/slide-up";
 import { SurveyBanner } from "@/components/home/survey-banner";
 import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
@@ -26,6 +27,9 @@ export default async function StartPage() {
   // why it matters, what ClearCare is, an example record, and a last invitation to start.
   return (
     <>
+      {/* The sections slide up as they come into view (CCARE-186). */}
+      <SlideUp />
+
       <FeatureCarousel />
 
       <HomeHero />
@@ -51,18 +55,21 @@ export default async function StartPage() {
         aria-labelledby="about-h"
         className={`${fullWidthClass} -mt-6 bg-tint-blue py-10 md:-mt-8 md:py-14`}
       >
-        <div className="page-column flex flex-col gap-6 px-4 md:px-8">
-          <div className="flex max-w-3xl flex-col gap-2">
+        {/* From desktop width the heading sits beside the two statements, a third of the band to their
+            two thirds, rather than over them with the rest of its row empty. */}
+        <div className="page-column grid items-center gap-6 px-4 md:px-8 lg:grid-cols-[1fr_2fr] lg:gap-10">
+          <div className="reveal flex max-w-3xl flex-col items-start gap-3">
             <h2 id="about-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
               About ClearCare
             </h2>
+            <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
             <p className="text-ink-muted md:text-lg">
               ClearCare is free and independent. It doesn&apos;t rate or recommend homes: it helps you read what HIQA
               has found and understand your options.
             </p>
           </div>
           {/* Side by side from tablet width, stacked on phones. */}
-          <div className="reveal grid gap-4 md:grid-cols-2 md:gap-6">
+          <div className="reveal-stagger grid gap-4 md:grid-cols-2 md:gap-6">
             <StatementCard label="Our Mission" icon="mission" tint="sage">
               To help people make informed decisions, and give informed consent, about nursing home care.
             </StatementCard>
@@ -77,11 +84,13 @@ export default async function StartPage() {
       {/* What a record looks like, under a heading that says so (CCARE-179). A new home on every
           load. The page above arrives first; the example streams in. */}
       <section aria-labelledby="example-h" className="flex flex-col gap-5">
-        <div className="flex flex-col items-start gap-2">
-          <h2 id="example-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+        <div className="reveal flex flex-col items-start gap-2">
+          {/* The record card above (site-features.tsx) jumps here; the margin keeps the heading clear of
+              the window's top edge. */}
+          <h2 id="example-h" className="scroll-mt-6 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Here&apos;s an example of how we sum up reports
           </h2>
-          <span aria-hidden className="h-1 w-12 rounded-full bg-accent adult:hidden" />
+          <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           <p className="text-ink-muted md:text-lg">A home picked at random, and what its latest inspection found.</p>
         </div>
         <Suspense fallback={<SampleCentreFallback />}>
@@ -125,8 +134,8 @@ function StartBand() {
   );
 }
 
-// One of the mission and vision cards in About ClearCare: an icon, the title as the card's heading
-// and the statement as plain body text under it.
+// One of the mission and vision cards in About ClearCare: an icon beside the title, the card's
+// heading, and the statement as plain body text under them.
 function StatementCard({
   label,
   icon,
@@ -139,9 +148,12 @@ function StatementCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm md:p-8 adult:rounded-lg adult:shadow-none">
-      <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
-      <h3 className="font-heading text-xl font-semibold md:text-2xl">{label}</h3>
+    <div className="flex h-full flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm adult:rounded-lg adult:shadow-none">
+      {/* The icon beside the title, so the card is no taller than its words need. */}
+      <h3 className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
+        <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="reveal-pop" />
+        {label}
+      </h3>
       <p className="text-ink-muted md:text-lg">{children}</p>
     </div>
   );

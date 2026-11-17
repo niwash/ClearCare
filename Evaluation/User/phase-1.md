@@ -1,7 +1,7 @@
 # Phase 1 (Pre-public-launch) user evaluation
 
 **Created:** 26 October 2026\
-**Modified:** 30 October 2026
+**Modified:** 08 November 2026
 
 Informal feedback from participants before ClearCare's public launch. Each was asked what they liked, what they disliked, and what they would add. The site was changing quickly, so each participant's commit is listed to show which version they potentially reviewed.
 
@@ -16,6 +16,7 @@ Some reviewers gave a general review rather than answering the three questions. 
 | General User 5 | `7678b0c` | ~55 | Has worked on hospital wards | 28/10/2026 |
 | General User 6 | `f1ee3d0` | ~40 | Has worked on hospital wards and in nursing homes | 29/10/2026 |
 | General User 7 | `f1ee3d0` | ~40 | Has worked on hospital wards and in nursing homes | 29/10/2026 |
+| General User 8 | `1338d8df` | ~25 | Family has experience on choosing a nursing home | 07/11/26 |
 
 ## General User 1
 
@@ -96,3 +97,8 @@ Some reviewers gave a general review rather than answering the three questions. 
 
 - Very helpful and informative, can get mostly everything about a nursing home all over Ireland.
 - Easy to navigate.
+
+## General User 8
+
+### Suggestions
+- Booking.com uses icons to show their amenities, which is better because instead of reading, you see the icons and immediately know what it is. It would be nice if this is something to be used as well for ClearCare when displaying the amenities available for the home.
