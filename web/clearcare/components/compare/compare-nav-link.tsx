@@ -27,7 +27,7 @@ export function CompareNavLink({ label, className, current }: { label: string; c
             // so every figure is the same width and centres the same way. Half a pixel more padding on
             // the right than the left: centred exactly, a 3 (open on the left, heavy on the right) still
             // looked right of centre, so it is nudged towards its open side; enough for a 3, not so much
-            // that a 1 or 2 looks off (the shortlist holds at most three).
+            // that another figure looks off (the shortlist holds at most five, MAX_COMPARED).
             className="relative -top-0.5 ml-1.5 inline-grid h-6 min-w-6 place-items-center rounded-full bg-primary pr-[6.5px] pl-[5.5px] align-middle text-sm leading-none font-bold tabular-nums text-on-primary"
           >
             {count}

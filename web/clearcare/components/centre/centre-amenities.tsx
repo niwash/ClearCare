@@ -19,12 +19,14 @@ type CentreAmenitiesProps = {
   amenities: CentreAmenities | null;
   // The PDF of the report they were read from, when ClearCare has it.
   reportUrl?: string;
+  // Whether that report is the home's latest, so the words can say so only when it is.
+  fromLatest?: boolean;
 };
 
 // A section of the overview of its own (CCARE-212): its heading and note on the band, each list on a
 // card of its own, as in "About this home". It was the last part of the details box, which made
 // that box long beside the photo and the actions.
-export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenitiesProps) {
+export function CentreAmenitiesSection({ amenities, reportUrl, fromLatest = false }: CentreAmenitiesProps) {
   if (!amenities) {
     return (
       <section id="offers" aria-labelledby="amenities-h" className="flex flex-col gap-3">
@@ -50,24 +52,42 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
 
   return (
     <section id="offers" aria-labelledby="amenities-h" className="flex flex-col gap-3">
-      <Heading />
       {/* Said before the values, so nobody takes them as the home's own list; the first sentence is
-          the disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays. How to see
-          the passages depends on the design, since each shows them its own way. */}
-      <p className="max-w-3xl text-ink">
-        Read by an AI tool from {reportUrl ? <a href={reportUrl}>{report}</a> : report}. We&apos;re now checking
-        these against the report, and the home may offer more than the report mentions, so always call the home
-        to confirm anything that matters to you.
-        {found.length > 0 && (
-          <>
-            {" "}
-            <span className="adult:hidden print:hidden">Hover over or tap an item to see where the report says it.</span>
-            <span className="hidden adult:inline print:hidden">
-              Open &ldquo;Where the report says this&rdquo; to see the passage each one was read from.
-            </span>
-          </>
-        )}
-      </p>
+          the disclosure the AI Act (Art. 50(4)) and the CC BY licence ask for, so it stays. "Latest" only
+          when the report is the home's latest; which report it is, with its date and link, is in the line
+          under the lists. "We're now checking" taken out here at the user's request (CCARE-258, 17 Nov 2026),
+          though the checking (CCARE-192, -193) may not be done: Compare Homes and the privacy notice still
+          say it (ADR-0027). How to see the passages depends on the design, since each shows them its own
+          way.
+
+          The caution beside it in the site's note box, an "i" in light amber, as in the guide to choosing a
+          home (CCARE-258): a compact box to the right of the words from tablet width, rather than a row
+          of its own under them, so it is seen without adding another line of information. The heading
+          is in the words' column, so the box's top is level with it. Under the words on phones. */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between md:gap-8">
+        <div className="flex max-w-2xl flex-col gap-3">
+          <Heading />
+          <p className="text-ink">
+            Read by an AI tool from {fromLatest ? "this home's latest inspection report" : "one of this home's inspection reports"}.
+            {found.length > 0 && (
+              <>
+                {" "}
+                <span className="adult:hidden print:hidden">Hover over or tap an item to see where the report says it.</span>
+                <span className="hidden adult:inline print:hidden">
+                  Open &ldquo;Where the report says this&rdquo; to see the passage each one was read from.
+                </span>
+              </>
+            )}
+          </p>
+        </div>
+        <p className="flex items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold p-4 text-small text-ink md:max-w-xs md:shrink-0">
+          <Icon name="info" className="mt-0.5 size-5 shrink-0 text-on-tint-gold" />
+          <span>
+            <span className="sr-only">Note: </span>
+            AI can make mistakes, so always call the home to confirm, and to ask about anything not listed here.
+          </span>
+        </p>
+      </div>
       {/* A card for each list, two to a row from md up, like the cards of "About this home". */}
       <div className="grid gap-4 md:grid-cols-2">
         {lists.map(({ label, items, icon }) => (
@@ -95,6 +115,10 @@ export function CentreAmenitiesSection({ amenities, reportUrl }: CentreAmenities
         ))}
       </div>
       {found.length > 0 && <Evidence lists={found} reportUrl={reportUrl} />}
+      {/* Which report the lists come from, as a short line under them (CCARE-258), with its link. */}
+      <p className="text-small text-ink-muted">
+        From {reportUrl ? <a href={reportUrl}>{report}</a> : report}.
+      </p>
     </section>
   );
 }

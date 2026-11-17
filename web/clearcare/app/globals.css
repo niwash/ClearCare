@@ -230,6 +230,51 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
+/* The shortlist's panel (ShortlistPanel, shortlist-drawer.tsx, CCARE-258): it slides in from the
+   right edge and out again, and the page behind it darkens and clears, rather than both appearing at
+   once. The dialog is kept in the top layer and shown until the slide out ends (overlay and display,
+   allow-discrete); where a browser can't, it simply closes at once. Still with reduced motion
+   (WCAG 2.3.3) and in the adult-centred design. */
+.shortlist-panel[open]::backdrop {
+  background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-design="adult-centred"]) .shortlist-panel {
+    translate: 100% 0;
+    transition:
+      translate 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel[open] {
+    translate: 0 0;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel::backdrop {
+    background-color: transparent;
+    transition:
+      background-color 0.3s ease-out,
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel[open]::backdrop {
+    background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+
+  @starting-style {
+    :root:not([data-design="adult-centred"]) .shortlist-panel[open] {
+      translate: 100% 0;
+    }
+
+    :root:not([data-design="adult-centred"]) .shortlist-panel[open]::backdrop {
+      background-color: transparent;
+    }
+  }
+}
+
 /* The header's navigation band (site-header.tsx, CCARE-258): the colour of the bar under the page
    being shown. The site's accent in its lighter tone, the one it takes in dark mode, as the darker
    one is too faint on the blue: 4.4:1 on the band in light mode, more in dark (WCAG 1.4.11 asks 3:1).

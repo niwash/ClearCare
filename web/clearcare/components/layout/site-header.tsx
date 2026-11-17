@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AccountControls } from "@/components/auth/account-controls";
 import { CompareStatus } from "@/components/compare/compare-status";
+import { ShortlistButton, ShortlistPanel } from "@/components/compare/shortlist-drawer";
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { NavItem, type NavEntry } from "@/components/layout/nav-item";
 import { DesignToggle } from "@/components/theme/design-toggle";
@@ -69,7 +70,10 @@ export function SiteHeader() {
           </div>
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
-          <div className="flex flex-auto items-center justify-end gap-2">
+          <div className="flex flex-auto flex-wrap items-center justify-end gap-2">
+            {/* The shortlist from any page (CCARE-258), first, before the display buttons: it opens the
+                one panel, ShortlistPanel below. */}
+            <ShortlistButton variant="header" />
             {/* Together, for the welcome tour's step about them. Both have words now (CCARE-258), so on
                 a small phone in the adult-centred design's larger text they wrap onto two rows
                 rather than running off the screen. */}
@@ -83,6 +87,10 @@ export function SiteHeader() {
           </div>
         </div>
       </div>
+
+      {/* The shortlist's panel, once on every page, opened by every shortlist button (CCARE-258).
+          Outside the brand band, like the menu below, so it keeps the page's colours. */}
+      <ShortlistPanel />
 
       {/* Outside the brand band so it keeps the page's colours. It is fixed to the corner, so
           where it sits in the header doesn't matter. */}
