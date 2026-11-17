@@ -20,8 +20,9 @@ import tools.jackson.databind.json.JsonMapper;
  * The alert tables of db/V26 (ADR-0034): the catalogue of packages, one account's subscriptions, and
  * the label each row is shown with.
  *
- * <p>The API is the only writer of a subscription. It never reads an event or a notification, which
- * is why it holds no grant on those tables.
+ * <p>A subscription's `metadata` names what it is about: `centre_id` for a home, `county_id` for a
+ * county, nothing for everything. The API is the only writer of a subscription. It never reads an
+ * event or a notification, which is why it holds no grant on those tables.
  */
 @Repository
 class AlertRepository {
@@ -37,26 +38,26 @@ class AlertRepository {
 
   private static final String PACKAGE =
       """
-      SELECT id, name, context_schema
+      SELECT id, name
       FROM clearcare.alert_packages
       WHERE scope = :scope AND is_active
       """;
 
-  // A subscription is shown with what it is about rather than with its context: the home's current
+  // A subscription is shown with what it is about rather than with its metadata: the home's current
   // name from the register, the county's name from clearcare.county, or the package's own name for
   // everything. The names are read here so a rename in the register reads through.
   private static final String SELECT =
       """
-      SELECT s.id, s.context, s.is_active, s.created_at, p.scope,
+      SELECT s.id, s.metadata, s.is_active, s.created_at, p.scope,
              CASE p.scope
                WHEN 'FACILITY' THEN COALESCE(
                  (SELECT c.centre_name FROM clearcare.centre_search c
-                  WHERE c.centre_id = s.context ->> 'centre_id'
+                  WHERE c.centre_id = s.metadata ->> 'centre_id'
                   ORDER BY c.centre_name LIMIT 1),
                  p.name)
                WHEN 'COUNTY' THEN COALESCE(
                  (SELECT co.name FROM clearcare.county co
-                  WHERE co.id = (s.context ->> 'county_id')::int),
+                  WHERE co.id = (s.metadata ->> 'county_id')::int),
                  p.name)
                ELSE p.name
              END AS label
@@ -80,9 +81,9 @@ class AlertRepository {
   // row, and reactivating the row it had keeps the notifications under it readable.
   private static final String SUBSCRIBE =
       """
-      INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, context)
-      VALUES (:user, :package, CAST(:context AS jsonb))
-      ON CONFLICT (user_id, alert_package_id, context)
+      INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, metadata)
+      VALUES (:user, :package, CAST(:metadata AS jsonb))
+      ON CONFLICT (user_id, alert_package_id, metadata)
       DO UPDATE SET is_active = TRUE, deactivated_at = NULL
       RETURNING id
       """;
@@ -125,11 +126,12 @@ class AlertRepository {
    * Subscribes the account to one thing, or reactivates the row it already had, and answers with what
    * is stored.
    *
-   * <p>The account row and the subscription commit together, and the context is checked against the
-   * package's own schema before either is written.
+   * <p>The account row and the subscription commit together. The metadata is built by the controller
+   * from the route, and the unique key on the account, the package and the document keeps a repeated
+   * request to one row.
    */
   @Transactional
-  AlertSubscription subscribe(String cognitoSub, String scope, Map<String, Object> context) {
+  AlertSubscription subscribe(String cognitoSub, String scope, Map<String, Object> metadata) {
     Package chosen =
         jdbc
             .sql(PACKAGE)
@@ -137,7 +139,6 @@ class AlertRepository {
             .query(this::packageRow)
             .optional()
             .orElseThrow(AlertRepository::noSuchPackage);
-    AlertContexts.check(chosen.schema(), context);
 
     long userId = jdbc.sql(ACCOUNT).param("sub", cognitoSub).query(Long.class).single();
     long id =
@@ -145,7 +146,7 @@ class AlertRepository {
             .sql(SUBSCRIBE)
             .param("user", userId)
             .param("package", chosen.id())
-            .param("context", json.writeValueAsString(context))
+            .param("metadata", json.writeValueAsString(metadata))
             .query(Long.class)
             .single();
     return find(id).orElseThrow();
@@ -179,12 +180,12 @@ class AlertRepository {
         row.getLong("id"),
         row.getString("scope"),
         row.getString("label"),
-        context(row.getString("context")),
+        metadata(row.getString("metadata")),
         row.getBoolean("is_active"),
         row.getObject("created_at", OffsetDateTime.class));
   }
 
-  private Map<String, Object> context(String document) {
+  private Map<String, Object> metadata(String document) {
     JsonNode node = json.readTree(document);
     Map<String, Object> values = new LinkedHashMap<>();
     node.properties().forEach(entry -> values.put(entry.getKey(), value(entry.getValue())));
@@ -202,8 +203,7 @@ class AlertRepository {
   }
 
   private Package packageRow(ResultSet row, int rowNumber) throws SQLException {
-    return new Package(
-        row.getInt("id"), row.getString("name"), json.readTree(row.getString("context_schema")));
+    return new Package(row.getInt("id"), row.getString("name"));
   }
 
   private static org.springframework.web.server.ResponseStatusException noSuchPackage() {
@@ -211,5 +211,5 @@ class AlertRepository {
         org.springframework.http.HttpStatus.NOT_FOUND, "There is no such kind of alert.");
   }
 
-  private record Package(int id, String name, JsonNode schema) {}
+  private record Package(int id, String name) {}
 }

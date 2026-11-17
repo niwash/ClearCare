@@ -28,15 +28,16 @@ CREATE TABLE clearcare.alert_packages (
 
 -- What one visitor asked to be told about.
 --
--- A subscription is one account and one package. The thing the subscription is
--- about (a home, a county) is not stored yet: those columns are deferred until
--- the API and the resolver settle their shape. `metadata` is the flexible
--- document for anything they need to keep alongside the row.
+-- A subscription is one account, one package and the metadata document that
+-- names what it is about: `{"centre_id": "34"}` for a home, `{"county_id": 11}`
+-- for a county, `{}` for everything. The API builds that document from the
+-- route, checks the centre or county it names exists, and reads it back to show
+-- the subscription.
 --
--- The natural key is the person and the package: asking twice is the same
--- subscription, so the API upserts rather than piling up rows, and a person who
--- unsubscribes and subscribes again reactivates the row they had, keeping the
--- notifications under it readable.
+-- The natural key is the person, the package and the document: asking twice for
+-- the same home is the same subscription, so the API upserts rather than piling
+-- up rows, and a person who unsubscribes and subscribes again reactivates the
+-- row they had, keeping the notifications under it readable.
 --
 -- Deactivating is not deleting: `deactivated_at` says when it stopped, and the
 -- two fields are kept in step by the check below, so neither a live row with an
@@ -53,7 +54,7 @@ CREATE TABLE clearcare.alert_subscriptions (
     deactivated_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT alert_subscriptions_natural_key
-        UNIQUE (user_id, alert_package_id),
+        UNIQUE (user_id, alert_package_id, metadata),
     CONSTRAINT alert_subscriptions_deactivation_paired CHECK (
         (is_active AND deactivated_at IS NULL)
         OR (NOT is_active AND deactivated_at IS NOT NULL)

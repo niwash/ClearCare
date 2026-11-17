@@ -20,8 +20,9 @@ import ie.clearcare.api.security.SiteToken;
  * The alert subscriptions of a signed-in visitor (ADR-0034), as api/openapi.yaml describes them.
  *
  * <p>Nothing about a subscription comes from a body: a facility, a county and everything are three
- * paths, so the context the API stores is built here and checked against the package's schema. The
- * account is named by the site's server, with the shared token {@link SiteToken} checks.
+ * paths, so the metadata the API stores is built here, and the centre or county it names is checked
+ * before the row is written. The account is named by the site's server, with the shared token
+ * {@link SiteToken} checks.
  */
 @RestController
 class AlertController {
@@ -56,7 +57,7 @@ class AlertController {
     if (!repository.centreExists(centreId)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "There is no centre with that id.");
     }
-    return repository.subscribe(cognitoSub, "FACILITY", AlertContexts.facility(centreId));
+    return repository.subscribe(cognitoSub, "FACILITY", AlertMetadata.facility(centreId));
   }
 
   @PutMapping("/alerts/county/{county}")
@@ -72,7 +73,7 @@ class AlertController {
                 () ->
                     new ResponseStatusException(
                         HttpStatus.BAD_REQUEST, "There is no county by that name."));
-    return repository.subscribe(cognitoSub, "COUNTY", AlertContexts.county(countyId));
+    return repository.subscribe(cognitoSub, "COUNTY", AlertMetadata.county(countyId));
   }
 
   @PutMapping("/alerts/all")
@@ -80,7 +81,7 @@ class AlertController {
       @RequestHeader(name = ACCOUNT, required = false) String cognitoSub,
       @RequestHeader(name = TOKEN, required = false) String caller) {
     token.require(cognitoSub, caller);
-    return repository.subscribe(cognitoSub, "ALL", AlertContexts.everything());
+    return repository.subscribe(cognitoSub, "ALL", AlertMetadata.everything());
   }
 
   // 204: stopping is not a subscription.

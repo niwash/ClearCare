@@ -25,8 +25,9 @@ import ie.clearcare.api.DatabaseImage;
 
 /**
  * V26 as created: the catalogue is empty and nothing is seeded, the context columns are gone, a
- * subscription is held by account and package, the statuses and metadata documents hold, the account
- * cascade works, and each role has only its grants.
+ * subscription is held by account, package and the metadata document that names what it is about,
+ * the statuses and metadata documents hold, the account cascade works, and each role has only its
+ * grants.
  *
  * <p>The first case reads the catalogue as the migration leaves it; the rest add their own package
  * rows, so they hold whichever order they run in after that.
@@ -89,17 +90,31 @@ class AlertSchemaTest {
         .isEmpty();
   }
 
-  // Asking twice for the same package is the same subscription: the natural key refuses the second
+  // Asking twice for the same home is the same subscription: the natural key refuses the second
   // row.
   @Test
-  void holdsASubscriptionByAccountAndPackage() throws Exception {
+  void holdsASubscriptionByAccountPackageAndMetadata() throws Exception {
     long packageId = aPackage("FACILITY");
     long user = account("sub-twice");
-    subscribe(user, packageId);
+    subscribe(user, packageId, "{\"centre_id\": \"187\"}");
 
-    assertThatThrownBy(() -> subscribe(user, packageId))
+    assertThatThrownBy(() -> subscribe(user, packageId, "{\"centre_id\": \"187\"}"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_subscriptions_natural_key");
+  }
+
+  // Two homes under the same package are two subscriptions, because the metadata differs.
+  @Test
+  void keepsDifferentSubjectsApart() throws Exception {
+    long packageId = aPackage("FACILITY");
+    long user = account("sub-subjects");
+    long first = subscribe(user, packageId, "{\"centre_id\": \"187\"}");
+    long second = subscribe(user, packageId, "{\"centre_id\": \"412\"}");
+
+    assertThat(second).isNotEqualTo(first);
+    assertThat(
+            string("SELECT count(*) FROM clearcare.alert_subscriptions WHERE user_id = " + user))
+        .isEqualTo("2");
   }
 
   // Unsubscribing and subscribing again is the row they had, activated, so the notifications under
@@ -116,13 +131,13 @@ class AlertSchemaTest {
 
     long again =
         insert(
-            "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id)"
+            "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, metadata)"
                 + " VALUES ("
                 + user
                 + ", "
                 + packageId
-                + ")"
-                + " ON CONFLICT (user_id, alert_package_id)"
+                + ", '{}'::jsonb)"
+                + " ON CONFLICT (user_id, alert_package_id, metadata)"
                 + " DO UPDATE SET is_active = TRUE, deactivated_at = NULL RETURNING id");
 
     assertThat(again).isEqualTo(first);
@@ -319,13 +334,19 @@ class AlertSchemaTest {
   }
 
   private static long subscribe(long user, long packageId) throws SQLException {
+    return subscribe(user, packageId, "{}");
+  }
+
+  private static long subscribe(long user, long packageId, String metadata) throws SQLException {
     return insert(
-        "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id)"
+        "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, metadata)"
             + " VALUES ("
             + user
             + ", "
             + packageId
-            + ") RETURNING id");
+            + ", '"
+            + metadata
+            + "'::jsonb) RETURNING id");
   }
 
   private static long insert(String sql) throws SQLException {

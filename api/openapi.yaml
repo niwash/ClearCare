@@ -1042,8 +1042,9 @@ paths:
       summary: The signed-in visitor's alert subscriptions
       description: |
         What this account asked to be told about, oldest first, each row shown
-        with the name of the home or county it is about rather than with its
-        stored context. A stopped subscription is not listed; subscribing again
+        with the name of the home or county it is about rather than with the
+        identifiers it stores in metadata. A stopped subscription is not listed;
+        subscribing again
         reactivates the row it had.
 
         The account is named by the site's server with a shared token, as the
@@ -1065,13 +1066,13 @@ paths:
                   - id: 41
                     scope: FACILITY
                     label: Beechlawn Nursing Home
-                    context: {centre_id: "187"}
+                    metadata: {centre_id: "187"}
                     active: true
                     created_at: "2026-11-12T08:00:00Z"
                   - id: 42
                     scope: COUNTY
                     label: Dublin
-                    context: {county_id: 11}
+                    metadata: {county_id: 11}
                     active: true
                     created_at: "2026-11-12T08:01:00Z"
         "401":
@@ -1201,8 +1202,8 @@ paths:
       summary: Be told about one county
       description: |
         Subscribes the account to reports for the homes in a county. The county is
-        named as the site names it; the API resolves it to the id the subscription
-        stores, so a later spelling change does not orphan the row.
+        named as the site names it; the API resolves it to the id the subscription's
+        metadata holds, so a later spelling change does not orphan the row.
       parameters:
         - $ref: "#/components/parameters/Account"
         - $ref: "#/components/parameters/SiteToken"
@@ -1244,7 +1245,7 @@ paths:
       summary: Be told about every home
       description: |
         Subscribes the account to every report the pipeline brings in. Its stored
-        context is an empty document, because it names nothing.
+        metadata is an empty document, because it names nothing.
       parameters:
         - $ref: "#/components/parameters/Account"
         - $ref: "#/components/parameters/SiteToken"
@@ -1440,7 +1441,7 @@ components:
     AlertSubscription:
       type: object
       description: One thing an account asked to be told about, with what it is about.
-      required: [id, scope, label, context, active, created_at]
+      required: [id, scope, label, metadata, active, created_at]
       properties:
         id:
           type: integer
@@ -1454,7 +1455,7 @@ components:
           description: >-
             The home's current name, the county's name, or the package's own name
             for everything. Read from the register and clearcare.county.
-        context:
+        metadata:
           type: object
           additionalProperties: true
           description: >-
