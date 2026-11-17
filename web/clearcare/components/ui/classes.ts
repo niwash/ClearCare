@@ -17,7 +17,7 @@ export const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 export const widePageColumnClass = "xl:max-w-[96rem]";
 export const widerThanPageClass = "xl:mx-[calc(50%_-_min(50vw,48rem)_+_2rem)]";
 
-// A link styled as a large button, such as "Read guide" or "See contacts": a call to action. On a
+// A link styled as a large button, such as "Read guide" or "See support services": a call to action. On a
 // brand-colour band (brand-band, globals.css) it turns white with brand-colour text. In the
 // standard design it is a pill that lifts a little on hover, and its arrow (an aria-hidden span)
 // nudges forward; the adult-centred design keeps it still (CCARE-179).

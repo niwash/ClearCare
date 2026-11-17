@@ -2,18 +2,13 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { AccountControls } from "@/components/auth/account-controls";
-import { CompareNavLink } from "@/components/compare/compare-nav-link";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { MobileMenu } from "@/components/layout/mobile-menu";
-import { LastSearchLink } from "@/components/search/last-search";
+import { NavItem, type NavEntry } from "@/components/layout/nav-item";
 import { DesignToggle } from "@/components/theme/design-toggle";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
-// An unfinished page has no href and shows as plain text, "(coming soon)". "compare" marks the
-// Compare Homes link, which shows how many homes are saved (CCARE-127). "search" marks Search for
-// Homes, which goes back to the visitor's last search on this visit (CCARE-214).
-type NavEntry = { label: string; href: string | null; compare?: true; search?: true };
-
+// What each entry can be (an unfinished page, Compare Homes, Search for Homes) is in nav-item.tsx.
 // The footer lists these too, so a page added here shows in both.
 export const NAV_ITEMS: NavEntry[] = [
   // First, as well as the ClearCare name, which not everyone knows leads home (CCARE-186).
@@ -23,7 +18,9 @@ export const NAV_ITEMS: NavEntry[] = [
   // The Fair Deal guide is also under Resources; it has its own link as paying for care is one of
   // the first things families need to understand.
   { label: "Fair Deal", href: "/guides/fair-deal" },
-  { label: "Contacts", href: "/contacts" },
+  // "Support Services", not "Contacts": in user testing (P2_1, CCARE-258) "Contacts" read as a way to
+  // contact ClearCare. The page lists other organisations. Its address stays /contacts.
+  { label: "Support Services", href: "/contacts" },
   { label: "Resources", href: "/resources" },
   // After the pages for choosing a home: the figures across every home are background, not a step
   // in choosing one (CCARE-179).
@@ -48,23 +45,11 @@ export function SiteLogo({ className }: { className: string }) {
   );
 }
 
-function NavItem({ item, className }: { item: NavEntry; className: string }) {
-  const linkClass = `${className} text-ink no-underline hover:text-primary adult:text-primary adult:underline adult:hover:text-primary-hover`;
-  if (item.compare) return <CompareNavLink label={item.label} className={linkClass} />;
-  if (item.search) return <LastSearchLink className={linkClass}>{item.label}</LastSearchLink>;
-  return item.href ? (
-    <Link href={item.href} className={linkClass}>
-      {item.label}
-    </Link>
-  ) : (
-    <span className={`${className} text-ink-faint`}>
-      {item.label} (coming soon)
-    </span>
-  );
-}
-
 // Two bands, like nhi.ie: the name with the display settings and log in on the right, then the
-// navigation in a band of its own, spread across the page on desktop. On phones and tablets the
+// navigation in a band of its own, spread across the page on desktop. The navigation's band is the
+// brand blue a shade lighter than the one above, with white links a little larger than before and a
+// short bar under the page being shown, so it reads as the site's menu (CCARE-258: in user testing
+// (P2_1) it wasn't evident, on its pale band, that it was there). On phones and tablets the
 // standard design puts the navigation behind a round "Menu" button in the bottom-right corner;
 // the adult-centred design keeps the band visible there, scrolling sideways if it has to.
 export function SiteHeader() {
@@ -85,8 +70,10 @@ export function SiteHeader() {
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
           <div className="flex flex-auto items-center justify-end gap-2">
-            {/* Together, for the welcome tour's step about them. */}
-            <div data-tour="display" className="flex items-center gap-2">
+            {/* Together, for the welcome tour's step about them. Both have words now (CCARE-258), so on
+                a small phone in the adult-centred design's larger text they wrap onto two rows
+                rather than running off the screen. */}
+            <div data-tour="display" className="flex flex-wrap items-center justify-end gap-2">
               <DesignToggle />
               <ThemeToggle />
             </div>
@@ -103,7 +90,11 @@ export function SiteHeader() {
         <ul className="flex flex-col">
           {NAV_ITEMS.map((item) => (
             <li key={item.label}>
-              <NavItem item={item} className="flex min-h-11 items-center text-base" />
+              {/* The page being shown in bold, with a bar of the accent colour at its left. */}
+              <NavItem
+                item={item}
+                className="flex min-h-11 items-center text-base aria-[current=page]:pl-3 aria-[current=page]:font-bold aria-[current=page]:shadow-[inset_3px_0_0_var(--accent)]"
+              />
             </li>
           ))}
           <li className="border-t border-line pt-2">
@@ -112,9 +103,11 @@ export function SiteHeader() {
         </ul>
       </MobileMenu>
 
-      <div className="hidden bg-surface-muted lg:block adult:block">
+      {/* brand-band, not brand-band-deep: a shade lighter than the band above, so the two read as
+          two bars. A faint line between them. site-nav sets the colour of the current page's bar. */}
+      <div className="site-nav brand-band hidden border-t border-white/15 lg:block adult:block">
         <nav aria-label="Main" data-tour="nav" className="page-column overflow-x-auto px-4 md:px-8">
-          <ul className="flex gap-6 whitespace-nowrap text-sm font-semibold md:text-[0.9375rem] lg:justify-between adult:text-base">
+          <ul className="flex gap-6 whitespace-nowrap text-base font-semibold lg:justify-between">
             {NAV_ITEMS.map((item) => (
               <li key={item.label}>
                 {/* On hover or keyboard focus, a tint of the primary colour grows out from the middle of the
@@ -122,10 +115,13 @@ export function SiteHeader() {
                     miss; it presses in a little on a click (CCARE-232). The tint is the link's own
                     ::before, behind its text (isolate, -z-10). The padding and margins cancel out, so
                     the links and the band keep their size and place. The standard design only: the
-                    adult-centred one underlines its links already, and keeps still. */}
+                    adult-centred one underlines its links already, and keeps still.
+
+                    The page being shown has a short bar under it, just below its name (::after, inside the
+                    link's bottom padding), in the colour site-nav sets (globals.css). */}
                 <NavItem
                   item={item}
-                  className="relative isolate -mx-3 my-1 inline-block px-3 py-2 transition-colors duration-200 before:absolute before:inset-0 before:-z-10 before:scale-75 before:rounded-md before:bg-primary/15 before:opacity-0 before:transition before:duration-200 before:ease-out hover:before:scale-100 hover:before:opacity-100 focus-visible:before:scale-100 focus-visible:before:opacity-100 active:before:scale-95 motion-reduce:before:scale-100 motion-reduce:before:transition-none adult:mx-0 adult:my-0 adult:px-0 adult:py-3 adult:before:hidden"
+                  className="relative isolate -mx-3 my-1.5 inline-block px-3 py-2.5 after:absolute after:inset-x-3 after:bottom-1 after:h-1 after:rounded-full after:bg-(--nav-current) after:opacity-0 aria-[current=page]:after:opacity-100 adult:after:inset-x-0 adult:after:bottom-0 transition-colors duration-200 before:absolute before:inset-0 before:-z-10 before:scale-75 before:rounded-md before:bg-primary/15 before:opacity-0 before:transition before:duration-200 before:ease-out hover:before:scale-100 hover:before:opacity-100 focus-visible:before:scale-100 focus-visible:before:opacity-100 active:before:scale-95 motion-reduce:before:scale-100 motion-reduce:before:transition-none adult:mx-0 adult:my-0 adult:px-0 adult:py-3 adult:before:hidden"
                 />
               </li>
             ))}

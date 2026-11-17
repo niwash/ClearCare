@@ -25,7 +25,7 @@ export function ContactsBanner({ className = "" }: { className?: string }) {
           </div>
         </div>
         <Link href="/contacts" className={`${actionLinkClass} shrink-0`}>
-          See contacts <span aria-hidden>→</span>
+          See support services <span aria-hidden>→</span>
         </Link>
       </div>
     </section>

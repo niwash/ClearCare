@@ -83,10 +83,19 @@ function readLastSearch(): string {
 
 // A link to the last search, or to an empty search when there is none. The server can't know it, so
 // the page is sent with the empty search and the link is updated once the page is in the browser.
-export function LastSearchLink({ className, children }: { className: string; children: ReactNode }) {
+// current: this is the page being shown, which the navigation marks (nav-item.tsx, CCARE-258).
+export function LastSearchLink({
+  className,
+  children,
+  current,
+}: {
+  className: string;
+  children: ReactNode;
+  current?: boolean;
+}) {
   const href = useSyncExternalStore(subscribe, readLastSearch, () => SEARCH_PATH);
   return (
-    <Link href={href} className={className}>
+    <Link href={href} className={className} aria-current={current ? "page" : undefined}>
       {children}
     </Link>
   );

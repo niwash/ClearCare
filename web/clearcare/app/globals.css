@@ -230,6 +230,18 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
+/* The header's navigation band (site-header.tsx, CCARE-258): the colour of the bar under the page
+   being shown. The site's accent in its lighter tone, the one it takes in dark mode, as the darker
+   one is too faint on the blue: 4.4:1 on the band in light mode, more in dark (WCAG 1.4.11 asks 3:1).
+   White in the adult-centred design, whose band is rust. */
+.site-nav {
+  --nav-current: #f2a585;
+}
+
+:root[data-design="adult-centred"] .site-nav {
+  --nav-current: #ffffff;
+}
+
 /* The logo (SiteLogo, CCARE-185): the house from clearcare-mark-for-blue.svg beside the name in the
    site's heading font, "Clear" in white and "Care" in the logo's soft gold, on the brand band. The
    house is sized by the name's font size, about as tall beside the name as in the full logo files.

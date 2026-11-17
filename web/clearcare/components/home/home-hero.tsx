@@ -38,11 +38,12 @@ export function HomeHero() {
           {/* The same mark as under the other pages' headings (welcome-band, globals.css). */}
           <span aria-hidden className="reveal-bar -mt-2 h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           {/* "Sums up" is the site's own working-out of each report's judgments, by rules, not AI.
-              Beside the card it and the search fill their column, so no gap opens between the two. */}
+              Beside the card it and the search fill their column, so no gap opens between the two.
+              HIQA is spelt out at its first mention on the page: a participant in user testing didn't
+              know what it was (P2_1, CCARE-258). No comment inside the paragraph: one between two lines
+              of text takes away the space between the sentences. */}
           <p className="max-w-xl text-ink-muted md:text-lg lg:max-w-none">
             When someone you love needs nursing home care, you want to know they will be safe and well looked after.
-            {/* HIQA spelt out at its first mention on the page: a participant in user testing didn't
-                know what it was (P2_1, CCARE-258). */}
             HIQA (the Health Information and Quality Authority) inspects every nursing home for older people in
             Ireland, but its reports are long and hard to compare.
             ClearCare sums up what each inspection found in a way that is easier to understand, so your family can see

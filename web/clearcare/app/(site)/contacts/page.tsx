@@ -10,7 +10,7 @@ import { Chevron } from "@/components/ui/chevron";
 import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
-  title: "Contacts · ClearCare",
+  title: "Support Services · ClearCare",
   description: "Who to contact about a nursing home in Ireland: regulators, funding, complaints and advocacy.",
 };
 
@@ -383,7 +383,7 @@ function ContactsHero() {
   return (
     <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
-        <Breadcrumb trail={[]} current="Contacts" />
+        <Breadcrumb trail={[]} current="Support Services" />
         <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Need to talk to someone?
         </h1>

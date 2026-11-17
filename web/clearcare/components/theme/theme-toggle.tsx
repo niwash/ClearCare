@@ -38,32 +38,31 @@ export function useShownTheme(): Theme | null {
   return useSyncExternalStore(subscribe, shownTheme, () => null);
 }
 
+// "Dark mode", with a moon, and its state in words, as Easier to read beside it is (design-toggle.tsx).
+// It was a moon alone, labelled only for screen readers; in user testing (P2_1, CCARE-258) the
+// participant asked to turn on dark mode pressed Easier to read first, the one with words.
 export function ThemeToggle() {
-  // The button renders empty until the theme is known.
+  // Unpressed and disabled, with no state in words, until the theme is known.
   const theme = useShownTheme();
-  const other: Theme = theme === "dark" ? "light" : "dark";
+  const dark = theme === "dark";
+  const other: Theme = dark ? "light" : "dark";
 
   return (
     <button
       type="button"
       onClick={() => chooseTheme(other)}
       disabled={theme === null}
-      aria-label={`Switch to ${other} theme`}
-      title={`Switch to ${other} theme`}
-      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-line text-ink-muted hover:text-ink"
+      aria-pressed={dark}
+      className="flex h-11 shrink-0 items-center gap-2 rounded-md border border-line px-3 text-sm font-semibold text-ink-muted hover:text-ink"
     >
-      {theme && (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          {theme === "dark" ? (
-            <>
-              <circle cx="12" cy="12" r="4" />
-              <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-            </>
-          ) : (
-            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-          )}
-        </svg>
-      )}
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="shrink-0">
+        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+      </svg>
+      <span>
+        Dark mode
+        {/* Screen readers hear the state from aria-pressed, so they don't need the words too. */}
+        {theme && <span aria-hidden="true">: {dark ? "On" : "Off"}</span>}
+      </span>
     </button>
   );
 }
