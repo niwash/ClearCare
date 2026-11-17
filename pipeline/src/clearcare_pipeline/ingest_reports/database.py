@@ -6,6 +6,8 @@ from typing import Protocol
 import psycopg
 from psycopg.rows import TupleRow
 
+from clearcare_pipeline.ingest_reports.alerts import Written
+from clearcare_pipeline.ingest_reports.alerts import emit as emit_alert_events
 from clearcare_pipeline.ingest_reports.models import (
     InspectionReport,
     ThematicReport,
@@ -147,13 +149,23 @@ class ReportWriter:
     """Writes reports as clearcare_pipeline, one transaction per batch.
 
     A report whose file or fieldwork is already stored is left out, so a run
-    that is repeated adds nothing.
+    that is repeated adds nothing. What the batch adds becomes alert events in
+    the same transaction (ADR-0034), unless the caller turns them off.
     """
 
-    def __init__(self, connection: Connection, version: str) -> None:
+    def __init__(
+        self,
+        connection: Connection,
+        version: str,
+        *,
+        alerts: bool = True,
+        run_id: int | None = None,
+    ) -> None:
         """Creates a writer for this extractor version."""
         self._connection = connection
         self._version = version
+        self._alerts = alerts
+        self._run_id = run_id
 
     def write_batch(
         self, reports: Sequence[InspectionReport | ThematicReport]
@@ -163,6 +175,7 @@ class ReportWriter:
         regulations: list[Row] = []
         items: list[Row] = []
         text: list[Row] = []
+        added: list[Written] = []
         written = 0
         with (
             self._connection.transaction(),
@@ -184,6 +197,9 @@ class ReportWriter:
                     continue
                 report_id = row[0]
                 written += 1
+                added.append(
+                    (report_id, report.centre_id, report.inspection_date)
+                )
                 text.extend(_text_params(report_id, report.text, self._version))
                 inspectors.extend(
                     (
@@ -219,6 +235,8 @@ class ReportWriter:
                 cursor.executemany(_INSERT_ITEM, items)
             if text:
                 cursor.executemany(_INSERT_TEXT, text)
+            if self._alerts and added:
+                emit_alert_events(cursor, added, self._run_id)
         return written
 
     def write_text_batch(

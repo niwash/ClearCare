@@ -49,7 +49,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         with psycopg.connect(autocommit=True) as connection:
             # The catalogue is read once, before the first batch is written.
             catalogue = database.DatabaseCatalogue(connection)
-            writer = database.ReportWriter(connection, EXTRACTOR_VERSION)
+            writer = database.ReportWriter(
+                connection,
+                EXTRACTOR_VERSION,
+                alerts=not args.skip_alerts,
+                run_id=args.run_id,
+            )
             summary = ingest(
                 source,
                 catalogue,
@@ -120,6 +125,16 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
         "--data-dir",
         type=Path,
         help="a directory that holds raw/ and manifests/",
+    )
+    parser.add_argument(
+        "--skip-alerts",
+        action="store_true",
+        help="write the reports without the alert events they would raise",
+    )
+    parser.add_argument(
+        "--run-id",
+        type=positive_int,
+        help="the pipeline run these reports belong to, recorded on each event",
     )
     parser.add_argument(
         "--mapper",
