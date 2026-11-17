@@ -13,7 +13,10 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -21,13 +24,15 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import ie.clearcare.api.DatabaseImage;
 
 /**
- * V26 against PostgreSQL with this repository's roles: the seeded packages, the key a subscription is
- * held by, the states an event and a notification may be in, the county the COUNTY package names, the
- * cascades from an account, and the grants each role was given.
+ * V26 as created: the catalogue is empty and nothing is seeded, the context columns are gone, a
+ * subscription is held by account and package, the statuses and metadata documents hold, the account
+ * cascade works, and each role has only its grants.
  *
- * <p>Every case reads or writes its own rows, so they hold whichever order they run in.
+ * <p>The first case reads the catalogue as the migration leaves it; the rest add their own package
+ * rows, so they hold whichever order they run in after that.
  */
 @Testcontainers
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class AlertSchemaTest {
 
   // Maven runs the tests in api/.
@@ -36,7 +41,7 @@ class AlertSchemaTest {
   private static final String PASSWORD = UUID.randomUUID().toString();
 
   // V26 needs the schema (V1), the reports the events will describe (V2, V3), the accounts a
-  // subscription belongs to (V15) and the counties the COUNTY package names (V25).
+  // subscription belongs to (V15) and the counties the API still reads (V25).
   private static final List<String> MIGRATIONS =
       List.of(
           "db/V1__register_entries.sql",
@@ -56,39 +61,43 @@ class AlertSchemaTest {
     }
   }
 
-  // Four packages, in the order the migration seeds them: a home, a county, everything, and the
-  // rotation that is kept out of the API's list until the dispatcher understands it.
+  // V26 creates the catalogue but seeds no rows, and a package added later starts inactive.
   @Test
-  void seedsTheFourPackages() throws Exception {
-    assertThat(scopes())
-        .containsExactly(
-            "FACILITY", "COUNTY", "ALL", "RADIUS");
-    assertThat(string("SELECT is_active::text FROM clearcare.alert_packages WHERE scope = 'RADIUS'"))
-        .isEqualTo("false");
-    assertThat(string("SELECT is_active::text FROM clearcare.alert_packages WHERE scope = 'COUNTY'"))
-        .isEqualTo("true");
-  }
-
-  // A county is named by an id from clearcare.county, so the package's schema says integer and the
-  // table it points into holds the twenty-six counties the register uses.
-  @Test
-  void namesACountyByIdFromTheCountyTable() throws Exception {
+  @Order(1)
+  void createsTheCatalogueEmpty() throws Exception {
+    assertThat(string("SELECT count(*) FROM clearcare.alert_packages")).isEqualTo("0");
     assertThat(
             string(
-                "SELECT context_schema -> 'properties' -> 'county_id' ->> 'type'"
-                    + " FROM clearcare.alert_packages WHERE scope = 'COUNTY'"))
-        .isEqualTo("integer");
-    assertThat(string("SELECT count(*) FROM clearcare.county")).isEqualTo("26");
-    assertThat(string("SELECT name FROM clearcare.county WHERE id = 1")).isNotBlank();
+                "SELECT column_default FROM information_schema.columns"
+                    + " WHERE table_schema = 'clearcare' AND table_name = 'alert_packages'"
+                    + " AND column_name = 'is_active'"))
+        .isEqualTo("false");
   }
 
-  // Asking twice for the same home is the same subscription: the natural key refuses the second row.
+  // The first draft's context columns are not in the schema any more.
   @Test
-  void refusesTheSameSubscriptionTwice() throws Exception {
-    long user = account("sub-twice");
-    subscribe(user, 1L, "{\"centre_id\": \"187\"}");
+  void removesTheContextColumns() throws Exception {
+    assertThat(
+            strings(
+                "SELECT column_name FROM information_schema.columns"
+                    + " WHERE table_schema = 'clearcare'"
+                    + " AND table_name IN ('alert_packages', 'alert_subscriptions',"
+                    + " 'alert_events', 'alert_notifications')"
+                    + " AND column_name IN ('context_schema', 'context', 'latitude',"
+                    + " 'longitude', 'radius_miles')"
+                    + " ORDER BY column_name"))
+        .isEmpty();
+  }
 
-    assertThatThrownBy(() -> subscribe(user, 1L, "{\"centre_id\": \"187\"}"))
+  // Asking twice for the same package is the same subscription: the natural key refuses the second
+  // row.
+  @Test
+  void holdsASubscriptionByAccountAndPackage() throws Exception {
+    long packageId = aPackage("FACILITY");
+    long user = account("sub-twice");
+    subscribe(user, packageId);
+
+    assertThatThrownBy(() -> subscribe(user, packageId))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_subscriptions_natural_key");
   }
@@ -97,8 +106,9 @@ class AlertSchemaTest {
   // it stay readable.
   @Test
   void reactivatesTheRowItHad() throws Exception {
+    long packageId = aPackage("COUNTY");
     long user = account("sub-again");
-    long first = subscribe(user, 1L, "{\"centre_id\": \"412\"}");
+    long first = subscribe(user, packageId);
     execute(
         "UPDATE clearcare.alert_subscriptions"
             + " SET is_active = FALSE, deactivated_at = now() WHERE id = "
@@ -106,11 +116,13 @@ class AlertSchemaTest {
 
     long again =
         insert(
-            "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, context)"
+            "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id)"
                 + " VALUES ("
                 + user
-                + ", 1, '{\"centre_id\": \"412\"}')"
-                + " ON CONFLICT (user_id, alert_package_id, context)"
+                + ", "
+                + packageId
+                + ")"
+                + " ON CONFLICT (user_id, alert_package_id)"
                 + " DO UPDATE SET is_active = TRUE, deactivated_at = NULL RETURNING id");
 
     assertThat(again).isEqualTo(first);
@@ -126,26 +138,33 @@ class AlertSchemaTest {
   // A row cannot be both live and ended, nor dead and undated.
   @Test
   void keepsDeactivationPaired() throws Exception {
+    long packageId = aPackage("ALL");
     long user = account("sub-paired");
 
     assertThatThrownBy(
             () ->
                 execute(
                     "INSERT INTO clearcare.alert_subscriptions"
-                        + " (user_id, alert_package_id, context, is_active)"
+                        + " (user_id, alert_package_id, is_active)"
                         + " VALUES ("
                         + user
-                        + ", 2, '{\"county_id\": 1}', FALSE)"))
+                        + ", "
+                        + packageId
+                        + ", FALSE)"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_subscriptions_deactivation_paired");
   }
 
-  // The context is a document of the package's shape, and the metadata is a document too; an array
-  // is not either of them.
+  // The metadata is a document; an array is not one.
   @Test
-  void keepsContextAndMetadataAsDocuments() throws Exception {
-    long event = insert("INSERT INTO clearcare.alert_events (alert_package_id, context, metadata)"
-        + " VALUES (2, '{\"county_id\": 11}', '{\"report_ids\": [\"a\", \"b\"]}') RETURNING id");
+  void keepsMetadataAsADocument() throws Exception {
+    long packageId = aPackage("FACILITY");
+    long event =
+        insert(
+            "INSERT INTO clearcare.alert_events (alert_package_id, metadata)"
+                + " VALUES ("
+                + packageId
+                + ", '{\"report_ids\": [\"a\", \"b\"]}') RETURNING id");
 
     assertThat(
             string(
@@ -156,36 +175,45 @@ class AlertSchemaTest {
     assertThatThrownBy(
             () ->
                 execute(
-                    "INSERT INTO clearcare.alert_events (alert_package_id, context)"
-                        + " VALUES (2, '[]')"))
+                    "INSERT INTO clearcare.alert_events (alert_package_id, metadata)"
+                        + " VALUES ("
+                        + packageId
+                        + ", '[]')"))
         .isInstanceOf(SQLException.class)
-        .hasMessageContaining("alert_events_context_check");
+        .hasMessageContaining("alert_events_metadata_check");
   }
 
   // An event is pending, being resolved, or resolved; resolved carries the moment it was.
   @Test
   void keepsEventStatusAndProcessedAtInStep() throws Exception {
+    long packageId = aPackage("ALL");
     assertThat(
             string(
                 "SELECT status FROM clearcare.alert_events WHERE id = "
                     + insert(
-                        "INSERT INTO clearcare.alert_events (alert_package_id, context)"
-                            + " VALUES (3, '{}') RETURNING id")))
+                        "INSERT INTO clearcare.alert_events (alert_package_id)"
+                            + " VALUES ("
+                            + packageId
+                            + ") RETURNING id")))
         .isEqualTo("PENDING");
 
     assertThatThrownBy(
             () ->
                 execute(
-                    "INSERT INTO clearcare.alert_events (alert_package_id, context, status)"
-                        + " VALUES (3, '{}', 'PROCESSED')"))
+                    "INSERT INTO clearcare.alert_events (alert_package_id, status)"
+                        + " VALUES ("
+                        + packageId
+                        + ", 'PROCESSED')"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_events_processed_at_paired");
 
     assertThatThrownBy(
             () ->
                 execute(
-                    "INSERT INTO clearcare.alert_events (alert_package_id, context, status)"
-                        + " VALUES (3, '{}', 'SENT')"))
+                    "INSERT INTO clearcare.alert_events (alert_package_id, status)"
+                        + " VALUES ("
+                        + packageId
+                        + ", 'SENT')"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_events_status_check");
   }
@@ -198,20 +226,20 @@ class AlertSchemaTest {
     assertThatThrownBy(
             () ->
                 execute(
-                    "INSERT INTO clearcare.alert_notifications (user_id, status, context)"
+                    "INSERT INTO clearcare.alert_notifications (user_id, status)"
                         + " VALUES ("
                         + user
-                        + ", 'SENT', '{\"centre_id\": \"187\"}')"))
+                        + ", 'SENT')"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_notifications_sent_at_paired");
 
     assertThatThrownBy(
             () ->
                 execute(
-                    "INSERT INTO clearcare.alert_notifications (user_id, status, context)"
+                    "INSERT INTO clearcare.alert_notifications (user_id, status)"
                         + " VALUES ("
                         + user
-                        + ", 'BOUNCED', '{\"centre_id\": \"187\"}')"))
+                        + ", 'BOUNCED')"))
         .isInstanceOf(SQLException.class)
         .hasMessageContaining("alert_notifications_status_check");
   }
@@ -219,13 +247,10 @@ class AlertSchemaTest {
   // An account that goes takes what it asked for and what was sent to it.
   @Test
   void takesSubscriptionsAndNotificationsWithTheAccount() throws Exception {
+    long packageId = aPackage("FACILITY");
     long user = account("account-goes");
-    subscribe(user, 1L, "{\"centre_id\": \"738\"}");
-    execute(
-        "INSERT INTO clearcare.alert_notifications (user_id, context)"
-            + " VALUES ("
-            + user
-            + ", '{\"centre_id\": \"738\"}')");
+    subscribe(user, packageId);
+    execute("INSERT INTO clearcare.alert_notifications (user_id) VALUES (" + user + ")");
 
     execute("DELETE FROM clearcare.users WHERE id = " + user);
 
@@ -266,6 +291,17 @@ class AlertSchemaTest {
         .isEqualTo("true");
   }
 
+  // The tests add their own package rows: V26 seeds none.
+  private static long aPackage(String scope) throws SQLException {
+    return insert(
+        "INSERT INTO clearcare.alert_packages (name, scope)"
+            + " VALUES ('"
+            + scope
+            + " package', '"
+            + scope
+            + "') ON CONFLICT (scope) DO UPDATE SET name = EXCLUDED.name RETURNING id");
+  }
+
   private static Connection connection() throws SQLException {
     return DriverManager.getConnection(
         database.getJdbcUrl(), database.getUsername(), database.getPassword());
@@ -282,16 +318,14 @@ class AlertSchemaTest {
     return insert("INSERT INTO clearcare.users (cognito_sub) VALUES ('" + sub + "') RETURNING id");
   }
 
-  private static long subscribe(long user, long packageId, String context) throws SQLException {
+  private static long subscribe(long user, long packageId) throws SQLException {
     return insert(
-        "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id, context)"
+        "INSERT INTO clearcare.alert_subscriptions (user_id, alert_package_id)"
             + " VALUES ("
             + user
             + ", "
             + packageId
-            + ", '"
-            + context
-            + "') RETURNING id");
+            + ") RETURNING id");
   }
 
   private static long insert(String sql) throws SQLException {
@@ -310,10 +344,6 @@ class AlertSchemaTest {
       assertThat(rows.next()).isTrue();
       return rows.getString(1);
     }
-  }
-
-  private static List<String> scopes() throws SQLException {
-    return strings("SELECT scope FROM clearcare.alert_packages ORDER BY id");
   }
 
   private static List<String> privileges(String role, String table) throws SQLException {

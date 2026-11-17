@@ -1,105 +1,50 @@
--- Subscriptions to alerts and what the pipeline noticed and sent (ADR-0034).
+-- The alert tables, created empty (ADR-0034).
 -- Flyway runs this as clearcare_owner (ADR-0010). The roles it grants to are
 -- created by infra/postgres/roles.sql.
+--
+-- No rows are inserted here. The catalogue is seeded by a later migration once
+-- the dispatcher exists, and the runtime tables stay empty until then, so
+-- applying this migration cannot offer a subscription nothing can send.
 
--- The catalogue of subscriptions the site offers: one row per kind of thing a
--- visitor can ask to be told about.
+-- The catalogue of subscriptions the site will offer: one row per kind of thing
+-- a visitor can ask to be told about.
 --
 -- `scope` is the machine name a subscription and an event are matched on, and it
 -- is unique: two packages with the same scope would mean two different answers to
--- the same question. `name` is what the site shows, and `context_schema` is the
--- shape the API checks a subscription's context against before storing it, so the
--- site's form and the API's check cannot drift apart.
+-- the same question. `name` is what the site shows.
 --
--- Rotation is seeded inactive: the columns are settled, the feature is not, and a
--- package a visitor can pick before the dispatcher understands it would silently
--- collect subscriptions that never fire. An inactive package is kept out of the
--- API's list.
---
--- The rows are seeded below and never written at runtime. Their ids are part of
--- the data other tables reference, so a later migration must keep them.
+-- The rows are added by a later migration, all inactive: the columns and the
+-- feature are not ready to be offered, and a package a visitor could pick before
+-- the dispatcher understands it would silently collect subscriptions that never
+-- fire. `is_active` defaults false so a package added without an explicit state
+-- is not offered.
 CREATE TABLE clearcare.alert_packages (
     id integer GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name text NOT NULL UNIQUE CHECK (name <> ''),
     scope text NOT NULL UNIQUE CHECK (scope IN ('FACILITY', 'COUNTY', 'RADIUS', 'ALL')),
-    context_schema jsonb NOT NULL CHECK (jsonb_typeof(context_schema) = 'object'),
-    is_active boolean NOT NULL DEFAULT true,
-    -- Used by the RADIUS package only: the point it was seeded with and how far
-    -- around it the visitor's own subscription reaches.
-    latitude double precision,
-    longitude double precision,
-    radius_miles numeric(6, 2) CHECK (radius_miles IS NULL OR radius_miles > 0),
-    created_at timestamptz NOT NULL DEFAULT now(),
-    -- A seeded radius package that cannot place itself is a package that cannot
-    -- match, so the three columns are all present or all absent.
-    CONSTRAINT alert_packages_radius_complete CHECK (
-        scope <> 'RADIUS'
-        OR (latitude IS NOT NULL AND longitude IS NOT NULL AND radius_miles IS NOT NULL)
-    )
-);
-
--- Four packages: a single home, a county, everything, and the rotation that is
--- not offered yet.
---
--- A county is named by an integer id from clearcare.county (CCARE-90, V25) rather
--- than by a string, because the same twenty-six names are spelled three times
--- already and a subscription must not stop matching when one of them changes.
-INSERT INTO clearcare.alert_packages (name, scope, context_schema, is_active)
-VALUES
-    (
-        'A home I follow',
-        'FACILITY',
-        '{"type": "object", "required": ["centre_id"], "properties": {"centre_id": {"type": "string", "minLength": 1}}, "additionalProperties": false}',
-        true
-    ),
-    (
-        'A county',
-        'COUNTY',
-        '{"type": "object", "required": ["county_id"], "properties": {"county_id": {"type": "integer", "minimum": 1}}, "additionalProperties": false}',
-        true
-    ),
-    (
-        'Every home',
-        'ALL',
-        '{"type": "object", "properties": {}, "additionalProperties": false}',
-        true
-    );
-
--- The rotation package, seeded off, with a point in Dublin and twenty-five miles
--- as an example of the shape it will take.
-INSERT INTO clearcare.alert_packages (name, scope, context_schema, is_active, latitude, longitude, radius_miles)
-VALUES (
-    'Near a place',
-    'RADIUS',
-    '{"type": "object", "required": ["latitude", "longitude"], "properties": {"latitude": {"type": "number"}, "longitude": {"type": "number"}}, "additionalProperties": false}',
-    false,
-    53.3498,
-    -6.2603,
-    25.00
+    is_active boolean NOT NULL DEFAULT false,
+    created_at timestamptz NOT NULL DEFAULT now()
 );
 
 -- What one visitor asked to be told about.
 --
--- The natural key is the person, the package and the context they chose: asking
--- twice for the same home is the same subscription, so the API upserts rather
--- than piling up rows, and a person who unsubscribes and subscribes again
--- reactivates the row they had, keeping the notifications under it readable.
+-- A subscription is one account and one package. The thing the subscription is
+-- about (a home, a county) is not stored yet: those columns are deferred until
+-- the API and the resolver settle their shape. `metadata` is the flexible
+-- document for anything they need to keep alongside the row.
+--
+-- The natural key is the person and the package: asking twice is the same
+-- subscription, so the API upserts rather than piling up rows, and a person who
+-- unsubscribes and subscribes again reactivates the row they had, keeping the
+-- notifications under it readable.
 --
 -- Deactivating is not deleting: `deactivated_at` says when it stopped, and the
 -- two fields are kept in step by the check below, so neither a live row with an
 -- end date nor a dead row without one can be written.
---
--- The context is a document because the three scopes describe different things
--- (a home, a county, nothing at all); the API checks its shape against the
--- package's `context_schema` before storing it.
 CREATE TABLE clearcare.alert_subscriptions (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES clearcare.users (id) ON DELETE CASCADE,
     alert_package_id integer NOT NULL REFERENCES clearcare.alert_packages (id),
-    context jsonb NOT NULL CHECK (
-        jsonb_typeof(context) = 'object'
-        AND length(context::text) <= 1024
-    ),
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (
         jsonb_typeof(metadata) = 'object'
         AND length(metadata::text) <= 1024
@@ -108,20 +53,19 @@ CREATE TABLE clearcare.alert_subscriptions (
     deactivated_at timestamptz,
     created_at timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT alert_subscriptions_natural_key
-        UNIQUE (user_id, alert_package_id, context),
+        UNIQUE (user_id, alert_package_id),
     CONSTRAINT alert_subscriptions_deactivation_paired CHECK (
         (is_active AND deactivated_at IS NULL)
         OR (NOT is_active AND deactivated_at IS NOT NULL)
     )
 );
 
--- What the pipeline noticed in one ingest batch, once per scope value.
+-- What the pipeline noticed in one ingest batch, once per package.
 --
--- One row per package and value in the batch, never one per report: twelve new
--- reports for a county are one county event and one whole-register event, with
--- the report ids in `metadata`. There is deliberately no report_id column: the
--- resolver matches an event to a subscription by containment (`event.context
--- @> subscription.context`), which describes the batch rather than a report.
+-- One row per package per batch, never one per report: twelve new reports for a
+-- county are one county event and one whole-register event, with the report ids
+-- in `metadata`. There is deliberately no report_id column, and no context column
+-- yet: how an event is matched to a subscription is deferred with the resolver.
 --
 -- `status` is the pipeline's own progress: PENDING is picked up by the resolver,
 -- PROCESSING is held while its notifications are written, PROCESSED is finished,
@@ -134,7 +78,6 @@ CREATE TABLE clearcare.alert_events (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     alert_package_id integer NOT NULL REFERENCES clearcare.alert_packages (id),
     status text NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PROCESSING', 'PROCESSED')),
-    context jsonb NOT NULL CHECK (jsonb_typeof(context) = 'object'),
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(metadata) = 'object'),
     created_at timestamptz NOT NULL DEFAULT now(),
     processed_at timestamptz,
@@ -150,18 +93,13 @@ CREATE INDEX alert_events_pending_idx
     ON clearcare.alert_events (created_at)
     WHERE status = 'PENDING';
 
--- The containment join, `event.context @> subscription.context`, reads contexts
--- on both sides; this is the one that is looked up by value.
-CREATE INDEX alert_events_context_idx
-    ON clearcare.alert_events USING gin (context jsonb_path_ops);
-
 -- What was sent to one person, and what it said.
 --
--- `context` holds the package and value the email is attributed to, and the
--- report ids it carried, so a notification can be explained without the event it
--- came from being replayed. `status` is the sending state: QUEUED is waiting,
--- SENDING is with the sender, SENT is done, FAILED needs a person. `sent_at` is
--- set with SENT, and `retry_count` records how many attempts it took.
+-- `metadata` carries the report ids and the package the email is attributed to,
+-- so a notification can be explained without the event it came from being
+-- replayed. `status` is the sending state: QUEUED is waiting, SENDING is with
+-- the sender, SENT is done, FAILED needs a person. `sent_at` is set with SENT,
+-- and `retry_count` records how many attempts it took.
 --
 -- No address is stored here: the dispatcher reads it from Cognito with
 -- AdminGetUser when it sends (ADR-0034), so the database never holds a copy that
@@ -173,7 +111,6 @@ CREATE TABLE clearcare.alert_notifications (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES clearcare.users (id) ON DELETE CASCADE,
     status text NOT NULL DEFAULT 'QUEUED' CHECK (status IN ('QUEUED', 'SENDING', 'SENT', 'FAILED')),
-    context jsonb NOT NULL CHECK (jsonb_typeof(context) = 'object'),
     metadata jsonb NOT NULL DEFAULT '{}'::jsonb CHECK (jsonb_typeof(metadata) = 'object'),
     retry_count integer NOT NULL DEFAULT 0 CHECK (retry_count >= 0),
     created_at timestamptz NOT NULL DEFAULT now(),
