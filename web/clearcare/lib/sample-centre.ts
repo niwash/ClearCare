@@ -1,7 +1,7 @@
 // lib/sample-centre.ts
 // The start page's example: a home picked at random on every load, with what its latest
 // inspection found. Built from the same data as the centre page (getCentre, getCentreReports).
-import { getCentre, getCentreReports, type CentreDetail, type Inspection, type Judgement, type Regulation } from "./centres";
+import { getCentre, getCentreAmenities, getCentreReports, type CentreAmenities, type CentreDetail, type Inspection, type Judgement, type Regulation } from "./centres";
 import { changeFrom, SEVERITY, type Change } from "./judgements";
 import { searchCentres } from "./search";
 
@@ -24,6 +24,8 @@ export interface SampleCentre {
   firstYear: number;
   counts: Record<Judged, number>;
   findings: SampleFinding[]; // not fully compliant at the latest inspection, worst first
+  // What the home offers, as on its record (CCARE-258), or null when nothing has been read yet.
+  amenities: CentreAmenities | null;
 }
 
 export async function getSampleCentre(total: number | null): Promise<SampleCentre | null> {
@@ -44,7 +46,7 @@ async function randomCentreId(total: number | null): Promise<string | null> {
 }
 
 async function summarise(id: string): Promise<SampleCentre | null> {
-  const [lookup, reports] = await Promise.all([getCentre(id), getCentreReports(id)]);
+  const [lookup, reports, amenities] = await Promise.all([getCentre(id), getCentreReports(id), getCentreAmenities(id)]);
   if (lookup.status !== "found" || !reports) return null;
   const judged = reports.inspections.filter((inspection) => inspection.regulationJudgements);
   const latest = judged.at(-1);
@@ -71,5 +73,6 @@ async function summarise(id: string): Promise<SampleCentre | null> {
     firstYear: new Date(reports.inspections[0].date).getUTCFullYear(),
     counts,
     findings,
+    amenities,
   };
 }

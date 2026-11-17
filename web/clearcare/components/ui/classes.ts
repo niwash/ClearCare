@@ -46,6 +46,13 @@ export const smallLinkButtonClass =
 export const linkCardClass =
   "group rounded-2xl border border-line bg-surface text-ink no-underline shadow-sm transition hover:-translate-y-1 hover:border-primary hover:text-ink hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 adult:rounded-lg adult:shadow-none adult:transition-none adult:hover:translate-y-0";
 
+// A card that lifts a little on hover, like a card picked up, as the action links do: the home page's
+// mission and vision cards and its figures (CCARE-258). Not with reduced motion or in the
+// adult-centred design. Put it on an element inside a reveal-stagger item, not on the item itself:
+// the item's slide-in sets its own transition, which would take over this one.
+export const liftCardClass =
+  "transition hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 adult:transition-none adult:hover:translate-y-0 adult:hover:shadow-none";
+
 // A small line over a heading that says who a section is for or where it fits, such as "For
 // families". In the warm accent colour, in capitals in the standard design only.
 export const eyebrowClass =

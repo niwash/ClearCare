@@ -38,6 +38,9 @@ const FRAME = "aspect-[4/3] w-full overflow-hidden rounded-2xl adult:rounded-lg"
 // person moving between homes is not asked again, and closing the tab forgets it.
 const AGREED_KEY = "photos-agreed";
 
+// How long to wait for Google's photo before showing that there is none.
+const GIVE_UP_AFTER = 15_000;
+
 function agreedAlready() {
   try {
     return sessionStorage.getItem(AGREED_KEY) === "yes";
@@ -103,6 +106,15 @@ export function CentrePhoto({
     window.dispatchEvent(new Event(AGREED_EVENT));
   }, []);
 
+  // A refused key does not always raise an event, so a photo that hasn't arrived after a while is
+  // taken as none: the frame says so rather than saying it is still checking for good.
+  const asking = Boolean(placeId && apiKey && agreed && !loaded && !failed);
+  useEffect(() => {
+    if (!asking) return;
+    const timer = setTimeout(fail, GIVE_UP_AFTER);
+    return () => clearTimeout(timer);
+  }, [asking, fail]);
+
   if (!placeId || !apiKey) {
     return <Placeholder className={`${FRAME} ${className}`} />;
   }
@@ -111,7 +123,8 @@ export function CentrePhoto({
   }
   return (
     <div className={`${FRAME} ${className} relative`}>
-      {!loaded && <Placeholder className="absolute inset-0" />}
+      {/* While Google is asked, the frame says so; "no photo" only once it has failed (CCARE-258). */}
+      {!loaded && <Placeholder className="absolute inset-0" checking={!failed} />}
       {/* Kept mounted while it loads, so it can report both success and failure; hidden until it
           has something to show. A refused key does not always raise an event, so waiting for
           gmp-load rather than for an error is what keeps the frame from going empty. */}
@@ -202,14 +215,18 @@ function GooglePhoto({
 }
 
 // Not an image yet, so nothing for screen readers to describe: the words say what is missing. It
-// is a fact, not a promise: a home Google does not list will never have a photo here.
-function Placeholder({ className = "" }: { className?: string }) {
+// is a fact, not a promise: a home Google does not list will never have a photo here. While the
+// photo is still being asked for, it says that instead, and the status is announced (CCARE-258:
+// "No photo" showed while it loaded, as if there were none).
+function Placeholder({ className = "", checking = false }: { className?: string; checking?: boolean }) {
   return (
     <div
       className={`flex flex-col items-center justify-center gap-2 border border-dashed border-line bg-surface-muted p-4 text-center text-ink-muted ${className}`}
     >
-      <Icon name="home" className="size-10" />
-      <p className="text-sm">No photo of this home yet</p>
+      <Icon name="home" className={`size-10 ${checking ? "motion-safe:animate-pulse" : ""}`} />
+      <p role="status" className="text-sm">
+        {checking ? "Checking for photos…" : "ClearCare does not have photos of this home"}
+      </p>
     </div>
   );
 }

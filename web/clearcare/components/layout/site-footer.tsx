@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NAV_ITEMS, SiteLogo } from "@/components/layout/site-header";
 import { LastSearchLink } from "@/components/search/last-search";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 // The header's pages, then the ones only the footer links to. Unfinished pages are left out.
 const FOOTER_LINKS = [
@@ -27,6 +28,16 @@ export function SiteFooter() {
             <SiteLogo className="flex w-fit items-center text-xl tap-target" />
             <p className="text-ink-muted">
               HIQA nursing home inspection reports, made easier to search, understand and compare.
+            </p>
+            {/* A way to reach the people behind the site, under what it is (CCARE-258): a participant
+                in user testing (P2_1) looked for a "contact us", which also makes the site feel more
+                human. Not the Contacts page, which lists services for families. */}
+            {/* One line, short enough to fit the column. */}
+            <p className="mt-2 text-ink-muted">
+              Questions or comments? Email{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="tap-target">
+                {CONTACT_EMAIL}
+              </a>
             </p>
           </div>
 

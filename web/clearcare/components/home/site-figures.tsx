@@ -7,7 +7,7 @@
 // and how current the figures are sit beside the cards rather than above and below them, so the
 // band is one row deep and the cards aren't stretched wide around a single number.
 import { CountUp } from "@/components/home/count-up";
-import { fullWidthClass } from "@/components/ui/classes";
+import { fullWidthClass, liftCardClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon } from "@/components/ui/icons";
 import { formatDate } from "@/lib/centres";
@@ -62,20 +62,22 @@ export function SiteFigures({
           )}
         </div>
         {/* One row of cards from tablet width; on phones each card is a short row of its own, the icon
-            beside the figure, so the three take less height. */}
+            beside the figure, so the three take less height. Each item slides in with the row; the
+            card inside it lifts a little on hover, as the mission and vision cards do (CCARE-258). */}
         <ul className="reveal-stagger grid gap-3 sm:grid-cols-3 md:gap-4">
           {figures.map((figure) => (
-            <li
-              key={figure.label}
-              className="flex items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm sm:flex-col sm:gap-2 sm:text-center md:p-5 adult:rounded-lg adult:shadow-none"
-            >
-              <IconCircle path={figure.icon} size="large" tint={figure.tint} className="reveal-pop" />
-              <span className="flex flex-col sm:items-center">
-                <span className="font-heading text-3xl font-semibold text-primary md:text-4xl">
-                  <CountUp to={figure.count} />
+            <li key={figure.label}>
+              <div
+                className={`flex h-full items-center gap-4 rounded-2xl border border-line bg-surface p-4 shadow-sm sm:flex-col sm:gap-2 sm:text-center md:p-5 adult:rounded-lg adult:shadow-none ${liftCardClass}`}
+              >
+                <IconCircle path={figure.icon} size="large" tint={figure.tint} className="reveal-pop" />
+                <span className="flex flex-col sm:items-center">
+                  <span className="font-heading text-3xl font-semibold text-primary md:text-4xl">
+                    <CountUp to={figure.count} />
+                  </span>
+                  <span className="text-sm text-ink-muted">{figure.label}</span>
                 </span>
-                <span className="text-sm text-ink-muted">{figure.label}</span>
-              </span>
+              </div>
             </li>
           ))}
         </ul>

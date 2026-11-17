@@ -271,6 +271,93 @@
     var(--page);
 }
 
+/* The icons of the home page's mission and vision cards (StatementCard, page.tsx, CCARE-258), which
+   play when their card is hovered: the target's rings draw themselves in from the outside and its
+   dot pops in; the light bulb jumps, and its rays burst outwards on the way up, fully out as it
+   lands (0.6s: the rays start at 0.15s and take 0.45s). The rays are hidden until then. With reduced
+   motion they simply appear (WCAG 2.3.3); the adult-centred design keeps the icons still. */
+.vision-rays {
+  opacity: 0;
+}
+
+:root:not([data-design="adult-centred"]) .group:hover .vision-rays {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Grown from the glass's centre, (12, 9): the middle of the rays' box across, and its foot, as the
+     side rays are level with the centre. From 80%, so even at the start their inner ends (8.5 units
+     out when full) stay clear of the glass (6 units). They sit in the bulb's group and jump with it. */
+  :root:not([data-design="adult-centred"]) .statement-icon .vision-rays {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: scale(0.8);
+    transition:
+      opacity 0.2s ease-out,
+      transform 0.2s ease-out;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .statement-icon .vision-rays {
+    transform: scale(1);
+    transition:
+      opacity 0.3s ease-out 0.15s,
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) 0.15s;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .vision-bulb {
+    animation: bulb-jump 0.6s ease-in-out;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .mission-ring {
+    animation: ring-draw 0.6s ease-out var(--ring-delay, 0s) both;
+  }
+
+  :root:not([data-design="adult-centred"]) .statement-icon .mission-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .mission-dot {
+    animation: dot-pop 0.35s ease-out 0.6s both;
+  }
+}
+
+@keyframes ring-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dot-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* One jump: up quickly, then down to land, with no second bounce. */
+@keyframes bulb-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  40% {
+    transform: translateY(-3.5px);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3);
+  }
+}
+
 /* A short mark in the warm accent under each page's main heading, the same on every page. Left
    out of the adult-centred design, which keeps decoration to a minimum. */
 :root:not([data-design="adult-centred"]) .welcome-band h1::after {
