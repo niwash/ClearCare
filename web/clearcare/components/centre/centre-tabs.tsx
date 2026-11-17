@@ -7,10 +7,10 @@
 //
 // Like the tabs on a folder: every tab is outlined with rounded top corners. The current one is in
 // the colour of the band its page starts with, lifted by a shadow, and has no line under it, so it
-// runs into that band; the others are on a muted fill behind the row's line. So the current tab
-// shows by shape as well as colour, and aria-current says so to screen readers. All are the same
-// height, so nothing in the row moves when the current one changes. On narrow screens the row
-// scrolls sideways.
+// runs into that band; the others sit behind the row's line. Since CCARE-258 every tab has its page's
+// colour (below), so the current one shows by shape: taller, in front and open at the foot; and
+// aria-current says so to screen readers. Tabs keep their widths, so only the current tab's top moves
+// when it changes. On narrow screens the row scrolls sideways.
 //
 // The pages are fetched ahead in full, so a tab usually opens at once, its page sliding in from the
 // tab's side (template.tsx). A tab clicked before its page has arrived is shown as the current one
@@ -20,6 +20,13 @@
 // Where the row scrolls, the current tab is scrolled into the middle of it when a page opens, so
 // arriving at What to ask from a link elsewhere doesn't leave its tab off-screen. Only the row
 // scrolls, not the window.
+//
+// Made to stand out (CCARE-258): in user testing (P2_1) the participant didn't notice the tabs at
+// first, and kept scrolling down and forgetting they were there. So every tab is in the colour of the
+// band its page starts with, as a folder's dividers are coloured, rather than only the current one,
+// with the others on a muted fill and faded text. The current tab still shows by shape: a little
+// taller than the others, in front with its shadow, and with no line under it, so it runs into its
+// band. The others lift a little on hover, like a divider's tab pulled up.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -51,7 +58,7 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
   return (
     <nav ref={row} aria-label="This home's record" aria-busy={waiting ? true : undefined} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
       {/* The row's line is the bottom edge of the folder's back; the current tab covers it. */}
-      <ul className="flex min-w-max items-end gap-1.5 border-b border-line pt-1">
+      <ul className="flex min-w-max items-end gap-1.5 border-b border-ink/40 pt-1.5 adult:border-line">
         {tabs.map((tab) => {
           const current = shown === tab.href;
           return (
@@ -72,10 +79,15 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
                   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
                   setClicked({ href: tab.href, from: pathname });
                 }}
-                className={`folder-tab relative flex min-h-12 items-center rounded-t-xl border border-line px-4 font-semibold no-underline adult:rounded-t-md md:px-5 ${
+                // Every tab in its page's colour, outlined in 40% of the text colour, which shows on
+                // every tint (the site's soft line didn't), as does the row's line; the current tab has
+                // no bottom edge, so it opens into its band. The current one taller (the row lines its tabs up
+                // at the bottom, so only its top rises), in front and open at the foot; the others
+                // lifted 2px on hover, which the row's top padding has room for.
+                className={`folder-tab relative flex items-center rounded-t-xl border border-ink/40 px-4 font-semibold text-ink no-underline adult:rounded-t-md md:px-5 ${tab.band} ${
                   current
-                    ? `${tab.band} border-b-transparent text-ink shadow-[0_-2px_6px_rgb(0_0_0/0.06)]`
-                    : "bg-surface-muted text-ink-muted hover:bg-surface hover:text-ink adult:underline"
+                    ? "min-h-13 border-b-transparent shadow-[0_-2px_6px_rgb(0_0_0/0.08)]"
+                    : "min-h-11 hover:-translate-y-0.5 hover:border-primary hover:text-ink motion-reduce:hover:translate-y-0 adult:underline adult:hover:translate-y-0"
                 }`}
               >
                 {tab.label}
@@ -90,7 +102,7 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
             </li>
           );
         })}
-      </ul>
+    </ul>
     </nav>
   );
 }

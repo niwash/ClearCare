@@ -900,7 +900,8 @@ gmp-advanced-marker:focus-visible,
       background-color 0.25s ease,
       border-color 0.25s ease,
       color 0.25s ease,
-      box-shadow 0.25s ease;
+      box-shadow 0.25s ease,
+      translate 0.2s ease;
   }
 
   :root:not([data-design="adult-centred"]) .tab-from-right .page-column {
