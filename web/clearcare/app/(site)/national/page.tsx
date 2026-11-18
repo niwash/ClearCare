@@ -44,10 +44,13 @@ export default async function NationalPage() {
 
       <NationalHero />
 
-      {/* What the figures are, in a box like the Fair Deal guide's summary, before the contents. */}
+      {/* What the figures are, in a box like the Fair Deal guide's summary, before the contents, and
+          what they mean for a family, in one short paragraph (CCARE-258): in user testing (P2_1) the
+          participant didn't know what to make of the page, while noting that some people enjoy the
+          statistics, which the sections below keep in full. */}
       <p className="max-w-4xl rounded-lg border border-line border-l-4 border-l-primary bg-surface px-5 py-4 md:text-lg">
-        For every regulation judged in an inspection report, these figures show what the same home&apos;s next report
-        found for it. The figures come from all the HIQA inspection reports ClearCare has loaded.
+        These figures show how often a problem found at one inspection had been put right by the home&apos;s next one,
+        across every HIQA report ClearCare has loaded.
       </p>
 
       {lookup.status === "found" ? (
@@ -55,6 +58,14 @@ export default async function NationalPage() {
       ) : (
         // The same message the centre page shows when its record can't be read.
         <Alert title="These figures aren't available right now">{statisticsUnavailableMessage(lookup.httpStatus)}</Alert>
+      )}
+
+      {/* Where the information comes from and the licence it's reused under: after the last section's
+          "Back to contents", over the way on to a home, as small print for the whole page (CCARE-258). */}
+      {lookup.status === "found" && (
+        <p className="text-small leading-relaxed text-ink-muted">
+          The information comes from HIQA inspection reports, reused under the Irish PSI licence (CC BY 4.0).
+        </p>
       )}
 
       <SearchPrompt />
@@ -91,13 +102,6 @@ function NationalHero() {
             What happens at the next inspection?
           </h1>
         </div>
-
-        <p className="text-sm text-ink-muted">
-          New to inspection reports?{" "}
-          <Link href="/guides/reading-inspection-reports" className="text-ink tap-target">
-            Learn how to read one and use what it found →
-          </Link>
-        </p>
       </div>
     </section>
   );
@@ -275,13 +279,23 @@ function KeyFindings({ statistics }: { statistics: ReAssessmentStatistics }) {
         {allRulesFinding && (
           <div className="flex flex-col gap-2 border-t border-line pt-6 md:border-l md:border-t-0 md:pl-4 md:pt-0">
             <h3 className="text-sm font-semibold text-ink-muted">Out of results from homes inspected again</h3>
-            <ul className="grid">
+            {/* Fills its column, so it is the same height as the two beside it (CCARE-258): in user
+                testing (P2_1) the participant asked why this one was a different size. */}
+            <ul className="grid flex-1">
               <FindingCard finding={allRulesFinding} className="border border-line bg-surface" />
             </ul>
           </div>
         )}
       </div>
-      <p className="max-w-3xl">Every home is different, so check the homes you&apos;re considering.</p>
+      {/* A note to take care, marked by an "i" in a light amber box, as the guides' notes (CCARE-258).
+          In user testing (P2_1) the participant noticed and liked that box in the choosing guide. */}
+      <p className="flex max-w-3xl items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold p-4 text-ink">
+        <Icon name="info" className="mt-0.5 size-5 shrink-0 text-on-tint-gold" />
+        <span>
+          <span className="sr-only">Note: </span>
+          Every home is different, so check the homes you&apos;re considering.
+        </span>
+      </p>
     </NationalSection>
   );
 }
@@ -372,9 +386,6 @@ function AboutTheseFigures({ statistics }: { statistics: ReAssessmentStatistics 
               <Icon name="download" />
               Download the figures as a spreadsheet (CSV)
             </a>
-          </p>
-          <p className="text-small leading-relaxed text-ink-muted">
-            The information comes from HIQA inspection reports, reused under the Irish PSI licence (CC BY 4.0).
           </p>
         </div>
 
