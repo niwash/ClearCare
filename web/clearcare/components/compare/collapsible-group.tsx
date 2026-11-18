@@ -40,11 +40,14 @@ export function CollapsibleGroup({
   return (
     <>
       <tbody>
-        <tr {...{ [GROUP_HEADING]: "" }}>
+        {/* The whole bar opens and shuts it, not only its title and "Hide" (CCARE-258): in user testing
+            (P2_1) the participant clicked the bar itself and nothing happened. The buttons inside have
+            no handler of their own, so a click on one reaches the row once; the first is still the
+            one the keyboard and screen readers use. */}
+        <tr {...{ [GROUP_HEADING]: "" }} onClick={() => setOpen(!open)} className="group/bar cursor-pointer">
           <th scope="colgroup" className={`${headingCellClass} ${stuckClass} ${labelEdgeClass}`}>
             <button
               type="button"
-              onClick={() => setOpen(!open)}
               aria-expanded={open}
               aria-controls={id}
               className="flex min-h-10 w-full items-center gap-2.5 text-left adult:min-h-11"
@@ -60,8 +63,7 @@ export function CollapsibleGroup({
                 type="button"
                 tabIndex={-1}
                 aria-hidden
-                onClick={() => setOpen(!open)}
-                className="flex shrink-0 items-center gap-1 text-sm font-semibold text-primary"
+                className="flex shrink-0 cursor-pointer items-center gap-1 text-sm font-semibold text-primary group-hover/bar:underline"
               >
                 {open ? "Hide" : "Show"}
                 <Chevron className={`size-5 ${open ? "rotate-90" : ""}`} />

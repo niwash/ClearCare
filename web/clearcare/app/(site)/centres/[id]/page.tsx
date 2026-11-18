@@ -201,7 +201,7 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
             </SummaryRow>
             {eircode && !addressHasEircode && (
               <SummaryRow label="Eircode" icon="eircode">
-                <span className="font-mono">{eircode}</span>
+                {eircode}
               </SummaryRow>
             )}
             <SummaryRow label="County" icon="county">
