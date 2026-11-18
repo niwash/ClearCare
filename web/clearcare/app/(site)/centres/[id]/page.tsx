@@ -250,8 +250,10 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                 )}
               </SummaryRow>
             )}
+            {/* The latest inspection with regulation judgments, so it can say what it found. A newer
+                thematic inspection is on the timeline, so this says which kind it means. */}
             {latest && first && (
-              <SummaryRow label="Latest inspection" icon="report">
+              <SummaryRow label="Latest regulation inspection" icon="report">
                 {formatDate(latest.date)}
                 {/* What it found, as the timeline counts it (CCARE-258): in user testing (P2_1) the
                     participant struggled to find what the latest inspection found. */}

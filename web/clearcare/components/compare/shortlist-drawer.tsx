@@ -88,8 +88,12 @@ export function ShortlistPanel() {
     <dialog
       ref={dialog}
       aria-labelledby="shortlist-h"
-      // A click on the backdrop lands on the dialog itself, outside its panel.
-      onClick={(event) => event.target === dialog.current && dialog.current.close()}
+      // A click on the backdrop lands on the dialog itself, outside its panel. A link pressed inside
+      // it closes it too: the panel lives in the header, so it would otherwise stay open over the
+      // page the link goes to.
+      onClick={(event) => {
+        if (event.target === dialog.current || (event.target as Element).closest("a")) dialog.current?.close();
+      }}
       className="shortlist-panel fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-sm border-l border-line bg-surface p-0 text-ink shadow-xl"
     >
       <div className="flex h-full flex-col gap-4 overflow-y-auto p-5">

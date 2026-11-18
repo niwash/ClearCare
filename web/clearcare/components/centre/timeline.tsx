@@ -390,9 +390,11 @@ function ReportLink({ event }: { event: ReportEvent }) {
 // HIQA keeps three years of reports online and sends older ones on request, by email, as the home's
 // page on hiqa.ie says. What was read from the report stays in the row; this says where the report
 // itself can still be had. On paper, where the email can't be opened, it says only that.
+// A span, not a paragraph: it sits inside the row's heading, itself a paragraph, and a paragraph
+// can't hold another (the page then fails to hydrate).
 function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspectionEvent; href: string }) {
   return (
-    <p className={`shrink-0 ${mutedClass}`}>
+    <span className={`shrink-0 ${mutedClass}`}>
       No longer on hiqa.ie
       <span className="print:hidden">
         {" "}
@@ -402,7 +404,7 @@ function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspe
           <span className="sr-only">{event.date ? `: the report of the inspection on ${formatDate(event.date)}` : ": the report"}</span>
         </a>
       </span>
-    </p>
+    </span>
   );
 }
 

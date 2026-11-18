@@ -37,10 +37,19 @@ export type CentreTab = { href: string; label: string; band: string };
 
 export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
   const pathname = usePathname();
-  // The tab clicked, until its page is the one shown. Kept with the path it was clicked on, so it
-  // lapses by itself once the path changes, and Back or a link elsewhere isn't overridden by it.
+  // The tab clicked, until its page is the one shown. Kept with the path it was clicked on, so Back
+  // or a link elsewhere isn't overridden by it, and forgotten as soon as the path changes: kept, it
+  // would come back to life on returning to that path, as "Previous" at the foot of a page does
+  // (CCARE-258), showing the wrong tab as selected. Reset while rendering, React's way of resetting
+  // state when a value it depends on changes.
   const [clicked, setClicked] = useState<{ href: string; from: string } | null>(null);
-  const waiting = clicked && clicked.from === pathname && clicked.href !== pathname ? clicked.href : null;
+  const [clickedOn, setClickedOn] = useState(pathname);
+  if (clickedOn !== pathname) {
+    setClickedOn(pathname);
+    setClicked(null);
+  }
+  const current = clickedOn === pathname ? clicked : null;
+  const waiting = current && current.from === pathname && current.href !== pathname ? current.href : null;
   const shown = waiting ?? pathname;
 
   const row = useRef<HTMLElement>(null);

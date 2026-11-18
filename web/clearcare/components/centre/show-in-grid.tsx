@@ -51,7 +51,12 @@ export function ShowInGrid({ inspectionId, regulation, children }: ShowInGridPro
   useEffect(() => {
     const listener = () => setPressed(pressedNow === key);
     addEventListener(PRESSED_EVENT, listener);
-    return () => removeEventListener(PRESSED_EVENT, listener);
+    return () => {
+      removeEventListener(PRESSED_EVENT, listener);
+      // Gone from the page while pressed, as on leaving the tab: let go, so the first press on coming
+      // back marks the grid rather than unpressing what is no longer shown.
+      if (pressedNow === key) pressedNow = null;
+    };
   }, [key]);
 
   function press() {
