@@ -68,7 +68,7 @@ export function PrintHeading({ name, address, phone }: PrintHeadingProps) {
         {phone && ` · ${phone}`}
       </p>
       <p className="mt-1 text-sm font-semibold">
-        {TITLES[section(pathname)] ?? "Record"}
+        {TITLES[section(pathname)] ?? "Nursing home"}
         {today && <span className="font-normal"> · printed {today}</span>}
       </p>
     </div>

@@ -7,7 +7,7 @@
 //
 // Like the tabs on a folder: every tab is outlined with rounded top corners. The current one is in
 // the colour of the band its page starts with, lifted by a shadow, and has no line under it, so it
-// runs into that band; the others sit behind the row's line. Since CCARE-258 every tab has its page's
+// runs into that band. Since CCARE-258 there is no line across the row: only the tabs have edges. Every tab has its page's
 // colour (below), so the current one shows by shape: taller, in front and open at the foot; and
 // aria-current says so to screen readers. Tabs keep their widths, so only the current tab's top moves
 // when it changes. On narrow screens the row scrolls sideways.
@@ -56,15 +56,16 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
   }, [pathname]);
 
   return (
-    <nav ref={row} aria-label="This home's record" aria-busy={waiting ? true : undefined} className="-mx-4 overflow-x-auto px-4 md:mx-0 md:px-0">
-      {/* The row's line is the bottom edge of the folder's back; the current tab covers it. */}
-      <ul className="flex min-w-max items-end gap-1.5 border-b border-ink/40 pt-1.5 adult:border-line">
+    <nav ref={row} aria-label="Pages about this home" aria-busy={waiting ? true : undefined} className="-mx-4 overflow-x-auto overflow-y-hidden px-4 md:mx-0 md:px-0">
+      {/* No line across the row, under the tabs or beyond them (CCARE-258): only the tabs have edges.
+          pb-px keeps the pixel each tab reaches down inside the row, where the line used to be;
+          outside it, the row could scroll up and down by that pixel and showed a scrollbar. */}
+      <ul className="flex min-w-max items-end gap-1.5 pt-1.5 pb-px">
         {tabs.map((tab) => {
           const current = shown === tab.href;
           return (
-            // Every tab overlaps the row's line by its own bottom pixel, the current one with no line
-            // there so it runs into the band, the others drawing the line themselves. So no tab moves
-            // when the current one changes.
+            // Every tab reaches a pixel into the band below, the current one with no edge there so it
+            // runs into the band, the others closed by their own bottom edge.
             <li key={tab.href} className={`relative -mb-px ${current ? "z-10" : ""}`}>
               <Link
                 href={tab.href}
@@ -80,8 +81,8 @@ export function CentreTabs({ tabs }: { tabs: CentreTab[] }) {
                   setClicked({ href: tab.href, from: pathname });
                 }}
                 // Every tab in its page's colour, outlined in 40% of the text colour, which shows on
-                // every tint (the site's soft line didn't), as does the row's line; the current tab has
-                // no bottom edge, so it opens into its band. The current one taller (the row lines its tabs up
+                // every tint (the site's soft line didn't); the current tab has no bottom edge, so it
+                // opens into its band. The current one taller (the row lines its tabs up
                 // at the bottom, so only its top rises), in front and open at the foot; the others
                 // lifted 2px on hover, which the row's top padding has room for.
                 className={`folder-tab relative flex items-center rounded-t-xl border border-ink/40 px-4 font-semibold text-ink no-underline adult:rounded-t-md md:px-5 ${tab.band} ${

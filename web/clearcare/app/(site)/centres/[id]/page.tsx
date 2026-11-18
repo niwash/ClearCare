@@ -9,11 +9,12 @@ import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { ExtraConditions } from "@/components/centre/extra-conditions";
-import { RecentChanges } from "@/components/centre/recent-changes";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
 import { actionLinkClass } from "@/components/ui/classes";
+import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
+import { inspectionFindings } from "@/lib/judgements";
 import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
@@ -22,8 +23,10 @@ import {
   HOME_TYPE_LABELS,
   type CentreDetail,
   type CentreReports,
+  type Judgement,
 } from "@/lib/centres";
-import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
+import { TabPager } from "@/components/centre/tab-pager";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -42,7 +45,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports, amenities, events, hiqaCheckedAt } = record;
+  const { centre, reports, amenities, hiqaCheckedAt } = record;
 
   return (
     <>
@@ -54,15 +57,8 @@ export default async function CentrePage({ params }: CentrePageProps) {
             note={centre.chief_inspector_note ?? null}
             registerDate={centre.register_snapshot.fetched_at}
           />
-          {/* Not there when the events couldn't be read, or from an API without them. */}
-          {events && (
-            <RecentChanges
-              events={events}
-              today={new Date().toISOString().slice(0, 10)}
-              currentNote={centre.chief_inspector_note ?? null}
-              timelineHref={centrePath(centre.centre_id, "inspections")}
-            />
-          )}
+          {/* Recent changes was here; taken off the overview (CCARE-258). The same changes are on the
+              timeline in Inspection history. */}
           <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} />
         </div>
       </Band>
@@ -74,6 +70,11 @@ export default async function CentrePage({ params }: CentrePageProps) {
           reportUrl={reports?.inspections.find((inspection) => inspection.id === String(amenities?.report_id))?.reportUrl}
           fromLatest={reports?.inspections.at(-1)?.id === String(amenities?.report_id)}
         />
+        {/* The next page, where the Overview's facts end (CCARE-258), rather than at the foot of the
+            page after the pointer to What to ask. */}
+        <div className="mt-6">
+          <TabPager tabs={centreTabs(centre.centre_id)} inline />
+        </div>
       </Band>
 
       {/* What to ask has a tab of its own (CCARE-212); the overview points to it, as the step to take
@@ -252,6 +253,9 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
             {latest && first && (
               <SummaryRow label="Latest inspection" icon="report">
                 {formatDate(latest.date)}
+                {/* What it found, as the timeline counts it (CCARE-258): in user testing (P2_1) the
+                    participant struggled to find what the latest inspection found. */}
+                <LatestResult inspectionId={latest.id} reports={reports} />
                 <Note>
                   {latest.publishedDate && `Published ${formatDate(latest.publishedDate)} · `}
                   {reports.inspections.length} {reports.inspections.length === 1 ? "report" : "reports"} since{" "}
@@ -320,6 +324,33 @@ function SummaryRow({ label, icon, children }: { label: ReactNode; icon: IconNam
       </dt>
       <dd className="flex min-w-0 flex-col items-start text-ink">{children}</dd>
     </div>
+  );
+}
+
+// How many regulations the latest inspection judged each way, worst first, with the judgment's mark:
+// "4 not compliant · 3 substantially compliant · 6 compliant", or "All 15 compliant". Nothing for an
+// inspection with no regulations judged, such as a thematic one.
+function LatestResult({ inspectionId, reports }: { inspectionId: string; reports: CentreReports }) {
+  const found = inspectionFindings(inspectionId, reports.history, reports.inspections, reports.trails);
+  if (!found) return null;
+  const countOf = (judgement: Judgement) => found.findings.filter((finding) => finding.judgement === judgement).length;
+  const counts = (
+    [
+      ["not-compliant", countOf("not-compliant")],
+      ["substantially-compliant", countOf("substantially-compliant")],
+      ["compliant", found.compliant],
+    ] satisfies [Judgement, number][]
+  ).filter(([, count]) => count > 0);
+  const allCompliant = counts.length === 1 && counts[0][0] === "compliant";
+  return (
+    <ul className="mt-1 mb-0.5 flex flex-wrap gap-x-4 gap-y-1">
+      {counts.map(([judgement, count]) => (
+        <li key={judgement} className="flex items-center gap-1.5">
+          <JudgementIcon judgement={judgement} size={12} />
+          {allCompliant && count > 1 ? `All ${count} compliant` : `${count} ${JUDGEMENT_LABELS[judgement].toLowerCase()}`}
+        </li>
+      ))}
+    </ul>
   );
 }
 

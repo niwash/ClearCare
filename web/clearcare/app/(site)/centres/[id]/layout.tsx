@@ -4,13 +4,14 @@
 // sections are now pages of their own, so a family scrolls less and can link to the part they mean.
 import { PrintHeading } from "@/components/centre/record-print";
 import { CentreTabs, type CentreTab } from "@/components/centre/centre-tabs";
+import { TabPager } from "@/components/centre/tab-pager";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { Alert } from "@/components/layout/alert";
 import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { fullWidthClass } from "@/components/ui/classes";
 import { centrePhone, type CentreDetail } from "@/lib/centres";
-import { CENTRE_SECTION_TITLES, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { centreTabs, getCentreRecord } from "@/lib/centre-record";
 import { getGuide } from "@/lib/guides";
 import { returnQuery } from "@/lib/return-to-centre";
 import { unavailableMessage } from "@/lib/search";
@@ -29,32 +30,28 @@ export default async function CentreLayout({ children, params }: { children: Rea
   if (record.status === "unavailable") return <CentreUnavailable httpStatus={record.httpStatus} />;
   const { centre } = record;
 
-  // All four tabs on every home, so a family finds the same ones each time; a page with nothing on
-  // it says why (NothingToFlag, and the inspections page's own message when there are no reports).
-  // Each tab is coloured like the band its page starts with, so the current one runs into it.
-  // What happened next follows What to look at first, as it follows up the same regulations; the
-  // full inspection history after them, and What to ask last, as what the family can do with it all.
-  const tabs: CentreTab[] = [
-    { href: centrePath(id), label: "Overview", band: "bg-page" },
-    { href: centrePath(id, "look-first"), label: CENTRE_SECTION_TITLES["look-first"], band: "bg-tint-gold" },
-    { href: centrePath(id, "next-steps"), label: CENTRE_SECTION_TITLES["next-steps"], band: "bg-tint-sage" },
-    { href: centrePath(id, "inspections"), label: CENTRE_SECTION_TITLES.inspections, band: "bg-band" },
-    { href: centrePath(id, "questions"), label: CENTRE_SECTION_TITLES.questions, band: "bg-tint-blue" },
-  ];
+  // The record's pages (centreTabs, below), shared with the Overview's own pager.
+  const tabs = centreTabs(id);
 
   return (
     <>
       <CentreHero centre={centre} tabs={tabs} />
 
       {/* Each section on its own band of colour, edge to edge, touching the next and the name's band. */}
-      <div className="-mt-6 flex flex-col md:-mt-8">{children}</div>
+      <div className="-mt-6 flex flex-col md:-mt-8">
+        {children}
+        {/* The next and previous pages, at the foot of this one, on its band (CCARE-258). The
+            Overview places its own, under What the home offers. */}
+        <TabPager tabs={tabs} skipFirst />
+      </div>
 
       {/* So nobody leaves a record unsure what it means or what to do next. The negative top margin
           cancels the page's gap, so it meets the last section's band with no strip of page colour
           between; the bottom one is the band's own default. */}
       <GuidesBand
         id="help-h"
-        title="Making sense of this record"
+        // Not "record" (CCARE-258): the word threw a participant in user testing (P2_1).
+        title="Making sense of this home's reports"
         intro="Inspection reports use a lot of HIQA’s own language. Our guides explain it, and what to ask next."
         guides={RECORD_GUIDES}
         linkQuery={returnQuery(id)}
@@ -111,7 +108,7 @@ function CentreUnavailable({ httpStatus }: { httpStatus: number }) {
           Home
         </Link>
       </div>
-      <Alert title="This record isn't available right now">{unavailableMessage(httpStatus)}</Alert>
+      <Alert title="This home's page isn't available right now">{unavailableMessage(httpStatus)}</Alert>
     </div>
   );
 }

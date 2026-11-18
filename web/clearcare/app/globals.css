@@ -230,6 +230,47 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
+/* The regulations marked in the grid of judgments from their words on the timeline (show-in-grid.tsx,
+   CCARE-258), while pressed or while a pointer rests on the words: each cell's box gets a thin ring in
+   the primary colour with a gap of the card's colour, following its rounded corners, and its title a
+   soft pill of the blue tint. On the title's words rather than its cell, which a collapsed table can't
+   round. They ease in; with reduced motion they simply appear. */
+#judgement-grid td > *,
+#judgement-grid .grid-title {
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    scale 0.2s ease;
+}
+
+td.grid-marked > * {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--primary);
+  scale: 1.04;
+}
+
+th.grid-marked .grid-title {
+  background-color: var(--tint-blue);
+  color: var(--on-tint-blue);
+}
+
+:root[data-design="adult-centred"] td.grid-marked > * {
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #judgement-grid td > *,
+  #judgement-grid .grid-title {
+    transition: none;
+  }
+
+  td.grid-marked > * {
+    scale: 1;
+  }
+}
+
 /* The shortlist's panel (ShortlistPanel, shortlist-drawer.tsx, CCARE-258): it slides in from the
    right edge and out again, and the page behind it darkens and clears, rather than both appearing at
    once. The dialog is kept in the top layer and shown until the slide out ends (overlay and display,

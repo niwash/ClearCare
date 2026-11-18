@@ -4,6 +4,7 @@
 // events of its timeline (CCARE-235). The layout and each subpage ask for it; cache() loads it once
 // per request, as getCentre and the others already are.
 import { cache } from "react";
+import type { CentreTab } from "@/components/centre/centre-tabs";
 import {
   getCentre,
   getCentreAmenities,
@@ -69,6 +70,22 @@ export const getCentreRecord = cache(async (id: string): Promise<CentreRecord> =
 // The record's pages: the overview, and a subpage for each long section.
 export type CentreSection = "look-first" | "inspections" | "next-steps" | "questions";
 
+// All four tabs on every home, so a family finds the same ones each time; a page with nothing on it
+// says why (NothingToFlag, and the inspections page's own message when there are no reports). Each
+// tab is coloured like the band its page starts with, so the current one runs into it. What happened
+// next follows What to look at first, as it follows up the same regulations; the full inspection
+// history after them, and What to ask last, as what the family can do with it all. Read by the
+// record's layout and by the Overview, which places its own pager (CCARE-258).
+export function centreTabs(id: string): CentreTab[] {
+  return [
+    { href: centrePath(id), label: "Overview", band: "bg-page" },
+    { href: centrePath(id, "look-first"), label: CENTRE_SECTION_TITLES["look-first"], band: "bg-tint-gold" },
+    { href: centrePath(id, "next-steps"), label: CENTRE_SECTION_TITLES["next-steps"], band: "bg-tint-sage" },
+    { href: centrePath(id, "inspections"), label: CENTRE_SECTION_TITLES.inspections, band: "bg-band" },
+    { href: centrePath(id, "questions"), label: CENTRE_SECTION_TITLES.questions, band: "bg-tint-blue" },
+  ];
+}
+
 export const CENTRE_SECTION_TITLES: Record<CentreSection, string> = {
   "look-first": "What to look at first",
   inspections: "Inspection history",
@@ -84,7 +101,7 @@ export function centrePath(id: string, section?: CentreSection) {
 export async function centreMetadata(id: string, section?: CentreSection) {
   const lookup = await getCentre(id);
   if (lookup.status !== "found") {
-    return { title: lookup.status === "not-found" ? "Nursing home not found" : "Nursing home record unavailable" };
+    return { title: lookup.status === "not-found" ? "Nursing home not found" : "Nursing home page unavailable" };
   }
   return { title: section ? `${CENTRE_SECTION_TITLES[section]} · ${lookup.centre.centre_name}` : lookup.centre.centre_name };
 }

@@ -223,9 +223,8 @@ export function foldOlderYears(years: TimelineYear[]): { shown: TimelineYear[]; 
   return { shown: years.slice(0, cut), folded };
 }
 
-// What a row says of the notice an inspection had. Nothing for an unannounced one: the timeline says
-// once that inspections are without notice unless a row says otherwise. So a row with no type has
-// to say the notice isn't known, or that line would call its inspection unannounced. HIQA gives four
+// What a row says of the notice an inspection had. Nothing for an unannounced one: its label says
+// "Unannounced inspection" (timeline.tsx, CCARE-258). A row with no type says the notice isn't known. HIQA gives four
 // weeks' notice of an announced inspection. Any other type is shown as the report prints it.
 export function noticeWords(inspectionType: string | null): string | null {
   switch (inspectionType?.trim().toLowerCase()) {
