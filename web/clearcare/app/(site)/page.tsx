@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
 import { HomeHero } from "@/components/home/home-hero";
@@ -159,10 +158,6 @@ function StartBand() {
             What is HIQA?
             <ExternalIcon />
           </a>
-          {/* To the notice's section on HIQA's reports, which says how ClearCare uses them. */}
-          <Link href="/privacy#reports-h" className={actionLinkClass}>
-            Read our privacy notice <span aria-hidden>→</span>
-          </Link>
         </div>
       </div>
     </section>
