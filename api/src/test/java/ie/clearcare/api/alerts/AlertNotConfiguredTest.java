@@ -44,7 +44,7 @@ class AlertNotConfiguredTest {
           "db/V1__register_entries.sql",
           "db/V15__user_preferences.sql",
           "db/V25__county.sql",
-          "db/V26__alert_system.sql");
+          "db/V26__user_alerts.sql");
 
   @Container static final PostgreSQLContainer database = DatabaseImage.newDatabase(PASSWORD);
 

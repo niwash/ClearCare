@@ -251,7 +251,7 @@ class AlertApiTest {
           "db/V1__register_entries.sql",
           "db/V15__user_preferences.sql",
           "db/V25__county.sql",
-          "db/V26__alert_system.sql");
+          "db/V26__user_alerts.sql");
 
   // Two homes in two counties, as the pipeline loads them, and the publication that serves them.
   private static final String SNAPSHOT =
