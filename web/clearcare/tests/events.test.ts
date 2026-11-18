@@ -2,7 +2,7 @@
 // A home's events from GET /centres/{centre_id}/events (lib/events.ts, CCARE-235): how they are read,
 // and what the timeline works out from them: its years, which years fold, the words for an
 // inspection's notice, a price's difference, whether HIQA lists a report at all, and what the page
-// says of a home with no regulation inspection to show. And the recent changes the overview shows.
+// says of a home with no regulation inspection to show.
 // The API is a fetch each test replaces.
 // Run with: npm test
 import assert from "node:assert/strict";
@@ -15,7 +15,6 @@ import {
   noListedReport,
   noticeWords,
   priceDifference,
-  recentChanges,
   rowsByYear,
   markNoLongerOnline,
   noLongerOnlineReportIds,
@@ -297,62 +296,5 @@ describe("what the page says of a home with no regulation inspection to show", (
 
   test("is that we haven't added them, when the events couldn't be read", () => {
     assert.equal(missingReportsNote(null, hiqaCheckedAt), "not-added");
-  });
-});
-
-describe("a home's recent changes", () => {
-  const today = "2026-11-12";
-
-  test("are its changes of provider, name, beds, conditions, note and price", () => {
-    const changes: CentreEvent[] = [
-      { kind: "provider", date: "2026-11-03", before: "Elm Care Ltd", after: "Oak Care Ltd" },
-      renamed("2026-11-03"),
-      beds("2026-11-03"),
-      { kind: "condition_added", date: "2026-10-20", condition_number: 4, text: "No new admissions." },
-      { kind: "condition_changed", date: "2026-10-19", condition_number: 5, before: "By June.", after: "By July." },
-      { kind: "condition_removed", date: "2026-10-18", condition_number: 6, text: "By May." },
-      { kind: "note_added", date: "2026-10-17", text: "Under appeal." },
-      { kind: "note_removed", date: "2026-10-16", text: "Under appeal." },
-      price("2026-10-14"),
-    ];
-    for (const change of changes) assert.deepEqual(recentChanges([change], today).shown, [change]);
-  });
-
-  test("leave out inspections and reports, which the overview's Inspections card covers", () => {
-    assert.deepEqual(recentChanges([inspection("2026-11-01"), thematicInspection, unreadReport], "2026-03-01"), { shown: [], more: 0 });
-  });
-
-  test("leave out a registration, which is renewed as a matter of course", () => {
-    assert.deepEqual(recentChanges([registration("2026-10-30")], today), { shown: [], more: 0 });
-  });
-
-  test("include a change dated six months ago to the day", () => {
-    const change = beds("2026-05-12");
-    assert.deepEqual(recentChanges([change], today).shown, [change]);
-  });
-
-  test("leave out a change a day older than six months", () => {
-    assert.deepEqual(recentChanges([beds("2026-05-11")], today).shown, []);
-  });
-
-  test("count six months back to a shorter month's last day, when it has no such day", () => {
-    // Six months before 31 August is 28 February: there is no 31 February to count from.
-    const change = beds("2026-02-28");
-    assert.deepEqual(recentChanges([change], "2026-08-31").shown, [change]);
-    assert.deepEqual(recentChanges([beds("2026-02-27")], "2026-08-31").shown, []);
-  });
-
-  test("are newest first, and a day's changes stay in the API's order", () => {
-    const [older, newer, sameDay] = [price("2026-10-14"), renamed("2026-11-03"), beds("2026-11-03")];
-    assert.deepEqual(recentChanges([older, newer, sameDay], today).shown, [newer, sameDay, older]);
-  });
-
-  test("are three at most, with how many more there are", () => {
-    const changes = [renamed("2026-11-03"), beds("2026-11-03"), price("2026-10-14"), beds("2026-09-01"), price("2026-07-08")];
-    assert.deepEqual(recentChanges(changes, today), { shown: changes.slice(0, 3), more: 2 });
-  });
-
-  test("are none for a home with no events", () => {
-    assert.deepEqual(recentChanges([], today), { shown: [], more: 0 });
   });
 });

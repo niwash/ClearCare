@@ -11,7 +11,7 @@
 // words beside it and filled from top to bottom: the promises, what the site doesn't do, and where
 // to start for someone with no home in mind yet, so neither column leaves a gap beside the other.
 import Link from "next/link";
-import { eyebrowClass, fullWidthClass, primaryButtonClass, secondaryLinkClass, textInputClass } from "@/components/ui/classes";
+import { actionLinkClass, eyebrowClass, fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS, Icon } from "@/components/ui/icons";
 import { MAX_TEXT_LENGTH } from "@/lib/search";
@@ -38,10 +38,14 @@ export function HomeHero() {
           {/* The same mark as under the other pages' headings (welcome-band, globals.css). */}
           <span aria-hidden className="reveal-bar -mt-2 h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           {/* "Sums up" is the site's own working-out of each report's judgments, by rules, not AI.
-              Beside the card it and the search fill their column, so no gap opens between the two. */}
+              Beside the card it and the search fill their column, so no gap opens between the two.
+              HIQA is spelt out at its first mention on the page: a participant in user testing didn't
+              know what it was (P2_1, CCARE-258). No comment inside the paragraph: one between two lines
+              of text takes away the space between the sentences. */}
           <p className="max-w-xl text-ink-muted md:text-lg lg:max-w-none">
             When someone you love needs nursing home care, you want to know they will be safe and well looked after.
-            HIQA inspects every nursing home for older people in Ireland, but its reports are long and hard to compare.
+            HIQA (the Health Information and Quality Authority) inspects every nursing home for older people in
+            Ireland, but its reports are long and hard to compare.
             ClearCare sums up what each inspection found in a way that is easier to understand, so your family can see
             how a home is doing and talk through the choice together.
           </p>
@@ -49,33 +53,45 @@ export function HomeHero() {
           {/* A name, a county or an Eircode here. The search page takes a county as the County filter
               and an Eircode as the place, and settles anything else in the browser by its own box's
               rule, which can ask Google where a town is (settleBox, lib/search-box.ts). A visible
-              label, not a faded hint in the box: people read one as already filled in (CCARE-164). */}
+              label, not a faded hint in the box: people read one as already filled in (CCARE-164).
+
+              Made to stand out (CCARE-258): in user testing (P2_1) the participant went looking for
+              the search and said a parent wouldn't know where to look. So a border in the primary
+              colour, a heading-sized label, and a taller box and button than the site's usual ones.
+              "What a nursing home offers", not "a nursing home's record": the word record threw the
+              participant. */}
           <form
             action="/search"
             method="GET"
             role="search"
             aria-label="Find a nursing home"
-            className="flex w-full max-w-xl flex-col gap-2 rounded-2xl lg:max-w-none border border-line bg-surface p-4 shadow-md md:p-5 adult:rounded-lg adult:shadow-none"
+            className="flex w-full max-w-xl flex-col gap-3 rounded-2xl border-2 border-primary bg-surface p-5 shadow-lg md:p-6 lg:max-w-none adult:rounded-lg adult:shadow-none"
           >
-            <label htmlFor="start-search" className="font-semibold">
-              Check a nursing home&apos;s record
-              <span className="block text-sm font-normal text-ink-muted">Nursing home name, town, county or Eircode</span>
+            <label htmlFor="start-search" className="flex flex-col gap-1">
+              <span className="font-heading text-xl font-semibold md:text-2xl">Check what a nursing home offers</span>
+              <span className="text-ink-muted">Type a nursing home&apos;s name, a town, a county or an Eircode</span>
             </label>
             <div className="flex flex-col gap-2 sm:flex-row">
+              {/* The site's text field (textInputClass), taller, with a thicker border and larger text.
+                  Written out, as there is nothing to merge a second height over the first.
+                  sm:flex-1, not flex-1: in the phone's column a zero basis would squash its height. */}
               <input
                 id="start-search"
                 name="q"
                 type="search"
                 maxLength={MAX_TEXT_LENGTH}
-                // sm:flex-1, not flex-1: in the phone's column a zero basis would squash its height.
-                className={`${textInputClass} w-full sm:flex-1`}
+                className="h-14 w-full min-w-0 rounded-lg border-2 border-field bg-surface px-4 text-lg text-ink focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary sm:flex-1"
               />
               {/* Without scripts nothing can ask Google, so the search page is told, and takes
                   anything that isn't a county or an Eircode as a name. */}
               <noscript>
                 <input type="hidden" name="scripts" value="off" />
               </noscript>
-              <button type="submit" className={`${primaryButtonClass} inline-flex items-center justify-center gap-2`}>
+              {/* The primary button (primaryButtonClass), as tall as the box beside it. */}
+              <button
+                type="submit"
+                className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-7 text-lg font-semibold text-on-primary shadow-sm transition hover:opacity-90 hover:shadow-md adult:rounded-md adult:shadow-none adult:transition-none adult:hover:bg-primary-hover adult:hover:opacity-100"
+              >
                 <Icon name="search" />
                 Search
               </button>
@@ -116,7 +132,8 @@ export function HomeHero() {
               where it left the card beside it short. */}
           <div className="flex flex-col items-start gap-3 border-t border-line-soft pt-5">
             <p className="font-semibold">Not sure where to start?</p>
-            <Link href="/guides/how-a-family-chooses" className={secondaryLinkClass}>
+            {/* Filled, like the site's other main buttons, not outlined (CCARE-258). */}
+            <Link href="/guides/how-a-family-chooses" className={actionLinkClass}>
               Learn how to choose a nursing home <span aria-hidden>→</span>
             </Link>
           </div>

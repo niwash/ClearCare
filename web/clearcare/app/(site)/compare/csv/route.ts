@@ -73,7 +73,7 @@ export async function GET(request: Request) {
     row("Type of home", (home) => (home.centre.home_type ? HOME_TYPE_LABELS[home.centre.home_type] : "Not stated")),
     [],
     ["The home"],
-    row("Registered for (residents)", (home) =>
+    row("Maximum occupancy (residents)", (home) =>
       home.centre.maximum_occupancy !== null ? String(home.centre.maximum_occupancy) : "Not stated",
     ),
     row("Address", (home) => home.centre.address),

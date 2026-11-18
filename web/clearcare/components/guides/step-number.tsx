@@ -3,6 +3,7 @@
 // links down to a guide's sections or stages, and the link back up to it that ends each one.
 // Decorative numbers are hidden from screen readers, which hear the step from the heading or the
 // list instead.
+import { smallLinkButtonClass } from "@/components/ui/classes";
 
 // Where a jump to a section lands: clear of the top of the window. Give it to every element the
 // contents links to.
@@ -51,11 +52,12 @@ export function ContentsNav({ label, items }: { label: string; items: readonly {
 
 const CONTENTS_ID = "contents";
 
-// The end of a numbered section: back up to the contents, so nobody has to scroll to find it.
+// The end of a numbered section: back up to the contents, so nobody has to scroll to find it. A
+// button, so it is seen as something to press rather than read past, with no line above it (CCARE-258).
 export function SectionEnd() {
   return (
-    <div className="border-t border-line pt-3 text-sm font-semibold">
-      <a href={`#${CONTENTS_ID}`} className="inline-flex min-h-11 items-center gap-1.5 tap-target">
+    <div>
+      <a href={`#${CONTENTS_ID}`} className={smallLinkButtonClass}>
         <span aria-hidden>↑</span> Back to contents
       </a>
     </div>

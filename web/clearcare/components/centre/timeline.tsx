@@ -5,15 +5,13 @@
 // changed, in the fewest words and marks, and does not repeat the report: an inspection's row names
 // the regulations judged not compliant, or counts them when they are many, and counts the rest. The
 // API sends an event as a kind and its fields (ADR-0033); every word a reader sees for one is
-// written here, once, in the function of its kind; the overview's recent changes
-// (recent-changes.tsx) are built from the same functions.
+// written here, once, in the function of its kind.
 import { ShowHide } from "@/components/ui/chevron";
 import { ExternalIcon } from "@/components/ui/external-icon";
 import {
   formatDate,
   formatDayOfYear,
   formatWeeklyPrice,
-  trailAnchor,
   type Inspection,
   type ISODate,
   type Judgement,
@@ -42,13 +40,16 @@ import {
 } from "@/lib/events";
 import { inspectionFindings, namesNotCompliant } from "@/lib/judgements";
 import type { ReactNode } from "react";
+import { Icon, type IconName } from "@/components/ui/icons";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { ClampedWords, WordsToggle, wordsGroupClass } from "./register-words";
+import { ShowInGrid } from "./show-in-grid";
 
 // What a row says: the kind of thing it is, then what changed. words: HIQA's own words for the
 // change, a condition's or the note's, apart from ours so that a page that already quotes them can
 // leave them out.
-type RowWords = { label: string; body: ReactNode; words?: ReactNode };
+// link: the report a row is about, shown beside the row's date (CCARE-258).
+type RowWords = { label: string; body: ReactNode; words?: ReactNode; link?: ReactNode };
 
 // What the page has read of the home's reports, as the grid of judgments under the timeline gets it,
 // and the page the trails are on. With it an inspection's row names the regulations judged not
@@ -94,6 +95,13 @@ export function rowWords(event: CentreEvent, reports?: ReportsRead): RowWords {
 
 const mutedClass = "text-sm text-ink-muted";
 
+// An unannounced inspection says so in its label, "Unannounced inspection" (CCARE-258), rather than
+// the timeline saying once that inspections are without notice unless a row says otherwise. Any other
+// notice is said beside the findings (noticeWords).
+function isUnannounced(inspectionType: string | null) {
+  return inspectionType?.trim().toLowerCase() === "unannounced";
+}
+
 // What an inspection's row says, on one line where it fits: the regulations judged not compliant by
 // title, which is what a family reads the row for, then how many were substantially compliant and
 // how many compliant, as a mark and a number. More than three are not named: the row says how many
@@ -123,34 +131,34 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
   const allCompliant = notCompliant.length === 0 && counted.length === 1 && counted[0][0] === "compliant" && counted[0][1] > 1;
 
   return {
-    label: "Inspection",
+    label: isUnannounced(event.inspection_type) ? "Unannounced inspection" : "Inspection",
+    link: <ReportLink event={event} />,
     body: (
-      <ReportRow event={event}>
+      <>
         {/* A screen reader hears "Not compliant: Premises", or "12 not compliant", then
             "4 substantially compliant", "5 compliant". */}
         <ul className={judgedClass}>
-          {named.map(({ regulation, trail }) => (
+          {named.map(({ regulation }) => (
             // The mark and the title side by side, so a long title wraps beside its mark and never
             // leaves it alone on a line.
             <li key={regulation.number} className="flex items-baseline font-medium">
               <Mark judgement="not-compliant" />
               <span className="sr-only">{JUDGEMENT_LABELS["not-compliant"]}: </span>
-              {trail ? (
-                // The link the finding's cell has in the grid of judgments (lib/judgements.ts). In the
-                // ink colour, as the titles without a trail are: the underline says it is a link.
-                <a href={`${reports?.trailsHref}#${trailAnchor(trail.regulation)}`} className={`text-ink ${rowLinkClass}`}>
-                  {regulation.title}
-                </a>
-              ) : (
-                regulation.title
-              )}
+              {/* Points to its cell in the grid beside the timeline, rather than leading to What happened
+                  next (CCARE-258). */}
+              <ShowInGrid inspectionId={String(event.report_id)} regulation={regulation.number}>
+                {regulation.title}
+              </ShowInGrid>
             </li>
           ))}
           {notCompliant.length > named.length && (
-            // In the titles' place and as they are: it is the row's main fact.
+            // In the titles' place and as they are: it is the row's main fact. Points to which they are
+            // in the grid beside the timeline (CCARE-258); only here, where the page has the grid.
             <li className="whitespace-nowrap font-medium">
               <Mark judgement="not-compliant" />
-              {notCompliant.length} {JUDGEMENT_LABELS["not-compliant"].toLowerCase()}
+              <ShowInGrid inspectionId={String(event.report_id)}>
+                {notCompliant.length} {JUDGEMENT_LABELS["not-compliant"].toLowerCase()}
+              </ShowInGrid>
             </li>
           )}
           {counted.map(([judgement, count]) => (
@@ -168,7 +176,7 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
           ))}
           {notice && <li className={mutedClass}>{notice}</li>}
         </ul>
-      </ReportRow>
+      </>
     ),
   };
 }
@@ -199,14 +207,13 @@ function Mark({ judgement }: { judgement: Judgement }) {
 function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
   const notice = noticeWords(event.inspection_type);
   return {
-    label: "Thematic inspection",
+    label: isUnannounced(event.inspection_type) ? "Unannounced thematic inspection" : "Thematic inspection",
+    link: <ReportLink event={event} />,
     body: (
-      <ReportRow event={event}>
-        <p className={judgedClass}>
-          {event.overall_judgment} overall
-          {notice && <span className={mutedClass}>{notice}</span>}
-        </p>
-      </ReportRow>
+      <p className={judgedClass}>
+        {event.overall_judgment} overall
+        {notice && <span className={mutedClass}>{notice}</span>}
+      </p>
     ),
   };
 }
@@ -216,11 +223,8 @@ function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
 function unreadReportRow(event: UnreadReportEvent): RowWords {
   return {
     label: "Inspection",
-    body: (
-      <ReportRow event={event}>
-        <p className={mutedClass}>{noticeWords(null)}</p>
-      </ReportRow>
-    ),
+    link: <ReportLink event={event} />,
+    body: <p className={mutedClass}>{noticeWords(null)}</p>,
   };
 }
 
@@ -343,18 +347,6 @@ function ConditionWords({ number, text, children }: { number: number; text: stri
   );
 }
 
-// A row about a report: what it says, then the link to the report. The link is at the right end of
-// the line on a wide screen, level with the last line when the words before it wrap. Under them on
-// a phone or a tablet, where a column kept for the link would leave the titles a third of the row.
-function ReportRow({ event, children }: { event: ReportEvent; children: ReactNode }) {
-  return (
-    <div className="flex flex-col items-start gap-x-6 gap-y-2 lg:flex-row lg:items-baseline-last lg:justify-between">
-      {children}
-      <ReportLink event={event} />
-    </div>
-  );
-}
-
 type ReportEvent = InspectionEvent | ThematicInspectionEvent | UnreadReportEvent;
 
 // "Report · 13 May 2026": the report itself, and the day HIQA published it. No page of ours shows
@@ -366,7 +358,9 @@ function ReportLink({ event }: { event: ReportEvent }) {
   if (event.kind !== "unread_report" && event.requestHref) return <ReportRequest event={event} href={event.requestHref} />;
   return (
     // A link can't be followed on paper, where this is the published date, if it has one.
-    <a href={event.report_url} className={`shrink-0 ${rowLinkClass} ${event.published_date ? "" : "print:hidden"}`}>
+    // Smaller than the findings above it (CCARE-258), as the note about older reports beside it is: the
+    // source, not the news.
+    <a href={event.report_url} className={`shrink-0 text-sm ${rowLinkClass} ${event.published_date ? "" : "print:hidden"}`}>
       {/* One box, so the words keep their spaces where tap-target-top makes the link a flex
           container. */}
       <span className="whitespace-nowrap">
@@ -377,11 +371,13 @@ function ReportLink({ event }: { event: ReportEvent }) {
           {event.date && event.published_date && ","}
           {event.published_date && " published"}
         </span>
+        {/* Beside the inspection's date, a second date would read as another inspection's, so the
+            published date is said only on paper, where the link can't be followed (CCARE-258). */}
         {event.published_date && (
-          <>
+          <span className="hidden print:inline">
             {" "}
             <span aria-hidden>·</span> <time dateTime={event.published_date}>{formatDate(event.published_date)}</time>
-          </>
+          </span>
         )}
         <span className="ml-1.5 inline-block align-middle print:hidden">
           <ExternalIcon />
@@ -394,9 +390,11 @@ function ReportLink({ event }: { event: ReportEvent }) {
 // HIQA keeps three years of reports online and sends older ones on request, by email, as the home's
 // page on hiqa.ie says. What was read from the report stays in the row; this says where the report
 // itself can still be had. On paper, where the email can't be opened, it says only that.
+// A span, not a paragraph: it sits inside the row's heading, itself a paragraph, and a paragraph
+// can't hold another (the page then fails to hydrate).
 function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspectionEvent; href: string }) {
   return (
-    <p className={`shrink-0 ${mutedClass} lg:text-right`}>
+    <span className={`shrink-0 ${mutedClass}`}>
       No longer on hiqa.ie
       <span className="print:hidden">
         {" "}
@@ -406,43 +404,122 @@ function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspe
           <span className="sr-only">{event.date ? `: the report of the inspection on ${formatDate(event.date)}` : ": the report"}</span>
         </a>
       </span>
-    </p>
+    </span>
   );
 }
 
-// A row in three columns: the date, the kind of thing, what changed. On a phone the last two share
-// the second column, one over the other. Rows of one day share its date and sit closer together,
-// with no line between them; the date is still there for a screen reader.
-function Row({ date, showsDate, label, children }: { date: ISODate | null; showsDate: boolean; label: string; children: ReactNode }) {
-  const sharesDay = date !== null && !showsDate;
+// Each kind of thing's picture on the line: a magnifier for an inspection, as for what the inspector
+// found on What happened next, a calendar for a registration, the register's card for a change to it,
+// and the euro for a price.
+function rowIcon(kind: CentreEvent["kind"]): IconName {
+  switch (kind) {
+    case "inspection":
+    case "thematic_inspection":
+    case "unread_report":
+      return "search";
+    case "registration":
+      return "calendar";
+    case "price":
+      return "cost";
+    default:
+      return "id";
+  }
+}
+
+// One thing that happened, as a step down a timeline (CCARE-258), as the stories on What happened next
+// are told: its picture in a dot on a line that runs down to the next thing in the year, then the kind
+// of thing with its date, then what changed. It was a row of three columns, date, kind and change; in
+// user testing (P2_1) the participant struggled to find what the latest inspection found, so the
+// latest has its dot filled and says "Latest inspection". Things of one day share its date: the date
+// shows once, and is still there for a screen reader.
+function Row({
+  date,
+  showsDate,
+  label,
+  icon,
+  latest,
+  last,
+  link,
+  children,
+}: {
+  date: ISODate | null;
+  showsDate: boolean;
+  label: string;
+  icon: IconName;
+  latest: boolean;
+  last: boolean;
+  link?: ReactNode;
+  children: ReactNode;
+}) {
   return (
-    <li
-      className={`grid grid-cols-[3.5rem_minmax(0,1fr)] gap-x-3 pb-3 sm:grid-cols-[3.5rem_9.5rem_minmax(0,1fr)] sm:gap-x-4 ${
-        sharesDay ? "" : "border-t border-line-soft pt-3 first:border-t-0"
-      }`}
-    >
-      <div className="font-mono text-sm leading-6 text-ink">
-        {date && (
-          <time dateTime={date} className={showsDate ? "" : "sr-only"}>
-            {formatDayOfYear(date)}
-          </time>
-        )}
+    <li className="relative flex gap-3 sm:gap-4">
+      {/* The line down to the next thing in the year. */}
+      {!last && <span aria-hidden className="absolute top-8 bottom-0 left-[0.9375rem] w-px bg-line" />}
+      <span
+        aria-hidden
+        className={`relative grid size-8 shrink-0 place-items-center rounded-full border ${
+          latest ? "border-primary bg-primary text-on-primary" : "border-line bg-surface text-ink-muted"
+        }`}
+      >
+        <Icon name={icon} className="size-4" />
+      </span>
+      <div className={`flex min-w-0 flex-1 flex-col gap-1.5 pt-1 ${last ? "" : "pb-5"}`}>
+        {/* The kind of thing, then its date beside it, as each step on What happened next has
+            (CCARE-258). */}
+        <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+          <span className="font-semibold">{label}</span>
+          {date && (
+            <time dateTime={date} className={showsDate ? "text-sm text-ink-muted" : "sr-only"}>
+              {formatDayOfYear(date)}
+            </time>
+          )}
+          {/* The report beside the date, so it is plainly this inspection's (CCARE-258). */}
+          {link && (
+            <span className="inline-flex items-baseline gap-x-2.5 text-sm">
+              {/* Not on a phone, where the link often wraps to a line of its own and the dot would start
+                  it. */}
+              <span aria-hidden className="hidden text-ink-muted sm:inline">
+                ·
+              </span>
+              {link}
+            </span>
+          )}
+          {latest && (
+            <span className="rounded-full bg-tint-blue px-2.5 py-0.5 text-xs font-semibold text-on-tint-blue adult:rounded-md adult:border adult:border-line">
+              Latest inspection
+            </span>
+          )}
+        </p>
+        <div className="flex min-w-0 flex-col gap-0.5">{children}</div>
       </div>
-      <p className="font-semibold">{label}</p>
-      <div className="col-start-2 flex min-w-0 flex-col gap-0.5 sm:col-start-3">{children}</div>
     </li>
   );
 }
 
-function Years({ years, reports }: { years: TimelineYear[]; reports?: ReportsRead }) {
-  return years.map(({ year, rows }) => (
-    <div key={year} className="mt-5 flex flex-col gap-1">
-      <h4 className="font-heading text-lg font-semibold">{year}</h4>
+// latest: the latest inspection's event, whose row says so. One line runs down the whole timeline,
+// through the years, from the first thing to the last (CCARE-258): each year's heading sits in the
+// words' column, beside the line, and carries the line on to its first thing.
+function Years({ years, reports, latest }: { years: TimelineYear[]; reports?: ReportsRead; latest?: CentreEvent }) {
+  return years.map(({ year, rows }, yearIndex) => (
+    <div key={year} className="flex flex-col">
+      <h4 className={`relative pb-3 pl-11 font-heading text-2xl font-semibold text-ink sm:pl-12 ${yearIndex === 0 ? "pt-2" : "pt-1"}`}>
+        {yearIndex > 0 && <span aria-hidden className="absolute top-0 bottom-0 left-[0.9375rem] w-px bg-line" />}
+        {year}
+      </h4>
       <ol>
         {rows.map(({ event, showsDate }, index) => {
-          const { label, body, words } = rowWords(event, reports);
+          const { label, body, words, link } = rowWords(event, reports);
           return (
-            <Row key={index} date={event.date} showsDate={showsDate} label={label}>
+            <Row
+              key={index}
+              date={event.date}
+              showsDate={showsDate}
+              label={label}
+              icon={rowIcon(event.kind)}
+              latest={event === latest}
+              last={yearIndex === years.length - 1 && index === rows.length - 1}
+              link={link}
+            >
               {body}
               {words}
             </Row>
@@ -471,25 +548,23 @@ const REGISTER_CHANGES_DATED_BY_THE_REGISTER: CentreEvent["kind"][] = [
   "note_removed",
 ];
 
-export function Timeline({ events, reports }: { events: CentreEvent[]; reports?: ReportsRead }) {
+// updated: when ClearCare last downloaded HIQA's register, from which the register's changes come, if
+// known; said under the timeline (CCARE-258).
+export function Timeline({ events, reports, updated }: { events: CentreEvent[]; reports?: ReportsRead; updated?: ISODate }) {
   const { shown, folded } = foldOlderYears(rowsByYear(events));
   const foldedRows = folded.reduce((count, year) => count + year.rows.length, 0);
+  // The latest inspection: the first one down the timeline, which runs newest first.
+  const latest = [...shown, ...folded]
+    .flatMap(({ rows }) => rows)
+    .find(({ event }) => event.kind === "inspection" || event.kind === "thematic_inspection" || event.kind === "unread_report")?.event;
   // Each of the notes is said once, here, and only of a timeline with a row it is about.
-  const hasInspection = events.some((event) => event.kind === "inspection" || event.kind === "thematic_inspection");
   const hasRegisterChange = events.some((event) => REGISTER_CHANGES_DATED_BY_THE_REGISTER.includes(event.kind));
 
   return (
     <div>
-      <h3 className="font-semibold">What has happened at this home</h3>
-      {(hasInspection || hasRegisterChange) && (
-        <p className={`mt-1 ${mutedClass}`}>
-          {hasInspection && "Inspections are without notice unless a row says otherwise. "}
-          {/* The register doesn't say when a change happened (ADR-0031). */}
-          {hasRegisterChange &&
-            "A change on HIQA’s register, other than a registration, is dated by the day the register first showed it."}
-        </p>
-      )}
-      <Years years={shown} reports={reports} />
+      {/* For screen readers only (CCARE-258): on screen the years and dates say what this is. */}
+      <h3 className="sr-only">What has happened at this home</h3>
+      <Years years={shown} reports={reports} latest={latest} />
       {/* The older years, closed until opened: the same <details> as the site's other folds, with no
           script, and print opens it (globals.css). "group/section" keeps Show and Hide to it, apart
           from the conditions' own <details> inside. */}
@@ -501,8 +576,27 @@ export function Timeline({ events, reports }: { events: CentreEvent[]; reports?:
             </span>
             <ShowHide group="section" className="print:hidden" />
           </summary>
-          <Years years={folded} reports={reports} />
+          <Years years={folded} reports={reports} latest={latest} />
         </details>
+      )}
+      {/* Notes on the data, at the foot rather than over the first year (CCARE-258): how current the
+          timeline is, as the home page's example says it (sample-centre.tsx), and, where the timeline
+          has one, how a change on the register is dated. The register doesn't say when a change
+          happened, so it is dated by when we first saw it (ADR-0031); a registration has its own date. */}
+      {(updated || hasRegisterChange) && (
+        <div className="mt-5 flex flex-col gap-1 border-t border-line-soft pt-4 text-sm text-ink-muted">
+          {updated && (
+            <p>
+              ClearCare last updated its data on <time dateTime={updated}>{formatDate(updated)}</time>
+            </p>
+          )}
+          {hasRegisterChange && (
+            <p>
+              Changes to HIQA&apos;s register are dated by when ClearCare first saw them, which may be later than the
+              change itself.
+            </p>
+          )}
+        </div>
       )}
     </div>
   );

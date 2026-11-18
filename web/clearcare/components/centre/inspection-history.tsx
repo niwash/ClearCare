@@ -7,6 +7,9 @@ import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-ic
 import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 import { Timeline } from "./timeline";
 
+// The most inspections the grid shows beside the timeline, at half the card's width.
+const GRID_COLUMNS_BESIDE = 4;
+
 type InspectionHistoryProps = {
   inspections: Inspection[];
   history: RegulationHistory[];
@@ -16,9 +19,18 @@ type InspectionHistoryProps = {
   events: CentreEvent[] | null;
   // The page the trails are on, What happened next (CCARE-212).
   trailsHref: string;
+  // When ClearCare last downloaded HIQA's register, said under the timeline (CCARE-258).
+  updated?: string;
 };
 
-export function InspectionHistory({ inspections, history, trails, events, trailsHref }: InspectionHistoryProps) {
+export function InspectionHistory({ inspections, history, trails, events, trailsHref, updated }: InspectionHistoryProps) {
+  const hasTimeline = Boolean(events && events.length > 0);
+  // The grid beside the timeline only while it has room for its columns there: up to four
+  // inspections. With more, half the card hid the oldest behind a sideways scroll, so it goes under
+  // the timeline, the card's whole width (CCARE-258).
+  const judged = inspections.filter((inspection) => inspection.regulationJudgements).length;
+  const beside = hasTimeline && judged <= GRID_COLUMNS_BESIDE;
+
   return (
     // The heading on the section's band, above the card, as "About this home" has; the key, the
     // timeline and the grid of judgments in the card.
@@ -41,17 +53,28 @@ export function InspectionHistory({ inspections, history, trails, events, trails
           </ul>
         </div>
 
-        {/* Inside this section so it shares the key above: its inspection rows use the same marks. */}
-        {events && events.length > 0 && (
-          <div className="border-t border-line-soft px-4 py-5 md:px-7">
-            <Timeline events={events} reports={{ inspections, history, trails, trailsHref }} />
-          </div>
-        )}
+        {/* The timeline and the grid side by side from desktop width, a line between them (CCARE-258):
+            one over the other, the timeline's rows left most of the card's width empty once its report
+            links moved under the findings. One over the other on smaller screens, in one column no
+            wider than the card (grid-cols-1, minmax(0, 1fr)): without it the column grew to the grid's
+            whole table and the page scrolled sideways on a phone. */}
+        <div className={`grid grid-cols-1 border-t border-line-soft ${beside ? "lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]" : ""}`}>
+          {/* Inside this section so it shares the key above: its inspection rows use the same marks. */}
+          {events && events.length > 0 && (
+            <div className="px-4 py-5 md:px-7">
+              <Timeline events={events} reports={{ inspections, history, trails, trailsHref }} updated={updated} />
+            </div>
+          )}
 
-        {/* Open, not folded: it is the one place that shows every judgment, and the marks alone take
-            little room. */}
-        <div className="border-t border-line-soft px-4 py-5 md:px-7">
-          <JudgementGrid inspections={inspections} history={history} trails={trails} trailsHref={trailsHref} />
+          {/* Open, not folded: it is the one place that shows every judgment, and the marks alone take
+              little room. Across the whole card when there is no timeline beside it. */}
+          <div
+            className={`px-4 py-5 md:px-7 ${
+              !hasTimeline ? "" : beside ? "border-t border-line-soft lg:border-t-0 lg:border-l" : "border-t border-line-soft"
+            }`}
+          >
+            <JudgementGrid inspections={inspections} history={history} trails={trails} />
+          </div>
         </div>
       </div>
     </section>

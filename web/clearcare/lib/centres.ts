@@ -393,9 +393,12 @@ export function formatDayOfYear(date: ISODate) {
   return DAY_OF_YEAR.format(new Date(date)).replace("Sept", "Sep");
 }
 
-// "Apr 26", for the head of a narrow column.
+// "Apr '26", for the head of a narrow column. The apostrophe says the number is a year: "Apr 26" read
+// as the 26th of April (CCARE-258).
 export function formatShortMonth(date: ISODate) {
-  return SHORT_MONTH.format(new Date(date)).replace("Sept", "Sep");
+  return SHORT_MONTH.format(new Date(date))
+    .replace("Sept", "Sep")
+    .replace(/ (\d{2})$/, " ’$1");
 }
 
 export function formatSource({ document, page, lastPage, context }: SourceRef) {

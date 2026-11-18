@@ -1,19 +1,19 @@
 "use client";
 
-// "Compare Homes" in the navigation (CCARE-127), with how many homes are saved, e.g. "Compare
-// Homes (2)". It links straight to those homes, so the page opens with them.
+// "Compare Homes" in the navigation (CCARE-127). It links straight to the saved homes, so the page
+// opens with them. No count beside it (CCARE-258): how many are saved is on "Your shortlist" in the
+// header's top band, beside it on every page.
 import Link from "next/link";
 import { compareHref } from "@/lib/compare";
 import { useComparedHomes } from "./compare-store";
 
-export function CompareNavLink({ label, className }: { label: string; className: string }) {
+// current: this is the page being shown, which the navigation marks (nav-item.tsx, CCARE-258).
+export function CompareNavLink({ label, className, current }: { label: string; className: string; current?: boolean }) {
   const homes = useComparedHomes();
-  const count = homes?.length ?? 0;
 
   return (
-    <Link href={compareHref(homes?.map((home) => home.id) ?? [])} className={className}>
+    <Link href={compareHref(homes?.map((home) => home.id) ?? [])} className={className} aria-current={current ? "page" : undefined}>
       {label}
-      {count > 0 && ` (${count})`}
     </Link>
   );
 }

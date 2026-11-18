@@ -13,7 +13,6 @@
 // the box is a plain text box sent as q, which the search page settles without Google
 // (app/(site)/search/page.tsx). The location button needs no Google, so it is there whenever scripts
 // run.
-import { textInputClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
 import { nearFrom } from "@/lib/near";
 import type { PageSearch } from "@/lib/page-search";
@@ -310,7 +309,7 @@ export function SearchBox({
   return (
     <div className="flex flex-col">
       <div className="relative">
-        <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 size-[18px] -translate-y-1/2 text-ink-muted" />
+        <Icon name="search" className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-ink-muted" />
         <input
           ref={input}
           id={id}
@@ -329,7 +328,11 @@ export function SearchBox({
           aria-expanded={scripted ? shown : undefined}
           aria-controls={scripted ? listId : undefined}
           aria-activedescendant={shown && active >= 0 ? `${listId}-${active}` : undefined}
-          className={`${textInputClass} w-full pl-10`}
+          // Made to stand out (CCARE-258): in user testing (P2_1) the participant didn't find the search
+          // at first. Taller than the site's usual field, with a thicker border in the primary colour
+          // and larger text, as the home page's search is (home-hero.tsx). Written out, as there is
+          // nothing to merge a second height and border over textInputClass.
+          className="h-13 w-full min-w-0 rounded-lg border-2 border-primary bg-surface pr-3 pl-11 text-lg text-ink shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 adult:shadow-none"
         />
 
         {scripted && (
