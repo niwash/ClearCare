@@ -1,4 +1,4 @@
--- Email alerts for newly published inspection reports (CCARE-234). Flyway
+-- Email alerts for newly published inspection reports (CCARE-264). Flyway
 -- runs this as clearcare_owner (ADR-0010); the roles it grants to are created
 -- by infra/postgres/roles.sql.
 --
@@ -32,12 +32,15 @@ CREATE TABLE clearcare.alert_subscriptions (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES clearcare.users (id) ON DELETE CASCADE,
     alert_package_id integer NOT NULL REFERENCES clearcare.alert_packages (id),
-    -- Exactly one element: '[{"county_id": 1}]', '[{"centre_id": "0000117"}]',
-    -- or '[]' for the all-reports package. jsonb_array_length keeps a
-    -- multi-target array out; the unique index below does the rest.
+    -- Exactly one element, and it must be an object: '[{"county_id": 1}]',
+    -- '[{"centre_id": "117"}]', or '[]' for the all-reports package.
+    -- jsonb_array_length keeps a multi-target array out; jsonb_typeof keeps
+    -- bare strings and nested arrays out. The keys inside the object are the
+    -- API's to sanitize before insert.
     metadata jsonb NOT NULL CHECK (
         jsonb_typeof(metadata) = 'array'
         AND jsonb_array_length(metadata) <= 1
+        AND (metadata = '[]' OR jsonb_typeof(metadata -> 0) = 'object')
     ),
     is_active boolean NOT NULL DEFAULT true,
     -- Unsubscribe deletes rows rather than flagging them; the column is the
@@ -62,15 +65,22 @@ CREATE UNIQUE INDEX alert_subscriptions_active_key
 -- matched, with the reports that matched in metadata. The dispatcher later
 -- groups by (package, task_uuid), whether it sends one email per package or
 -- one per run.
+--
+-- Status lifecycle: pending (ingest wrote it) -> processing (a dispatcher run
+-- claims it; the crash marker, requeued to pending) -> processed (with
+-- processed_at) or failed (retriable; attempt history lives in the
+-- pipeline_run ledger). No 'skipped': matching nobody is a processed outcome,
+-- and per-account skips live on alert_notifications.
 CREATE TABLE clearcare.alert_events (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     alert_package_id integer NOT NULL REFERENCES clearcare.alert_packages (id),
     task_uuid uuid NOT NULL,
-    status text NOT NULL,
+    status text NOT NULL CHECK (status IN ('pending', 'processing', 'processed', 'failed')),
     metadata jsonb NOT NULL CHECK (jsonb_typeof(metadata) = 'array'),
     created_at timestamptz NOT NULL DEFAULT now(),
     processed_at timestamptz,
-    UNIQUE (alert_package_id, task_uuid)
+    UNIQUE (alert_package_id, task_uuid),
+    CHECK ((status = 'processed') = (processed_at IS NOT NULL))
 );
 
 -- The dispatcher's scan of events it has not handled yet; a partial index
@@ -80,10 +90,11 @@ CREATE INDEX alert_events_unprocessed
     WHERE processed_at IS NULL;
 
 -- The dispatcher's per-account receipt: what one account was told about one
--- ingest run. retry_count carries a failed send to the next attempt on the
--- same row; the unique key blocks a second row for the same user, run and
--- content, whether the dispatcher sends per package (metadata names the
--- package) or per run (metadata names the merged set).
+-- ingest run. Deliberately no unique constraint: how many receipts a run
+-- writes for an account, and whether the send is one email or several, is
+-- the dispatcher's decision at runtime, so the table stays generic for
+-- sources beyond report ingestion. Deduping belongs to that workflow.
+-- retry_count carries a failed send to the next attempt on the same row.
 CREATE TABLE clearcare.alert_notifications (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES clearcare.users (id) ON DELETE CASCADE,
@@ -92,8 +103,7 @@ CREATE TABLE clearcare.alert_notifications (
     metadata jsonb NOT NULL CHECK (jsonb_typeof(metadata) = 'object'),
     retry_count integer NOT NULL DEFAULT 0,
     created_at timestamptz NOT NULL DEFAULT now(),
-    processed_at timestamptz,
-    UNIQUE (user_id, task_uuid, metadata)
+    processed_at timestamptz
 );
 
 -- The dispatcher's retry scan: the rows it still owes an email.
@@ -131,6 +141,11 @@ GRANT SELECT ON clearcare.alert_unsubscribe TO clearcare_api;
 -- and creates the unsubscribe capability the first time it emails an account.
 GRANT SELECT ON clearcare.alert_packages TO clearcare_pipeline;
 GRANT SELECT ON clearcare.alert_subscriptions TO clearcare_pipeline;
+
+-- Accounts: the dispatcher resolves each address from Cognito by cognito_sub,
+-- so it reads only those two columns (V15 keeps the table's full grants with
+-- the API).
+GRANT SELECT (id, cognito_sub) ON clearcare.users TO clearcare_pipeline;
 
 GRANT SELECT, INSERT, UPDATE
 ON clearcare.alert_events
