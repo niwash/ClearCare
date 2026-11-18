@@ -10,7 +10,7 @@ We are still lacking user input for the evaluation, and the user evaluation repo
 
 ## What can we improve on
 
-The team agreed that we need more evidence of changes, so changes to the website should be tracked for the user evaluation. We also need more user feedback, which means employihaving better outreach techniques for getting user input. The structure of the user evaluation can be improved, and we should consider other ways to obtain qualitative data.
+The team agreed that we need more evidence of changes, so changes to the website should be tracked for the user evaluation. We also need more user feedback, which means having better outreach techniques for getting user input. The structure of the user evaluation can be improved, and we should consider other ways to obtain qualitative data.
 
 ## What we will do next week
 
