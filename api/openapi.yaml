@@ -415,8 +415,14 @@ paths:
         the report prints; one that was not is an `unread_report`, dated as
         HIQA lists it. A listed date that cannot be right, one before 2007 or
         after the day the report was published, is not given: `date` is
-        `null`. A report that was read and that HIQA no longer lists is still
-        an event, with `published_date` `null`.
+        `null`.
+
+        `still_listed` is `false` when the report was not on the list of the
+        centre's page when ClearCare last read it, or when ClearCare has no
+        listing for it. HIQA takes reports off the page after three years,
+        and the file is then usually gone. The report is still an event. One
+        that was read and that left the list before ClearCare kept the lists
+        has `published_date` `null` as well.
 
         A `registration` is dated by the registration date. Every other
         register change is dated by the day the register first showed it,
@@ -472,6 +478,7 @@ paths:
                     date: "2026-05-13"
                     inspection_type: Unannounced
                     published_date: "2026-06-20"
+                    still_listed: true
                     report_id: 1
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-13-may-2026.pdf
                     compliant: 14
@@ -480,11 +487,13 @@ paths:
                   - kind: unread_report
                     date: null
                     published_date: "2026-04-15"
+                    still_listed: true
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-9-january-2026.pdf
                   - kind: thematic_inspection
                     date: "2025-11-04"
                     inspection_type: Unannounced
                     published_date: "2025-12-10"
+                    still_listed: true
                     overall_judgment: Substantially Compliant
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-4-november-2025.pdf
                   - kind: registration
@@ -1667,6 +1676,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - report_id
         - report_url
         - compliant
@@ -1690,8 +1700,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         report_id:
           type: integer
           format: int64
@@ -1722,6 +1739,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - overall_judgment
         - report_url
       properties:
@@ -1739,8 +1757,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         overall_judgment:
           type: string
           description: The overall judgment, as the report prints it.
@@ -1752,9 +1777,10 @@ components:
     UnreadReportEvent:
       type: object
       description: >
-        A report HIQA lists for the centre that ClearCare holds no reading of:
-        its file is not stored yet, or its layout cannot be read.
-      required: [kind, date, published_date, report_url]
+        A report HIQA lists or has listed for the centre that ClearCare holds
+        no reading of: its file is not stored yet, or its layout cannot be
+        read.
+      required: [kind, date, published_date, still_listed, report_url]
       properties:
         kind:
           const: unread_report
@@ -1769,6 +1795,13 @@ components:
           type: string
           format: date
           description: The day HIQA published the report.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. HIQA takes reports off the
+            page after three years, and the file at `report_url` is then
+            usually gone.
         report_url:
           type: string
           format: uri
