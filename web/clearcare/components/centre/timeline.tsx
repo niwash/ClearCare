@@ -218,7 +218,8 @@ function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
   };
 }
 
-// A report HIQA lists that ClearCare holds no reading of: the row says it exists and where it is.
+// A report HIQA lists, or has listed, that ClearCare holds no reading of: the row says it exists and
+// where it is.
 // With no reading there is no type of inspection, so the row says the notice isn't known.
 function unreadReportRow(event: UnreadReportEvent): RowWords {
   return {
@@ -353,9 +354,9 @@ type ReportEvent = InspectionEvent | ThematicInspectionEvent | UnreadReportEvent
 // one inspection's findings on their own, so the link goes to HIQA's file. The rows' links would all
 // read the same to a screen reader, which hears "HIQA's report of the inspection on 15 Jan 2026,
 // published 13 May 2026". A report HIQA no longer has online links to an email asking HIQA for it
-// instead (CCARE-236).
+// instead (CCARE-236), whether or not it was read (CCARE-274).
 function ReportLink({ event }: { event: ReportEvent }) {
-  if (event.kind !== "unread_report" && event.requestHref) return <ReportRequest event={event} href={event.requestHref} />;
+  if (event.requestHref) return <ReportRequest event={event} href={event.requestHref} />;
   return (
     // A link can't be followed on paper, where this is the published date, if it has one.
     // Smaller than the findings above it (CCARE-258), as the note about older reports beside it is: the
@@ -392,7 +393,7 @@ function ReportLink({ event }: { event: ReportEvent }) {
 // itself can still be had. On paper, where the email can't be opened, it says only that.
 // A span, not a paragraph: it sits inside the row's heading, itself a paragraph, and a paragraph
 // can't hold another (the page then fails to hydrate).
-function ReportRequest({ event, href }: { event: InspectionEvent | ThematicInspectionEvent; href: string }) {
+function ReportRequest({ event, href }: { event: ReportEvent; href: string }) {
   return (
     <span className={`shrink-0 ${mutedClass}`}>
       No longer on hiqa.ie
