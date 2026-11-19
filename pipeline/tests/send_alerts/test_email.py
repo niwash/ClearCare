@@ -1,0 +1,30 @@
+"""The sender the dispatcher holds today: the log stand-in."""
+
+import logging
+
+import pytest
+
+from clearcare_pipeline.send_alerts.email import LogSender
+
+
+def test_the_log_sender_logs_the_email_but_never_the_address(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    sender = LogSender()
+
+    with caplog.at_level(logging.INFO):
+        first = sender.send(
+            "someone@clearcare.test", "Subject here", "Text body", "<p>Html</p>"
+        )
+        second = sender.send(
+            "someone@clearcare.test",
+            "Subject again",
+            "Text again",
+            "<p>Html</p>",
+        )
+
+    assert (first, second) == ("log-000001", "log-000002")
+    assert "Subject here" in caplog.text
+    assert "Text body" in caplog.text
+    # The address never appears: ADR-0034 fixes that boundary for logs too.
+    assert "someone@clearcare.test" not in caplog.text
