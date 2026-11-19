@@ -77,6 +77,9 @@ cognito-idp = [
 s3 = [
     { name = "mypy-boto3-s3" },
 ]
+sesv2 = [
+    { name = "mypy-boto3-sesv2" },
+]
 
 [[package]]
 name = "botocore"
@@ -196,7 +199,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
-    { name = "boto3-stubs", extra = ["cognito-idp", "s3"] },
+    { name = "boto3-stubs", extra = ["cognito-idp", "s3", "sesv2"] },
     { name = "httpx2" },
     { name = "pyright" },
     { name = "pytest" },
@@ -220,7 +223,7 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "boto3-stubs", extras = ["s3", "cognito-idp"], specifier = ">=1.43.103" },
+    { name = "boto3-stubs", extras = ["s3", "cognito-idp", "sesv2"], specifier = ">=1.43.103" },
     { name = "httpx2", specifier = ">=2.14.0" },
     { name = "pyright", specifier = ">=1.1.414" },
     { name = "pytest", specifier = ">=8.4" },
@@ -450,6 +453,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/97/3b/8ca4c299090b3a7fe97c6db8e17a6d7db92cb9b456804e59426ddea84824/mypy_boto3_s3-1.43.93.tar.gz", hash = "sha256:858e1ffe738ece3fa83ebc2b50f19aa53d0d69c1084739b37ec671b060713192", size = 79411, upload-time = "2026-09-11T19:44:36.959Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/f1/7ebc5d419bda7ab80dba0e59d5484a70229e617cf346665882f70fa499c3/mypy_boto3_s3-1.43.93-py3-none-any.whl", hash = "sha256:52be1672a8b65ff3a1f779b46f7ed4fab85e78f15b353ce7eb5e20a9f15e7b9b", size = 86721, upload-time = "2026-09-11T19:44:35.263Z" },
+]
+
+[[package]]
+name = "mypy-boto3-sesv2"
+version = "1.43.110"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/1a/ea/7c18bbb390a809c9d83283813d7562c4117cd13d39a3f6bcb3181b8ec67c/mypy_boto3_sesv2-1.43.110.tar.gz", hash = "sha256:72ac73bab29fc1bad5c185fdf505db6d5a5fd64b9d5e13f53e41457f43d840ff", size = 49850, upload-time = "2026-10-08T22:26:42.97Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d7/2b/06d3482009a7f51501910609d0a1c170dd4ad44e5e14d17a43aeffd833c4/mypy_boto3_sesv2-1.43.110-py3-none-any.whl", hash = "sha256:26ad1faf751aa0ef7c7e3ef65d171d9221b4b766f03d35460b7ffb4ddf780445", size = 55700, upload-time = "2026-10-08T22:26:40.447Z" },
 ]
 
 [[package]]
