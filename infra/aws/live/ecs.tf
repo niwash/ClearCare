@@ -42,6 +42,7 @@ locals {
   rds_ca_mount      = { sourceVolume = "rds-ca", containerPath = "/rds-ca", readOnly = true }
   rds_ca_dependency = { containerName = "rds-ca", condition = "SUCCESS" }
 
+  site_url = "https://${var.site_hostname}"
   jdbc_url = "jdbc:postgresql://${aws_db_instance.main.address}:${aws_db_instance.main.port}/clearcare?sslmode=verify-full&sslrootcert=${local.rds_ca_file}"
   libpq_environment = [
     { name = "PGHOST", value = aws_db_instance.main.address },
@@ -95,7 +96,7 @@ resource "aws_ecs_task_definition" "web" {
         # The public address for the sign-in URLs Cognito must match. Behind the load balancer a
         # request's URL carries the container's own address (0.0.0.0:3000), which Auth.js would
         # otherwise build its callback URLs from.
-        { name = "AUTH_URL", value = "https://${var.site_hostname}" },
+        { name = "AUTH_URL", value = local.site_url },
         # Public accounts (CCARE-183), empty until the production pool exists. While any of them is
         # missing the account controls stay hidden and the authentication routes answer 503, so the
         # site behaves exactly as it does today.
@@ -224,6 +225,10 @@ resource "aws_ecs_task_definition" "pipeline" {
         { name = "PGUSER", value = local.database_logins.pipeline },
         { name = "CLEARCARE_CRAWL", value = "all" },
         { name = "CLEARCARE_AMENITIES", value = var.amenities_enabled ? "on" : "off" },
+        { name = "CLEARCARE_ALERTS", value = local.alerts_enabled ? "on" : "off" },
+        { name = "CLEARCARE_ALERTS_FROM", value = var.alerts_from },
+        { name = "CLEARCARE_COGNITO_USER_POOL_ID", value = var.cognito_user_pool_id },
+        { name = "CLEARCARE_SITE_URL", value = local.site_url },
         # The task role's credentials, not keys (iam.tf).
         { name = "CLEARCARE_S3_AUTH", value = "default" },
         { name = "CLEARCARE_S3_BUCKET", value = aws_s3_bucket.bucket["raw"].id },
