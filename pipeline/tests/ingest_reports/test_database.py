@@ -27,6 +27,8 @@ from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.split_commitments import backfill as split_commitments
 from tests.database import (
     API,
+    Connection,
+    Database,
     MIGRATOR,
     PASSWORDS,
     PIPELINE,
@@ -478,7 +480,7 @@ EVENTS = (
 )
 
 
-def _seed_packages(database, deactivate: str | None = None) -> None:
+def _seed_packages(database: Database, deactivate: str | None = None) -> None:
     """Inserts the three generic packages, as the owner, one deactivated."""
     with database.connect(MIGRATOR) as seed:
         seed.execute("SET ROLE clearcare_owner")
@@ -491,11 +493,14 @@ def _seed_packages(database, deactivate: str | None = None) -> None:
             )
 
 
-def _stored_file(connection, name: str) -> int:
+def _stored_file(connection: Connection, name: str) -> int:
     """Stores one report download and returns its id."""
     row = connection.execute(
-        STORE, (f"https://example.test/{name}.pdf", hashlib.sha256(
-            name.encode()).hexdigest())
+        STORE,
+        (
+            f"https://example.test/{name}.pdf",
+            hashlib.sha256(name.encode()).hexdigest(),
+        ),
     ).fetchone()
     assert row is not None
     return row[0]
