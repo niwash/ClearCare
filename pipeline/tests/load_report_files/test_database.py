@@ -351,6 +351,22 @@ def test_a_report_that_comes_back_onto_the_list_is_still_listed_again(
     assert _still_listed(database) == {"a.pdf": True, "b.pdf": True}
 
 
+def test_a_centre_whose_page_lists_nothing_has_every_report_marked(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34")
+    _download_run(
+        tmp_path, _report("a.pdf", "a" * 64), _report("b.pdf", "b" * 64)
+    )
+    _load(tmp_path)
+    # A read that worked and listed no report: both have left.
+    _download_run(tmp_path, fetched_at="2026-10-03T09:00:00+00:00")
+
+    _load(tmp_path)
+
+    assert _still_listed(database) == {"a.pdf": False, "b.pdf": False}
+
+
 def test_a_centre_with_no_page_read_that_worked_keeps_its_marks(
     database: Database, tmp_path: Path
 ) -> None:
