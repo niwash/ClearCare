@@ -14,6 +14,7 @@ row id and the message id, never the address.
 """
 
 import logging
+import re
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from html import escape
@@ -23,6 +24,10 @@ from typing import Protocol
 from clearcare_pipeline.send_alerts.settings import Links
 
 logger = logging.getLogger(__name__)
+
+# The unsubscribe footer line, whose address is the account's signed-out
+# token: a capability, and logs are read by more people than an inbox.
+UNSUBSCRIBE_LINE = re.compile(r"(Unsubscribe from all alerts: )\S+")
 
 SUBJECT = "New inspection reports published | ClearCare"
 
@@ -53,14 +58,17 @@ class LogSender:
     def send(self, to: str, subject: str, text: str, html: str) -> str:
         """Logs the email and returns a fake message id.
 
-        The log carries the subject and the plain-text body, and no
-        address, as ADR-0034 fixes; the caller's own lines name the
-        account by id.
+        The log carries the subject and the plain-text body with the
+        unsubscribe address redacted, and no recipient address, as
+        ADR-0034 fixes; the caller's own lines name the account by id.
         """
         del to, html
         message_id = f"log-{next(self._ids):06d}"
         logger.info(
-            "would send email %s\nsubject: %s\n%s", message_id, subject, text
+            "would send email %s\nsubject: %s\n%s",
+            message_id,
+            subject,
+            UNSUBSCRIBE_LINE.sub(r"\1[redacted]", text),
         )
         return message_id
 

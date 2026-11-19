@@ -61,6 +61,7 @@ class FakeEvents:
         self.centre_names = dict(centre_names or {})
         self.county_names = dict(county_names or {})
         self.tokens: dict[int, str] = {}
+        self.package_ids = {"CENTRE": 1, "COUNTY": 2, "ALL": 3}
 
     def requeue_processing(self) -> int:
         requeued = 0
@@ -191,6 +192,31 @@ class FakeEvents:
             if receipt["status"] in ("pending", "failed")
             and receipt["retry_count"] < ATTEMPT_CAP
         ]
+
+    def still_subscribed(self, receipt_ids: Sequence[int]) -> list[int]:
+        kept: list[int] = []
+        for receipt_id in receipt_ids:
+            receipt = next(
+                (r for r in self.receipts if r["id"] == receipt_id), None
+            )
+            if receipt is None:
+                continue
+            meta = receipt["metadata"]
+            if not meta:
+                scope, target = "ALL", []
+            elif "centre_id" in meta:
+                scope, target = "CENTRE", [dict(meta)]
+            else:
+                scope, target = "COUNTY", [dict(meta)]
+            covered = any(
+                subscription["is_active"]
+                and subscription["package_id"] == self.package_ids[scope]
+                and subscription["metadata"] == target
+                for subscription in self.subscriptions
+            )
+            if covered:
+                kept.append(receipt_id)
+        return kept
 
     def mark_sent(self, receipt_ids: Sequence[int]) -> None:
         for receipt in self.receipts:

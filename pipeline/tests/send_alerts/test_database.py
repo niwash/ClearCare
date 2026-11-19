@@ -359,3 +359,102 @@ def test_an_all_reports_only_account_gets_the_generic_everywhere_section(
             in caplog.text
         )
         assert "Fern Valley Nursing Home" not in caplog.text
+
+
+def test_a_receipt_for_a_cancelled_subscription_is_skipped_not_sent() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        user_id = _user(database, "sub-one")
+        _subscription(database, user_id, "CENTRE", '[{"centre_id": "117"}]')
+        _centre(connection)
+        _event(connection, "CENTRE", '[{"centre_id": "117"}]')
+        sender = FakeSender(failures=99)
+        addresses: Addresses = FakeAddresses(ADDRESS)
+
+        summary = dispatch(
+            Dispatcher(connection),
+            sender,
+            addresses,
+            LINKS,
+            sleep=lambda _s: None,
+        )
+        assert summary.emails_failed == 1
+
+        # The account unsubscribes (the row is deleted) before the retry.
+        with database.connect(MIGRATOR) as seed:
+            seed.execute("SET ROLE clearcare_owner")
+            seed.execute("DELETE FROM clearcare.alert_subscriptions")
+
+        summary = dispatch(
+            Dispatcher(connection),
+            sender,
+            addresses,
+            LINKS,
+            sleep=lambda _s: None,
+        )
+
+        assert summary.receipts_skipped == 1
+        assert summary.emails_sent == 0
+        rows = connection.execute(RECEIPTS).fetchall()
+        assert rows[0][2] == "skipped"
+        assert len(sender.calls) == 3  # the retried pass attempts nothing
+
+
+def test_only_the_cancelled_target_is_skipped_on_retry() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        user_id = _user(database, "sub-one")
+        carlow = connection.execute(
+            "SELECT id FROM clearcare.county WHERE name = 'Carlow'"
+        ).fetchone()
+        assert carlow is not None
+        _subscription(database, user_id, "CENTRE", '[{"centre_id": "117"}]')
+        _subscription(
+            database, user_id, "COUNTY", f'[{{"county_id": {carlow[0]}}}]'
+        )
+        _centre(connection)
+        _event(connection, "CENTRE", '[{"centre_id": "117"}]')
+        _event(connection, "COUNTY", f'[{{"county_id": {carlow[0]}}}]')
+        sender = FakeSender(failures=99)
+        addresses: Addresses = FakeAddresses(ADDRESS)
+
+        dispatch(
+            Dispatcher(connection),
+            sender,
+            addresses,
+            LINKS,
+            sleep=lambda _s: None,
+        )
+
+        # Only the county subscription is cancelled; the centre one stays.
+        with database.connect(MIGRATOR) as seed:
+            seed.execute("SET ROLE clearcare_owner")
+            seed.execute(
+                "DELETE FROM clearcare.alert_subscriptions s"
+                " USING clearcare.alert_packages p"
+                " WHERE s.alert_package_id = p.id AND p.scope = 'COUNTY'"
+            )
+
+        summary = dispatch(
+            Dispatcher(connection),
+            FakeSender(),
+            addresses,
+            LINKS,
+            sleep=lambda _s: None,
+        )
+
+        # The centre receipt is emailed; the county receipt is skipped.
+        assert summary.emails_sent == 1
+        assert summary.receipts_skipped == 1
+        rows = connection.execute(RECEIPTS).fetchall()
+        kinds = {
+            ("centre" if row[3].get("centre_id") else "county", row[2])
+            for row in rows
+        }
+        assert kinds == {("centre", "sent"), ("county", "skipped")}

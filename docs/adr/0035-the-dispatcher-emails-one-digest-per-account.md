@@ -1,9 +1,13 @@
 # The dispatcher emails one digest per account, gated and owed by receipts
 
 The dispatcher is a pipeline stage (`send_alerts`) that runs inside the
-schedule: once with the startup stages, and hourly as the fourth job, which
+schedule: once with the startup stages, and as the fourth job, which
 downloads nothing because it reads only the database (ADR-0014's
-download-less stages). A pass requeues every event some stopped run left
+download-less stages). The job's clock is the scheduler's: hourly under
+Compose, and in production once a day, where EventBridge starts the
+pipeline with `--once` at 06:00 UTC, so a failed send waits a day for its
+next attempt and the attempt cap spans days, not hours. A pass requeues
+every event some stopped run left
 claimed, claims a batch of `pending` and `failed` events as `processing`
 (ADR-0034's crash marker, safe to requeue unconditionally because the run
 lock means no other dispatcher is claiming), and then depends on one
