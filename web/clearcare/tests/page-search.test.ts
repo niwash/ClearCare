@@ -53,6 +53,16 @@ describe("a search from a place", () => {
     }
   });
 
+  // Unlike distance, a price needs no point to measure from.
+  test("orders by price with or without a point", () => {
+    for (const params of [{ sort: "price" }, { place: "Swords, Dublin", near: "53.46,-6.22", sort: "price" }]) {
+      const search = readSearch(params);
+
+      assert.equal(search.sort, "price", JSON.stringify(params));
+      assert.equal(search.query.sort, "price", JSON.stringify(params));
+    }
+  });
+
   test("a point with no name for it is still a search", () => {
     assert.equal(hasSearch(readSearch({ near: "53.35,-6.26", sort: "distance" })), true);
   });

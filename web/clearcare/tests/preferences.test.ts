@@ -53,6 +53,16 @@ describe("what is worth saving", () => {
     assert.equal(saved.sort, "name");
     assert.equal(savedSearchDocument(saved).sort_by, "name");
   });
+
+  // A price needs no place, so the order is kept and opens again from the saved search's address.
+  test("a search ordered by price is saved by price", () => {
+    const saved = savedSearchFrom({ county: "", sort: "price", selection: NO_SAVED_SEARCH.selection });
+
+    assert.equal(hasSavedChoices(saved), true);
+    assert.equal(savedSearchDocument(saved).sort_by, "price");
+    assert.equal(parseSavedSearch({ sort_by: "price" })?.sort, "price");
+    assert.equal(savedSearchHref(saved), "/search?sort=price");
+  });
 });
 
 describe("the document the API stores", () => {
