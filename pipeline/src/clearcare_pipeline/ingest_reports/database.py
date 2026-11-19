@@ -272,7 +272,7 @@ class ReportWriter:
 
     def _write_alert_events(
         self,
-        cursor: psycopg.Cursor[Row],
+        cursor: psycopg.Cursor[TupleRow],
         new_reports: Sequence[tuple[int, str]],
     ) -> None:
         """Writes the batch's alert events, inside the batch's transaction.
@@ -330,10 +330,9 @@ class ReportWriter:
             len(new_reports),
         )
 
-
     def _resolve_counties(
         self,
-        cursor: psycopg.Cursor[Row],
+        cursor: psycopg.Cursor[TupleRow],
         new_reports: Sequence[tuple[int, str]],
     ) -> None:
         """Adds the batch's reports to the run's aggregate, counties resolved.
@@ -368,7 +367,10 @@ class ReportWriter:
             )
         for _report_id, centre_id in new_reports:
             self._centres.setdefault(centre_id, None)
-            county_id = counties.get(latest.get(centre_id))
+            county_name = latest.get(centre_id)
+            county_id = (
+                counties.get(county_name) if county_name is not None else None
+            )
             self._reports.append(
                 {"centre_id": centre_id, "county_id": county_id}
             )
@@ -421,5 +423,3 @@ def _text_params(
         )
         for row in text
     ]
-
-
