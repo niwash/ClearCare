@@ -42,6 +42,12 @@ cognito_client_id = ""
 cognito_domain    = ""
 accounts_enabled  = false
 
+# User alerts. See "Switching user alerts on" in ../README.md.
+cognito_user_pool_id = ""
+ses_domain           = ""
+alerts_from          = ""
+alerts_enabled       = false
+
 # Google's browser key for the place suggestions. Empty gives a plain text box;
 # README.md, "Place suggestions".
 google_maps_browser_key = ""

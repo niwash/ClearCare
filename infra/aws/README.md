@@ -83,12 +83,13 @@ A database for trying things out is different: it can start empty, with `deploys
 
 Public accounts live in a Cognito user pool, one root per environment: `cognito/development` and `cognito/production` both call `modules/cognito`. The development root creates the pool, its sign-in domain and one confidential app client for the site to sign in with. `domain_prefix` comes from `terraform.tfvars` because Cognito requires the name to be globally unique.
 
-| Output | Web variable |
+| Pool output | Container variable |
 | --- | --- |
 | `issuer` | `AUTH_COGNITO_ISSUER` |
 | `client_id` | `AUTH_COGNITO_ID` |
 | `client_secret` | `AUTH_COGNITO_SECRET` |
 | `domain` | `COGNITO_DOMAIN` |
+| `user_pool_id` | `CLEARCARE_COGNITO_USER_POOL_ID` (pipeline) |
 
 ```sh
 cd infra/aws/cognito/development
@@ -147,6 +148,7 @@ terraform output -raw issuer                    # cognito_issuer in live/terrafo
 terraform output -raw client_id                 # cognito_client_id
 terraform output -raw domain                    # cognito_domain
 terraform output -raw client_secret             # the client secret below, kept out of the shell history
+terraform output -raw user_pool_id              # cognito_user_pool_id for user alerts
 ```
 
 ```hcl
@@ -181,6 +183,19 @@ terraform apply
 ```
 
 Then run the deploy workflow, which replaces the web task definition and rolls the service. The controls appear once the new task is healthy.
+
+### Switching user alerts on
+
+Set the pipeline's alert settings in `infra/aws/live/terraform.tfvars`.
+
+| Variable | Production value |
+| --- | --- |
+| `cognito_user_pool_id` | The pool ID from the step above |
+| `ses_domain` | `clearcare.ie`, the domain already verified for Cognito mail |
+| `alerts_from` | A From line on that domain, such as `ClearCare <alerts@clearcare.ie>` |
+| `alerts_enabled` | `false` by default |
+
+An empty pool ID, domain or From line keeps alerts off. When the dispatcher is ready, set `alerts_enabled = true` and run `terraform apply` from `infra/aws/live`. This grants the pipeline task role permission to look up recipients in Cognito and send through SES. Run the AWS deploy workflow for the running commit so the schedule uses the new revision.
 
 ## Database passwords and roles
 

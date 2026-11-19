@@ -13,6 +13,8 @@ locals {
     migrate  = [aws_secretsmanager_secret.database["migrator"].arn]
     restore  = [local.admin_secret_arn]
   }
+
+  alerts_enabled = var.alerts_enabled && var.cognito_user_pool_id != "" && var.ses_domain != "" && var.alerts_from != ""
 }
 
 data "aws_iam_policy_document" "ecs_tasks_assume" {
@@ -87,6 +89,34 @@ resource "aws_iam_role_policy" "pipeline_raw" {
         Effect   = "Allow"
         Action   = ["s3:GetObject", "s3:PutObject"]
         Resource = "${aws_s3_bucket.bucket["raw"].arn}/*"
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "pipeline_alerts" {
+  count = local.alerts_enabled ? 1 : 0
+
+  name = "user-alerts"
+  role = aws_iam_role.task["pipeline"].name
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = "cognito-idp:AdminGetUser"
+        Resource = "arn:aws:cognito-idp:${var.region}:${var.account_id}:userpool/${var.cognito_user_pool_id}"
+      },
+      {
+        Effect   = "Allow"
+        Action   = "ses:SendEmail"
+        Resource = "arn:aws:ses:${var.region}:${var.account_id}:identity/${var.ses_domain}"
+        Condition = {
+          StringEquals = {
+            # SES checks the mailbox in the From line separately from its display name.
+            "ses:FromAddress" = regex("<([^<>]+)>$", var.alerts_from)[0]
+          }
+        }
       },
     ]
   })
