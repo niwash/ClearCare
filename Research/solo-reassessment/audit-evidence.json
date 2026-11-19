@@ -1,0 +1,1058 @@
+[
+  {
+    "report_id": 362,
+    "centre_id": "108",
+    "centre_name": "The Marlay Nursing Home",
+    "inspection_date": "2026-01-14",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/108-the-marlay-nursing-home-14-january-2026.pdf",
+    "sha256": "8a104cf97fa837cad42cc99f5282ad668a395ec3ca269e6ab2d371dad89c675d",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 22",
+        "title": "Insurance",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 24",
+        "title": "Contract for the provision of services",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 29",
+        "title": "Medicines and pharmaceutical services",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Substantially compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 17,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Registration Regulation 4: Application for registration or       Compliant\n renewal of registration\n Regulation 15: Staffing                                     Compliant\n Regulation 16: Training and staff development                Compliant\n Regulation 22: Insurance                                   Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 24: Contract for the provision of services           Compliant\n Regulation 31: Notification of incidents                       Compliant\n Quality and safety\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 18: Food and nutrition                               Substantially\n                                                             compliant\n Regulation 27: Infection control                             Compliant\n Regulation 28: Fire precautions                                  Substantially\n                                                             compliant\n Regulation 29: Medicines and pharmaceutical services          Substantially\n                                                             compliant\n Regulation 5: Individual assessment and care plan            Compliant\n Regulation 6: Health care                                   Compliant\n Regulation 8: Protection                                    Compliant\n Regulation 9: Residents' rights                                   Substantially\n                                                             compliant\n\n\n\n\n\n                                         Page 17 of 28"
+      }
+    ]
+  },
+  {
+    "report_id": 363,
+    "centre_id": "108",
+    "centre_name": "The Marlay Nursing Home",
+    "inspection_date": "2025-03-10",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/108-the-marlay-nursing-home-10-march-2025.pdf",
+    "sha256": "fe72f166a1efd9dad0d0cccd9811029706fe46339db67ed643151243d974bd39",
+    "exported": [
+      {
+        "regulation": "Regulation 19",
+        "title": "Directory of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 22",
+        "title": "Insurance",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 12",
+        "title": "Personal possessions",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 13",
+        "title": "End of life",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 25",
+        "title": "Temporary absence or discharge of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 26",
+        "title": "Risk management",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Substantially compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 15,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 19: Directory of residents                         Compliant\n Regulation 22: Insurance                                   Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 34: Complaints procedure                        Compliant\n Quality and safety\n Regulation 12: Personal possessions                         Compliant\n Regulation 13: End of life                                   Compliant\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 18: Food and nutrition                           Compliant\n Regulation 25: Temporary absence or discharge of residents   Compliant\n Regulation 26: Risk management                            Compliant\n Regulation 27: Infection control                                 Substantially\n                                                             compliant\n Regulation 5: Individual assessment and care plan            Compliant\n Regulation 6: Health care                                   Compliant\n Regulation 8: Protection                                    Compliant\n Regulation 9: Residents' rights                                   Substantially\n                                                             compliant\n\n\n\n\n\n                                         Page 15 of 21"
+      }
+    ]
+  },
+  {
+    "report_id": 1,
+    "centre_id": "1",
+    "centre_name": "Aclare House Nursing Home",
+    "inspection_date": "2026-01-15",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/0001-aclare-house-nursing-home-15-january-2026.pdf",
+    "sha256": "220e8b82583294ce6470a23b807d7baba5004344ed62a0af8d9dd2c7bca9e8a4",
+    "exported": [
+      {
+        "regulation": "Regulation 19",
+        "title": "Directory of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 22",
+        "title": "Insurance",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 24",
+        "title": "Contract for the provision of services",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 25",
+        "title": "Temporary absence or discharge of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 13,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 19: Directory of residents                         Compliant\n Regulation 21: Records                                     Compliant\n Regulation 22: Insurance                                   Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 24: Contract for the provision of services            Substantially\n                                                             compliant\n Regulation 34: Complaints procedure                            Substantially\n                                                             compliant\n Quality and safety\n Regulation 17: Premises                                  Not compliant\n Regulation 25: Temporary absence or discharge of residents   Compliant\n Regulation 28: Fire precautions                                  Substantially\n                                                             compliant\n Regulation 5: Individual assessment and care plan            Compliant\n\n\n\n\n\n                                         Page 13 of 19"
+      }
+    ]
+  },
+  {
+    "report_id": 2,
+    "centre_id": "1",
+    "centre_name": "Aclare House Nursing Home",
+    "inspection_date": "2025-02-26",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/1-aclare-house-nursing-home-26-february-2025.pdf",
+    "sha256": "39e0b877a3258640014d52f7f6493c170df72f81c9470054a37874818a7246e1",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 4",
+        "title": "Written policies and procedures",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 26",
+        "title": "Risk management",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 15,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 15: Staffing                                     Compliant\n Regulation 16: Training and staff development                Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 4: Written policies and procedures                 Compliant\n Quality and safety\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 26: Risk management                            Compliant\n Regulation 28: Fire precautions                            Not compliant\n Regulation 6: Health care                                   Compliant\n Regulation 7: Managing behaviour that is challenging          Compliant\n Regulation 9: Residents' rights                              Compliant\n\n\n\n\n\n                                         Page 15 of 20"
+      }
+    ]
+  },
+  {
+    "report_id": 990,
+    "centre_id": "329",
+    "centre_name": "Claremount Nursing Home",
+    "inspection_date": "2024-03-04",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/329-claremount-nursing-home-04-march-2024.pdf",
+    "sha256": "ab3c06dda9d47966deaf7112e84c0cbe3aa5c3f8259684a0810bc63b540b972e",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 19",
+        "title": "Directory of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 24",
+        "title": "Contract for the provision of services",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 4",
+        "title": "Written policies and procedures",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 12",
+        "title": "Personal possessions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 24",
+        "title": "Contract for the provision of services",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 4",
+        "title": "Written policies and procedures",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 12",
+        "title": "Personal possessions",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Not Compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Substantially Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Not Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 23,
+        "text": " for residents to access their money at the weekend and on bank holidays. Therefore\n the inspectors were not assured that residents could access their money if required.\n\n\n\n\n Judgment: Not compliant\n\n\n\nAppendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Registration Regulation 4: Application for registration or        Substantially\n renewal of registration                                       compliant\n Regulation 15: Staffing                                          Substantially\n                                                             compliant\n Regulation 16: Training and staff development               Not compliant\n Regulation 19: Directory of residents                         Compliant\n Regulation 21: Records                                          Substantially\n                                                             compliant\n Regulation 23: Governance and management                Not compliant\n Regulation 24: Contract for the provision of services            Substantially\n                                                             compliant\n Regulation 31: Notification of incidents                      Not compliant\n Regulation 34: Complaints procedure                            Substantially\n                                                             compliant\n Regulation 4: Written policies and procedures                   Substantially\n                                                             compliant\n Quality and safety\n Regulation 12: Personal possessions                             Substantially\n                                                             compliant\n Regulation 17: Premises                                  Not compliant\n Regulation 18: Food and nutrition                               Substantially\n                                                             compliant\n Regulation 27: Infection control                            Not compliant\n Regulation 28: Fire precautions                            Not compliant\n Regulation 5: Individual assessment and care plan            Not compliant\n Regulation 6: Health care                                        Substantially\n                                                             compliant\n\n\n                                         Page 23 of 44"
+      },
+      {
+        "page": 24,
+        "text": " Regulation 7: Managing behaviour that is challenging           Substantially\n                                                             compliant\n Regulation 9: Residents' rights                             Not compliant\n\n\n\n\n\n"
+      }
+    ]
+  },
+  {
+    "report_id": 989,
+    "centre_id": "329",
+    "centre_name": "Claremount Nursing Home",
+    "inspection_date": "2025-02-07",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/329-claremount-nursing-home-07-february-2025.pdf",
+    "sha256": "b75300e7adf185383739ef7984a2ed231b1f9252227974ba166966c2c6c9cad8",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 10",
+        "title": "Communication difficulties",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Not compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 16,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Registration Regulation 7: Applications by registered          Compliant\n providers for the variation or removal of conditions of\n registration\n Regulation 15: Staffing                                     Compliant\n Regulation 16: Training and staff development                  Substantially\n                                                             compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 31: Notification of incidents                      Not compliant\n Regulation 34: Complaints procedure                        Compliant\n Quality and safety\n Regulation 10: Communication difficulties                    Compliant\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 27: Infection control                            Not compliant\n Regulation 28: Fire precautions                                  Substantially\n                                                             compliant\n Regulation 5: Individual assessment and care plan            Compliant\n Regulation 8: Protection                                    Compliant\n Regulation 9: Residents' rights                             Not compliant\n\n\n\n\n\n                                         Page 16 of 25"
+      }
+    ]
+  },
+  {
+    "report_id": 374,
+    "centre_id": "5800",
+    "centre_name": "TLC Carton",
+    "inspection_date": "2024-01-19",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/5800-tlc-carton-19-january-2024.pdf",
+    "sha256": "da3905f95ef8a680b887d19fc56d9415c849e313beed2a91e3817341d1627a08",
+    "exported": [
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Not compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 12,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 23: Governance and management                Not compliant\n Quality and safety\n Regulation 27: Infection control                            Not compliant\n\n\n\n\n\n                                         Page 12 of 17"
+      }
+    ]
+  },
+  {
+    "report_id": 373,
+    "centre_id": "5800",
+    "centre_name": "TLC Carton",
+    "inspection_date": "2024-02-15",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/5800-tlc-carton-15-february-2024.pdf",
+    "sha256": "00b19570ad35e4a8c6de052f6fde687acb272ba8c16680ce2301d84a14480ca1",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 3",
+        "title": "Statement of purpose",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 4",
+        "title": "Written policies and procedures",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 13",
+        "title": "End of life",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 29",
+        "title": "Medicines and pharmaceutical services",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Not compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 21,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Registration Regulation 7: Applications by registered          Compliant\n providers for the variation or removal of conditions of\n registration\n Regulation 15: Staffing                                   Not compliant\n Regulation 16: Training and staff development               Not compliant\n Regulation 21: Records                                   Not compliant\n Regulation 23: Governance and management                Not compliant\n Regulation 3: Statement of purpose                             Substantially\n                                                             compliant\n Regulation 4: Written policies and procedures                   Substantially\n                                                             compliant\n Quality and safety\n Regulation 13: End of life                                        Substantially\n                                                             compliant\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 18: Food and nutrition                               Substantially\n                                                             compliant\n Regulation 27: Infection control                            Not compliant\n Regulation 29: Medicines and pharmaceutical services         Not compliant\n Regulation 5: Individual assessment and care plan            Not compliant\n Regulation 6: Health care                                 Not compliant\n Regulation 7: Managing behaviour that is challenging         Not compliant\n Regulation 8: Protection                                  Not compliant\n\n\n\n\n\n                                         Page 21 of 38"
+      }
+    ]
+  },
+  {
+    "report_id": 102,
+    "centre_id": "491",
+    "centre_name": "Clonskeagh Community Nursing Unit",
+    "inspection_date": "2023-11-15",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/491-clonskeagh-community-nursing-unit-15-november-2023.pdf",
+    "sha256": "0176af5be013f3318a85cb648ed8e1fb813d251500f139d074b5f53072f25fb8",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 22",
+        "title": "Insurance",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 24",
+        "title": "Contract for the provision of services",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 12",
+        "title": "Personal possessions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 20",
+        "title": "Information for residents",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Substantially compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 15,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 15: Staffing                                     Compliant\n Regulation 22: Insurance                                   Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 24: Contract for the provision of services           Compliant\n Regulation 31: Notification of incidents                       Compliant\n Quality and safety\n Regulation 12: Personal possessions                             Substantially\n                                                             compliant\n Regulation 17: Premises                                  Not compliant\n Regulation 20: Information for residents                         Substantially\n                                                             compliant\n Regulation 6: Health care                                   Compliant\n Regulation 7: Managing behaviour that is challenging           Substantially\n                                                             compliant\n Regulation 8: Protection                                    Compliant\n Regulation 9: Residents' rights                              Compliant\n Regulation 28: Fire precautions                                  Substantially\n                                                             compliant\n\n\n\n\n\n                                         Page 15 of 21"
+      }
+    ]
+  },
+  {
+    "report_id": 101,
+    "centre_id": "491",
+    "centre_name": "Clonskeagh Community Nursing Unit",
+    "inspection_date": "2024-10-02",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/491-clonskeagh-community-nursing-unit-02-october-2024.pdf",
+    "sha256": "45a2cc9aecb9429480d9dcbff0ee47c129dabd4df4e7403827c60627987a8352",
+    "exported": [
+      {
+        "regulation": "Regulation 19",
+        "title": "Directory of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 4",
+        "title": "Written policies and procedures",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 12",
+        "title": "Personal possessions",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 13",
+        "title": "End of life",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 20",
+        "title": "Information for residents",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 13,
+        "text": " Judgment: Compliant\n\n\n\nAppendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 19: Directory of residents                         Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 34: Complaints procedure                        Compliant\n Regulation 4: Written policies and procedures                 Compliant\n Quality and safety\n Regulation 12: Personal possessions                             Substantially\n                                                             compliant\n Regulation 13: End of life                                   Compliant\n Regulation 17: Premises                                  Not compliant\n Regulation 20: Information for residents                         Substantially\n                                                             compliant\n Regulation 28: Fire precautions                              Compliant\n Regulation 5: Individual assessment and care plan              Substantially\n                                                             compliant\n Regulation 6: Health care                                        Substantially\n                                                             compliant\n Regulation 7: Managing behaviour that is challenging          Compliant\n\n\n\n\n\n                                         Page 13 of 20"
+      }
+    ]
+  },
+  {
+    "report_id": 434,
+    "centre_id": "200",
+    "centre_name": "Bishopscourt Residential Care",
+    "inspection_date": "2023-10-10",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/200-bishopscourt-residential-care-11-october-2023.pdf",
+    "sha256": "257159fe4c47735e8e08ceb0e8e9d5e1f1def575427aaa5ff34e605053b557e8",
+    "exported": [
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 10",
+        "title": "Communication difficulties",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 11",
+        "title": "Visits",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 13",
+        "title": "End of life",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 25",
+        "title": "Temporary absence or discharge of residents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 26",
+        "title": "Risk management",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 27",
+        "title": "Infection control",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 28",
+        "title": "Fire precautions",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Not compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 16,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\nCapacity and capability\nRegulation 15: Staffing                                     Compliant\nRegulation 16: Training and staff development                  Substantially\n                                                            compliant\nRegulation 21: Records                                     Compliant\nRegulation 23: Governance and management                   Substantially\n                                                            compliant\nRegulation 31: Notification of incidents                       Compliant\nRegulation 34: Complaints procedure                        Compliant\nQuality and safety\nRegulation 10: Communication difficulties                    Compliant\nRegulation 11: Visits                                       Compliant\nRegulation 13: End of life                                   Compliant\nRegulation 17: Premises                                    Compliant\nRegulation 18: Food and nutrition                           Compliant\nRegulation 25: Temporary absence or discharge of residents   Compliant\nRegulation 26: Risk management                            Compliant\nRegulation 27: Infection control                                 Substantially\n                                                            compliant\nRegulation 28: Fire precautions                              Compliant\nRegulation 5: Individual assessment and care plan            Not compliant\nRegulation 6: Health care                                   Compliant\nRegulation 7: Managing behaviour that is challenging          Compliant\nRegulation 9: Residents' rights                              Compliant\n\n\n\n\n\n                                         Page 16 of 22"
+      }
+    ]
+  },
+  {
+    "report_id": 430,
+    "centre_id": "200",
+    "centre_name": "Bishopscourt Nursing Home Limited",
+    "inspection_date": "2026-02-26",
+    "url": "https://www.hiqa.ie/system/files/inspectionreports/200-bishopscourt-nursing-home-limited-26-february-2026.pdf",
+    "sha256": "042d64f4dd01096b9c985b0a347b6fe7e6902b949d109b74bb18b618c446abee",
+    "exported": [
+      {
+        "regulation": "Regulation 14",
+        "title": "Persons in charge",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 15",
+        "title": "Staffing",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 16",
+        "title": "Training and staff development",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 21",
+        "title": "Records",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 23",
+        "title": "Governance and management",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 31",
+        "title": "Notification of incidents",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 34",
+        "title": "Complaints procedure",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 17",
+        "title": "Premises",
+        "judgment": "Substantially compliant"
+      },
+      {
+        "regulation": "Regulation 18",
+        "title": "Food and nutrition",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 5",
+        "title": "Individual assessment and care plan",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 6",
+        "title": "Health care",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 7",
+        "title": "Managing behaviour that is challenging",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 8",
+        "title": "Protection",
+        "judgment": "Compliant"
+      },
+      {
+        "regulation": "Regulation 9",
+        "title": "Residents' rights",
+        "judgment": "Compliant"
+      }
+    ],
+    "appendix_pages": [
+      {
+        "page": 14,
+        "text": "Appendix 1 - Full list of regulations considered under each dimension\n\nThis inspection was carried out to assess compliance with the Health Act 2007 (as\namended), the Health Act 2007 (Care and Welfare of Residents in Designated\nCentres for Older People) Regulations 2013 (as amended), and the Health Act 2007\n(Registration of Designated Centres for Older People) Regulations 2015 (as\namended) and the regulations considered on this inspection were:\n\n Regulation Title                          Judgment\n\n Capacity and capability\n Regulation 14: Persons in charge                            Compliant\n Regulation 15: Staffing                                     Compliant\n Regulation 16: Training and staff development                  Substantially\n                                                             compliant\n Regulation 21: Records                                     Compliant\n Regulation 23: Governance and management                   Substantially\n                                                             compliant\n Regulation 31: Notification of incidents                       Compliant\n Regulation 34: Complaints procedure                            Substantially\n                                                             compliant\n Quality and safety\n Regulation 17: Premises                                         Substantially\n                                                             compliant\n Regulation 18: Food and nutrition                           Compliant\n Regulation 5: Individual assessment and care plan            Compliant\n Regulation 6: Health care                                   Compliant\n Regulation 7: Managing behaviour that is challenging          Compliant\n Regulation 8: Protection                                    Compliant\n Regulation 9: Residents' rights                              Compliant\n\n\n\n\n\n                                         Page 14 of 20"
+      }
+    ]
+  }
+]
