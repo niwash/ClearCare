@@ -44,8 +44,9 @@ paths:
         whose newest report has no date come last, together with centres
         without a report, and ties are in name order. `sort=distance` orders
         them by `distance_m`, nearest first, and needs `near`; centres without
-        a distance come last, and ties are in name order. Results are not
-        ranked.
+        a distance come last, and ties are in name order. `sort=price` orders
+        them by `contract_price`, lowest first; centres without a price come
+        last, and ties are in name order. Results are not ranked.
 
         An unknown parameter, an unknown item name or sort, `sort=distance`
         without `near`, or a parameter other than the four filters given more
@@ -66,7 +67,7 @@ paths:
           description: The order of the results, as described above.
           schema:
             type: string
-            enum: [name, latest_inspection, distance]
+            enum: [name, latest_inspection, distance, price]
             default: name
         - name: page
           in: query
@@ -110,6 +111,7 @@ paths:
                       activities: ["Music and singing", "Bingo"]
                       facilities: ["Garden", "Lounge/day room"]
                     fair_deal: true
+                    contract_price: 1908.00
                     latest_inspection:
                       date: "2026-01-15"
                     distance_m: null
@@ -951,9 +953,9 @@ paths:
 
         A document the search page could not have produced is refused with 400:
         an option that is not a slug of lower-case letters, digits and hyphens,
-        an order that is not `name` or `latest_inspection`, or more options than
-        a page can hold. Lists that are left out are stored empty, and a missing
-        `sort` is stored as `name`.
+        an order that is not `name`, `latest_inspection` or `price`, or more
+        options than a page can hold. Lists that are left out are stored
+        empty, and a missing `sort` is stored as `name`.
       parameters:
         - name: X-ClearCare-Sub
           in: header
@@ -996,7 +998,7 @@ paths:
               example:
                 title: Bad Request
                 status: 400
-                detail: sort must be name or latest_inspection
+                detail: sort_by must be name, latest_inspection or price
                 instance: /preferences
         "401":
           description: The request did not come from the site.
@@ -1179,7 +1181,7 @@ components:
           $ref: "#/components/schemas/Facets"
         sort:
           type: string
-          enum: [name, latest_inspection, distance]
+          enum: [name, latest_inspection, distance, price]
           description: The order applied to the results.
 
     CentreSummary:
@@ -1189,7 +1191,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [amenities, fair_deal, latest_inspection, distance_m]
+          required: [amenities, fair_deal, contract_price, latest_inspection, distance_m]
           properties:
             amenities:
               description: >
@@ -1207,6 +1209,14 @@ components:
                 Whether a contract price is stored for the centre, the one
                 `GET /centres/{centre_id}` returns as `contract_price`. It
                 does not show that the centre is on the newest HSE list.
+            contract_price:
+              type: [number, "null"]
+              description: >
+                The latest published contract price for the centre, in euro
+                per resident per week: the value `GET /centres/{centre_id}`
+                returns as `contract_price`. null when no price list has been
+                loaded for it.
+              example: 1908.00
             latest_inspection:
               description: >
                 The centre's newest loaded inspection report, or null when
@@ -2721,7 +2731,7 @@ components:
             pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
         sort_by:
           type: string
-          enum: [name, latest_inspection]
+          enum: [name, latest_inspection, price]
           description: >
             `distance` cannot be saved, because it needs `near` and a place is
             never stored.
