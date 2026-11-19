@@ -34,11 +34,33 @@ def test_an_open_gate_reads_every_setting_and_strips_the_slash() -> None:
     assert settings.user_pool_id == "eu-north-1_pool"
 
 
-def test_an_open_gate_without_a_sender_is_refused() -> None:
-    with pytest.raises(SettingsError) as error:
-        Settings.from_env({**ON, "CLEARCARE_ALERTS_SENDER": ""})
+def test_an_open_gate_defaults_to_the_ses_sender() -> None:
+    # The deployment's intent when it flips the gate is real sends; only a
+    # development run overrides the sender to log.
+    settings = Settings.from_env(
+        {
+            "CLEARCARE_ALERTS": "on",
+            "CLEARCARE_SITE_URL": "https://clearcare.test",
+            "CLEARCARE_COGNITO_USER_POOL_ID": "eu-north-1_pool",
+            "CLEARCARE_ALERTS_FROM": "ClearCare <alerts@clearcare.test>",
+        }
+    )
 
-    assert "CLEARCARE_ALERTS_SENDER" in str(error.value)
+    assert settings.sender == "ses"
+    assert settings.from_address == "ClearCare <alerts@clearcare.test>"
+
+
+def test_an_open_gate_without_the_from_line_is_refused() -> None:
+    with pytest.raises(SettingsError) as error:
+        Settings.from_env(
+            {
+                "CLEARCARE_ALERTS": "on",
+                "CLEARCARE_SITE_URL": "https://clearcare.test",
+                "CLEARCARE_COGNITO_USER_POOL_ID": "eu-north-1_pool",
+            }
+        )
+
+    assert "CLEARCARE_ALERTS_FROM" in str(error.value)
 
 
 def test_an_open_gate_without_a_site_url_is_refused() -> None:
@@ -55,20 +77,18 @@ def test_an_open_gate_without_a_pool_is_refused() -> None:
     assert "CLEARCARE_COGNITO_USER_POOL_ID" in str(error.value)
 
 
-def test_the_ses_sender_is_not_offered_until_its_ticket() -> None:
-    # The SES sender is CCARE-268's; until it lands the setting is refused
-    # rather than silently logging where SES was meant to send.
-    with pytest.raises(SettingsError) as error:
-        Settings.from_env({**ON, "CLEARCARE_ALERTS_SENDER": "ses"})
+def test_the_log_sender_skips_the_from_requirement() -> None:
+    settings = Settings.from_env(ON)
 
-    assert "CLEARCARE_ALERTS_SENDER" in str(error.value)
+    assert settings.sender == "log"
+    assert settings.from_address is None
 
 
 @pytest.mark.parametrize(
     ("variable", "value"),
     [
         ("CLEARCARE_ALERTS", "maybe"),
-        ("CLEARCARE_ALERTS_SENDER", "ses"),
+        ("CLEARCARE_ALERTS_SENDER", "smtp"),
     ],
 )
 def test_a_misdeclared_value_is_refused(variable: str, value: str) -> None:

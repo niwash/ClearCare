@@ -57,13 +57,15 @@ rather than a list of centres. No log line carries an address
 (ADR-0034's boundary); the senders log the subject and the plain-text
 body, and the pass logs account row ids and message ids.
 
-What actually sends is `CLEARCARE_ALERTS_SENDER`, which this build holds at
-`log`, the stand-in that writes the rendered email to the stage's log and
-returns a counting fake id, so the whole flow runs with no AWS at all; the
-`ses` value and the SESv2 sender behind it are CCARE-268's to land. A
-gate that is open without a sender, a
-site address (`CLEARCARE_SITE_URL`) or the Cognito pool id
-(`CLEARCARE_COGNITO_USER_POOL_ID`) fails the stage before it touches the
+What actually sends is `CLEARCARE_ALERTS_SENDER`, which defaults to `ses`, the
+real sender through SESv2's `SendEmail` with the From address from
+`CLEARCARE_ALERTS_FROM`, the variable the deployed Terraform sets
+(CCARE-269's wiring; production carries "ClearCare <alerts@clearcare.ie>").
+`log` is the development override: the stand-in that writes the rendered
+email to the stage's log and returns a counting fake id, so the whole flow
+runs with no AWS at all. A gate that is open without a site address
+(`CLEARCARE_SITE_URL`), the Cognito pool id (`CLEARCARE_COGNITO_USER_POOL_ID`)
+or the From line for ses fails the stage before it touches the
 database: a misdeclared deployment must not look like a green pass that
 emails nothing. Each send is attempted up to three times a pass, with
 pauses of thirty seconds and two minutes between, paid out of a shared

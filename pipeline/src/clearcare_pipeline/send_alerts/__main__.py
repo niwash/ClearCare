@@ -11,9 +11,10 @@ import psycopg
 from clearcare_pipeline.exit_codes import EXIT_DONE, EXIT_FAILED, EXIT_RETRY
 from clearcare_pipeline.send_alerts.cognito import AddressBook
 from clearcare_pipeline.send_alerts.database import Dispatcher
-from clearcare_pipeline.send_alerts.email import LogSender
+from clearcare_pipeline.send_alerts.email import LogSender, SesSender
 from clearcare_pipeline.send_alerts.run import Summary, dispatch
 from clearcare_pipeline.send_alerts.settings import (
+    LOG,
     Links,
     Settings,
     SettingsError,
@@ -21,8 +22,18 @@ from clearcare_pipeline.send_alerts.settings import (
 
 if TYPE_CHECKING:
     from mypy_boto3_cognito_idp import CognitoIdentityProviderClient
+    from mypy_boto3_sesv2 import SESV2Client
 
 logger = logging.getLogger(__name__)
+
+
+def _ses_client(region: str) -> "SESV2Client":
+    """Creates an SESv2 client for the region, on the ambient credentials."""
+    # boto3.client is overloaded for every AWS service; only the installed
+    # stubs' types are known, so pyright sees the others as unknown.
+    return boto3.client(  # pyright: ignore[reportUnknownMemberType]
+        "sesv2", region_name=region
+    )
 
 
 def _cognito_client(region: str) -> "CognitoIdentityProviderClient":
@@ -61,10 +72,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     links = None
     if settings.send_enabled:
         # A gate that is open has all of these; from_env checked them.
+        assert settings.sender is not None
         assert settings.site_url is not None
-        # The sender is log: settings accepts nothing else until the SES
-        # sender lands with CCARE-268.
-        sending = LogSender()
+        sending = (
+            LogSender()
+            if settings.sender == LOG
+            else SesSender(
+                _ses_client(settings.region),
+                settings.from_address or "",
+            )
+        )
         addresses = AddressBook(
             _cognito_client(settings.region), settings.user_pool_id or ""
         )
