@@ -405,6 +405,24 @@ def test_a_quote_matches_whatever_its_punctuation_but_not_inside_a_number(
     assert check.evidence_dropped == (0 if found else 1)
 
 
+@pytest.mark.parametrize(
+    ("page", "quote", "found"),
+    [
+        ("Residents can book a massage.", "Mass", False),
+        ("Mass is held weekly.", "Mass", True),
+        ("Holiday care is available.", "day care", False),
+    ],
+    ids=["inside a longer word", "a whole word", "two words"],
+)
+def test_a_quote_of_one_or_two_words_matches_whole_words_only(
+    page: str, quote: str, found: bool
+) -> None:
+    verified, _ = amenities(
+        activities={"Religious services and prayer": [(quote, 1, 1)]}
+    ).verify_evidence([page])
+    assert quotes(verified, "activities") == ([(quote, 1, 1)] if found else [])
+
+
 def test_a_quote_found_nowhere_is_dropped_and_so_is_an_item_left_bare() -> None:
     verified, check = amenities(
         facilities={
