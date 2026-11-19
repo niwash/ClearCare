@@ -175,6 +175,8 @@ export const SHOWN_OPTIONS = 6;
 export const SORTS = [
   { value: "name", label: "Name A–Z" },
   { value: "latest_inspection", label: "Latest inspection" },
+  // By the weekly Fair Deal price; homes without one come last (CCARE-277).
+  { value: "price", label: "Lowest price first" },
   // Only while the search has a point to measure from (near, lib/near.ts): the API refuses it
   // without one.
   { value: "distance", label: "Nearest first" },
@@ -184,7 +186,7 @@ export type SortValue = (typeof SORTS)[number]["value"];
 
 // What's ticked: each group's slugs, in the order of the options. There's no Fair Deal filter: 526 of
 // the 547 homes have a contract price, so it would hardly filter anything. Each result still says
-// "Fair Deal" from the home's fair_deal field.
+// "Fair Deal", with the price, from the home's fair_deal and contract_price fields.
 export interface FilterSelection {
   care: string[];
   room: string[];
