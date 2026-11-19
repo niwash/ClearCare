@@ -453,15 +453,17 @@ def test_commitments_keep_offsets_and_pages_and_are_written_once() -> None:
         assert "effectiveness of this process will be monitored" in rows[-1][2]
 
 
-# The alert events an ingest run writes (CCARE-266). The packages are seeded
-# as the owner, because the pipeline can only read them; V27 lets it read the
-# county table it resolves a report's county from.
+# The alert events an ingest run writes (CCARE-266). V28 seeds the three
+# packages into every migrated database, so a test that needs a particular
+# active set tops it up as the owner (the pipeline can only read them); V27
+# lets the pipeline read the county table it resolves a report's county from.
 
 SEED_PACKAGES = (
     "INSERT INTO clearcare.alert_packages (title, scope, is_active) VALUES"
     " ('Centre alerts', 'CENTRE', true),"
     " ('County alerts', 'COUNTY', true),"
     " ('All alerts', 'ALL', true)"
+    " ON CONFLICT (scope) DO NOTHING"
 )
 
 REGISTER_ENTRY = (
@@ -657,6 +659,25 @@ def test_inactive_packages_and_thematic_reports_raise_no_events() -> None:
 
 
 @pytest.mark.database
+def test_seeded_packages_are_the_three_kinds() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        # V28 seeds the kinds the site shows, active, one row per scope; the
+        # pipeline reads them with the grant V26 gave it.
+        rows = connection.execute(
+            "SELECT scope, title, is_active FROM clearcare.alert_packages"
+            " ORDER BY scope"
+        ).fetchall()
+        assert rows == [
+            ("ALL", "Alerts for every report", True),
+            ("CENTRE", "Alerts for a nursing home", True),
+            ("COUNTY", "Alerts for a county", True),
+        ]
+
+
+@pytest.mark.database
 def test_unmatched_county_is_logged_and_left_without_id(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
@@ -695,6 +716,11 @@ def test_without_packages_no_events_are_written() -> None:
         database.connect(PIPELINE) as connection,
     ):
         connection.autocommit = True
+        # V28 seeds the three packages into every migrated database; remove
+        # them to reach the inert state the feature ships in without seeding.
+        with database.connect(MIGRATOR) as seed:
+            seed.execute("SET ROLE clearcare_owner")
+            seed.execute("DELETE FROM clearcare.alert_packages")
         connection.execute(
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
