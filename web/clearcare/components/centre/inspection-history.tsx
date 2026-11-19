@@ -17,7 +17,7 @@ type InspectionHistoryProps = {
   // The home's events, for the timeline the card opens with (CCARE-235). null when they couldn't be
   // read; the card then has the key and the grid alone.
   events: CentreEvent[] | null;
-  // The page the trails are on, What happened next (CCARE-212).
+  // The page the trails are on, How the home responded (CCARE-212).
   trailsHref: string;
   // When ClearCare last downloaded HIQA's register, said under the timeline (CCARE-258).
   updated?: string;

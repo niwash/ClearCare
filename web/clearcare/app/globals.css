@@ -806,7 +806,7 @@ gmp-advanced-marker:focus-visible,
     display: none !important;
   }
 
-  /* Every closed section prints open: a home's stories (What happened next), a finding's full
+  /* Every closed section prints open: a home's stories (How the home responded), a finding's full
      passage, and the guides' sections below. */
   details::details-content {
     content-visibility: visible !important;

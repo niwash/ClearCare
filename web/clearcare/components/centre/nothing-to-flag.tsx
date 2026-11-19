@@ -1,11 +1,11 @@
 // components/centre/nothing-to-flag.tsx
-// What What to look at first and What happened next show when they have nothing on them (CCARE-212).
+// What Issues found and How the home responded show when they have nothing on them (CCARE-212).
 // Their tabs are always there, so a family finds the same four on every home and doesn't wonder where
 // one went; the page then says why it's empty, briefly, in one of three ways:
 //   - no reports: ClearCare has no inspection reports of the home yet;
 //   - unread: the findings couldn't be read just now, so the page can't say whether anything stands
 //     out, and says that rather than that nothing does;
-//   - clear: the reports were read and no regulation met what What to look at first looks for. Shown
+//   - clear: the reports were read and no regulation met what Issues found looks for. Shown
 //     as the three checks it makes, ticked, so it reads at a glance and isn't taken for more than it
 //     is; the links go to every judgement and the visit questions.
 import { Icon, type IconName } from "@/components/ui/icons";
@@ -20,7 +20,7 @@ export function emptyReason(hasReports: boolean, findingsRead: boolean): EmptyRe
   return findingsRead ? "clear" : "unread";
 }
 
-// What What to look at first checks each regulation for (addFindings, lib/findings.ts), as passed,
+// What Issues found checks each regulation for (addFindings, lib/findings.ts), as passed,
 // and said as what was found rather than as what wasn't.
 function checks(latestInspection: string | undefined, hasCompliancePlan: boolean) {
   return [
@@ -42,7 +42,7 @@ type NothingToFlagProps = {
   // What to ask, the questions to take on a visit.
   visitHref?: string;
   hiqaUrl: string;
-  // For What to look at first's checks: the date of the latest inspection that judged regulations,
+  // For Issues found's checks: the date of the latest inspection that judged regulations,
   // as shown, and whether any of the home's reports has a compliance plan.
   latestInspection?: string;
   hasCompliancePlan?: boolean;
