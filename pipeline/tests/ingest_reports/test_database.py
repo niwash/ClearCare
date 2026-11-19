@@ -25,7 +25,13 @@ from clearcare_pipeline.ingest_reports.models import (
 from clearcare_pipeline.ingest_reports.run import parse_report
 from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.split_commitments import backfill as split_commitments
-from tests.database import API, PASSWORDS, PIPELINE, migrated_database
+from tests.database import (
+    API,
+    MIGRATOR,
+    PASSWORDS,
+    PIPELINE,
+    migrated_database,
+)
 from tests.report_fixtures import write_thematic_report_pdf
 
 SHA = "ab" * 32
@@ -443,3 +449,242 @@ def test_commitments_keep_offsets_and_pages_and_are_written_once() -> None:
         assert rows[0][3] == 25
         assert rows[-1][3:5] == (26, 26)
         assert "effectiveness of this process will be monitored" in rows[-1][2]
+
+
+# The alert events an ingest run writes (CCARE-266). The packages are seeded
+# as the owner, because the pipeline can only read them; V27 lets it read the
+# county table it resolves a report's county from.
+
+SEED_PACKAGES = (
+    "INSERT INTO clearcare.alert_packages (title, scope, is_active) VALUES"
+    " ('Centre alerts', 'CENTRE', true),"
+    " ('County alerts', 'COUNTY', true),"
+    " ('All alerts', 'ALL', true)"
+)
+
+REGISTER_ENTRY = (
+    "INSERT INTO clearcare.register_entry"
+    " (source_file_id, centre_id, source_record, centre_name, address,"
+    " county, hiqa_url, extracted_at, extractor_version)"
+    " VALUES (%s, '117', 1, 'Fern Valley Nursing Home', 'Sample Street',"
+    " %s, 'https://example.test/117', now(), 'test-version')"
+)
+
+EVENTS = (
+    "SELECT p.scope, e.status, e.metadata, e.task_uuid"
+    " FROM clearcare.alert_events e"
+    " JOIN clearcare.alert_packages p ON p.id = e.alert_package_id"
+    " ORDER BY p.scope"
+)
+
+
+def _seed_packages(database, deactivate: str | None = None) -> None:
+    """Inserts the three generic packages, as the owner, one deactivated."""
+    with database.connect(MIGRATOR) as seed:
+        seed.execute("SET ROLE clearcare_owner")
+        seed.execute(SEED_PACKAGES)
+        if deactivate is not None:
+            seed.execute(
+                "UPDATE clearcare.alert_packages SET is_active = false"
+                " WHERE scope = %s",
+                (deactivate,),
+            )
+
+
+def _stored_file(connection, name: str) -> int:
+    """Stores one report download and returns its id."""
+    row = connection.execute(
+        STORE, (f"https://example.test/{name}.pdf", hashlib.sha256(
+            name.encode()).hexdigest())
+    ).fetchone()
+    assert row is not None
+    return row[0]
+
+
+@pytest.mark.database
+def test_batch_writes_one_event_per_active_package() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        _seed_packages(database)
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        source_file_id = _stored_file(connection, "one")
+        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        carlow = connection.execute(
+            "SELECT id FROM clearcare.county WHERE name = 'Carlow'"
+        ).fetchone()
+        assert carlow is not None
+
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(source_file_id)]) == 1
+
+        rows = connection.execute(EVENTS).fetchall()
+        assert len(rows) == 3
+        # One run identity on every event, all pending, shaped per package.
+        assert {row[3] for row in rows} == {rows[0][3]}
+        assert {row[1] for row in rows} == {"pending"}
+        expected = {
+            "CENTRE": [{"centre_id": "117"}],
+            "COUNTY": [{"county_id": carlow[0]}],
+            "ALL": [{"centre_id": "117", "county_id": carlow[0]}],
+        }
+        for scope, _status, metadata, _ in rows:
+            assert metadata == expected[scope]
+        assert {row[0] for row in rows} == {"CENTRE", "COUNTY", "ALL"}
+
+
+@pytest.mark.database
+def test_batches_merge_into_one_event_per_package() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        _seed_packages(database)
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        first = _stored_file(connection, "first")
+        second = _stored_file(connection, "second")
+        connection.execute(REGISTER_ENTRY, (first, "Cavan"))
+        connection.execute(REGISTER_ENTRY, (second, "Cavan"))
+
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(first)]) == 1
+        assert (
+            writer.write_batch(
+                [replace(_report(second), fieldwork_id="MON-0048986")]
+            )
+            == 1
+        )
+
+        rows = connection.execute(EVENTS).fetchall()
+        assert len(rows) == 3
+        cavan = connection.execute(
+            "SELECT id FROM clearcare.county WHERE name = 'Cavan'"
+        ).fetchone()
+        assert cavan is not None
+        expected = {
+            # Two reports at one centre: the centre and the county are listed
+            # once each; the all-package keeps one object per report.
+            "CENTRE": [{"centre_id": "117"}],
+            "COUNTY": [{"county_id": cavan[0]}],
+            "ALL": [
+                {"centre_id": "117", "county_id": cavan[0]},
+                {"centre_id": "117", "county_id": cavan[0]},
+            ],
+        }
+        for scope, _status, metadata, _ in rows:
+            assert metadata == expected[scope]
+
+
+@pytest.mark.database
+def test_rerun_writes_no_events_for_already_loaded_reports() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        _seed_packages(database)
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        source_file_id = _stored_file(connection, "once")
+        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(source_file_id)]) == 1
+
+        # A second run's writer: nothing new is written, so nothing is added
+        # to the first run's events, and the new run writes no events either.
+        again = ReportWriter(connection, "test-version")
+        assert again.write_batch([_report(source_file_id)]) == 0
+        rows = connection.execute(EVENTS).fetchall()
+        assert len(rows) == 3
+        assert all(len(row[2]) == 1 for row in rows)
+
+
+@pytest.mark.database
+def test_inactive_packages_and_thematic_reports_raise_no_events() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        _seed_packages(database, deactivate="ALL")
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        source_file_id = _stored_file(connection, "quiet")
+        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        thematic = ThematicReport(
+            source_file_id=source_file_id,
+            centre_id="117",
+            centre_code="OSV-0000117",
+            inspection_type="Unannounced",
+            inspection_date=date(2025, 8, 21),
+            fieldwork_id="MON-0047312",
+            overall_judgment="Compliant",
+        )
+
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(source_file_id), thematic]) == 2
+
+        rows = connection.execute(EVENTS).fetchall()
+        # The all-package is inactive; the thematic report is in no metadata.
+        assert {row[0] for row in rows} == {"CENTRE", "COUNTY"}
+        assert all(len(row[2]) == 1 for row in rows)
+
+
+@pytest.mark.database
+def test_unmatched_county_is_logged_and_left_without_id(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        _seed_packages(database)
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        source_file_id = _stored_file(connection, "strange")
+        connection.execute(REGISTER_ENTRY, (source_file_id, "Testshire"))
+
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(source_file_id)]) == 1
+
+        rows = connection.execute(EVENTS).fetchall()
+        # No county could be resolved, so the county package matched nothing
+        # and gets no event; centre and all-reports still do.
+        expected = {
+            "CENTRE": [{"centre_id": "117"}],
+            "ALL": [{"centre_id": "117", "county_id": None}],
+        }
+        for scope, _status, metadata, _ in rows:
+            assert metadata == expected[scope]
+        assert "Testshire is not in clearcare.county" in caplog.text
+
+
+@pytest.mark.database
+def test_without_packages_no_events_are_written() -> None:
+    with (
+        migrated_database() as database,
+        database.connect(PIPELINE) as connection,
+    ):
+        connection.autocommit = True
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
+        )
+        source_file_id = _stored_file(connection, "inert")
+        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+
+        writer = ReportWriter(connection, "test-version")
+        assert writer.write_batch([_report(source_file_id)]) == 1
+        assert connection.execute(
+            "SELECT count(*) FROM clearcare.alert_events"
+        ).fetchone() == (0,)
