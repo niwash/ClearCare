@@ -26,8 +26,7 @@ type Feature = {
 // report.jpg     SHVETS production, https://www.pexels.com/photo/elderly-woman-reading-a-document-7545330/
 // family.jpg     Kampus Production, https://www.pexels.com/photo/a-woman-and-an-elderly-man-in-the-living-room-7551665/
 // fair-deal.jpg  Kampus Production, https://www.pexels.com/photo/elderly-couple-sitting-at-the-table-with-documents-and-using-a-smartphone-7477702/
-// phone.jpg      Karolina Grabowska (kaboompics.com), https://www.pexels.com/photo/serious-lady-talking-on-smartphone-and-taking-notes-on-paper-4491477/
-// They only set the mood, so their alt text is empty; the card's words carry the meaning.
+// phone.jpg      Karolina Grabowska (kaboompics.com), https://www.pexels.com/photo/serious-lady-talking-on-smartphone-and-taking-notes-on-paper-4491477/// They only set the mood, so their alt text is empty; the card's words carry the meaning.
 const FEATURES: Feature[] = [
   {
     title: "How choosing a home works",
@@ -58,7 +57,8 @@ const FEATURES: Feature[] = [
   },
   // Last, so the carousel opens on the guides; the search box is right under the carousel.
   {
-    title: "Check a nursing home's record",
+    // Not "a nursing home's record", as on the search under the carousel (CCARE-258).
+    title: "Check what a nursing home offers",
     text: "Every HIQA inspection report, one page per home.",
     href: "/search",
     action: "Search for a home",

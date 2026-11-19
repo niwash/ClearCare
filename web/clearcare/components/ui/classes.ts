@@ -17,7 +17,7 @@ export const fullWidthClass = "mx-[calc(50%-50vw)] w-screen";
 export const widePageColumnClass = "xl:max-w-[96rem]";
 export const widerThanPageClass = "xl:mx-[calc(50%_-_min(50vw,48rem)_+_2rem)]";
 
-// A link styled as a large button, such as "Read guide" or "See contacts": a call to action. On a
+// A link styled as a large button, such as "Read guide" or "See support services": a call to action. On a
 // brand-colour band (brand-band, globals.css) it turns white with brand-colour text. In the
 // standard design it is a pill that lifts a little on hover, and its arrow (an aria-hidden span)
 // nudges forward; the adult-centred design keeps it still (CCARE-179).
@@ -45,6 +45,13 @@ export const smallLinkButtonClass =
 // stronger shadow and a primary edge. Add the layout and padding for where it sits.
 export const linkCardClass =
   "group rounded-2xl border border-line bg-surface text-ink no-underline shadow-sm transition hover:-translate-y-1 hover:border-primary hover:text-ink hover:shadow-lg motion-reduce:transition-none motion-reduce:hover:translate-y-0 adult:rounded-lg adult:shadow-none adult:transition-none adult:hover:translate-y-0";
+
+// A card that lifts a little on hover, like a card picked up, as the action links do: the home page's
+// mission and vision cards and its figures (CCARE-258). Not with reduced motion or in the
+// adult-centred design. Put it on an element inside a reveal-stagger item, not on the item itself:
+// the item's slide-in sets its own transition, which would take over this one.
+export const liftCardClass =
+  "transition hover:-translate-y-1 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0 adult:transition-none adult:hover:translate-y-0 adult:hover:shadow-none";
 
 // A small line over a heading that says who a section is for or where it fits, such as "For
 // families". In the warm accent colour, in capitals in the standard design only.

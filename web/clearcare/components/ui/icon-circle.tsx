@@ -16,17 +16,31 @@ export type Tint = keyof typeof TINT_CLASSES;
 
 // "small" sits beside a name in a list; "large" heads a card.
 // className adds to the circle, such as reveal-pop (globals.css) on the home page's cards.
+// children, when given, is drawn in place of the path: an icon of its own in the same circle, such
+// as the home page's mission and vision icons, whose parts move (CCARE-258).
 export function IconCircle({
   path,
   size = "small",
   tint = "band",
   className = "",
+  children,
 }: {
-  path: string;
+  path?: string;
   size?: "small" | "large";
   tint?: Tint;
   className?: string;
+  children?: React.ReactNode;
 }) {
+  if (children) {
+    return (
+      <span
+        aria-hidden
+        className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${size === "large" ? "size-12" : "size-8"} ${className}`}
+      >
+        {children}
+      </span>
+    );
+  }
   return (
     <span
       aria-hidden

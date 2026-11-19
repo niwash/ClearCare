@@ -14,7 +14,9 @@ export interface InspectionEvent {
   kind: "inspection";
   date: ISODate | null; // null when neither the report nor HIQA's list gives a date that can be right
   inspection_type: string | null; // HIQA's "Type of inspection" as printed: "Unannounced", "Announced"…
-  published_date: ISODate | null; // null when HIQA no longer lists the report
+  published_date: ISODate | null; // null when the report left HIQA's list before the lists were kept
+  // Whether HIQA lists the report on the home's page. Absent from an API deployed before CCARE-274.
+  still_listed?: boolean;
   report_id: number;
   report_url: string;
   // Not from the API: added by markNoLongerOnline when HIQA no longer has the report online, as an
@@ -31,17 +33,20 @@ export interface ThematicInspectionEvent {
   date: ISODate;
   inspection_type: string | null; // null when no type was read from the report
   published_date: ISODate | null;
+  still_listed?: boolean; // as InspectionEvent's
   overall_judgment: string; // as printed
   report_url: string;
   requestHref?: string; // as InspectionEvent's
 }
 
-// A report HIQA lists that ClearCare holds no reading of.
+// A report HIQA lists, or has listed, that ClearCare holds no reading of.
 export interface UnreadReportEvent {
   kind: "unread_report";
   date: ISODate | null;
   published_date: ISODate;
+  still_listed?: boolean; // as InspectionEvent's
   report_url: string;
+  requestHref?: string; // as InspectionEvent's
 }
 
 // Dated by the registration date. Every register change below it is dated by the day the register
@@ -223,9 +228,8 @@ export function foldOlderYears(years: TimelineYear[]): { shown: TimelineYear[]; 
   return { shown: years.slice(0, cut), folded };
 }
 
-// What a row says of the notice an inspection had. Nothing for an unannounced one: the timeline says
-// once that inspections are without notice unless a row says otherwise. So a row with no type has
-// to say the notice isn't known, or that line would call its inspection unannounced. HIQA gives four
+// What a row says of the notice an inspection had. Nothing for an unannounced one: its label says
+// "Unannounced inspection" (timeline.tsx, CCARE-258). A row with no type says the notice isn't known. HIQA gives four
 // weeks' notice of an announced inspection. Any other type is shown as the report prints it.
 export function noticeWords(inspectionType: string | null): string | null {
   switch (inspectionType?.trim().toLowerCase()) {
@@ -258,12 +262,17 @@ export function noListedReport(events: CentreEvent[]) {
 
 // A report HIQA no longer has online (CCARE-236, #198). HIQA keeps three years of reports on a
 // home's page and sends older ones on request, so the report stays on ClearCare, with what was read
-// from it; only its link goes, as hiqa.ie answers 403 for the file. A report read before db/V22 kept
-// HIQA's lists, and no longer listed, has no published date. Until the home's page on hiqa.ie has
-// been read (hiqaCheckedAt null) no report has one, so none is taken to be gone. A report that leaves
-// the list from now on keeps its date: for those the pipeline and the API are to say it is gone.
-function isNoLongerOnline(event: CentreEvent, hiqaCheckedAt: string | null): event is InspectionEvent | ThematicInspectionEvent {
-  return hiqaCheckedAt !== null && (event.kind === "inspection" || event.kind === "thematic_inspection") && event.published_date === null;
+// from it; only its link goes, as hiqa.ie answers 403 for the file. The API says which reports HIQA
+// no longer lists (still_listed, CCARE-274), read or not, and those keep their published date. The
+// site and the API deploy separately, so the site also has to work against an API that doesn't send
+// still_listed yet: the rule from before it stays, that a report with no published date is gone. That
+// is a report read before db/V22 kept HIQA's lists, and no longer listed. Until the home's page on
+// hiqa.ie has been read (hiqaCheckedAt null) no report is known to be listed, so none is taken to be
+// gone.
+function isNoLongerOnline(event: CentreEvent, hiqaCheckedAt: string | null): event is InspectionEvent | ThematicInspectionEvent | UnreadReportEvent {
+  if (hiqaCheckedAt === null) return false;
+  if (event.kind !== "inspection" && event.kind !== "thematic_inspection" && event.kind !== "unread_report") return false;
+  return event.still_listed === false || event.published_date === null;
 }
 
 // The ids of the regulation inspection reports HIQA no longer has online.
@@ -299,53 +308,4 @@ export function missingReportsNote(events: CentreEvent[] | null, hiqaCheckedAt: 
   if (events === null) return "not-added";
   if (!noListedReport(events)) return null;
   return hiqaCheckedAt === null ? "not-added" : "none-published";
-}
-
-// A change to the home itself: to its entry on HIQA's register or to its contract price.
-export type ChangeEvent =
-  | ProviderEvent
-  | NameEvent
-  | BedsEvent
-  | ConditionAddedEvent
-  | ConditionChangedEvent
-  | ConditionRemovedEvent
-  | NoteAddedEvent
-  | NoteRemovedEvent
-  | PriceEvent;
-
-// The kinds the overview's "Recent changes" shows. A kind is listed to be shown, so a new one stays
-// off the overview until someone decides it is news. An inspection isn't: the overview's Inspections
-// card covers it. Nor is a registration, which is renewed as a matter of course.
-const CHANGE_KINDS: Record<ChangeEvent["kind"], true> = {
-  provider: true,
-  name: true,
-  beds: true,
-  condition_added: true,
-  condition_changed: true,
-  condition_removed: true,
-  note_added: true,
-  note_removed: true,
-  price: true,
-};
-
-// How many recent changes the overview shows; the rest are counted and are on the timeline.
-const RECENT_CHANGES_SHOWN = 3;
-
-// The day six months before this one. A month without that day gives its last: six months before
-// 31 August is 28 February, where Date alone would roll over into March.
-function sixMonthsBefore(day: ISODate): ISODate {
-  const [year, month, dayOfMonth] = day.split("-").map(Number);
-  const lastOfMonth = new Date(Date.UTC(year, month - 6, 0)).getUTCDate();
-  return new Date(Date.UTC(year, month - 7, Math.min(dayOfMonth, lastOfMonth))).toISOString().slice(0, 10);
-}
-
-// The home's changes of the last six months, counted from today (a day, "2026-11-12"): the newest
-// three, and how many more there are. A day's changes stay in the API's order.
-export function recentChanges(events: CentreEvent[], today: ISODate): { shown: ChangeEvent[]; more: number } {
-  const since = sixMonthsBefore(today);
-  const recent = events
-    .filter((event): event is ChangeEvent => event.kind in CHANGE_KINDS)
-    .filter((event) => event.date >= since)
-    .sort((a, b) => b.date.localeCompare(a.date));
-  return { shown: recent.slice(0, RECENT_CHANGES_SHOWN), more: Math.max(0, recent.length - RECENT_CHANGES_SHOWN) };
 }

@@ -10,7 +10,7 @@
 // the guides and contacts that help with the rest of the choice at the end, as on a centre page.
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { ClearCompareButton } from "@/components/compare/clear-compare-button";
 import { CollapsibleGroup } from "@/components/compare/collapsible-group";
@@ -128,7 +128,7 @@ export default async function ComparePage({ searchParams }: ComparePageProps) {
       <GuidesBand
         id="deciding-h"
         title="Deciding together"
-        intro="Comparing records is one part of the choice. Our guides help your family with the rest."
+        intro="Comparing homes is one part of the choice. Our guides help your family with the rest."
         guides={DECIDING_GUIDES}
       />
 
@@ -150,14 +150,12 @@ function CompareHero({ csvHref }: { csvHref?: string }) {
       <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
         <Breadcrumb trail={[]} current="Compare Homes" />
         {/* tabIndex -1: focus comes here when a Remove button, or Clear the list, goes. */}
+        {/* The heading on the left and its buttons on the right, on one line where they fit, rather
+            than the buttons under the heading (CCARE-258). */}
+        <div className="flex w-full flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <h1 id="compare-h" tabIndex={-1} className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Compare Homes
         </h1>
-        <div className="flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-3">
-          <p className="max-w-2xl text-ink-muted md:text-lg">
-            Search for homes and add up to {MAX_COMPARED} to your shortlist. See them side by side, so your family can
-            talk the choice through together.
-          </p>
           <div className="flex flex-wrap gap-2">
             {csvHref && (
               // A plain link, so the browser saves the file the route sends rather than opening a page.
@@ -264,11 +262,18 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
             <AddMore room={room} />
           </div>
         )}
-        <div className="min-w-0 flex-1">
+        {/* From lg up, with room for more, each home's column keeps a fifth of the width after the
+            labels (12rem) and the panel takes the rest (CCARE-258): removing a home widened the other
+            columns and left the panel as narrow as before, so the free places looked like nothing.
+            The panel is never narrower than 14rem; with four homes the table gives way to it. */}
+        <div
+          style={{ "--homes": columns.length } as CSSProperties}
+          className={`min-w-0 flex-1 ${room > 0 ? "lg:flex-[0_1_calc(12rem_+_(100%_-_12rem)_*_var(--homes)_/_5)]" : ""}`}
+        >
           <ComparisonTable columns={columns} groups={groups} />
         </div>
         {room > 0 && (
-          <div className="hidden w-56 shrink-0 lg:flex">
+          <div className="hidden min-w-56 flex-1 lg:flex">
             <AddMore room={room} side />
           </div>
         )}
@@ -281,8 +286,8 @@ function Comparison({ columns, showAllRegulations }: { columns: Column[]; showAl
 
       <div className="flex flex-wrap justify-between gap-x-10 gap-y-2 text-small leading-relaxed text-ink-muted">
         <p className="max-w-3xl">
-          Homes are shown in the order you added them. ClearCare does not rate or recommend homes. Uses HIQA inspection
-          reports and register data under the Irish PSI licence (CC BY 4.0), and the HSE&apos;s Fair Deal price lists.
+          Uses HIQA inspection reports and register data under the Irish PSI licence (CC BY 4.0), and the HSE&apos;s Fair
+          Deal price lists.
         </p>
         {room > 0 && (
           <LastSearchLink className="font-semibold tap-target">Add another home in Search</LastSearchLink>
@@ -388,12 +393,14 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       rows: [
         {
           key: "beds",
-          label: "Registered for",
-          hint: "HIQA’s limit, not free beds",
+          // As the home's page says it (CCARE-258): in user testing (P2_1) "Registered for" and
+          // "free beds" weren't understood here.
+          label: "Maximum occupancy",
+          hint: "Contact the home to ask for bed availability",
           numeric: true,
           cells: each(({ centre }) =>
             centre.maximum_occupancy !== null ? (
-              <Value main={`Up to ${centre.maximum_occupancy} residents`} />
+              <Value main={`${centre.maximum_occupancy} residents`} />
             ) : (
               <Value main="Not stated" muted />
             ),
@@ -404,7 +411,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
           key: "eircode",
           label: "Eircode",
           cells: each(({ centre }) =>
-            centre.eircode ? <Value main={formatEircode(centre.eircode)} mono /> : <Value main="Not stated" muted />,
+            centre.eircode ? <Value main={formatEircode(centre.eircode)} /> : <Value main="Not stated" muted />,
           ),
         },
         {
@@ -422,7 +429,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             );
           }),
         },
-        { key: "id", label: "HIQA centre ID", cells: each(({ centre }) => <Value main={centre.centre_id} mono />) },
+        // The HIQA centre ID was a row here; taken off the table (CCARE-258). It is still in the CSV.
       ],
     },
     {
@@ -434,8 +441,10 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       tint: "band",
       intro: (
         <>
-          Read by an AI tool from each home&apos;s inspection report. We&apos;re now checking these, and a home may offer
-          more than its report mentions, so always call the home to confirm anything that matters to you.
+          {/* The home's page's words (centre-amenities.tsx, CCARE-258), as one paragraph in the bar's own
+              text. "We're now checking these" taken out here too. */}
+          Read by an AI tool from each home&apos;s inspection report. AI can make mistakes, so always call the home to
+          confirm, and to ask about anything not listed here.
           {/* The key to the green highlight, where the lists below have one. */}
           {AMENITY_LISTS.some(({ key }) => amenityItems(key).common.size > 0) && (
             <>
@@ -521,13 +530,10 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             if (!column.reports) return <Muted>No reports in ClearCare yet</Muted>;
             const { inspections } = column.reports;
             const latest = inspections.at(-1)!;
-            const since = new Date(inspections[0].date).getUTCFullYear();
             return (
               <>
-                <Value
-                  main={formatDate(latest.date)}
-                  sub={`${inspections.length} ${inspections.length === 1 ? "report" : "reports"} since ${since}`}
-                />
+                {/* The date alone; "N reports since Y" taken out to keep the row short (CCARE-258). */}
+                <Value main={formatDate(latest.date)} />
                 {latestInspection.marked[columns.indexOf(column)] && (
                   <Marker>
                     {latestInspection.joint ? "Joint most recently inspected" : "Most recently inspected"}
@@ -540,14 +546,12 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
         {
           key: "not-compliant",
           label: "Not compliant at the latest inspection",
-          hint: "Regulations HIQA judged not compliant. The home's record says what it promised to do.",
           cells: eachJudged((reports) => <RegulationCount regulations={notCompliantAtLatest(reports)} />),
         },
         {
           key: "repeated",
           // Worded as the centre page's highlights word the same rule.
           label: "Not compliant at 2 inspections in a row",
-          hint: "The last 2 inspections that checked the regulation",
           cells: eachJudged((reports) => <RegulationCount regulations={repeatedNotCompliant(reports)} />),
         },
       ],
@@ -556,12 +560,17 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
       title: "Results by regulation",
       icon: ICON_PATHS.results,
       tint: "rose",
-      // No key to the icons: every result says its judgment in words beside its icon.
+      // A key to the marks, once, in the group's heading, so each result is its mark and its date rather
+      // than the judgment's words in every cell (CCARE-258). Screen readers still hear the words.
       intro: (
-        <>
-          HIQA checks only some regulations at each inspection: &ldquo;Not assessed&rdquo; means none of the home&apos;s
-          inspections in ClearCare checked it.
-        </>
+        <ul aria-label="Key" className="flex flex-wrap gap-x-4 gap-y-1">
+          {(["compliant", "substantially-compliant", "not-compliant", "not-assessed"] as const).map((judgement) => (
+            <li key={judgement} className="flex items-center gap-1.5 text-ink">
+              <JudgementIcon judgement={judgement} size={12} />
+              {JUDGEMENT_LABELS[judgement]}
+            </li>
+          ))}
+        </ul>
       ),
       rows: [
         ...(rows.length === 0
@@ -752,7 +761,8 @@ function NextStep({ centre }: { centre: CentreDetail }) {
   return (
     <div className="flex flex-col gap-1.5">
       <Link href={`/centres/${centre.centre_id}`} className={`${nextStepClass} bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary`}>
-        View full record
+        {/* Not "record" (CCARE-258): the word threw a participant in user testing (P2_1). */}
+        View this home&apos;s page
       </Link>
       <a href={centre.hiqa_url} className={`${nextStepClass} border border-line text-ink hover:border-primary hover:text-ink`}>
         View on the HIQA website
@@ -851,7 +861,7 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
           </div>
         </details>
       ))}
-      <p className="text-sm text-ink-muted">Each home&apos;s full record has its inspection history and reports.</p>
+      <p className="text-sm text-ink-muted">Each home&apos;s own page has its inspection history and reports.</p>
     </div>
   );
 }
@@ -868,8 +878,9 @@ function shortAddress({ centre_name, address, eircode }: CentreDetail) {
   return short;
 }
 
-function Value({ main, sub, big = false, mono = false, muted = false }: { main: string; sub?: string; big?: boolean; mono?: boolean; muted?: boolean }) {
-  const mainClass = big ? "text-lg font-bold adult:text-xl" : mono ? "font-mono" : muted ? "text-ink-muted" : "font-medium";
+function Value({ main, sub, big = false, muted = false }: { main: string; sub?: string; big?: boolean; muted?: boolean }) {
+  // No monospace for an Eircode (CCARE-258): it stood out from the address beside it.
+  const mainClass = big ? "text-lg font-bold adult:text-xl" : muted ? "text-ink-muted" : "font-medium";
   return (
     <>
       <span className={mainClass}>{main}</span>
@@ -911,7 +922,7 @@ function ResultCell({ result, column }: { result: LatestResult | null; column: C
           <JudgementIcon judgement="not-assessed" />
         </span>
         <span>
-          {JUDGEMENT_LABELS["not-assessed"]}
+          <span className="sr-only">{JUDGEMENT_LABELS["not-assessed"]}</span>
           <span className="block text-sm text-ink-muted">
             {inspected === 0
               ? NONE_JUDGED
@@ -929,9 +940,11 @@ function ResultCell({ result, column }: { result: LatestResult | null; column: C
       <span className="flex h-6 items-center">
         <JudgementIcon judgement={result.judgement} />
       </span>
+      {/* The mark and the date; the judgment's words are in the group's key (CCARE-258), and here for
+          screen readers. */}
       <span>
-        {JUDGEMENT_LABELS[result.judgement]}
-        <span className="block text-sm text-ink-muted">{formatMonth(result.date)}</span>
+        <span className="sr-only">{JUDGEMENT_LABELS[result.judgement]}, </span>
+        <span>{formatMonth(result.date)}</span>
       </span>
     </span>
   );

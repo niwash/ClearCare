@@ -2,15 +2,17 @@ import type { Metadata } from "next";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import type { ReactNode } from "react";
 import { GuidesBand } from "@/components/guides/guide-ending";
-import { fullWidthClass, smallLinkButtonClass } from "@/components/ui/classes";
+import { ExternalIcon } from "@/components/ui/external-icon";
+import { OfficeFinder } from "@/components/contacts/office-finder";
+import { PhoneLine } from "@/components/contacts/phone-line";
+import { fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
-import { Chevron } from "@/components/ui/chevron";
 import { getGuide } from "@/lib/guides";
 
 export const metadata: Metadata = {
-  title: "Contacts · ClearCare",
+  title: "Support Services · ClearCare",
   description: "Who to contact about a nursing home in Ireland: regulators, funding, complaints and advocacy.",
 };
 
@@ -25,111 +27,9 @@ type Contact = {
   hours?: string;
 };
 
-// A local HSE Nursing Homes Support Office, which handles Fair Deal applications for its area.
-// Laid out like the HSE's own list: the address one line per row, then every phone line.
-type FairDealOffice = {
-  area: string;
-  address?: string[];
-  phones: string[];
-  email?: string;
-  hours?: string;
-};
-
-// The day the page's contacts were last checked against their sources, shown at the top of the
+// The day the page's contacts were last checked against their sources, shown at the foot of the
 // page. Change it whenever they are checked again.
 const LAST_CHECKED = { iso: "2026-11-13", label: "13 November 2026" };
-
-const FAIR_DEAL_CONTACT_URL ="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/contact/";
-
-// From the HSE's Fair Deal contact page (FAIR_DEAL_CONTACT_URL), checked 13 Nov 2026. Phone numbers
-// are spaced the same way throughout. Longford and Westmeath's listed address is a Tullamore street
-// with a Tipperary Eircode, so it's left out.
-const FAIR_DEAL_OFFICES: FairDealOffice[] = [
-  {
-    area: "Carlow and Kilkenny",
-    address: ["Community Services", "James's Green", "Kilkenny", "R95 RP26"],
-    phones: ["056 778 4761", "056 778 4763", "056 778 4709"],
-  },
-  {
-    area: "Cavan and Monaghan",
-    address: ["HSE Offices", "Town Hall Street", "Cavan", "H12 W3R2"],
-    phones: ["049 437 7119", "049 437 7115", "049 437 7114", "049 437 7113"],
-  },
-  {
-    area: "Cork and Kerry",
-    address: ["Floor 1, Áras Sláinte", "Wilton Road", "Cork", "T12 XRR0"],
-    phones: ["021 492 3536", "021 492 3537", "021 492 3538", "021 492 3539", "021 492 3540", "021 492 3541", "021 492 3542"],
-  },
-  {
-    area: "Donegal",
-    address: ["Donegal PCCC HQ", "St Joseph's Hospital", "Stranorlar, Lifford", "Co. Donegal", "F93 FCR6"],
-    phones: ["074 919 1734", "074 919 1740", "074 919 1737"],
-  },
-  {
-    area: "Dublin North City and County",
-    address: ["Older Person Services", "Nexus Building, Units 4 & 5", "Blanchardstown Corporate Park", "Dublin 15", "D15 CF9K"],
-    phones: ["01 897 6121"],
-  },
-  {
-    area: "Dublin South, Wicklow and Kildare",
-    address: ["Hawthorn House", "Millennium Park", "Naas, Co. Kildare", "W91 FY53"],
-    phones: ["045 920 000"],
-  },
-  {
-    area: "Galway",
-    address: ["Lá Nua, Ballybane Neighbourhood Village", "Castlepark Road, Ballybane", "Galway", "H91 VE03"],
-    phones: ["091 748 490"],
-    email: "fairdeal.galway@hse.ie",
-    hours: "Phones open 10am–12pm and 3–4pm, Monday to Friday",
-  },
-  {
-    area: "Laois and Offaly",
-    address: ["Bury Quay", "Tullamore", "Co. Offaly", "R35 NF29"],
-    phones: ["057 935 9734", "057 932 7832"],
-  },
-  {
-    area: "Limerick, Clare and North Tipperary",
-    address: ["St Joseph's Hospital", "Mulgrave Street", "Limerick", "V94 C8DV"],
-    phones: ["061 461 499"],
-  },
-  { area: "Longford and Westmeath", phones: ["044 939 4995"], email: "LPF.RespiteLW@hse.ie" },
-  {
-    area: "Louth and Meath",
-    address: ["Unit 3, Ardee Business Park", "Hale Street, Ardee", "Co. Louth", "A92 VC53"],
-    phones: ["041 687 1515", "041 687 1525"],
-  },
-  {
-    area: "Mayo",
-    address: ["St Mary's Headquarters", "Castlebar", "Co. Mayo", "F23 HP58"],
-    phones: ["094 904 9176"],
-  },
-  {
-    area: "Roscommon",
-    address: ["Government Buildings", "Convent Road", "Roscommon", "F42 VX53"],
-    phones: ["090 663 7561", "090 663 7546"],
-  },
-  {
-    area: "Sligo and Leitrim",
-    address: ["Markievicz House", "Barrack Street", "Sligo", "F91 XC84"],
-    phones: ["071 932 1337"],
-  },
-  {
-    // The HSE lists it as Tipperary South; North Tipperary is the Limerick office's.
-    area: "South Tipperary",
-    address: ["Community Care Centre", "Western Road, Clonmel", "Co. Tipperary", "E91 HT96"],
-    phones: ["052 617 7283"],
-  },
-  {
-    area: "Waterford",
-    address: ["Waterford Community Services", "Cork Road", "Waterford", "X91 VX09"],
-    phones: ["051 842 963"],
-  },
-  {
-    area: "Wexford",
-    address: ["Wexford Community Service", "Georges Street", "Wexford", "Y35 AW96"],
-    phones: ["053 911 4316", "053 911 4315"],
-  },
-];
 
 // General Fair Deal questions, before and alongside the local office.
 const FAIR_DEAL_CONTACTS: Contact[] = [
@@ -151,29 +51,17 @@ const FAIR_DEAL_CONTACTS: Contact[] = [
   },
 ];
 
-const INSPECTION_CONTACTS: Contact[] = [
-  {
-    name: "HIQA (Health Information and Quality Authority)",
-    kind: "regulator",
-    purpose: "Registers and inspects nursing homes, and takes concerns about them.",
-    website: "https://www.hiqa.ie",
-    phone: "021 240 9646",
-    email: "concerns@hiqa.ie",
-  },
-];
-
-// The groups after Fair Deal.
-const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string; icon: IconName; tint: Tint; contacts: Contact[] }[] = [
+// The sections after Fair Deal, in order. Inspections and Concerns last (CCARE-258).
+const CONTACT_GROUPS: { id: SectionId; title: string; icon: IconName; tint: Tint; contacts: Contact[] }[] = [
   {
     id: "dementia",
     title: "Dementia",
-    intro: "Helplines, information and local services for people living with dementia and their families.",
     icon: "talk",
     tint: "rose",
     contacts: [
       {
         name: "The Alzheimer Society of Ireland",
-        kind: "charity",
+    kind: "charity",
         purpose: "Dementia helpline, day care, carer training and support groups.",
         website: "https://alzheimer.ie",
         phone: "1800 341 341",
@@ -182,14 +70,14 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
       },
       {
         name: "Dementia: Understand Together",
-        kind: "public-body",
+    kind: "public-body",
         purpose: "HSE dementia information and a directory of local services.",
         website: "https://www.understandtogether.ie",
         email: "understandtogether@hse.ie",
       },
       {
         name: "Dementia Ireland",
-        kind: "charity",
+    kind: "charity",
         purpose: "Campaigns for better dementia care. Runs training and conferences.",
         website: "https://dementiaireland.com",
         phone: "086 361 2907",
@@ -200,13 +88,12 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
   {
     id: "support",
     title: "Support and Advocacy",
-    intro: "People who can listen, support you and speak up for the person moving.",
     icon: "home",
     tint: "sage",
     contacts: [
       {
         name: "Family Carers Ireland",
-        kind: "charity",
+    kind: "charity",
         purpose: "Support and a careline for family carers, including during a move into a nursing home.",
         website: "https://familycarers.ie",
         phone: "1800 24 07 24",
@@ -214,7 +101,7 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
       },
       {
         name: "Sage Advocacy",
-        kind: "charity",
+    kind: "charity",
         purpose: "Advocacy for older people and adults in residential care.",
         website: "https://www.sageadvocacy.ie",
         phone: "01 536 7330",
@@ -222,7 +109,7 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
       },
       {
         name: "ALONE",
-        kind: "charity",
+    kind: "charity",
         purpose: "Support and befriending services for older people.",
         website: "https://alone.ie",
         phone: "0818 222 024",
@@ -230,124 +117,69 @@ const CONTACT_GROUPS: { id: "dementia" | "support"; title: string; intro: string
       },
     ],
   },
+  {
+    id: "concerns",
+    title: "Inspections and Concerns",
+    icon: "report",
+    tint: "blue",
+    contacts: [
+      {
+        name: "HIQA (Health Information and Quality Authority)",
+    kind: "regulator",
+        purpose: "Registers and inspects nursing homes, and takes concerns about them.",
+        website: "https://www.hiqa.ie",
+        phone: "021 240 9646",
+        email: "concerns@hiqa.ie",
+      },
+    ],
+  },
 ];
 
-// Each contact link is its own 44px row in the adult-centred design (WCAG 2.5.5). A long email
-// wraps onto a second line rather than overflowing the column: cut short, it couldn't be read
-// or copied down.
-const contactLinkClass = "wrap-anywhere adult:block adult:py-2.5";
-
-type SectionId = "fair-deal" | "concerns" | "offices" | "dementia" | "support";
+type SectionId = "fair-deal" | "concerns" | "dementia" | "support";
 
 export default function ContactsPage() {
   return (
     <>
       <ContactsHero />
 
-      {/* Every organisation in view, none behind a fold: there are nine, and a number that has to be
-          looked for is a call not made. Two sections to a row from desktop width, so the page's whole
-          width is used (CCARE-233). */}
-      <div className="grid items-start gap-4 lg:grid-cols-2">
+      {/* Section by section (CCARE-258): each one's heading in a column of its own on the left, its
+          organisations on the right, two to a row, each read top to bottom. Not cards, so nothing is
+          boxed twice. Fair Deal first, with the local offices inside it: in user testing (P2_1) the
+          participant couldn't say what the offices did when they had a section of their own.
+          Applications go to them, so they lead. Flush under the page's top band, cancelling the page's gap. */}
+      <div className="-mt-6 flex flex-col md:-mt-8">
         <ContactSection
           id="fair-deal"
           title="Fair Deal"
-          intro="Questions about paying for care, or help with the application form."
           icon="cost"
           tint="gold"
         >
-          <ContactList contacts={FAIR_DEAL_CONTACTS} />
-        </ContactSection>
-
-        <ContactSection
-          id="concerns"
-          title="Inspections and Concerns"
-          intro="Tell the regulator if something at a home worries you."
-          icon="report"
-          tint="blue"
-        >
-          <ContactList contacts={INSPECTION_CONTACTS} />
-        </ContactSection>
-
-        {/* The full width of the page: seventeen offices, three to a row on a wide screen. */}
-        <ContactSection
-          id="offices"
-          title="Local Nursing Homes Support Offices"
-          intro="Your local office handles Fair Deal applications for its area. Select your area for its address and phone numbers."
-          icon="location"
-          tint="sage"
-          className="lg:col-span-2"
-        >
-          {/* One closed row per office, so a long entry like Cork's seven lines only shows when asked
-              for. items-start: an open office grows without stretching the others in its row. */}
-          <ul className="grid items-start gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {FAIR_DEAL_OFFICES.map((office) => (
-              <li key={office.area} className="rounded-md border border-line">
-                <details className="group/office">
-                  <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-4 px-3 py-2.5 text-sm [&::-webkit-details-marker]:hidden">
-                    <h3 className="font-semibold">{office.area}</h3>
-                    <Chevron className="size-5 shrink-0 text-ink-muted group-open/office:rotate-90" />
-                  </summary>
-                  <div className="flex flex-col gap-2 px-3 pb-3 text-sm">
-                    <div className="flex flex-col gap-1">
-                      {office.address && (
-                        <address className="not-italic text-ink-muted">
-                          {office.address.map((line) => (
-                            <span key={line} className="block">
-                              {line}
-                            </span>
-                          ))}
-                        </address>
-                      )}
-                      {office.hours && <p className="text-ink-muted">{office.hours}</p>}
-                    </div>
-                    <dl className="grid grid-cols-[5.5rem_1fr] content-start gap-x-2 gap-y-0.5 text-ink-muted adult:[&>dt]:py-2.5">
-                      <dt className="flex items-center gap-1.5">
-                        <Icon name="phone" />
-                        Phone
-                      </dt>
-                      <dd className="flex flex-col">
-                        {office.phones.map((phone) => (
-                          <a key={phone} className={contactLinkClass} href={telHref(phone)}>
-                            {phone}
-                          </a>
-                        ))}
-                      </dd>
-                      {office.email && (
-                        <>
-                          <dt className="flex items-center gap-1.5">
-                            <Icon name="email" />
-                            Email
-                          </dt>
-                          <dd className="min-w-0">
-                            <a className={contactLinkClass} href={`mailto:${office.email}`}>
-                              {/* Where a narrow column breaks it first: "LPF.RespiteLW" / "@hse.ie". */}
-                              {office.email.split("@")[0]}
-                              <wbr />@{office.email.split("@").slice(1).join("@")}
-                            </a>
-                          </dd>
-                        </>
-                      )}
-                    </dl>
-                  </div>
-                </details>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs text-ink-muted">
-            Source:{" "}
-            <a href={FAIR_DEAL_CONTACT_URL} className="text-ink-muted adult:text-primary" target="_blank" rel="noopener noreferrer">
-              HSE Fair Deal contacts
-            </a>
-            , checked 13 Nov 2026.
-          </p>
+          <section id="offices" aria-labelledby="offices-h" className="scroll-mt-6">
+            <OfficeFinder>
+              <h3 id="offices-h" className="text-lg font-semibold">
+                Apply through your local office
+              </h3>
+              <p className="text-sm text-ink-muted">
+                Your local HSE Nursing Homes Support Office processes Fair Deal applications for your area.
+              </p>
+            </OfficeFinder>
+          </section>
+          {/* The general helplines, under a line; each one's own words say what it helps with. */}
+          <div className="border-t border-line-soft pt-6">
+            <ContactList contacts={FAIR_DEAL_CONTACTS} />
+          </div>
         </ContactSection>
 
         {CONTACT_GROUPS.map((group) => (
-          <ContactSection key={group.id} id={group.id} title={group.title} intro={group.intro} icon={group.icon} tint={group.tint}>
+          <ContactSection key={group.id} id={group.id} title={group.title} icon={group.icon} tint={group.tint}>
             <ContactList contacts={group.contacts} />
           </ContactSection>
         ))}
       </div>
+
+      {/* The emergency numbers, after the organisations and over the note on when they were checked
+          (CCARE-258). */}
+      <EmergencyStrip />
 
       {/* When the details were last checked, so a reader knows how far to trust them. An "i" in a
           light amber box, as the notes in the guides (CCARE-233). */}
@@ -383,113 +215,137 @@ function ContactsHero() {
   return (
     <section aria-labelledby="contacts-page-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
-        <Breadcrumb trail={[]} current="Contacts" />
+        <Breadcrumb trail={[]} current="Support Services" />
         <h1 id="contacts-page-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Need to talk to someone?
         </h1>
         <p className="max-w-2xl text-ink-muted md:text-lg">
-          These organisations can answer questions about Fair Deal, take a concern about a home, or support you and
-          the person moving.
+          These organisations can help you apply for Fair Deal, support you and the person moving, or take a concern
+          about a home.
         </p>
       </div>
     </section>
   );
 }
 
-function telHref(phone: string) {
-  return `tel:${phone.replaceAll(" ", "")}`;
+// In an emergency, 999 or 112, the same service. A phone icon beside each, as every number on the
+// page has (PhoneLine).
+function EmergencyStrip() {
+  return (
+    <aside
+      aria-labelledby="emergency-h"
+      className="flex flex-col gap-3 rounded-lg border border-on-tint-rose/30 bg-tint-rose px-4 py-3 sm:w-fit sm:flex-row sm:items-center sm:gap-6"
+    >
+      <p id="emergency-h" className="font-semibold text-on-tint-rose">
+        In an emergency, call
+      </p>
+      {/* Read as one sentence: "call 999 or 112", each number with its phone icon. */}
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <PhoneLine phone="999" who="emergency services" />
+        <span className="font-semibold text-on-tint-rose">or</span>
+        <PhoneLine phone="112" who="emergency services" />
+      </div>
+    </aside>
+  );
 }
 
-// A section's card, open: an icon in a circle of its own soft colour, its heading, a line saying
-// what the section is for, then its contacts. The id lets a link elsewhere point to the section;
-// scroll-mt keeps the heading clear of the top of the window. Rounded and lifted off the page like
-// the home page's cards; plain in the adult-centred design.
+// A section: on the left from desktop width, an icon in a circle of its own soft colour with its
+// heading, staying in view while its organisations scroll past
+// on the right. Stacked on a phone. The id lets a link elsewhere point to the section; scroll-mt
+// keeps the heading clear of the top of the window.
 function ContactSection({
   id,
   title,
-  intro,
   icon,
   tint,
-  className = "",
   children,
 }: {
   id: SectionId;
   title: string;
-  intro: string;
   icon: IconName;
   tint: Tint;
-  className?: string;
   children: ReactNode;
 }) {
   return (
-    <section
-      id={id}
-      aria-labelledby={`${id}-h`}
-      className={`flex scroll-mt-6 flex-col gap-4 rounded-2xl border border-line bg-surface p-5 shadow-sm md:p-6 adult:rounded-lg adult:shadow-none ${className}`}
-    >
-      <div className="flex items-center gap-4">
-        <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} />
-        <div className="flex flex-col gap-0.5">
-          <h2 id={`${id}-h`} className="font-heading text-xl font-semibold md:text-2xl">
+    <section id={id} aria-labelledby={`${id}-h`} className={`${fullWidthClass} ${SECTION_BANDS[id]} scroll-mt-6 adult:border-line adult:not-first:border-t`}>
+      <div className="page-column grid gap-6 px-4 py-8 md:px-8 md:py-12 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-12">
+        <div className="flex items-center gap-4 lg:sticky lg:top-6 lg:self-start">
+          {/* On white, so it stands out from its band, which is near its own colour. */}
+          <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="bg-surface!" />
+          <h2 id={`${id}-h`} className="font-heading text-2xl font-semibold">
             {title}
           </h2>
-          <p className="text-ink-muted">{intro}</p>
         </div>
+        <div className="flex flex-col gap-6">{children}</div>
       </div>
-      {children}
     </section>
   );
 }
 
-// One way to reach an organisation, as a button: 44px tall, so it is easy to tap on a phone. A
-// screen reader hears what it is ("Phone: 1800 700 700") as the icon is not read.
-function ContactButton({ href, icon, label, external, children }: { href: string; icon: IconName; label: string; external?: boolean; children: ReactNode }) {
+// Each section on a band the full width of the window, so one ends and the next begins without a
+// line between them (CCARE-258). The soft wash of the page's top (welcome-band, globals.css), at
+// the same angle, but between warm tints only, a different pair for each, each thinned to under
+// half with the page's cream so the bands stay soft. Written out in full so
+// Tailwind finds them. The adult-centred design turns the tints to its plain band colour, so there
+// a line between sections keeps them apart (ContactSection).
+const SECTION_BANDS: Record<SectionId, string> = {
+  "fair-deal": "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--tint-gold)_45%,var(--page)),color-mix(in_srgb,var(--warm)_45%,var(--page)))]",
+  concerns: "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--warm)_45%,var(--page)),color-mix(in_srgb,var(--tint-rose)_45%,var(--page)))]",
+  dementia: "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--tint-rose)_45%,var(--page)),color-mix(in_srgb,var(--tint-gold)_45%,var(--page)))]",
+  support: "bg-[linear-gradient(120deg,color-mix(in_srgb,var(--warm)_45%,var(--page)),color-mix(in_srgb,var(--tint-gold)_45%,var(--page)))]",
+};
+
+// An email or website, as a line of its own under the phone number: its icon in the same column as
+// the phone's, then the address as a link. 44px tall in the adult-centred design (WCAG 2.5.5). A
+// screen reader hears what it is ("Email: ...") as the icon is not read.
+function ContactLink({ href, icon, label, external, children }: { href: string; icon: IconName; label: string; external?: boolean; children: ReactNode }) {
   return (
-    <a href={href} className={`${smallLinkButtonClass} max-w-full`} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-      <Icon name={icon} className="size-4 shrink-0 text-primary" />
+    <a
+      href={href}
+      className="flex w-fit max-w-full items-center gap-2 font-medium adult:min-h-11"
+      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+    >
+      <Icon name={icon} className="size-5 shrink-0 text-primary" />
       <span className="sr-only">{label}: </span>
-      {/* A long email address wraps rather than being pushed out of its card or cut short. */}
+      {/* A long email address wraps rather than being pushed out of its column or cut short. */}
       <span className="min-w-0 wrap-anywhere">{children}</span>
+      {/* Another website opens in a new tab: the arrow says so, as on the resources page. */}
+      {external && (
+        <>
+          <span className="sr-only"> (opens in a new tab)</span>
+          <ExternalIcon />
+        </>
+      )}
     </a>
   );
 }
 
-// Inside a ContactSection's box, so the rows are divided but not boxed again. Each organisation is
-// its name and what it is for, then a row of buttons: phone first, as most families call. The
-// buttons wrap, so nothing has to line up in columns whatever the card's width.
+// The organisations, two to a row from tablet width, each read top to bottom: its name, what it is
+// for and when it's open, then its phone number (PhoneLine, CCARE-258), email and website, one to
+// a line, the same for every organisation however long its addresses are.
 function ContactList({ contacts }: { contacts: Contact[] }) {
   return (
-    <ul className="divide-y divide-line-soft">
+    <ul className={`grid gap-x-10 gap-y-8 ${contacts.length > 1 ? "sm:grid-cols-2" : ""}`}>
       {contacts.map((contact) => (
-        <li key={contact.name} className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0">
+        // Two columns: the organisation's icon in the first, everything else in the second, so its
+        // name, the words under it and its contact lines all start at the same edge.
+        <li key={contact.name} className="grid grid-cols-[2rem_minmax(0,1fr)] content-start gap-x-3 gap-y-3">
+          <OrganisationIcon kind={contact.kind} />
           <div className="flex flex-col gap-1">
-            {/* The icon sits in a column as wide as the section's circle above it (w-12, gap-4), so it
-                is centred under that circle and the name starts where the section's heading does.
-                The words under the name start there too (pl-16). */}
-            <h3 className="flex items-center gap-4 font-semibold">
-              <span className="grid w-12 shrink-0 place-items-center">
-                <OrganisationIcon kind={contact.kind} />
-              </span>
-              {contact.name}
-            </h3>
-            <p className="pl-16 text-sm text-ink-muted">{contact.purpose}</p>
-            {contact.hours && <p className="pl-16 text-sm text-ink-muted">{contact.hours}</p>}
+            <h3 className="flex min-h-8 items-center font-semibold">{contact.name}</h3>
+            <p className="text-sm text-ink-muted">{contact.purpose}</p>
+            {contact.hours && <p className="text-sm text-ink-muted">{contact.hours}</p>}
           </div>
-          {/* The buttons keep the card's whole width on a phone, where a long email needs it. */}
-          <div className="flex flex-wrap gap-2 sm:pl-16">
-            {contact.phone && (
-              <ContactButton href={telHref(contact.phone)} icon="phone" label="Phone">
-                {contact.phone}
-              </ContactButton>
-            )}
+          <div className="col-start-2 flex flex-col gap-1.5">
+            {contact.phone && <PhoneLine phone={contact.phone} who={contact.name} />}
             {contact.email && (
-              <ContactButton href={`mailto:${contact.email}`} icon="email" label="Email">
+              <ContactLink href={`mailto:${contact.email}`} icon="email" label="Email">
                 {contact.email}
-              </ContactButton>
+              </ContactLink>
             )}
-            <ContactButton href={contact.website} icon="website" label="Website" external>
+            <ContactLink href={contact.website} icon="website" label="Website" external>
               {new URL(contact.website).hostname.replace(/^www\d?\./, "")}
-            </ContactButton>
+            </ContactLink>
           </div>
         </li>
       ))}

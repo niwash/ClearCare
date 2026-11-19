@@ -4,7 +4,7 @@
 // tour's last step points at the two links by their data-tour name, guide-links.
 import Link from "next/link";
 import { WelcomeTour } from "@/components/home/welcome-tour";
-import { secondaryLinkClass } from "@/components/ui/classes";
+import { actionLinkClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 
@@ -29,7 +29,8 @@ export function NewHere() {
           </div>
         </div>
         <div data-tour="guide-links" className="flex shrink-0 scroll-mt-6 flex-wrap gap-3">
-          <Link href="/guides/using-clearcare" className={secondaryLinkClass}>
+          {/* Filled, like the site's other main buttons (CCARE-258). */}
+          <Link href="/guides/using-clearcare" className={actionLinkClass}>
             See how to use it <span aria-hidden>→</span>
           </Link>
           <WelcomeTour />

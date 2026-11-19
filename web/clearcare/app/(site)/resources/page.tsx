@@ -82,20 +82,23 @@ export default function ResourcesPage() {
             Our Guides
           </h2>
         </div>
-        {/* Five cards: from desktop width two larger ones over three, so no row ends in a gap
-            (CCARE-233). The first, the overview, is marked as the place to start, as How to navigate
+        {/* Five cards, all the same size, three to a row from desktop width (CCARE-258): in user
+            testing (P2_1) the participant found two big cards over three small ones "a little bit
+            busy". The first, the overview, is marked as the place to start, as How to navigate
             ClearCare says it is. */}
-        <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-6">
+        <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
           {GUIDES.map((guide, index) => (
-            // The first card's photo is the largest thing near the top of the page, so it loads first.
-            <GuideCard key={guide.slug} guide={guide} priority={index === 0} startHere={index === 0} wide={index < 2} />
+            // The first card's photo is near the top of the page, so it loads first.
+            <GuideCard key={guide.slug} guide={guide} priority={index === 0} startHere={index === 0} />
           ))}
         </ul>
       </section>
 
-      <ContactsBanner />
-
       <OfficialInformation />
+
+      {/* At the foot of the page, after everything to read, as the guides end (CCARE-258). It meets
+          the band above and the footer below, cancelling the page's gap and padding. */}
+      <ContactsBanner className="-mb-6 -mt-6 md:-mb-10 md:-mt-8" />
     </>
   );
 }
@@ -127,18 +130,16 @@ function GuideCard({
   guide,
   priority = false,
   startHere = false,
-  wide = false,
 }: {
   guide: Guide;
   priority?: boolean;
   startHere?: boolean; // marks the guide to read first
-  wide?: boolean; // half the row from desktop width, rather than a third
 }) {
   const comingSoon = guide.status === "coming-soon";
 
   return (
     <li
-      className={`relative flex overflow-hidden sm:flex-col ${wide ? "lg:col-span-3" : "lg:col-span-2"} ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
+      className={`relative flex overflow-hidden sm:flex-col ${comingSoon ? `rounded-lg ${comingSoonClass}` : linkCardClass}`}
     >
       <div className="relative w-28 shrink-0 sm:aspect-[2/1] sm:w-auto">
         <Image
@@ -146,7 +147,7 @@ function GuideCard({
           alt=""
           fill
           priority={priority}
-          sizes="(min-width: 1024px) 50vw, (min-width: 640px) 50vw, 7rem"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 7rem"
           // A slow, slight zoom as the card lifts (linkCardClass); not for reduced motion or the
           // adult-centred design.
           className={`object-cover transition-transform duration-700 motion-safe:group-hover:scale-105 adult:transition-none adult:group-hover:scale-100 ${guide.photoFocus ?? "object-[50%_30%]"}`}
@@ -176,12 +177,7 @@ function GuideCard({
 // 2.5.5): the button's link stretches over it.
 function OfficialInformation() {
   return (
-    // The negative margins cancel the page's gaps, so it meets the contacts banner above and the
-    // footer below.
-    <section
-      aria-labelledby="official-h"
-      className={`${fullWidthClass} bg-band -mb-6 -mt-6 py-8 md:-mb-10 md:-mt-8 md:py-12`}
-    >
+    <section aria-labelledby="official-h" className={`${fullWidthClass} bg-band py-8 md:py-12`}>
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-6 px-4 md:px-8">
         <div className="reveal flex max-w-3xl flex-col gap-2">
@@ -195,14 +191,14 @@ function OfficialInformation() {
             These organisations do not endorse ClearCare.
           </p>
         </div>
-        {/* Five cards, two over three from desktop width, like the guides above. */}
-        <ul className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          {OFFICIAL_LINKS.map((link, index) => {
+        {/* Five cards, all the same size, three to a row from desktop width, like the guides above. */}
+        <ul className="reveal-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {OFFICIAL_LINKS.map((link) => {
             const isPdf = link.href.toLowerCase().endsWith(".pdf");
             return (
               <li
                 key={link.href}
-                className={`${linkCardClass} relative flex flex-col items-start gap-2 p-5 ${index < 2 ? "lg:col-span-3" : "lg:col-span-2"}`}
+                className={`${linkCardClass} relative flex flex-col items-start gap-2 p-5`}
               >
                 <span className="flex items-center gap-2 text-xs font-semibold text-ink">
                   <OrganisationIcon kind={PUBLISHER_KINDS[link.publisher] ?? "public-body"} />

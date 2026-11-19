@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { GuideEnding } from "@/components/guides/guide-ending";
 import { guideMetadata } from "@/components/guides/guide-header";
 import { GuideHero } from "@/components/guides/guide-hero";
@@ -564,7 +565,9 @@ export default function FairDealGuide() {
             <NumberedCard number={1}>
               <strong>Get the application form.</strong> Download it from{" "}
               <Source href="https://www.hse.ie/nhss/">hse.ie/nhss</Source> (available in both Irish and English) or
-              collect it from your local Nursing Homes Support Office.
+              collect it from your{" "}
+              {/* Straight to the Support Services page's county finder (CCARE-258). */}
+              <Link href="/contacts#offices">local Nursing Homes Support Office</Link>.
             </NumberedCard>
             <NumberedCard number={2}>
               <strong>Submit your form</strong> to your local Nursing Homes Support Office. You can do this yourself, or get

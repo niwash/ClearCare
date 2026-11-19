@@ -230,6 +230,104 @@
   --brand: light-dark(#5e1f0a, #3d170a);
 }
 
+/* The regulations marked in the grid of judgments from their words on the timeline (show-in-grid.tsx,
+   CCARE-258), while pressed or while a pointer rests on the words: each cell's box gets a thin ring in
+   the primary colour with a gap of the card's colour, following its rounded corners, and its title a
+   soft pill of the blue tint. On the title's words rather than its cell, which a collapsed table can't
+   round. They ease in; with reduced motion they simply appear. */
+#judgement-grid td > *,
+#judgement-grid .grid-title {
+  transition:
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease,
+    scale 0.2s ease;
+}
+
+td.grid-marked > * {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 4px var(--primary);
+  scale: 1.04;
+}
+
+th.grid-marked .grid-title {
+  background-color: var(--tint-blue);
+  color: var(--on-tint-blue);
+}
+
+:root[data-design="adult-centred"] td.grid-marked > * {
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #judgement-grid td > *,
+  #judgement-grid .grid-title {
+    transition: none;
+  }
+
+  td.grid-marked > * {
+    scale: 1;
+  }
+}
+
+/* The shortlist's panel (ShortlistPanel, shortlist-drawer.tsx, CCARE-258): it slides in from the
+   right edge and out again, and the page behind it darkens and clears, rather than both appearing at
+   once. The dialog is kept in the top layer and shown until the slide out ends (overlay and display,
+   allow-discrete); where a browser can't, it simply closes at once. Still with reduced motion
+   (WCAG 2.3.3) and in the adult-centred design. */
+.shortlist-panel[open]::backdrop {
+  background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-design="adult-centred"]) .shortlist-panel {
+    translate: 100% 0;
+    transition:
+      translate 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel[open] {
+    translate: 0 0;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel::backdrop {
+    background-color: transparent;
+    transition:
+      background-color 0.3s ease-out,
+      overlay 0.3s allow-discrete,
+      display 0.3s allow-discrete;
+  }
+
+  :root:not([data-design="adult-centred"]) .shortlist-panel[open]::backdrop {
+    background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+  }
+
+  @starting-style {
+    :root:not([data-design="adult-centred"]) .shortlist-panel[open] {
+      translate: 100% 0;
+    }
+
+    :root:not([data-design="adult-centred"]) .shortlist-panel[open]::backdrop {
+      background-color: transparent;
+    }
+  }
+}
+
+/* The header's navigation band (site-header.tsx, CCARE-258): the colour of the bar under the page
+   being shown. The site's accent in its lighter tone, the one it takes in dark mode, as the darker
+   one is too faint on the blue: 4.4:1 on the band in light mode, more in dark (WCAG 1.4.11 asks 3:1).
+   White in the adult-centred design, whose band is rust. */
+.site-nav {
+  --nav-current: #f2a585;
+}
+
+:root[data-design="adult-centred"] .site-nav {
+  --nav-current: #ffffff;
+}
+
 /* The logo (SiteLogo, CCARE-185): the house from clearcare-mark-for-blue.svg beside the name in the
    site's heading font, "Clear" in white and "Care" in the logo's soft gold, on the brand band. The
    house is sized by the name's font size, about as tall beside the name as in the full logo files.
@@ -269,6 +367,93 @@
     radial-gradient(70rem 30rem at 100% 0%, color-mix(in srgb, var(--warm) 75%, transparent), transparent 70%),
     radial-gradient(50rem 26rem at 0% 60%, color-mix(in srgb, var(--tint-gold) 85%, transparent), transparent 70%),
     var(--page);
+}
+
+/* The icons of the home page's mission and vision cards (StatementCard, page.tsx, CCARE-258), which
+   play when their card is hovered: the target's rings draw themselves in from the outside and its
+   dot pops in; the light bulb jumps, and its rays burst outwards on the way up, fully out as it
+   lands (0.6s: the rays start at 0.15s and take 0.45s). The rays are hidden until then. With reduced
+   motion they simply appear (WCAG 2.3.3); the adult-centred design keeps the icons still. */
+.vision-rays {
+  opacity: 0;
+}
+
+:root:not([data-design="adult-centred"]) .group:hover .vision-rays {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* Grown from the glass's centre, (12, 9): the middle of the rays' box across, and its foot, as the
+     side rays are level with the centre. From 80%, so even at the start their inner ends (8.5 units
+     out when full) stay clear of the glass (6 units). They sit in the bulb's group and jump with it. */
+  :root:not([data-design="adult-centred"]) .statement-icon .vision-rays {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transform: scale(0.8);
+    transition:
+      opacity 0.2s ease-out,
+      transform 0.2s ease-out;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .statement-icon .vision-rays {
+    transform: scale(1);
+    transition:
+      opacity 0.3s ease-out 0.15s,
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.3, 1) 0.15s;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .vision-bulb {
+    animation: bulb-jump 0.6s ease-in-out;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .mission-ring {
+    animation: ring-draw 0.6s ease-out var(--ring-delay, 0s) both;
+  }
+
+  :root:not([data-design="adult-centred"]) .statement-icon .mission-dot {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  :root:not([data-design="adult-centred"]) .group:hover .mission-dot {
+    animation: dot-pop 0.35s ease-out 0.6s both;
+  }
+}
+
+@keyframes ring-draw {
+  from {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes dot-pop {
+  0% {
+    transform: scale(0);
+  }
+  70% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* One jump: up quickly, then down to land, with no second bounce. */
+@keyframes bulb-jump {
+  0%,
+  100% {
+    transform: translateY(0);
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  40% {
+    transform: translateY(-3.5px);
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3);
+  }
 }
 
 /* A short mark in the warm accent under each page's main heading, the same on every page. Left
@@ -756,7 +941,8 @@ gmp-advanced-marker:focus-visible,
       background-color 0.25s ease,
       border-color 0.25s ease,
       color 0.25s ease,
-      box-shadow 0.25s ease;
+      box-shadow 0.25s ease,
+      translate 0.2s ease;
   }
 
   :root:not([data-design="adult-centred"]) .tab-from-right .page-column {

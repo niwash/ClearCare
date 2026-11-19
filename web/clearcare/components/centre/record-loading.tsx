@@ -33,7 +33,7 @@ export function RecordLoading() {
                 aria-hidden
                 className="loading-spinner size-5 shrink-0 rounded-full border-2 border-current border-t-transparent"
               />
-              Loading this home&apos;s record…
+              Loading this home&apos;s page…
             </p>
             <div aria-hidden className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
               <div className={`${block} aspect-[4/3] lg:aspect-auto lg:h-80`} />
