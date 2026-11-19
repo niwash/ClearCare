@@ -209,7 +209,7 @@ class UserPreferenceTest {
             """)
         .andExpect(status().isBadRequest())
         .andExpect(content().contentType(MediaType.APPLICATION_PROBLEM_JSON))
-        .andExpect(jsonPath("$.detail").value("sort_by must be name or latest_inspection"));
+        .andExpect(jsonPath("$.detail").value("sort_by must be name, latest_inspection or price"));
 
     save(
             REFUSED,

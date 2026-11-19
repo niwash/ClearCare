@@ -24,8 +24,8 @@ public record SavedSearch(
 
   // The site's slugs: "dementia", "en-suite", "shared-bathroom". Nothing else can be in a list.
   private static final Pattern SLUG = Pattern.compile("[a-z0-9]+(-[a-z0-9]+)*");
-  // The site offers two orders (lib/search-filters.ts); the default is "name".
-  private static final List<String> SORTS = List.of("name", "latest_inspection");
+  // The orders the site offers that need no place (lib/search-filters.ts); the default is "name".
+  private static final List<String> SORTS = List.of("name", "latest_inspection", "price");
   // The longest slug the site has is "intellectual-disability"; this leaves room for a longer one
   // without leaving room to fill the column.
   private static final int MAX_SLUG_LENGTH = 32;
@@ -56,7 +56,7 @@ public record SavedSearch(
       throw refused("county must be at most %d characters".formatted(MAX_COUNTY_LENGTH));
     }
     if (!SORTS.contains(sortBy)) {
-      throw refused("sort_by must be name or latest_inspection");
+      throw refused("sort_by must be name, latest_inspection or price");
     }
     int given = 0;
     for (List<String> options : List.of(careTypes, roomTypes, facilities, activities)) {
