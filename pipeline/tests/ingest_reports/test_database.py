@@ -27,11 +27,11 @@ from clearcare_pipeline.raw_store import FileSystemRawStore
 from clearcare_pipeline.split_commitments import backfill as split_commitments
 from tests.database import (
     API,
-    Connection,
-    Database,
     MIGRATOR,
     PASSWORDS,
     PIPELINE,
+    Connection,
+    Database,
     migrated_database,
 )
 from tests.report_fixtures import write_thematic_report_pdf
@@ -468,8 +468,8 @@ REGISTER_ENTRY = (
     "INSERT INTO clearcare.register_entry"
     " (source_file_id, centre_id, source_record, centre_name, address,"
     " county, hiqa_url, extracted_at, extractor_version)"
-    " VALUES (%s, '117', 1, 'Fern Valley Nursing Home', 'Sample Street',"
-    " %s, 'https://example.test/117', now(), 'test-version')"
+    " VALUES (%s, %s, %s, 'Fern Valley Nursing Home', 'Sample Street',"
+    " %s, 'https://example.test/register', now(), 'test-version')"
 )
 
 EVENTS = (
@@ -518,7 +518,7 @@ def test_batch_writes_one_event_per_active_package() -> None:
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
         source_file_id = _stored_file(connection, "one")
-        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        connection.execute(REGISTER_ENTRY, (source_file_id, "117", 1, "Carlow"))
         carlow = connection.execute(
             "SELECT id FROM clearcare.county WHERE name = 'Carlow'"
         ).fetchone()
@@ -555,8 +555,8 @@ def test_batches_merge_into_one_event_per_package() -> None:
         )
         first = _stored_file(connection, "first")
         second = _stored_file(connection, "second")
-        connection.execute(REGISTER_ENTRY, (first, "Cavan"))
-        connection.execute(REGISTER_ENTRY, (second, "Cavan"))
+        connection.execute(REGISTER_ENTRY, (first, "117", 1, "Cavan"))
+        connection.execute(REGISTER_ENTRY, (second, "117", 2, "Cavan"))
 
         writer = ReportWriter(connection, "test-version")
         assert writer.write_batch([_report(first)]) == 1
@@ -599,7 +599,7 @@ def test_rerun_writes_no_events_for_already_loaded_reports() -> None:
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
         source_file_id = _stored_file(connection, "once")
-        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        connection.execute(REGISTER_ENTRY, (source_file_id, "117", 1, "Carlow"))
         writer = ReportWriter(connection, "test-version")
         assert writer.write_batch([_report(source_file_id)]) == 1
 
@@ -623,12 +623,20 @@ def test_inactive_packages_and_thematic_reports_raise_no_events() -> None:
         connection.execute(
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
+        connection.execute(
+            "INSERT INTO clearcare.centre (centre_id) VALUES ('238')"
+        )
         source_file_id = _stored_file(connection, "quiet")
-        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        connection.execute(REGISTER_ENTRY, (source_file_id, "117", 1, "Carlow"))
+        connection.execute(REGISTER_ENTRY, (source_file_id, "238", 2, "Cavan"))
+        carlow = connection.execute(
+            "SELECT id FROM clearcare.county WHERE name = 'Carlow'"
+        ).fetchone()
+        assert carlow is not None
         thematic = ThematicReport(
             source_file_id=source_file_id,
-            centre_id="117",
-            centre_code="OSV-0000117",
+            centre_id="238",
+            centre_code="OSV-0000238",
             inspection_type="Unannounced",
             inspection_date=date(2025, 8, 21),
             fieldwork_id="MON-0047312",
@@ -639,9 +647,13 @@ def test_inactive_packages_and_thematic_reports_raise_no_events() -> None:
         assert writer.write_batch([_report(source_file_id), thematic]) == 2
 
         rows = connection.execute(EVENTS).fetchall()
-        # The all-package is inactive; the thematic report is in no metadata.
-        assert {row[0] for row in rows} == {"CENTRE", "COUNTY"}
-        assert all(len(row[2]) == 1 for row in rows)
+        # Compared as a whole, so a missing event or a wrongly added one
+        # fails: the all-package is inactive, and the thematic report, at
+        # its own centre, is in no metadata.
+        assert [(row[0], row[2]) for row in rows] == [
+            ("CENTRE", [{"centre_id": "117"}]),
+            ("COUNTY", [{"county_id": carlow[0]}]),
+        ]
 
 
 @pytest.mark.database
@@ -658,20 +670,21 @@ def test_unmatched_county_is_logged_and_left_without_id(
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
         source_file_id = _stored_file(connection, "strange")
-        connection.execute(REGISTER_ENTRY, (source_file_id, "Testshire"))
+        connection.execute(
+            REGISTER_ENTRY, (source_file_id, "117", 1, "Testshire")
+        )
 
         writer = ReportWriter(connection, "test-version")
         assert writer.write_batch([_report(source_file_id)]) == 1
 
         rows = connection.execute(EVENTS).fetchall()
-        # No county could be resolved, so the county package matched nothing
-        # and gets no event; centre and all-reports still do.
-        expected = {
-            "CENTRE": [{"centre_id": "117"}],
-            "ALL": [{"centre_id": "117", "county_id": None}],
-        }
-        for scope, _status, metadata, _ in rows:
-            assert metadata == expected[scope]
+        # Compared as a whole, so a missing event fails too: no county could
+        # be resolved, so the county package matched nothing and gets no
+        # event, while centre and all-reports still do.
+        assert [(row[0], row[2]) for row in rows] == [
+            ("ALL", [{"centre_id": "117", "county_id": None}]),
+            ("CENTRE", [{"centre_id": "117"}]),
+        ]
         assert "Testshire is not in clearcare.county" in caplog.text
 
 
@@ -686,7 +699,7 @@ def test_without_packages_no_events_are_written() -> None:
             "INSERT INTO clearcare.centre (centre_id) VALUES ('117')"
         )
         source_file_id = _stored_file(connection, "inert")
-        connection.execute(REGISTER_ENTRY, (source_file_id, "Carlow"))
+        connection.execute(REGISTER_ENTRY, (source_file_id, "117", 1, "Carlow"))
 
         writer = ReportWriter(connection, "test-version")
         assert writer.write_batch([_report(source_file_id)]) == 1
