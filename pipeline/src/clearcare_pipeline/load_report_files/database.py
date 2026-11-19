@@ -77,43 +77,53 @@ def record_page_checks(
 
 def store_listed_reports(
     connection: Connection, listed: Mapping[str, Sequence[Report]]
-) -> int:
+) -> tuple[int, int]:
     """Stores the reports HIQA lists for each centre, in one transaction.
 
-    A report is added, or changed if it is now listed with other values or
-    its file has been stored since. A report stored with the same values is
-    left alone, so loading the same manifest again changes nothing, and a
-    report no longer listed stays. A centre the database does not have yet
-    is left out; a later run adds its reports once the register has it.
+    A report is added, or changed if it is now listed with other values, its
+    file has been stored since, or it is back on the list. A report stored
+    with the same values is left alone, so loading the same manifest again
+    changes nothing. A centre the database does not have yet is left out; a
+    later run adds its reports once the register has it.
+
+    A report no longer on its centre's list stays, marked as not still
+    listed: HIQA takes a report off the centre's page after three years and
+    its file is then usually gone (db/V29). A centre that is not in the mapping
+    has no page read that worked, which says nothing about its list, so its
+    reports are left as they are.
 
     Args:
         connection: Logs in as clearcare_pipeline and has no transaction open.
         listed: Each centre's listed reports, by centre ID.
 
     Returns:
-        How many rows were added or changed.
+        How many rows were added or changed, and how many reports left
+        their centre's list.
     """
     with connection.transaction(), connection.cursor() as cursor:
         cursor.executemany(
             "INSERT INTO clearcare.listed_report (centre_id, url, file_name,"
-            " inspection_date, published_date, report_type, sha256)"
+            " inspection_date, published_date, report_type, sha256,"
+            " still_listed)"
             # A SELECT list does not take its types from the columns.
             " SELECT %(centre_id)s::text, %(url)s::text, %(file_name)s::text,"
             " %(inspection_date)s::date, %(published_date)s::date,"
-            " %(report_type)s::text, %(sha256)s::text"
+            " %(report_type)s::text, %(sha256)s::text, true"
             " WHERE EXISTS (SELECT FROM clearcare.centre"
             "  WHERE centre_id = %(centre_id)s)"
             " ON CONFLICT (centre_id, url) DO UPDATE"
             " SET file_name = excluded.file_name,"
             " inspection_date = excluded.inspection_date,"
             " published_date = excluded.published_date,"
-            " report_type = excluded.report_type, sha256 = excluded.sha256"
+            " report_type = excluded.report_type, sha256 = excluded.sha256,"
+            " still_listed = excluded.still_listed"
             # sha256 can be NULL, which = would not compare.
             " WHERE (listed_report.file_name, listed_report.inspection_date,"
             " listed_report.published_date, listed_report.report_type,"
-            " listed_report.sha256) IS DISTINCT FROM (excluded.file_name,"
+            " listed_report.sha256, listed_report.still_listed)"
+            " IS DISTINCT FROM (excluded.file_name,"
             " excluded.inspection_date, excluded.published_date,"
-            " excluded.report_type, excluded.sha256)",
+            " excluded.report_type, excluded.sha256, excluded.still_listed)",
             [
                 {
                     "centre_id": centre_id,
@@ -128,4 +138,18 @@ def store_listed_reports(
                 for report in reports
             ],
         )
-        return cursor.rowcount
+        changed = cursor.rowcount
+        cursor.executemany(
+            "UPDATE clearcare.listed_report SET still_listed = false"
+            " WHERE centre_id = %(centre_id)s AND still_listed"
+            # The cast gives a centre's empty list a type.
+            " AND url <> ALL (%(urls)s::text[])",
+            [
+                {
+                    "centre_id": centre_id,
+                    "urls": [report.url for report in reports],
+                }
+                for centre_id, reports in listed.items()
+            ],
+        )
+        return changed, cursor.rowcount

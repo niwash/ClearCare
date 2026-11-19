@@ -116,6 +116,12 @@ def test_empty_report_list_means_no_reports() -> None:
     assert page.reports == ()
 
 
+def test_table_with_only_its_heading_row_means_no_reports() -> None:
+    page = parse_centre_page(_page(_table("")))
+
+    assert page.reports == ()
+
+
 def test_page_without_centre_id_is_rejected() -> None:
     with pytest.raises(CentrePageError, match="no centre ID"):
         parse_centre_page("<html><body>Browser Verification</body></html>")
@@ -183,6 +189,15 @@ def test_row_with_missing_cells_is_rejected() -> None:
         <a href="/system/files?file=inspectionreports/a.pdf">Download</a></td>
     </tr>
     """
+
+    with pytest.raises(CentrePageError, match="inspection date"):
+        parse_centre_page(_page(_table(row)))
+
+
+def test_row_whose_cells_cannot_be_read_is_rejected() -> None:
+    # The cells are told apart by their headers attribute. Without it the
+    # row reads as nothing, which must not pass for a list with no reports.
+    row = _row().replace(' headers="', ' data-headers="')
 
     with pytest.raises(CentrePageError, match="inspection date"):
         parse_centre_page(_page(_table(row)))
