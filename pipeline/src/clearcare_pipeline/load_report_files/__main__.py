@@ -29,7 +29,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     It also stores when each centre's page was last read, so the site can say
     when ClearCare last looked on hiqa.ie for a new report (db/V18), and the
-    reports the page listed, whether or not their files are stored (db/V22).
+    reports the page listed, whether or not their files are stored (db/V22),
+    with a mark on each report that has left its centre's list (db/V29).
 
     The database connection comes from libpq's environment variables
     (PGHOST, PGPORT, PGDATABASE, PGUSER, PGPASSWORD).
@@ -52,7 +53,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         with psycopg.connect() as connection:
             added = add_report_files(connection, reports.values())
             checked = record_page_checks(connection, checks)
-            changed = store_listed_reports(connection, listed)
+            changed, left = store_listed_reports(connection, listed)
     except psycopg.Error as error:
         logger.error("database: %s", error)
         return 1
@@ -65,6 +66,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         changed,
         sum(len(reports) for reports in listed.values()),
     )
+    logger.info("%d reports left HIQA's lists", left)
     return 0
 
 

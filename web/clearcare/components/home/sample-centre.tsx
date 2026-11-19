@@ -14,15 +14,23 @@
 // the example shows what a record holds.
 import Link from "next/link";
 import { JudgementChip } from "@/components/centre/finding-bits";
+import { AmenityIcon } from "@/components/centre/amenity-icon";
+import { amenityTagClass } from "@/components/centre/centre-amenities";
+import { CentrePhoto } from "@/components/centre/centre-photo";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { ShowAnotherHome } from "@/components/home/show-another-home";
 import { actionLinkClass } from "@/components/ui/classes";
+import { Icon } from "@/components/ui/icons";
+import { AMENITY_ICON_PATHS } from "@/lib/amenity-icons";
 import { CENTRE_SECTION_TITLES, centrePath } from "@/lib/centre-record";
 import { formatDate, type Change } from "@/lib/centres";
 import { getSampleCentre } from "@/lib/sample-centre";
 
 // Findings listed before "and N more".
 const SHORT_LIST = 5;
+
+// What the home offers, shown with their pictures before "and N more on its page".
+const OFFERS_SHOWN = 6;
 
 const COUNT_ORDER = ["not-compliant", "substantially-compliant", "compliant"] as const;
 
@@ -36,18 +44,20 @@ const CHANGE_WORDS: Record<Change, string> = {
 // The record's tabs after the overview, in the order the record has them (centres/[id]/layout.tsx).
 const TABS = ["look-first", "next-steps", "inspections", "questions"] as const;
 
-// A small outlined button, as "See all regulations" on the record: for the tabs.
-const tabLinkClass =
-  "inline-flex min-h-11 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink adult:rounded-md adult:underline";
-
-export async function SampleCentre({ total }: { total: number | null }) {
+// updated: when ClearCare last downloaded HIQA's register (register_snapshot.fetched_at), if known.
+export async function SampleCentre({ total, updated }: { total: number | null; updated: string | null }) {
   const sample = await getSampleCentre(total);
   // Nothing could be read: leave the space empty rather than show a broken example.
   if (!sample) return null;
 
-  const { centre, latest, reportCount, firstYear, counts, findings } = sample;
+  const { centre, latest, reportCount, firstYear, counts, findings, amenities } = sample;
   const assessed = counts.compliant + counts["substantially-compliant"] + counts["not-compliant"];
   const shown = findings.slice(0, SHORT_LIST);
+  // A few of what the home offers that have a picture, the facilities first, then activities and
+  // rooms. Care types have no pictures. The rest are on the home's page.
+  const offered = amenities ? [...amenities.facilities, ...amenities.activities, ...amenities.room_types] : [];
+  const pictured = offered.filter(({ item }) => AMENITY_ICON_PATHS[item]).slice(0, OFFERS_SHOWN);
+  const moreOffered = offered.length + (amenities?.care_types.length ?? 0) - pictured.length;
 
   return (
     <article
@@ -59,9 +69,6 @@ export async function SampleCentre({ total }: { total: number | null }) {
             as the home and what was found there. */}
         <div className="flex flex-col gap-5 border-b border-line-soft bg-surface-muted px-4 py-5 md:px-7 md:py-7 lg:border-r lg:border-b-0">
           <div className="flex flex-col gap-1">
-            <p className="text-xs uppercase tracking-wider text-ink-muted adult:normal-case adult:tracking-normal">
-              Randomly picked centre
-            </p>
             <h3 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
               {/* Underlined on hover only in the standard design (CCARE-214); always in Easier to read. */}
               <Link href={centrePath(centre.centre_id)} className="text-ink no-underline tap-target hover:underline adult:underline">
@@ -73,19 +80,32 @@ export async function SampleCentre({ total }: { total: number | null }) {
             </p>
           </div>
 
+          {/* The home's photo, as on its record (CCARE-258): in user testing (P2_1) the participant
+              passed over homes with no photo. The same component, so nothing is asked of Google until
+              the reader agrees, and once agreed the record's photos show without asking again. A little
+              wider than the record's 4:3, so the column doesn't grow too tall beside the findings. */}
+          {/* Keyed by the home, so "Show another home" starts its photo afresh rather than keeping the
+              last home's loaded or failed state. */}
+          <CentrePhoto
+            key={centre.centre_id}
+            placeId={centre.place_id ?? null}
+            apiKey={process.env.GOOGLE_MAPS_BROWSER_KEY || null}
+            className="aspect-[3/2]!"
+          />
+
           <div className="flex flex-col gap-3">
-            <p>
-              Latest inspection (
-              {/* No link to a report HIQA no longer has online (CCARE-236). */}
-              {latest.reportUrl ? (
-                <a href={latest.reportUrl}>
-                  {latest.type.toLowerCase()}, {formatDate(latest.date)}
-                </a>
-              ) : (
-                `${latest.type.toLowerCase()}, ${formatDate(latest.date)}`
-              )}
-              ): {assessed} {assessed === 1 ? "regulation" : "regulations"} assessed
-            </p>
+            {/* Two lines, the inspection and then how much it assessed, so neither breaks partway
+                through at the column's width (CCARE-258). */}
+            <div>
+              {/* Plain text, not a link to the report: the record, a button away, has the report's
+                  link (CCARE-258). */}
+              <p>
+                Latest inspection: {latest.type.toLowerCase()}, {formatDate(latest.date)}
+              </p>
+              <p className="text-ink-muted">
+                {assessed} {assessed === 1 ? "regulation" : "regulations"} assessed
+              </p>
+            </div>
             {/* Each count large, over its judgement's mark and name. */}
             <ul aria-label="Judgements at the latest inspection" className="grid grid-cols-3 gap-2 md:gap-3">
               {COUNT_ORDER.map((judgement) => (
@@ -104,15 +124,29 @@ export async function SampleCentre({ total }: { total: number | null }) {
           </div>
 
           {/* At the column's foot, level with the record's pages beside them: the record, and
-              another home. */}
-          <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
-            {/* The card's call to action, as a button (CCARE-214). */}
-            <Link href={centrePath(centre.centre_id)} className={actionLinkClass}>
-              See full record<span className="sr-only"> for {centre.centre_name}</span>
-              <span aria-hidden>→</span>
-            </Link>
-            {/* Picks again on the server without reloading the page, so the reader keeps their place. */}
-            <ShowAnotherHome currentName={centre.centre_name} />
+              another home, then how current ClearCare's data is. */}
+          <div className="mt-auto flex flex-col gap-3 pt-1">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* The card's call to action, as a button (CCARE-214). */}
+              {/* "This home's page", not "full record": the word record threw a participant in user
+                  testing (P2_1, CCARE-258). */}
+              <Link href={centrePath(centre.centre_id)} className={actionLinkClass}>
+                See this home&apos;s page<span className="sr-only">: {centre.centre_name}</span>
+                <span aria-hidden>→</span>
+              </Link>
+              {/* Picks again on the server without reloading the page, so the reader keeps their place. */}
+              <ShowAnotherHome currentName={centre.centre_name} />
+            </div>
+            {/* When ClearCare last downloaded HIQA's register of homes (CCARE-258), as in "What
+                ClearCare currently has" above (site-figures.tsx). */}
+            {updated && (
+              <p className="flex items-center gap-2 text-sm text-ink-muted">
+                <Icon name="calendar" className="size-4 shrink-0" />
+                <span>
+                  ClearCare last updated its data on <time dateTime={updated}>{formatDate(updated)}</time>
+                </span>
+              </p>
+            )}
           </div>
         </div>
 
@@ -151,17 +185,44 @@ export async function SampleCentre({ total }: { total: number | null }) {
             </>
           )}
 
-          {/* Each of the record's tabs by its own name, at the column's foot. They open other pages,
-              which a row of bare names didn't say: the line before them and each one's arrow, the
-              site's mark for a link to a page, do. */}
-          <div className="mt-auto flex flex-wrap items-center gap-2 border-t border-line-soft pt-4">
-            <p id="sample-tabs" className="mr-1 w-full text-sm text-ink-muted xl:w-auto">
-              Or go straight to a page of this record:
-            </p>
-            <ul aria-labelledby="sample-tabs" className="contents">
+          {/* A few of what the home offers, with their pictures, as on its record (CCARE-258): in user
+              testing (P2_1) the participant liked the amenity icons. Read by an AI tool and still being
+              checked, so it says so, as the record and Compare Homes do; change "We're now checking"
+              here too when the checking is done (CCARE-192, -193, privacy/page.tsx). Left out when
+              nothing with a picture has been read from the home's reports. */}
+          {pictured.length > 0 && (
+            <div className="flex flex-col gap-2 border-t border-line-soft pt-4">
+              <h4 className="font-heading text-lg font-semibold md:text-xl">What it offers</h4>
+              <ul className="flex flex-wrap gap-2">
+                {pictured.map(({ item }) => (
+                  <li key={item} className={`${amenityTagClass} flex items-center gap-1.5`}>
+                    <AmenityIcon item={item} className="size-4 adult:size-5" />
+                    {item}
+                  </li>
+                ))}
+                {moreOffered > 0 && (
+                  <li className="flex items-center px-1 text-sm text-ink-muted">and {moreOffered} more on its page</li>
+                )}
+              </ul>
+              <p className="text-sm text-ink-muted">
+                Read by an AI tool from its latest inspection report. It may make mistakes and we&apos;re now checking
+                these.
+              </p>
+            </div>
+          )}
+
+          {/* Each of the record's tabs by its own name, at the column's foot, each one's arrow the
+              site's mark for a link to a page. The same button as "See this home's page", as all the
+              card's links into the record look alike; only "Show another home", which stays on this
+              page, is outlined. In a grid of equal buttons, two to a row from tablet width, rather
+              than a ragged wrapping row, and without the line that introduced them (CCARE-258). The
+              grid is only as wide as it needs to be (w-fit), so each button is as wide as the
+              longest name, not stretched across the column. */}
+          <div className="mt-auto border-t border-line-soft pt-4">
+            <ul aria-label={`Pages of this home's record`} className="grid w-fit max-w-full gap-2 sm:grid-cols-2">
               {TABS.map((tab) => (
-                <li key={tab}>
-                  <Link href={centrePath(centre.centre_id, tab)} className={tabLinkClass}>
+                <li key={tab} className="flex">
+                  <Link href={centrePath(centre.centre_id, tab)} className={`${actionLinkClass} w-full justify-between`}>
                     {CENTRE_SECTION_TITLES[tab]}
                     <span className="sr-only"> for {centre.centre_name}</span>
                     <span aria-hidden>→</span>

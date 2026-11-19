@@ -280,12 +280,15 @@ export function SearchFilters({
           event.preventDefault();
           apply();
         }}
-        className={`${fullWidthClass} -mt-6 bg-surface md:-mt-8 md:border-b md:border-line`}
+        // On the light blue tint (CCARE-258), so the bar reads as the search area rather than more page.
+        className={`${fullWidthClass} -mt-6 bg-tint-blue md:-mt-8 md:border-b md:border-line`}
       >
         <div className={`page-column flex flex-col gap-1.5 px-4 pb-1 pt-4 md:px-8 md:pb-4 ${besideMap ? widePageColumnClass : ""}`}>
           {/* One box, so nobody has to know which box their words belong in (CCARE-230). Its label
               is in view over it and no field has a faded example: people read one as already filled
               in (CCARE-164). */}
+          {/* The box under it is larger than the site's usual field (search-box.tsx), so the search is
+              the first thing seen (CCARE-258). */}
           <label htmlFor={`${id}-box`} className="text-sm font-semibold">
             Nursing home name, town, area or Eircode
           </label>
@@ -340,7 +343,8 @@ export function SearchFilters({
                     </BarPanel>
                   </>
                 )}
-                <button type="submit" className={primaryButtonClass}>
+                {/* As tall as the box beside it on phones and from xl up (CCARE-258). */}
+                <button type="submit" className={`${primaryButtonClass} h-13! px-6 text-base`}>
                   Search
                 </button>
                 {canClear && (

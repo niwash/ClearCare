@@ -110,7 +110,7 @@ const STEPS: Step[] = [
     question: "Do you wish to contact someone for help?",
     title: "Find who to contact",
     detail: "HIQA, the Fair Deal offices, dementia services, and support and advocacy groups.",
-    link: { href: "/contacts", label: "See contacts" },
+    link: { href: "/contacts", label: "See support services" },
   },
 ];
 

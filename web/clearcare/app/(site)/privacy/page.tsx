@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { fullWidthClass } from "@/components/ui/classes";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "Privacy notice · ClearCare",
@@ -10,8 +11,7 @@ export const metadata: Metadata = {
 
 const RUN_BY = "master's students at Technological University Dublin";
 // GDPR Arts. 13(1)(a) and 14(1)(a) ask for a way to contact us, and every right below is exercised
-// by email.
-const CONTACT_EMAIL = "hello@clearcare.ie";
+// by email: CONTACT_EMAIL, lib/contact.ts, shared with the footer.
 // The outcome pilot's raw/ answers.
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";

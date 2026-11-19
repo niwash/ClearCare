@@ -24,10 +24,9 @@ export async function GET(_request: Request, { params }: RouteContext<"/centres/
     ...(phone ? [["Phone", phone.text]] : []),
     ["HIQA centre ID", centre.centre_id],
     [
-      "Registered for",
-      centre.maximum_occupancy !== null
-        ? `Up to ${centre.maximum_occupancy} residents (the most HIQA allows, not free beds)`
-        : "Not stated",
+      // As the page's Capacity and type card says it (CCARE-258).
+      "Maximum occupancy",
+      centre.maximum_occupancy !== null ? `${centre.maximum_occupancy} residents (not free beds)` : "Not stated",
     ],
     // As on the page: no rows from an API without prices.
     ...(centre.home_type ? [["Type of home", HOME_TYPE_LABELS[centre.home_type]]] : []),

@@ -138,7 +138,7 @@ const TOUR_STEPS: TourStep[] = [
     title: "Find who to contact",
     body: (
       <>
-        <strong>Contacts</strong> lists HIQA, the Fair Deal offices, dementia services, and support and advocacy
+        <strong>Support Services</strong> lists HIQA, the Fair Deal offices, dementia services, and support and advocacy
         groups.
       </>
     ),
@@ -148,7 +148,7 @@ const TOUR_STEPS: TourStep[] = [
         selector: MENU,
         body: (
           <>
-            <strong>Contacts</strong>, in this menu, lists HIQA, the Fair Deal offices, dementia services, and support
+            <strong>Support Services</strong>, in this menu, lists HIQA, the Fair Deal offices, dementia services, and support
             and advocacy groups.
           </>
         ),

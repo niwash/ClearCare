@@ -319,9 +319,6 @@ function SearchHero({ wide }: { wide: boolean }) {
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           Find a nursing home
         </h1>
-        <p className="max-w-2xl text-ink-muted md:text-lg">
-          Search every nursing home registered with HIQA. Each one has a page with its inspection reports over time.
-        </p>
       </div>
     </section>
   );

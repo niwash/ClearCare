@@ -10,7 +10,6 @@
 import {
   formatDate,
   formatShortMonth,
-  trailAnchor,
   type Inspection,
   type Judgement,
   type PromiseTrail,
@@ -34,7 +33,11 @@ const CELL_CLASSES: Record<Judgement, string> = {
 
 // A cell's box. Its width is its column's (cellClass); it is 44px tall in the adult-centred design,
 // where a cell that links is a target (WCAG 2.5.5).
-const cellBoxClass = "flex h-7.5 items-center justify-center rounded-md adult:h-11";
+// Every box the same size, and every row the same height (CCARE-258): 40px, as tall as a title of two
+// lines, the most a title takes (see the title below), so the gap between boxes is the same everywhere,
+// across a row and down a column. 44px in the adult-centred design, where a cell that links is a target
+// (WCAG 2.5.5).
+const cellBoxClass = "flex h-10 items-center justify-center rounded-md adult:h-11";
 
 // A column is as narrow as the date over it allows, since on a phone each one saved brings another
 // inspection into view. The gap between cells is padding, not the table's border-spacing: the
@@ -42,28 +45,19 @@ const cellBoxClass = "flex h-7.5 items-center justify-center rounded-md adult:h-
 // show between its rows.
 const cellClass = "min-w-12 p-[1.5px]";
 
-function GridCell({ cell, regulation, inspection, trailsHref }: { cell: Cell; regulation: Regulation; inspection: Inspection; trailsHref: string }) {
+// A cell is a mark, not a link (CCARE-258): it pointed to the finding's trail on What happened next,
+// but the record's words lead to their place on this page instead, and the grid does the same.
+function GridCell({ cell, regulation, inspection }: { cell: Cell; regulation: Regulation; inspection: Inspection }) {
   const label = JUDGEMENT_LABELS[cell.judgement];
   const boxClass = `${cellBoxClass} ${CELL_CLASSES[cell.judgement]}`;
   const mark = cell.judgement !== "not-assessed" && <JudgementIcon judgement={cell.judgement} />;
 
   return (
-    <td className={cellClass}>
-      {cell.trail ? (
-        // To the finding's trail on What happened next. Tabbed to, a link is heard without its row's
-        // and column's headers, so its name says all three.
-        <a href={`${trailsHref}#${trailAnchor(cell.trail.regulation)}`} className={`${boxClass} hover:outline-2 hover:outline-ink`}>
-          {mark}
-          <span className="sr-only">
-            {regulation.title}: {label.toLowerCase()}, {formatDate(inspection.date)}
-          </span>
-        </a>
-      ) : (
-        <span className={boxClass}>
-          {mark}
-          <span className="sr-only">{label}</span>
-        </span>
-      )}
+    <td data-col={inspection.id} data-reg={regulation.number} data-judgement={cell.judgement} className={cellClass}>
+      <span className={boxClass}>
+        {mark}
+        <span className="sr-only">{label}</span>
+      </span>
     </td>
   );
 }
@@ -85,8 +79,6 @@ type JudgementGridProps = {
   inspections: Inspection[];
   history: RegulationHistory[];
   trails: PromiseTrail[];
-  // The page the trails are on, What happened next (CCARE-212).
-  trailsHref: string;
 };
 
 // How many of the always-compliant regulations are in view before "Show more": two rows of three
@@ -98,7 +90,7 @@ const REST_FOLD_AFTER = REST_IN_VIEW + 2;
 // reads as one list once open (className="mt-2" only on the part in view).
 function RestList({ regulations, className = "" }: { regulations: Regulation[]; className?: string }) {
   return (
-    <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 lg:columns-3 ${className}`}>
+    <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 ${className}`}>
       {regulations.map((regulation) => (
         <li key={regulation.number} className="break-inside-avoid py-0.5">
           {regulation.title}
@@ -108,7 +100,7 @@ function RestList({ regulations, className = "" }: { regulations: Regulation[]; 
   );
 }
 
-export function JudgementGrid({ inspections, history, trails, trailsHref }: JudgementGridProps) {
+export function JudgementGrid({ inspections, history, trails }: JudgementGridProps) {
   const { columns, rows, rest } = judgementGrid(history, inspections, trails);
   const folds = rest.length > REST_FOLD_AFTER;
   const shown = folds ? rest.slice(0, REST_IN_VIEW) : rest;
@@ -118,14 +110,20 @@ export function JudgementGrid({ inspections, history, trails, trailsHref }: Judg
     <div>
       {/* Left out when no report judged a regulation: thematic inspections alone. */}
       {(rows.length > 0 || rest.length > 0) && (
-        <h3 id="grid-h" className="font-semibold">
-          Each regulation, inspection by inspection
-        </h3>
+        // Says which regulations are in the grid (CCARE-258): "Each regulation, inspection by
+        // inspection" read as all of them, but the rows are only those not fully compliant at least
+        // once; the rest are listed under it.
+        <div id="grid-h" className="flex flex-col gap-0.5">
+          <h3 className="font-semibold">
+            {rows.length > 0 ? "Regulations not fully compliant at least once" : "Regulations judged"}
+          </h3>
+          {rows.length > 0 && <p className="text-sm text-ink-muted">How each was judged at every inspection.</p>}
+        </div>
       )}
 
       {rows.length > 0 && (
         <HistoryScroller>
-          <table aria-labelledby="grid-h" className="border-collapse">
+          <table id="judgement-grid" aria-labelledby="grid-h" className="border-collapse">
             <thead>
               <tr>
                 <th scope="col" className={stickyClass}>
@@ -148,15 +146,23 @@ export function JudgementGrid({ inspections, history, trails, trailsHref }: Judg
             <tbody>
               {rows.map(({ regulation, cells }) => (
                 <tr key={regulation.number}>
-                  <th scope="row" className={`${stickyClass} py-1 pr-3 text-left text-sm leading-snug font-normal`}>
+                  <th scope="row" className={`${stickyClass} py-0.5 pr-3 text-left text-sm leading-snug font-normal`}>
                     {/* As narrow as two lines of most titles on a phone, where the room the titles
                         give up is judgments in view; no wider than a long title needs on a wide
                         screen. The scroll box keeps a focused cell clear of this column by its
                         narrowest width (history-scroller.tsx). */}
-                    <span className="block max-w-72 min-w-36">{regulation.title}</span>
+                    {/* The words in a span of their own, with a little padding, so the pill a marked title
+                        gets (grid-title, globals.css) hugs each line of them, inside the column, without
+                        moving them (CCARE-258). */}
+                    {/* Two lines at most, so no row is taller than its boxes (CCARE-258): wide enough on a
+                        phone (min-w-44) that the regulations' titles fit in two, and cut short with "…"
+                        if one doesn't, its whole title still there for a screen reader and on hover. */}
+                    <span className="line-clamp-2 block max-w-72 min-w-44" title={regulation.title}>
+                      <span className="grid-title rounded-md px-1.5 py-0.5 box-decoration-clone">{regulation.title}</span>
+                    </span>
                   </th>
                   {cells.map((cell, index) => (
-                    <GridCell key={columns[index].id} cell={cell} regulation={regulation} inspection={columns[index]} trailsHref={trailsHref} />
+                    <GridCell key={columns[index].id} cell={cell} regulation={regulation} inspection={columns[index]} />
                   ))}
                 </tr>
               ))}

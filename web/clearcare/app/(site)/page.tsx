@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
 import { HomeHero } from "@/components/home/home-hero";
@@ -10,9 +9,9 @@ import { SiteFeatures } from "@/components/home/site-features";
 import { SiteFigures } from "@/components/home/site-figures";
 import { SlideUp } from "@/components/ui/slide-up";
 import { SurveyBanner } from "@/components/home/survey-banner";
-import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass, liftCardClass } from "@/components/ui/classes";
+import { ExternalIcon } from "@/components/ui/external-icon";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
-import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
 import { searchCentres } from "@/lib/search";
 import { getReAssessmentStatistics } from "@/lib/statistics";
 
@@ -94,7 +93,7 @@ export default async function StartPage() {
           <p className="text-ink-muted md:text-lg">A home picked at random, and what its latest inspection found.</p>
         </div>
         <Suspense fallback={<SampleCentreFallback />}>
-          <SampleCentre total={total} />
+          <SampleCentre total={total} updated={count.ok ? count.data.register_snapshot.fetched_at : null} />
         </Suspense>
       </section>
 
@@ -106,28 +105,59 @@ export default async function StartPage() {
   );
 }
 
-// The page's last word: an invitation to start, now that the reader knows what ClearCare is,
-// meeting the footer (the negative bottom margin cancels the page's padding). The search itself is
-// in the hero at the top; this sends the reader to the full search, or to the first guide.
+// The page's last word, meeting the footer (the negative bottom margin cancels the page's padding):
+// where ClearCare's reports come from, in a sentence, then where to read more. It said "Check a
+// nursing home's record" before; in user testing (P2_1, CCARE-258) the participant didn't know what
+// HIQA was, and the word record threw them. The search is in the hero at the top. Left-aligned in
+// the page's column, level with the sections above, rather than centred.
+// TODO: point "What is HIQA?" at ClearCare's own page on HIQA and its data once it exists; until then
+// it goes to HIQA's own About us page.
 function StartBand() {
   return (
     <section
       aria-labelledby="start-h"
-      className={`${fullWidthClass} welcome-band -mb-6 px-4 py-12 md:-mb-10 md:px-8 md:py-16`}
+      className={`${fullWidthClass} welcome-band relative isolate -mb-6 overflow-hidden py-12 md:-mb-10 md:py-16`}
     >
-      <div className="reveal mx-auto flex max-w-3xl flex-col items-center gap-4 text-center adult:items-start adult:text-left">
-        <h2 id="start-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-          Check a nursing home&apos;s record
-        </h2>
-        <p className="text-ink-muted md:text-lg">Every HIQA inspection report, one page per home.</p>
-        <div className="mt-2 flex flex-wrap justify-center gap-3 adult:justify-start">
-          <Link href="/search" className={actionLinkClass}>
-            <Icon name="search" />
-            Search for a home <span aria-hidden>→</span>
-          </Link>
-          <Link href="/guides/how-a-family-chooses" className={secondaryLinkClass}>
-            See the steps
-          </Link>
+      {/* A report under a magnifying glass, large and faint behind the band's left side and cut off
+          by its edges, as a background rather than a picture beside the words (CCARE-258). Faint
+          enough that the words over it stay easy to read. Decoration only; not in the adult-centred
+          design, which keeps decoration to a minimum. */}
+      <svg
+        aria-hidden
+        viewBox="0 0 64 64"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        // Upright, taller than the band and anchored near its foot, so the top of the page is cut
+        // off but the lines and the magnifying glass, which say what it is, stay in view.
+        className="pointer-events-none absolute -bottom-6 -left-10 -z-10 size-96 text-primary opacity-[0.08] md:left-0 md:size-[30rem] adult:hidden"
+      >
+        <path d="M14 6h24l12 12v34a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4V10a4 4 0 0 1 4-4z" />
+        <path d="M38 6v12h12" />
+        <path d="M18 26h16M18 33h12M18 40h8" />
+        <circle cx="42" cy="44" r="9" />
+        <path d="M48.5 50.5 58 60" strokeWidth={3} />
+      </svg>
+      {/* The words on the left and the buttons on the right from desktop width, as in the survey
+          card above; stacked on smaller screens. */}
+      <div className="reveal page-column flex flex-col gap-6 px-4 md:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+        <div className="flex max-w-3xl flex-col gap-3">
+          <h2 id="start-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            Inspection reports from HIQA
+          </h2>
+          <p className="text-ink-muted md:text-lg">
+            HIQA, the Health Information and Quality Authority, inspects every nursing home for older people in Ireland
+            and publishes a report of each inspection. ClearCare uses those reports and sums them up, so they&apos;re
+            easier to read.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3 lg:shrink-0 lg:justify-end">
+          <a href="https://www.hiqa.ie/about-us" className={actionLinkClass}>
+            What is HIQA?
+            <ExternalIcon />
+          </a>
         </div>
       </div>
     </section>
@@ -135,7 +165,9 @@ function StartBand() {
 }
 
 // One of the mission and vision cards in About ClearCare: an icon beside the title, the card's
-// heading, and the statement as plain body text under them.
+// heading, and the statement as plain body text under them. Hovering the card plays its icon's
+// animation (statement-icon, globals.css, CCARE-258): the target's rings drawn in, or the light
+// bulb hopping and shining.
 function StatementCard({
   label,
   icon,
@@ -143,18 +175,86 @@ function StatementCard({
   children,
 }: {
   label: string;
-  icon: IconName;
+  icon: "mission" | "vision";
   tint: Tint;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm adult:rounded-lg adult:shadow-none">
-      {/* The icon beside the title, so the card is no taller than its words need. */}
-      <h3 className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
-        <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="reveal-pop" />
-        {label}
-      </h3>
-      <p className="text-ink-muted md:text-lg">{children}</p>
+    // The outer box is what slides in with its row (reveal-stagger), which sets its own transition;
+    // the card inside it lifts a little on hover, like a card picked up, as the site's buttons do,
+    // so the two motions don't share one transition. No lift with reduced motion or in the
+    // adult-centred design.
+    <div className="h-full">
+      <div
+        className={`group flex h-full flex-col gap-3 rounded-2xl border border-line bg-surface p-6 shadow-sm adult:rounded-lg adult:shadow-none ${liftCardClass}`}
+      >
+        {/* The icon beside the title, so the card is no taller than its words need. */}
+        <h3 className="flex items-center gap-3 font-heading text-xl font-semibold md:text-2xl">
+          <IconCircle size="large" tint={tint} className="reveal-pop">
+            {icon === "mission" ? <MissionIcon /> : <VisionIcon />}
+          </IconCircle>
+          {label}
+        </h3>
+        <p className="text-ink-muted md:text-lg">{children}</p>
+      </div>
     </div>
+  );
+}
+
+// A target, as ICON_PATHS.mission, as three parts: the two rings, which draw themselves in from the
+// outside when the card is hovered (pathLength 1, so one dash is a whole ring), and the dot, which
+// pops in after them.
+function MissionIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="statement-icon size-6"
+    >
+      <circle cx="12" cy="12" r="9" pathLength={1} className="mission-ring" transform="rotate(-90 12 12)" />
+      <circle
+        cx="12"
+        cy="12"
+        r="5"
+        pathLength={1}
+        className="mission-ring [--ring-delay:0.25s]"
+        transform="rotate(-90 12 12)"
+      />
+      <circle cx="12" cy="12" r="1" className="mission-dot" />
+    </svg>
+  );
+}
+
+// A light bulb, as ICON_PATHS.vision, in outline: when the card is hovered the bulb jumps up, and
+// five rays burst outwards around it on the way, fully out as it lands. The rays sit
+// well clear of the glass (from 8.5 to 11.5 units from its centre), so they run past the 24-unit
+// grid into the circle around it; the svg lets them show there (overflow visible).
+const GLASS = "M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z";
+
+function VisionIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      overflow="visible"
+      className="statement-icon size-6"
+    >
+      {/* The rays inside the bulb's group, so they jump with it rather than the glass rising
+          through them. */}
+      <g className="vision-bulb">
+        <g className="vision-rays" strokeWidth={2.2}>
+          <path d="M12 .5v-3M18 3l2.1-2.1M6 3 3.9.9M20.5 9h3M3.5 9h-3" />
+        </g>
+        <path d={`M9 18h6M10 21h4${GLASS}`} />
+      </g>
+    </svg>
   );
 }

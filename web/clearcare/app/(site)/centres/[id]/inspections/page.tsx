@@ -39,6 +39,7 @@ export default async function InspectionsPage({ params }: InspectionsPageProps) 
           trails={reports.trails}
           events={events}
           trailsHref={centrePath(id, "next-steps")}
+          updated={centre.register_snapshot.fetched_at}
         />
       ) : (
         // The heading on the band and the message in a card, as the other sections have. The timeline
@@ -52,7 +53,7 @@ export default async function InspectionsPage({ params }: InspectionsPageProps) 
           </div>
           {events && events.length > 0 && (
             <div className={`${sectionCardClass} px-4 py-5 md:px-7`}>
-              <Timeline events={events} />
+              <Timeline events={events} updated={centre.register_snapshot.fetched_at} />
             </div>
           )}
           {missingReports === "none-published" && (
