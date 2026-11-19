@@ -42,6 +42,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     too (settings.py): a closed gate consumes the claimed events and sends
     nothing, and a misdeclared one fails the stage before the database is
     touched.
+
+    A manual run takes no run lock (ADR-0022), so do not run it beside a
+    live pipeline pass: a digest can be emailed twice, and an event can be
+    marked processed while its ingest is still writing batches.
     """
     del argv  # no options: the schedule passes none, like geocode's
     logging.basicConfig(
@@ -74,9 +78,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         logger.error("database error: %s", error)
         return EXIT_FAILED
     _log(summary)
-    if summary.events_left:
-        # More events wait than this pass claimed; the next pass continues
-        # them, and the run is recorded as incomplete, not failed.
+    if summary.events_left or summary.emails_failed:
+        # Work the next pass retries (ADR-0022's exit 3, the run stays
+        # green): more events waited than this pass claimed, and receipts
+        # whose send failed carry their debt to the next attempt.
         return EXIT_RETRY
     return EXIT_DONE
 

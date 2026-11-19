@@ -293,3 +293,23 @@ def test_more_events_than_one_pass_claims_are_left_for_the_next() -> None:
 
     assert summary.claimed == 500
     assert summary.events_left == 100
+
+
+def test_a_cancelled_subscription_is_never_emailed_on_retry() -> None:
+    tables = _tables()
+    sender = FakeSender(failures=99)
+    addresses = FakeAddresses({SUB: "a@b.c"})
+
+    # The first pass fails and leaves the receipt owed.
+    dispatch(tables, sender, addresses, LINKS, sleep=lambda _s: None)
+    assert tables.receipts[0]["status"] == "failed"
+
+    # The account unsubscribes before the next pass: the row is gone.
+    tables.subscriptions.clear()
+
+    summary = dispatch(tables, sender, addresses, LINKS, sleep=lambda _s: None)
+
+    assert summary.receipts_skipped == 1
+    assert summary.emails_sent == 0
+    assert len(sender.calls) == 3  # the retried pass attempts nothing
+    assert tables.receipts[0]["status"] == "skipped"

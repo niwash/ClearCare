@@ -17,9 +17,13 @@ One pass of the dispatcher is, in order:
   with up to three attempts; receipts exhaust to ``failed`` and, after the
   attempt cap, ``skipped``.
 
-The gate (``SEND_EMAIL_ALERTS``) only shortens this: closed, the pass stops
+The gate (``CLEARCARE_ALERTS``) only shortens this: closed, the pass stops
 after the claimed events are marked processed, and no receipt is written, so
-nothing is owed and nothing sends.
+nothing is owed and nothing sends. The stage reads only the database, so a
+manual ``python -m clearcare_pipeline.send_alerts`` runs without the run
+lock (ADR-0022): do not run it beside a live pipeline pass, or a digest can
+double-send and an event can be marked processed while its ingest is still
+writing batches. The scheduler always runs it under the lock.
 """
 
 import logging
@@ -113,6 +117,10 @@ class Events(Protocol):
 
     def owed_receipts(self) -> list[Receipt]:
         """The receipts still owed an email, oldest first."""
+        ...
+
+    def still_subscribed(self, receipt_ids: Sequence[int]) -> list[int]:
+        """The receipt rows an active subscription still covers."""
         ...
 
     def mark_sent(self, receipt_ids: Sequence[int]) -> None:
@@ -384,6 +392,39 @@ class Dispatcher:
             )
             for row in rows
         ]
+
+    def still_subscribed(self, receipt_ids: Sequence[int]) -> list[int]:
+        """The receipt rows an active subscription still covers.
+
+        A failed send is retried by the next pass; if the account
+        unsubscribed in between, the row is skipped and never emailed. The
+        receipt's flat metadata names its kind: a ``centre_id`` alone a
+        centre, a ``county_id`` alone a county, and the empty object the
+        all-reports kind, whose subscription carries no target of its own.
+        """
+        if not receipt_ids:
+            return []
+        with self._connection.cursor() as cursor:
+            rows = cursor.execute(
+                "SELECT n.id"
+                " FROM clearcare.alert_notifications n"
+                " JOIN clearcare.alert_packages p"
+                "   ON p.scope = CASE"
+                "      WHEN n.metadata = '{}'::jsonb THEN 'ALL'"
+                "      WHEN n.metadata ? 'centre_id' THEN 'CENTRE'"
+                "      WHEN n.metadata ? 'county_id' THEN 'COUNTY'"
+                "   END"
+                " JOIN clearcare.alert_subscriptions s"
+                "   ON s.user_id = n.user_id"
+                "  AND s.alert_package_id = p.id"
+                "  AND s.is_active"
+                "  AND s.metadata = CASE"
+                "      WHEN n.metadata = '{}'::jsonb THEN '[]'::jsonb"
+                "      ELSE jsonb_build_array(n.metadata) END"
+                " WHERE n.id = ANY(%s)",
+                (list(receipt_ids),),
+            ).fetchall()
+        return [int(row[0]) for row in rows]
 
     def mark_sent(self, receipt_ids: Sequence[int]) -> None:
         """Records the receipts one email covered as sent."""

@@ -90,9 +90,24 @@ def dispatch(
     receipts_owed = events.consume(matches, event_ids) if claimed else 0
     # The receipts are the pass's real work list: this pass's new matches
     # and the failed sends of earlier passes alike, so a pass with no
-    # events to claim still sends what is owed.
+    # events to claim still sends what is owed. A receipt whose
+    # subscription the account has since cancelled is skipped, never sent:
+    # the retry scan reads statuses and attempt counts alone, so the
+    # unsubscription check happens here, at send time.
     receipts = events.owed_receipts()
     sent = failed = skipped = 0
+    if receipts:
+        still = set(events.still_subscribed([r.id for r in receipts]))
+        cancelled = [r for r in receipts if r.id not in still]
+        if cancelled:
+            logger.info(
+                "%d receipts are for targets the accounts no longer follow;"
+                " skipped and never sent",
+                len(cancelled),
+            )
+            events.mark_skipped([r.id for r in cancelled])
+            skipped += len(cancelled)
+        receipts = [r for r in receipts if r.id in still]
     if receipts:
         budget = _Backoff(sleep)
         names = _names(events, receipts)
