@@ -75,7 +75,7 @@ const STEPS: Step[] = [
   {
     // Not "a home's record": the word threw a participant in user testing (P2_1, CCARE-258).
     title: "Read about a home",
-    text: "In plain words: what to look at first, what happened after each inspection, and what to ask.",
+    text: "In plain words: the issues found, how the home responded, and what to ask.",
     href: "#example-h",
     action: "See an example",
     picture: <RecordPicture />,

@@ -1,9 +1,9 @@
 // components/centre/centre-highlights.tsx
-// What to look at first (CCARE-207, CCARE-212): the regulations a family should read about before
+// Issues found (CCARE-207, CCARE-212): the regulations a family should read about before
 // anything else, each as an open block rather than a row of a table, so it reads as something
 // found at the home rather than a record. Each has the judgement as a chip and why it's here in
 // plain words, the inspector's or provider's own words as a quote, and a line saying what happened
-// next with how it ended, which links to the full story on What happened next.
+// next with how it ended, which links to the full story on How the home responded.
 import {
   formatDate,
   formatMonth,
@@ -37,7 +37,7 @@ type CentreHighlightsProps = {
   highlights: Highlight[];
   trails: PromiseTrail[];
   inspections: Inspection[];
-  // The page the trails are on, What happened next (CCARE-212).
+  // The page the trails are on, How the home responded (CCARE-212).
   trailsHref: string;
   // The inspection history, where every regulation is (CCARE-212).
   inspectionsHref: string;
@@ -53,7 +53,7 @@ export function CentreHighlights({ highlights, trails, inspections, trailsHref, 
         {/* Every regulation is on the inspection history, for anyone who wants more than these. */}
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <h2 id="first-h" className={sectionHeadingClass}>
-            What to look at first
+            Issues found
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <RecordPrintButton />
@@ -145,7 +145,7 @@ export function CentreHighlights({ highlights, trails, inspections, trailsHref, 
   );
 }
 
-// What happened next, in a line: what the home promised, or else how it was next judged,
+// How the home responded, in a line: what the home promised, or else how it was next judged,
 // with how it ended and a link to the whole story.
 function NextLine({ trail, inspections, href }: { trail: PromiseTrail; inspections: Inspection[]; href: string }) {
   const promise = trail.promises[0];

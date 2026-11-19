@@ -45,7 +45,7 @@ const cellBoxClass = "flex h-10 items-center justify-center rounded-md adult:h-1
 // show between its rows.
 const cellClass = "min-w-12 p-[1.5px]";
 
-// A cell is a mark, not a link (CCARE-258): it pointed to the finding's trail on What happened next,
+// A cell is a mark, not a link (CCARE-258): it pointed to the finding's trail on How the home responded,
 // but the record's words lead to their place on this page instead, and the grid does the same.
 function GridCell({ cell, regulation, inspection }: { cell: Cell; regulation: Regulation; inspection: Inspection }) {
   const label = JUDGEMENT_LABELS[cell.judgement];

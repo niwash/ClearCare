@@ -144,8 +144,8 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
             <li key={regulation.number} className="flex items-baseline font-medium">
               <Mark judgement="not-compliant" />
               <span className="sr-only">{JUDGEMENT_LABELS["not-compliant"]}: </span>
-              {/* Points to its cell in the grid beside the timeline, rather than leading to What happened
-                  next (CCARE-258). */}
+              {/* Points to its cell in the grid beside the timeline, rather than leading to How the home
+                  responded (CCARE-258). */}
               <ShowInGrid inspectionId={String(event.report_id)} regulation={regulation.number}>
                 {regulation.title}
               </ShowInGrid>
@@ -410,7 +410,7 @@ function ReportRequest({ event, href }: { event: ReportEvent; href: string }) {
 }
 
 // Each kind of thing's picture on the line: a magnifier for an inspection, as for what the inspector
-// found on What happened next, a calendar for a registration, the register's card for a change to it,
+// found on How the home responded, a calendar for a registration, the register's card for a change to it,
 // and the euro for a price.
 function rowIcon(kind: CentreEvent["kind"]): IconName {
   switch (kind) {
@@ -427,7 +427,7 @@ function rowIcon(kind: CentreEvent["kind"]): IconName {
   }
 }
 
-// One thing that happened, as a step down a timeline (CCARE-258), as the stories on What happened next
+// One thing that happened, as a step down a timeline (CCARE-258), as the stories on How the home responded
 // are told: its picture in a dot on a line that runs down to the next thing in the year, then the kind
 // of thing with its date, then what changed. It was a row of three columns, date, kind and change; in
 // user testing (P2_1) the participant struggled to find what the latest inspection found, so the
@@ -465,7 +465,7 @@ function Row({
         <Icon name={icon} className="size-4" />
       </span>
       <div className={`flex min-w-0 flex-1 flex-col gap-1.5 pt-1 ${last ? "" : "pb-5"}`}>
-        {/* The kind of thing, then its date beside it, as each step on What happened next has
+        {/* The kind of thing, then its date beside it, as each step on How the home responded has
             (CCARE-258). */}
         <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <span className="font-semibold">{label}</span>

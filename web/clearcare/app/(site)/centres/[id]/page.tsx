@@ -1,14 +1,15 @@
 // app/centres/[id]/page.tsx
 // A home's record: the overview (CCARE-212). The extra conditions on its registration when it has
 // any and what changed at it in the last six months (CCARE-235), the facts and what the home offers,
-// the things a family needs before anything else, and a pointer to what to ask on a visit. What to
-// look at first, what happened next, the inspection history and what to ask have pages of their own
+// the things a family needs before anything else, and a pointer to what to ask on a visit. Issues
+// found, how the home responded, the inspection history and what to ask have pages of their own
 // (look-first/, next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { ExtraConditions } from "@/components/centre/extra-conditions";
+import { RecentChanges } from "@/components/centre/recent-changes";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
@@ -45,7 +46,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports, amenities, hiqaCheckedAt } = record;
+  const { centre, reports, amenities, hiqaCheckedAt, events } = record;
 
   return (
     <>
@@ -57,8 +58,16 @@ export default async function CentrePage({ params }: CentrePageProps) {
             note={centre.chief_inspector_note ?? null}
             registerDate={centre.register_snapshot.fetched_at}
           />
-          {/* Recent changes was here; taken off the overview (CCARE-258). The same changes are on the
-              timeline in Inspection history. */}
+          {/* Taken off in CCARE-258, back as an amber note in CCARE-278. Not there when the events
+              couldn't be read, or from an API without them. */}
+          {events && (
+            <RecentChanges
+              events={events}
+              today={new Date().toISOString().slice(0, 10)}
+              currentNote={centre.chief_inspector_note ?? null}
+              timelineHref={centrePath(centre.centre_id, "inspections")}
+            />
+          )}
           <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} />
         </div>
       </Band>

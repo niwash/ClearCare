@@ -6,7 +6,7 @@
 // Laid out like a small record (CCARE-232). From desktop width the home and its latest inspection's
 // counts are on the left and what wasn't fully compliant on the right, rather than one column whose
 // rows were mostly empty; on narrower screens the two stack. Each finding is shown as the record
-// shows it on What to look at first: the regulation's name first, then how it was judged as the
+// shows it on Issues found: the regulation's name first, then how it was judged as the
 // record's own chip (finding-bits.tsx). The quotes that page has are left to it, as reading them
 // here would take more requests on every visit to the home page. Each column ends in its buttons,
 // so no strip under the two is left half empty: the record and another home under the counts, and

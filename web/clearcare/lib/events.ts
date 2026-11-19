@@ -309,3 +309,52 @@ export function missingReportsNote(events: CentreEvent[] | null, hiqaCheckedAt: 
   if (!noListedReport(events)) return null;
   return hiqaCheckedAt === null ? "not-added" : "none-published";
 }
+
+// A change to the home itself: to its entry on HIQA's register or to its contract price.
+export type ChangeEvent =
+  | ProviderEvent
+  | NameEvent
+  | BedsEvent
+  | ConditionAddedEvent
+  | ConditionChangedEvent
+  | ConditionRemovedEvent
+  | NoteAddedEvent
+  | NoteRemovedEvent
+  | PriceEvent;
+
+// The kinds the overview's "Recent changes" shows. A kind is listed to be shown, so a new one stays
+// off the overview until someone decides it is news. An inspection isn't: the overview's Inspections
+// card covers it. Nor is a registration, which is renewed as a matter of course.
+const CHANGE_KINDS: Record<ChangeEvent["kind"], true> = {
+  provider: true,
+  name: true,
+  beds: true,
+  condition_added: true,
+  condition_changed: true,
+  condition_removed: true,
+  note_added: true,
+  note_removed: true,
+  price: true,
+};
+
+// How many recent changes the overview shows; the rest are counted and are on the timeline.
+const RECENT_CHANGES_SHOWN = 3;
+
+// The day six months before this one. A month without that day gives its last: six months before
+// 31 August is 28 February, where Date alone would roll over into March.
+function sixMonthsBefore(day: ISODate): ISODate {
+  const [year, month, dayOfMonth] = day.split("-").map(Number);
+  const lastOfMonth = new Date(Date.UTC(year, month - 6, 0)).getUTCDate();
+  return new Date(Date.UTC(year, month - 7, Math.min(dayOfMonth, lastOfMonth))).toISOString().slice(0, 10);
+}
+
+// The home's changes of the last six months, counted from today (a day, "2026-11-12"): the newest
+// three, and how many more there are. A day's changes stay in the API's order.
+export function recentChanges(events: CentreEvent[], today: ISODate): { shown: ChangeEvent[]; more: number } {
+  const since = sixMonthsBefore(today);
+  const recent = events
+    .filter((event): event is ChangeEvent => event.kind in CHANGE_KINDS)
+    .filter((event) => event.date >= since)
+    .sort((a, b) => b.date.localeCompare(a.date));
+  return { shown: recent.slice(0, RECENT_CHANGES_SHOWN), more: Math.max(0, recent.length - RECENT_CHANGES_SHOWN) };
+}
