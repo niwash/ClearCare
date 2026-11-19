@@ -26,7 +26,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Reads a centre's events from the views the clearcare_api role can read (db/V24). */
+/** Reads a centre's events from the views the clearcare_api role can read (db/V24, db/V29). */
 @Repository
 class CentreEventsRepository {
 
@@ -38,8 +38,9 @@ class CentreEventsRepository {
   // day, so the same request gives the same order every time.
   private static final String INSPECTIONS =
       """
-      SELECT inspection_kind, inspection_date, published_date, inspection_type, report_id,
-          report_url, compliant, substantially_compliant, not_compliant, overall_judgment
+      SELECT inspection_kind, inspection_date, published_date, still_listed, inspection_type,
+          report_id, report_url, compliant, substantially_compliant, not_compliant,
+          overall_judgment
       FROM clearcare.centre_inspection
       WHERE centre_id = :centre_id
       ORDER BY report_url
@@ -134,10 +135,11 @@ class CentreEventsRepository {
   private static CentreEvent inspection(ResultSet row, int rowNumber) throws SQLException {
     LocalDate date = row.getObject("inspection_date", LocalDate.class);
     LocalDate publishedDate = row.getObject("published_date", LocalDate.class);
+    boolean stillListed = row.getBoolean("still_listed");
     String reportUrl = row.getString("report_url");
     String inspectionKind = row.getString("inspection_kind");
     if (inspectionKind == null) {
-      return new UnreadReport(date, publishedDate, reportUrl);
+      return new UnreadReport(date, publishedDate, stillListed, reportUrl);
     }
     return switch (inspectionKind) {
       case "regulation inspection" ->
@@ -145,6 +147,7 @@ class CentreEventsRepository {
               date,
               row.getString("inspection_type"),
               publishedDate,
+              stillListed,
               row.getLong("report_id"),
               reportUrl,
               row.getLong("compliant"),
@@ -155,6 +158,7 @@ class CentreEventsRepository {
               date,
               row.getString("inspection_type"),
               publishedDate,
+              stillListed,
               row.getString("overall_judgment"),
               reportUrl);
       default ->
