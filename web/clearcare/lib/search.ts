@@ -23,6 +23,10 @@ export interface CentreSummary {
   hiqa_url: string;
   amenities: MentionedAmenities | null; // null when none of its reports has been read yet
   fair_deal: boolean; // the API has an HSE contract price for it, so it takes part in Fair Deal
+  // That price, in euro per resident per week, as on the centre page (lib/centres.ts). null when
+  // the home has none; missing from an API older than the field (CCARE-277), so the card then says
+  // "Fair Deal" without it.
+  contract_price?: number | null;
   // The newest loaded report, or null when it has none; date is null when the report gives none.
   latest_inspection: { date: string | null } | null;
   // How far it is from near, in whole metres in a straight line (CCARE-226); null without near, or

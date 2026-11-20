@@ -1,11 +1,11 @@
 // components/search/card-result.tsx
-// One search result (CCARE-189): the home's name, where it is, its size and Fair Deal, how far it is
-// from the place searched from (CCARE-228), a button to shortlist it, a tick for each chosen filter
-// it meets, and the date of its latest inspection. The
+// One search result (CCARE-189): the home's name, where it is, its size and its weekly Fair Deal
+// price (CCARE-277), how far it is from the place searched from (CCARE-228), a button to shortlist
+// it, a tick for each chosen filter it meets, and the date of its latest inspection. The
 // filter ticks, Fair Deal and the inspection come from an API with the filters (lib/search.ts);
 // before that, the card has the name, place and size.
 import { CompareButton } from "@/components/compare/compare-button";
-import { formatDate } from "@/lib/centres";
+import { formatDate, formatWeeklyPrice } from "@/lib/centres";
 import { distanceText } from "@/lib/near";
 import type { CentreSummary } from "@/lib/search";
 import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
@@ -23,7 +23,10 @@ export function CardResult({ centre, selection }: CardResultProps) {
     townAndCounty(centre),
     // The most residents HIQA allows, not free beds; the register calls them residents.
     centre.maximum_occupancy !== null && `${centre.maximum_occupancy} residents`,
-    centre.fair_deal && "Fair Deal",
+    // "Fair Deal €1,405 a week": the price the HSE agreed with the home, so a family can compare
+    // costs without opening each page. From an API without the price, "Fair Deal" alone.
+    centre.fair_deal &&
+      (typeof centre.contract_price === "number" ? `Fair Deal ${formatWeeklyPrice(centre.contract_price)} a week` : "Fair Deal"),
   ].filter(Boolean);
   const distance = distanceText(centre.distance_m);
   const ticks = matchedLabels(selection, centre.amenities);

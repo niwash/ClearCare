@@ -26,13 +26,17 @@ sealed interface CentreEvent {
 
   /**
    * A regulation inspection whose report was read. The counts are of judgments, one per regulation.
-   * publishedDate is null when HIQA no longer lists the report.
+   * stillListed says whether the report was on the list of the centre's page when ClearCare last
+   * read it, and is false too when ClearCare has no listing for the report. HIQA takes reports off
+   * after three years, and the file at reportUrl is then usually gone. publishedDate is null only
+   * for a report that left the list before db/V22 kept the lists.
    */
   @JsonTypeName("inspection")
   record Inspection(
       LocalDate date,
       String inspectionType,
       LocalDate publishedDate,
+      boolean stillListed,
       long reportId,
       String reportUrl,
       long compliant,
@@ -46,13 +50,15 @@ sealed interface CentreEvent {
       LocalDate date,
       String inspectionType,
       LocalDate publishedDate,
+      boolean stillListed,
       String overallJudgment,
       String reportUrl)
       implements CentreEvent {}
 
-  /** A report HIQA lists that ClearCare holds no reading of. date is the listed one. */
+  /** A report HIQA lists or has listed that ClearCare holds no reading of. date is the listed one. */
   @JsonTypeName("unread_report")
-  record UnreadReport(LocalDate date, LocalDate publishedDate, String reportUrl)
+  record UnreadReport(
+      LocalDate date, LocalDate publishedDate, boolean stillListed, String reportUrl)
       implements CentreEvent {}
 
   /** A registration, dated by its own date. The other register changes are dated by the day the

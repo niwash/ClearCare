@@ -16,6 +16,8 @@ class SavedSearchTest {
   void refusesADocumentTheSearchPageCouldNotHaveSent() {
     SavedSearch good = new SavedSearch("Cork", List.of("dementia"), null, null, null, "name");
     assertThat(good.checked().careTypes()).containsExactly("dementia");
+    assertThat(new SavedSearch(null, null, null, null, null, "price").checked().sortBy())
+        .isEqualTo("price");
 
     assertThatThrownBy(() -> new SavedSearch("Cork", null, null, null, null, "newest").checked())
         .isInstanceOf(ResponseStatusException.class);

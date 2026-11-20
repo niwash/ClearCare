@@ -56,7 +56,8 @@ class CentreEventsTest {
   private static final String NO_EVENTS = "99";
 
   // The register, the reports, the contract prices and their view, the register changes, the
-  // listed reports, the thematic reports and the views over them, as Flyway runs them (ADR-0010).
+  // listed reports, the thematic reports, the views over them and whether each report is still
+  // listed, as Flyway runs them (ADR-0010).
   private static final List<String> MIGRATIONS =
       List.of(
           "db/V1__register_entries.sql",
@@ -67,7 +68,8 @@ class CentreEventsTest {
           "db/V21__register_changes.sql",
           "db/V22__listed_reports.sql",
           "db/V23__thematic_reports.sql",
-          "db/V24__centre_events.sql");
+          "db/V24__centre_events.sql",
+          "db/V29__reports_still_listed.sql");
 
   // A register snapshot, so that the centres exist (db/V1).
   private static final String REGISTER =
@@ -101,7 +103,8 @@ class CentreEventsTest {
   // date; HIQA lists it under 12 May, and lists a file that has not been read under 13 May.
   // Regulation 16 is in report 1 twice, as the parser reads a few reports (db/V4), and counts
   // once. Two listed dates cannot be right: the year 0026, and a day after the report was
-  // published. Stella Maris has one listed report.
+  // published. HIQA has taken the report of 7 March 2024 off the centre's page since it was listed.
+  // Stella Maris has one listed report.
   private static final String REPORTS =
       """
       INSERT INTO clearcare.source_file (source, url, sha256, fetched_at)
@@ -160,6 +163,10 @@ class CentreEventsTest {
            '2024-03-07', '2024-04-19', 'Nursing Homes', NULL),
           ('77', 'https://www.hiqa.ie/test/77-2-february-2026.pdf', '77-2-february-2026.pdf',
            '2026-02-02', '2026-03-30', 'Nursing Homes', NULL);
+
+      -- As the pipeline marks a report that has left the centre's list (db/V29).
+      UPDATE clearcare.listed_report SET still_listed = false
+      WHERE url = 'https://www.hiqa.ie/test/34-7-march-2024.pdf';
       """;
 
   // The register changes the pipeline found (db/V21): one of each kind for Elm Hall, a name
@@ -277,11 +284,11 @@ class CentreEventsTest {
             "inspection",
             """
             [{"kind": "inspection", "date": "2026-05-13", "inspection_type": "Unannounced",
-              "published_date": "2026-06-20", "report_id": 1,
+              "published_date": "2026-06-20", "still_listed": true, "report_id": 1,
               "report_url": "https://www.hiqa.ie/test/34-13-may-2026.pdf",
               "compliant": 2, "substantially_compliant": 1, "not_compliant": 1},
              {"kind": "inspection", "date": "2023-06-20", "inspection_type": "Announced",
-              "published_date": null, "report_id": 2,
+              "published_date": null, "still_listed": false, "report_id": 2,
               "report_url": "https://www.hiqa.ie/test/34-20-june-2023.pdf",
               "compliant": 1, "substantially_compliant": 0, "not_compliant": 0}]
             """),
@@ -290,20 +297,24 @@ class CentreEventsTest {
             """
             [{"kind": "thematic_inspection", "date": "2025-11-04",
               "inspection_type": "Unannounced", "published_date": "2025-12-10",
+              "still_listed": true,
               "overall_judgment": "Substantially Compliant",
               "report_url": "https://www.hiqa.ie/test/34-4-november-2025.pdf"}]
             """),
+        // The report of 7 March 2024 has left HIQA's list since it was listed: it keeps its
+        // published date, and only still_listed says so. Report 2 above left before the lists
+        // were kept and has neither.
         arguments(
             "unread_report",
             """
             [{"kind": "unread_report", "date": "2026-05-13", "published_date": "2026-06-27",
-              "report_url": "https://www.hiqa.ie/test/34-follow-up.pdf"},
+              "still_listed": true, "report_url": "https://www.hiqa.ie/test/34-follow-up.pdf"},
              {"kind": "unread_report", "date": null, "published_date": "2026-04-15",
-              "report_url": "https://www.hiqa.ie/test/34-9-january-2026.pdf"},
+              "still_listed": true, "report_url": "https://www.hiqa.ie/test/34-9-january-2026.pdf"},
              {"kind": "unread_report", "date": null, "published_date": "2026-03-16",
-              "report_url": "https://www.hiqa.ie/test/34-4-november-2026.pdf"},
+              "still_listed": true, "report_url": "https://www.hiqa.ie/test/34-4-november-2026.pdf"},
              {"kind": "unread_report", "date": "2024-03-07", "published_date": "2024-04-19",
-              "report_url": "https://www.hiqa.ie/test/34-7-march-2024.pdf"}]
+              "still_listed": false, "report_url": "https://www.hiqa.ie/test/34-7-march-2024.pdf"}]
             """),
         arguments(
             "registration",
@@ -413,7 +424,7 @@ class CentreEventsTest {
             json.readTree(
                 """
                 {"kind": "inspection", "date": "2026-05-13", "inspection_type": "Unannounced",
-                 "published_date": "2026-06-20", "report_id": 1,
+                 "published_date": "2026-06-20", "still_listed": true, "report_id": 1,
                  "report_url": "https://www.hiqa.ie/test/34-13-may-2026.pdf",
                  "compliant": 2, "substantially_compliant": 1, "not_compliant": 1}
                 """));
@@ -422,7 +433,7 @@ class CentreEventsTest {
             json.readTree(
                 """
                 {"kind": "unread_report", "date": "2026-05-13", "published_date": "2026-06-27",
-                 "report_url": "https://www.hiqa.ie/test/34-follow-up.pdf"}
+                 "still_listed": true, "report_url": "https://www.hiqa.ie/test/34-follow-up.pdf"}
                 """));
   }
 
@@ -476,7 +487,7 @@ class CentreEventsTest {
                       "centre_id": "77",
                       "events": [
                         {"kind": "unread_report", "date": "2026-02-02",
-                         "published_date": "2026-03-30",
+                         "published_date": "2026-03-30", "still_listed": true,
                          "report_url": "https://www.hiqa.ie/test/77-2-february-2026.pdf"},
                         {"kind": "registration", "date": "2025-03-01",
                          "registered_until": "2028-02-29"}

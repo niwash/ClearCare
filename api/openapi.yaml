@@ -44,8 +44,9 @@ paths:
         whose newest report has no date come last, together with centres
         without a report, and ties are in name order. `sort=distance` orders
         them by `distance_m`, nearest first, and needs `near`; centres without
-        a distance come last, and ties are in name order. Results are not
-        ranked.
+        a distance come last, and ties are in name order. `sort=price` orders
+        them by `contract_price`, lowest first; centres without a price come
+        last, and ties are in name order. Results are not ranked.
 
         An unknown parameter, an unknown item name or sort, `sort=distance`
         without `near`, or a parameter other than the four filters given more
@@ -66,7 +67,7 @@ paths:
           description: The order of the results, as described above.
           schema:
             type: string
-            enum: [name, latest_inspection, distance]
+            enum: [name, latest_inspection, distance, price]
             default: name
         - name: page
           in: query
@@ -110,6 +111,7 @@ paths:
                       activities: ["Music and singing", "Bingo"]
                       facilities: ["Garden", "Lounge/day room"]
                     fair_deal: true
+                    contract_price: 1908.00
                     latest_inspection:
                       date: "2026-01-15"
                     distance_m: null
@@ -415,8 +417,14 @@ paths:
         the report prints; one that was not is an `unread_report`, dated as
         HIQA lists it. A listed date that cannot be right, one before 2007 or
         after the day the report was published, is not given: `date` is
-        `null`. A report that was read and that HIQA no longer lists is still
-        an event, with `published_date` `null`.
+        `null`.
+
+        `still_listed` is `false` when the report was not on the list of the
+        centre's page when ClearCare last read it, or when ClearCare has no
+        listing for it. HIQA takes reports off the page after three years,
+        and the file is then usually gone. The report is still an event. One
+        that was read and that left the list before ClearCare kept the lists
+        has `published_date` `null` as well.
 
         A `registration` is dated by the registration date. Every other
         register change is dated by the day the register first showed it,
@@ -472,6 +480,7 @@ paths:
                     date: "2026-05-13"
                     inspection_type: Unannounced
                     published_date: "2026-06-20"
+                    still_listed: true
                     report_id: 1
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-13-may-2026.pdf
                     compliant: 14
@@ -480,11 +489,13 @@ paths:
                   - kind: unread_report
                     date: null
                     published_date: "2026-04-15"
+                    still_listed: true
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-9-january-2026.pdf
                   - kind: thematic_inspection
                     date: "2025-11-04"
                     inspection_type: Unannounced
                     published_date: "2025-12-10"
+                    still_listed: true
                     overall_judgment: Substantially Compliant
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-4-november-2025.pdf
                   - kind: registration
@@ -942,9 +953,9 @@ paths:
 
         A document the search page could not have produced is refused with 400:
         an option that is not a slug of lower-case letters, digits and hyphens,
-        an order that is not `name` or `latest_inspection`, or more options than
-        a page can hold. Lists that are left out are stored empty, and a missing
-        `sort` is stored as `name`.
+        an order that is not `name`, `latest_inspection` or `price`, or more
+        options than a page can hold. Lists that are left out are stored
+        empty, and a missing `sort` is stored as `name`.
       parameters:
         - name: X-ClearCare-Sub
           in: header
@@ -987,7 +998,7 @@ paths:
               example:
                 title: Bad Request
                 status: 400
-                detail: sort must be name or latest_inspection
+                detail: sort_by must be name, latest_inspection or price
                 instance: /preferences
         "401":
           description: The request did not come from the site.
@@ -1170,7 +1181,7 @@ components:
           $ref: "#/components/schemas/Facets"
         sort:
           type: string
-          enum: [name, latest_inspection, distance]
+          enum: [name, latest_inspection, distance, price]
           description: The order applied to the results.
 
     CentreSummary:
@@ -1180,7 +1191,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [amenities, fair_deal, latest_inspection, distance_m]
+          required: [amenities, fair_deal, contract_price, latest_inspection, distance_m]
           properties:
             amenities:
               description: >
@@ -1198,6 +1209,14 @@ components:
                 Whether a contract price is stored for the centre, the one
                 `GET /centres/{centre_id}` returns as `contract_price`. It
                 does not show that the centre is on the newest HSE list.
+            contract_price:
+              type: [number, "null"]
+              description: >
+                The latest published contract price for the centre, in euro
+                per resident per week: the value `GET /centres/{centre_id}`
+                returns as `contract_price`. null when no price list has been
+                loaded for it.
+              example: 1908.00
             latest_inspection:
               description: >
                 The centre's newest loaded inspection report, or null when
@@ -1667,6 +1686,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - report_id
         - report_url
         - compliant
@@ -1690,8 +1710,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         report_id:
           type: integer
           format: int64
@@ -1722,6 +1749,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - overall_judgment
         - report_url
       properties:
@@ -1739,8 +1767,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         overall_judgment:
           type: string
           description: The overall judgment, as the report prints it.
@@ -1752,9 +1787,10 @@ components:
     UnreadReportEvent:
       type: object
       description: >
-        A report HIQA lists for the centre that ClearCare holds no reading of:
-        its file is not stored yet, or its layout cannot be read.
-      required: [kind, date, published_date, report_url]
+        A report HIQA lists or has listed for the centre that ClearCare holds
+        no reading of: its file is not stored yet, or its layout cannot be
+        read.
+      required: [kind, date, published_date, still_listed, report_url]
       properties:
         kind:
           const: unread_report
@@ -1769,6 +1805,13 @@ components:
           type: string
           format: date
           description: The day HIQA published the report.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. HIQA takes reports off the
+            page after three years, and the file at `report_url` is then
+            usually gone.
         report_url:
           type: string
           format: uri
@@ -2688,7 +2731,7 @@ components:
             pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
         sort_by:
           type: string
-          enum: [name, latest_inspection]
+          enum: [name, latest_inspection, price]
           description: >
             `distance` cannot be saved, because it needs `near` and a place is
             never stored.
