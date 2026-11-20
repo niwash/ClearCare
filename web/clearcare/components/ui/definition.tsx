@@ -8,18 +8,20 @@
 //
 // The box is put on the page's top layer, at the word's place in the window, rather than inside the
 // word's parent: the inspection grid scrolls sideways, and a box inside it would be cut off by its
-// edges. So it closes when the page or the grid scrolls, and opens above the word when there isn't
-// room under it.
-import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+// edges. So it closes when the page or the grid scrolls. Once drawn it is measured, and opens above
+// the word when it doesn't fit under it and there's more room above: a long meaning in Easier to read
+// is taller than a guess would allow, and near the bottom of a phone screen its last lines were cut
+// off (PR #220 review).
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
-type Place = { left: number; width: number; top?: number; bottom?: number };
+// Where the word is in the window, and the box's width and left edge, fixed when it opens.
+type Place = { word: DOMRect; left: number; width: number };
 
-// The box's width, and how far it keeps from the window's edges.
+// The box's width, how far it keeps from the window's edges, and the gap between it and the word.
 const WIDTH = 320;
 const EDGE = 12;
-// Roughly how tall a box of two or three lines is, to decide whether it fits under the word.
-const ROOM_NEEDED = 150;
+const GAP = 6;
 
 export function Definition({
   children,
@@ -39,6 +41,7 @@ export function Definition({
 }) {
   const [place, setPlace] = useState<Place | null>(null);
   const button = useRef<HTMLButtonElement>(null);
+  const box = useRef<HTMLDivElement>(null);
   const boxId = useId();
 
   function open() {
@@ -46,9 +49,23 @@ export function Definition({
     if (!word) return;
     const width = Math.min(WIDTH, window.innerWidth - EDGE * 2);
     const left = Math.min(Math.max(word.left, EDGE), window.innerWidth - width - EDGE);
-    const below = window.innerHeight - word.bottom > ROOM_NEEDED || word.top < ROOM_NEEDED;
-    setPlace(below ? { left, width, top: word.bottom + 6 } : { left, width, bottom: window.innerHeight - word.top + 6 });
+    setPlace({ word, left, width });
   }
+
+  // Before it's painted: under the word if it fits there, otherwise on the side with more room, kept
+  // inside the window. It's drawn hidden until then, so it never shows in the wrong place.
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!place || !el) return;
+    const { word } = place;
+    const below = window.innerHeight - word.bottom - GAP - EDGE;
+    const above = word.top - GAP - EDGE;
+    const under = el.offsetHeight <= below || below >= above;
+    el.style.top = under ? `${word.bottom + GAP}px` : "";
+    el.style.bottom = under ? "" : `${window.innerHeight - word.top + GAP}px`;
+    el.style.maxHeight = `${Math.max(under ? below : above, 0)}px`;
+    el.style.visibility = "visible";
+  }, [place]);
 
   // Closed by scrolling anything (it would no longer be under its word), by a tap elsewhere (phones
   // don't move focus on a tap) and by Escape.
@@ -94,10 +111,11 @@ export function Definition({
       {place &&
         createPortal(
           <div
+            ref={box}
             id={boxId}
             role="tooltip"
-            style={{ left: place.left, width: place.width, top: place.top, bottom: place.bottom }}
-            className="pointer-events-none fixed z-50 flex flex-col gap-1 rounded-xl border border-line bg-surface p-3 text-sm text-ink shadow-lg adult:rounded-md print:hidden"
+            style={{ left: place.left, width: place.width, visibility: "hidden" }}
+            className="pointer-events-none fixed z-50 flex overflow-hidden flex-col gap-1 rounded-xl border border-line bg-surface p-3 text-sm text-ink shadow-lg adult:rounded-md print:hidden"
           >
             <span className="font-semibold">{title}</span>
             <span className="text-ink-muted">{meaning}</span>

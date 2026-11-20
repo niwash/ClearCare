@@ -12,6 +12,7 @@ import {
   getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  fromLatestReport,
   noneFoundWords,
   type CentreAmenities,
   type CentreDetail,
@@ -88,7 +89,7 @@ export async function GET(request: Request) {
         !amenities
           ? "Not read from its reports yet"
           : amenities[key].length === 0
-            ? noneFoundWords(amenities, reports?.inspections)
+            ? noneFoundWords(amenities, fromLatestReport(amenities, reports?.inspections))
             : amenities[key].map(({ item }) => item).join("; "),
       ),
     ),
