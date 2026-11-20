@@ -53,24 +53,24 @@
      - Increase collaboration and activity over the final weeks
 
 2. **Tasks for next Sprint**
-   - Data cleaning documentation, including finding outliers (e.g. One house was only 342 EU per week, see teams notes)
-   - Documentation of new competing websites (see teams notes)
+   - Data cleaning documentation, including finding outliers (e.g. one home was only €342 per week, see Teams notes)
+   - Documentation of new competing websites (see Teams notes)
    - Website testing and benchmarking
-   - Finalisation of the Fair Deal Calculator 
-   - More user interviews, documentation of changes, and UX/UI changes 
-   - Sticky bar, change of icon in Dark Mode, and Guides redesign 
-   - Research questions 
-   - Gold set and evaluation 
-   - Finalising the legality documents 
-   - Start drafting the final report 
+   - Finalisation of the Fair Deal Calculator
+   - More user interviews, documentation of changes, and UX/UI changes
+   - Sticky bar, change of icon in Dark Mode, and Guides redesign
+   - Research questions
+   - Gold set and evaluation
+   - Finalising the legality documents
+   - Start drafting the final report
 
 ### **4. Team Decisions**
 
-- Whether to declare ourselves as an independent group or keep the TUD mentioned in the privacy notice
+- To decide: whether to declare ourselves as an independent group or keep the TUD mentioned in the privacy notice
 - For developers, see open source
 - Keep the session storage version of the shortlist for free users, while accounts can save shortlists and comparison tables for the future
-- Whether to add a chatbot
-- SEO
+- To decide: whether to add a chatbot
+- To decide: SEO
 
 ### **5. Next Steps**
 
