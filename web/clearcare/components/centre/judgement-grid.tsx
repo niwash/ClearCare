@@ -17,6 +17,9 @@ import {
   type RegulationHistory,
 } from "@/lib/centres";
 import { judgementGrid, type Cell } from "@/lib/judgements";
+import { regulationQuote } from "@/lib/regulations";
+import { Definition } from "@/components/ui/definition";
+import type { ReactNode } from "react";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { MoreRegulations } from "./more-regulations";
@@ -54,7 +57,10 @@ function GridCell({ cell, regulation, inspection }: { cell: Cell; regulation: Re
 
   return (
     <td data-col={inspection.id} data-reg={regulation.number} data-judgement={cell.judgement} className={cellClass}>
-      <span className={boxClass}>
+      {/* What the mark means and when, on hover (CCARE-278): in user testing (P2_4) the participant
+          wasn't sure what the marks meant. A screen reader already hears the judgement and the
+          column's date. */}
+      <span className={boxClass} title={`${label}, ${formatDate(inspection.date)}`}>
         {mark}
         <span className="sr-only">{label}</span>
       </span>
@@ -70,6 +76,36 @@ function restWords(count: number, hasRows: boolean) {
   // Not "All 1": that is not English.
   const subject = hasRows ? `${count} other ${regulations}` : count === 1 ? `1 ${regulations}` : `All ${count} ${regulations}`;
   return `${subject}: compliant whenever ${judged} judged.`;
+}
+
+// A regulation's title, with HIQA's words for it a hover or tap away (CCARE-278): in user testing (P2_4)
+// the participant didn't know what "Premises" meant. A regulation ClearCare has no quote for is its
+// title alone; a clamped one keeps its whole title on hover.
+function RegulationTitle({ regulation, className = "", children }: { regulation: Regulation; className?: string; children?: ReactNode }) {
+  const quote = regulationQuote(regulation);
+  const words = children ?? regulation.title;
+  if (!quote) {
+    return (
+      <span className={className} title={regulation.title}>
+        {words}
+      </span>
+    );
+  }
+  return (
+    // HIQA's words in quotation marks, and which of HIQA's they are (lib/regulations.ts).
+    <Definition
+      title={`Regulation ${regulation.number}: ${regulation.title}`}
+      meaning={`“${quote.text}”`}
+      source={
+        quote.kind === "standard"
+          ? `HIQA National Standard ${quote.standard}, which this regulation is assessed against`
+          : "What HIQA’s inspectors ask about this regulation"
+      }
+      className={className}
+    >
+      {words}
+    </Definition>
+  );
 }
 
 // Keeps the titles in place while the grid scrolls sideways.
@@ -93,7 +129,7 @@ function RestList({ regulations, className = "" }: { regulations: Regulation[]; 
     <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 ${className}`}>
       {regulations.map((regulation) => (
         <li key={regulation.number} className="break-inside-avoid py-0.5">
-          {regulation.title}
+          <RegulationTitle regulation={regulation} />
         </li>
       ))}
     </ul>
@@ -157,9 +193,11 @@ export function JudgementGrid({ inspections, history, trails }: JudgementGridPro
                     {/* Two lines at most, so no row is taller than its boxes (CCARE-258): wide enough on a
                         phone (min-w-44) that the regulations' titles fit in two, and cut short with "…"
                         if one doesn't, its whole title still there for a screen reader and on hover. */}
-                    <span className="line-clamp-2 block max-w-72 min-w-44" title={regulation.title}>
+                    {/* What the regulation is about on hover or tap (CCARE-278), with its whole title,
+                        which replaces the title attribute that showed it on hover. */}
+                    <RegulationTitle regulation={regulation} className="line-clamp-2 block max-w-72 min-w-44">
                       <span className="grid-title rounded-md px-1.5 py-0.5 box-decoration-clone">{regulation.title}</span>
-                    </span>
+                    </RegulationTitle>
                   </th>
                   {cells.map((cell, index) => (
                     <GridCell key={columns[index].id} cell={cell} regulation={regulation} inspection={columns[index]} />

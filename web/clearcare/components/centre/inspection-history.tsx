@@ -3,7 +3,8 @@ import { RecordPrintButton } from "@/components/centre/record-print";
 import type { Inspection, PromiseTrail, RegulationHistory } from "@/lib/centres";
 import type { CentreEvent } from "@/lib/events";
 import { JudgementGrid } from "./judgement-grid";
-import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
+import { JUDGEMENT_LABELS, JUDGEMENT_MEANINGS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
+import { Definition } from "@/components/ui/definition";
 import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 import { Timeline } from "./timeline";
 
@@ -43,11 +44,26 @@ export function InspectionHistory({ inspections, history, trails, events, trails
       </div>
       <div className={sectionCardClass}>
         <div className="px-4 pb-4 pt-5 md:px-7">
+          {/* Each judgement's meaning on hover or tap (CCARE-278). */}
           <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
             {JUDGEMENT_ORDER.map((judgement) => (
               <li key={judgement} className="flex items-center gap-1.5">
                 <JudgementIcon judgement={judgement} size={12} />
-                {JUDGEMENT_LABELS[judgement]}
+                <Definition
+                  title={JUDGEMENT_LABELS[judgement]}
+                  meaning={
+                    JUDGEMENT_MEANINGS[judgement].from === "hiqa"
+                      ? `“${JUDGEMENT_MEANINGS[judgement].text}”`
+                      : JUDGEMENT_MEANINGS[judgement].text
+                  }
+                  source={
+                    JUDGEMENT_MEANINGS[judgement].from === "hiqa"
+                      ? "HIQA’s definition, from its assessment-judgment framework (2025)"
+                      : "Not one of HIQA’s judgements: ClearCare’s word for a regulation an inspection didn’t judge"
+                  }
+                >
+                  {JUDGEMENT_LABELS[judgement]}
+                </Definition>
               </li>
             ))}
           </ul>

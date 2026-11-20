@@ -94,7 +94,9 @@ export function CentreAmenitiesSection({ amenities, reportUrl, fromLatest = fals
           <ListCard key={label} label={label} icon={icon}>
             {items.length === 0 ? (
               // Nothing the report clearly supports, which doesn't mean the home has none.
-              <span className="text-ink-muted">None found in the report</span>
+              <span className="text-ink-muted">
+                {fromLatest ? "None found in the latest inspection" : "None found in the inspection report"}
+              </span>
             ) : (
               <>
                 {/* On paper, the plain list rather than the tags that open on hover or tap. */}
