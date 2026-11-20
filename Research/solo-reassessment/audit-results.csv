@@ -1,0 +1,9 @@
+report_id,centre_id,inspection_date,raw_export_entries,unique_export_judgments,printed_judgments,missing_legal_identifiers,pdf_pages,official_pdf
+990,329,2024-03-04,35,18,19,"{""Registration Regulation 4"": ""Substantially compliant""}","23,24",https://www.hiqa.ie/system/files/inspectionreports/329-claremount-nursing-home-04-march-2024.pdf
+989,329,2025-02-07,12,12,13,"{""Registration Regulation 7"": ""Compliant""}",16,https://www.hiqa.ie/system/files/inspectionreports/329-claremount-nursing-home-07-february-2025.pdf
+374,5800,2024-01-19,2,2,2,{},12,https://www.hiqa.ie/system/files/inspectionreports/5800-tlc-carton-19-january-2024.pdf
+373,5800,2024-02-15,15,15,16,"{""Registration Regulation 7"": ""Compliant""}",21,https://www.hiqa.ie/system/files/inspectionreports/5800-tlc-carton-15-february-2024.pdf
+102,491,2023-11-15,13,13,13,{},15,https://www.hiqa.ie/system/files/inspectionreports/491-clonskeagh-community-nursing-unit-15-november-2023.pdf
+101,491,2024-10-02,12,12,12,{},13,https://www.hiqa.ie/system/files/inspectionreports/491-clonskeagh-community-nursing-unit-02-october-2024.pdf
+434,200,2023-10-10,19,19,19,{},16,https://www.hiqa.ie/system/files/inspectionreports/200-bishopscourt-residential-care-11-october-2023.pdf
+430,200,2026-02-26,14,14,14,{},14,https://www.hiqa.ie/system/files/inspectionreports/200-bishopscourt-nursing-home-limited-26-february-2026.pdf
