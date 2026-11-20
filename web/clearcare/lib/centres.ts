@@ -363,8 +363,8 @@ export interface CentreAmenities {
 // would be wrong, so it says "the inspection report". Nothing found doesn't mean the home has none.
 export function noneFoundWords(amenities: Pick<CentreAmenities, "report_id">, inspections: { id: string }[] | undefined) {
   return inspections?.at(-1)?.id === String(amenities.report_id)
-    ? "None found in the latest inspection"
-    : "None found in the inspection report";
+    ? "None found mentioned in the latest inspection report"
+    : "None found mentioned in the inspection report";
 }
 
 interface CentreAmenitiesResult {
