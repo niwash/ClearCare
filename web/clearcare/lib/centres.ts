@@ -363,14 +363,19 @@ export interface CentreAmenities {
   model: string;
 }
 
+// Whether the amenities were read from the latest of the home's regulation reports ClearCare has read.
+export function fromLatestReport(amenities: Pick<CentreAmenities, "report_id"> | null, inspections: { id: string }[] | undefined) {
+  return !!amenities && inspections?.at(-1)?.id === String(amenities.report_id);
+}
+
 // What a list of the home's offers says when the AI tool found nothing for it (CCARE-278). It said
-// "None found in the report"; in user testing (P2_3) the participant didn't know which report. When the
-// amenities were read from the home's latest report it says so; read from an older one, "the latest"
-// would be wrong, so it says "the inspection report". Nothing found doesn't mean the home has none.
-export function noneFoundWords(amenities: Pick<CentreAmenities, "report_id">, inspections: { id: string }[] | undefined) {
-  return inspections?.at(-1)?.id === String(amenities.report_id)
-    ? "None found mentioned in the latest inspection report"
-    : "None found mentioned in the inspection report";
+// "None found in the report"; in user testing (P2_3) the participant didn't know which report. It names
+// the report by its date when the amenities have one, since "the latest" is judged only from the reports
+// ClearCare has read, and a newer thematic or unread report would make it wrong. Without a date it says
+// "the latest" only when fromLatest. Nothing found doesn't mean the home has none.
+export function noneFoundWords(amenities: Pick<CentreAmenities, "inspection_date">, fromLatest: boolean) {
+  if (amenities.inspection_date) return `None found mentioned in the ${formatDate(amenities.inspection_date)} inspection report`;
+  return fromLatest ? "None found mentioned in the latest inspection report" : "None found mentioned in the inspection report";
 }
 
 interface CentreAmenitiesResult {

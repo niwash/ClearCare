@@ -36,6 +36,7 @@ import {
   getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  fromLatestReport,
   noneFoundWords,
   type CentreAmenities,
   type CentreDetail,
@@ -468,7 +469,7 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             cells: each(({ amenities, reports }) => {
               if (!amenities) return <Muted>Not read from its reports yet</Muted>;
               const mentioned = new Set(amenities[key].map(({ item }) => item));
-              if (mentioned.size === 0) return <Muted>{noneFoundWords(amenities, reports?.inspections)}</Muted>;
+              if (mentioned.size === 0) return <Muted>{noneFoundWords(amenities, fromLatestReport(amenities, reports?.inspections))}</Muted>;
               return (
                 <ul className="list-disc space-y-1 pl-4 text-sm marker:text-ink-muted">
                   {items

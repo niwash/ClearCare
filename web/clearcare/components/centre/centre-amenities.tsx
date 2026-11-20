@@ -7,7 +7,7 @@
 import { ShowHide } from "@/components/ui/chevron";
 import { Icon } from "@/components/ui/icons";
 import { sectionCardClass, sectionHeadingClass } from "./section-icon";
-import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centres";
+import { formatDate, noneFoundWords, type AmenityItem, type CentreAmenities } from "@/lib/centres";
 import type { ReactNode } from "react";
 import { AmenityIcon } from "./amenity-icon";
 import { AmenityTags, Passages } from "./amenity-tags";
@@ -95,7 +95,7 @@ export function CentreAmenitiesSection({ amenities, reportUrl, fromLatest = fals
             {items.length === 0 ? (
               // Nothing the report clearly supports, which doesn't mean the home has none.
               <span className="text-ink-muted">
-                {fromLatest ? "None found mentioned in the latest inspection report" : "None found mentioned in the inspection report"}
+                {noneFoundWords(amenities, fromLatest)}
               </span>
             ) : (
               <>

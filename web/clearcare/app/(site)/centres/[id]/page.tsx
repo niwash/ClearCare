@@ -20,6 +20,7 @@ import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
+  fromLatestReport,
   formatWeeklyPrice,
   HOME_TYPE_LABELS,
   type CentreDetail,
@@ -28,6 +29,7 @@ import {
 } from "@/lib/centres";
 import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
 import { TabPager } from "@/components/centre/tab-pager";
+import { returnQuery } from "@/lib/return-to-centre";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -77,7 +79,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
         <CentreAmenitiesSection
           amenities={amenities}
           reportUrl={reports?.inspections.find((inspection) => inspection.id === String(amenities?.report_id))?.reportUrl}
-          fromLatest={reports?.inspections.at(-1)?.id === String(amenities?.report_id)}
+          fromLatest={fromLatestReport(amenities, reports?.inspections)}
         />
         {/* The next page, where the Overview's facts end (CCARE-258), rather than at the foot of the
             page after the pointer to What to ask. */}
@@ -262,7 +264,7 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                     out what it was. */}
                 <Note>
                   Fair Deal, the government scheme, can help pay for nursing home care.{" "}
-                  <Link href="/guides/fair-deal" className="whitespace-nowrap text-ink-muted adult:text-primary print:hidden">
+                  <Link href={`/guides/fair-deal?${returnQuery(centre.centre_id)}`} className="whitespace-nowrap text-ink-muted adult:text-primary print:hidden">
                     How Fair Deal works →
                   </Link>
                 </Note>
