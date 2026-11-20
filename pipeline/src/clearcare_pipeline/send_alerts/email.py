@@ -89,8 +89,8 @@ class SesSender:
 
         The plain text is the fallback; the HTML part carries the same
         digest with the targets as clickable text. The one-click
-        unsubscribe headers are the template work CCARE-268 adds on top of
-        this call.
+        unsubscribe headers wait on CCARE-270's route and the raw-MIME
+        send path; the visible signed-out link is in the body meanwhile.
         """
         response = self._client.send_email(
             FromEmailAddress=self._from,
@@ -105,9 +105,9 @@ class SesSender:
                 }
             },
         )
-        message_id = response.get("MessageId")
+        message_id = response["MessageId"]
         logger.info("ses accepted the email as message %s", message_id)
-        return str(message_id)
+        return message_id
 
 
 @dataclass(frozen=True)

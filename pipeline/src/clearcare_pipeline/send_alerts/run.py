@@ -13,6 +13,8 @@ import time
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
+from botocore.exceptions import ClientError
+
 from clearcare_pipeline.send_alerts.cognito import Addresses
 from clearcare_pipeline.send_alerts.database import (
     ATTEMPT_CAP,
@@ -37,6 +39,19 @@ BACKOFF_BUDGET_SECONDS = 600.0
 
 # Attempts per pass, of the cap across passes (database.ATTEMPT_CAP).
 ATTEMPTS_PER_PASS = 3
+
+
+def _error_code(error: Exception) -> str:
+    """The provider's error code, never its message (ADR-0034).
+
+    SES can quote the recipient's address in a refusal, so a failed
+    attempt is logged by code; any other error is named by its class.
+    """
+    if isinstance(error, ClientError):
+        code = error.response.get("Error", {}).get("Code")
+        if isinstance(code, str):
+            return code
+    return type(error).__name__
 
 
 @dataclass(frozen=True)
@@ -285,7 +300,7 @@ def _send_user(
                 "attempt %d to email user %d failed: %s",
                 attempt,
                 user_id,
-                error,
+                _error_code(error),
             )
             if attempt < ATTEMPTS_PER_PASS:
                 budget.pause(attempt)
