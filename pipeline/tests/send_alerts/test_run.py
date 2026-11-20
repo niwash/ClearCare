@@ -1,6 +1,10 @@
 """One dispatch pass, against the tables in memory."""
 
+import logging
 from datetime import UTC
+
+import pytest
+from botocore.exceptions import ClientError
 
 from clearcare_pipeline.send_alerts.run import dispatch
 from clearcare_pipeline.send_alerts.settings import Links
@@ -15,6 +19,21 @@ EVENT = {
     "task_uuid": "00000000-0000-0000-0000-000000000001",
     "metadata": [{"centre_id": "117"}],
 }
+
+
+class RejectingSender:
+    """A sender that refuses with SES's error, the address in its message."""
+
+    def send(self, to: str, subject: str, text: str, html: str) -> str:
+        raise ClientError(
+            {
+                "Error": {
+                    "Code": "MessageRejected",
+                    "Message": f"{to} is not verified",
+                }
+            },
+            "SendEmail",
+        )
 
 
 def _tables(
@@ -191,6 +210,25 @@ def test_a_send_that_keeps_failing_is_retried_three_times_then_failed() -> None:
     receipt = tables.receipts[0]
     assert receipt["status"] == "failed"
     assert receipt["retry_count"] == 3
+
+
+def test_a_failed_send_logs_the_ses_code_and_not_the_address(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    tables = _tables()
+
+    with caplog.at_level(logging.WARNING):
+        summary = dispatch(
+            tables,
+            RejectingSender(),
+            FakeAddresses({SUB: "a@b.c"}),
+            LINKS,
+            sleep=lambda _s: None,
+        )
+
+    assert summary.emails_failed == 1
+    assert "MessageRejected" in caplog.text
+    assert "a@b.c" not in caplog.text
 
 
 def test_a_failed_send_is_retried_by_the_next_pass_and_ends_skipped() -> None:

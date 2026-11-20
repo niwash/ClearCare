@@ -16,7 +16,7 @@ const RUN_BY = "master's students at Technological University Dublin";
 const RESEARCH_RETENTION =
   "Research copies of the AI service's answers are kept for the duration of the project and deleted when it ends.";
 const SURVEY_RETENTION = "We keep the answers for the duration of the project and delete them when it ends.";
-const LAST_UPDATED = "11 November 2026";
+const LAST_UPDATED = "20 November 2026";
 
 export default function PrivacyPage() {
   return (
@@ -176,8 +176,8 @@ export default function PrivacyPage() {
             {/* The pool signs in by email and asks for nothing else (infra/aws/modules/cognito/main.tf):
                 no name is collected. If that changes, this changes in the same pull request. */}
             <li>
-              Your email address, held by Amazon Cognito in the EU. We use it to sign you in and to contact you about
-              your account. The legal basis is providing the service you asked for.
+              Your email address, held by Amazon Cognito in the EU. We use it to sign you in, to contact you about
+              your account, and to send the alerts you ask for. The legal basis is providing the service you asked for.
             </li>
             {/* Auth.js (PR #107) sets the session cookie, and short-lived state, PKCE and CSRF cookies
                 while you sign in. */}
@@ -195,6 +195,16 @@ export default function PrivacyPage() {
               type into the search box isn&apos;t kept. Saving one also keeps a number for your account, which
               the search is filed against. You can forget the search on the search page at any time; that leaves
               your account as it is, and if you ask us by email we remove the saved search along with the account.
+            </li>
+            {/* Alerts (ADR-0034, CCARE-270): clearcare.alert_subscriptions holds the package and its one
+                target, either a centre, a county or nothing for the all-reports kind, keyed on the account's
+                id in clearcare.users. The unsubscribe link carries a random per-account token from
+                clearcare.alert_unsubscribe (CCARE-267). Both cascade from clearcare.users. */}
+            <li>
+              Alerts you ask for: the nursing home, the county or every report you want to hear about. They&apos;re
+              kept with your account, and the unsubscribe link at the foot of each email stops all of them without
+              signing in; the link uses a random code for your account, not your address. Asking us by email to
+              delete your account removes them too.
             </li>
             {/* There's no delete route yet: an operator follows documentations/operations/account_deletion.md.
                 The database's automatic backups are kept for 7 days (infra/aws/live/rds.tf). */}
@@ -278,8 +288,9 @@ export default function PrivacyPage() {
 
           {/* GDPR Arts. 13 and 14 need the recipients, by category at least, and any transfer outside
               the EU with its safeguards. Categories, by the team's choice (PR #112). Checked against the
-              code on 11 Nov 2026, after CCARE-228 and CCARE-209: AWS in eu-north-1 (infra/aws), Vercel for
-              previews of the site, Anthropic (Research/Data Extraction/extractor.py by default, and
+              code on 20 Nov 2026, after CCARE-228, CCARE-209 and CCARE-270: AWS in eu-north-1 (infra/aws),
+              which also delivers the alert emails through SES, Vercel for previews of the site, Anthropic
+              (Research/Data Extraction/extractor.py by default, and
               pipeline/src/clearcare_pipeline/outcome_pilot.py) and OpenAI (extractor.py with --provider
               openai, and the amenities loaded before CCARE-198), the last three in the US, and Google (the
               search box's place suggestions, components/search/google-places.tsx, since CCARE-229 the search
@@ -291,10 +302,10 @@ export default function PrivacyPage() {
           <PrivacySubheading>Who handles it</PrivacySubheading>
           <p>
             Service providers handle data for us: hosting providers run the site and store its data in the EU, AI
-            services read the reports, and a maps service suggests places as you type in the search, draws the
-            map on the search page and shows the photos on a home&apos;s page. Some of these
-            providers are in the United States, where data is protected
-            by the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
+            services read the reports, a maps service suggests places as you type in the search, draws the map on
+            the search page and shows the photos on a home&apos;s page, and an email service delivers the alerts,
+            from the same EU region. Some of these providers are in the United States, where data is protected by
+            the safeguards EU law requires, such as the EU&ndash;US Data Privacy Framework or the European
             Commission&apos;s standard contractual clauses. Email us for a copy of these safeguards.
           </p>
         </PrivacySection>

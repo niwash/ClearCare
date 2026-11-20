@@ -57,13 +57,15 @@ rather than a list of centres. No log line carries an address
 (ADR-0034's boundary); the senders log the subject and the plain-text
 body, and the pass logs account row ids and message ids.
 
-What actually sends is `CLEARCARE_ALERTS_SENDER`, which this build holds at
-`log`, the stand-in that writes the rendered email to the stage's log and
-returns a counting fake id, so the whole flow runs with no AWS at all; the
-`ses` value and the SESv2 sender behind it are CCARE-268's to land. A
-gate that is open without a sender, a
-site address (`CLEARCARE_SITE_URL`) or the Cognito pool id
-(`CLEARCARE_COGNITO_USER_POOL_ID`) fails the stage before it touches the
+What actually sends is `CLEARCARE_ALERTS_SENDER`, which defaults to `ses`, the
+real sender through SESv2's `SendEmail` with the From address from
+`CLEARCARE_ALERTS_FROM`, the variable the deployed Terraform sets
+(CCARE-269's wiring; production carries "ClearCare <alerts@clearcare.ie>").
+`log` is the development override: the stand-in that writes the rendered
+email to the stage's log and returns a counting fake id, so the whole flow
+runs with no AWS at all. A gate that is open without a site address
+(`CLEARCARE_SITE_URL`), the Cognito pool id (`CLEARCARE_COGNITO_USER_POOL_ID`)
+or the From line for ses fails the stage before it touches the
 database: a misdeclared deployment must not look like a green pass that
 emails nothing. Each send is attempted up to three times a pass, with
 pauses of thirty seconds and two minutes between, paid out of a shared
@@ -80,8 +82,11 @@ events.
 A digest could have been one email per package, or per event, but the
 account reading five county alerts does not want five emails, and the
 receipt table's shape (one row per account per ingest run) was designed for
-exactly this grouping (ADR-0034). The SES sender sends plain text for now;
-the HTML template and the one-click `List-Unsubscribe` headers are
-CCARE-268's template work on top of the same call, and the subscribe
-endpoints the site needs are CCARE-270's, which owns the
-`/alerts/unsubscribe` route the links assume.
+exactly this grouping (ADR-0034). The SES sender sends both parts: a
+plain-text digest, and an HTML one whose targets are clickable text. The
+one-click `List-Unsubscribe` headers still wait on a raw-MIME send path;
+the API's `POST /alerts/unsubscribe` route (CCARE-270) gives them their
+target, and until then the simple send carries no custom headers and
+every email bears the visible signed-out link. That link opens a site
+page (CCARE-271), which asks the visitor to confirm and then posts the
+token to the route, so following the link alone changes nothing.

@@ -14,7 +14,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "boto3-stubs[s3,cognito-idp]>=1.43.103",
+    "boto3-stubs[s3,cognito-idp,sesv2]>=1.43.103",
     "httpx2>=2.14.0",
     "pyright>=1.1.414",
     "pytest>=8.4",

@@ -1,12 +1,12 @@
-"""What the dispatcher emails, and what it emails through.
+"""What the dispatcher emails, and what it emails through (CCARE-268).
 
 The dispatcher composes one digest per account and hands it to a sender. The
-sender is a seam: today it holds the log sender, which writes the email to
-the stage's log and returns a fake id, so the whole flow runs with no AWS at
-all; the SES sender joins it with CCARE-268, and the stage's code is the
-same either way. The email itself is two parts, an HTML body where the
-targets are clickable text and a plain-text fallback where each line spells
-its address out.
+sender is a seam: the log sender writes the email to the stage's log and
+returns a fake id, so the whole flow runs with no AWS at all; the SES sender
+calls SES and returns the message id. Which one runs is the deployment's
+choice (settings.py); the stage's code is the same either way. The email
+itself is two parts, an HTML body where the targets are clickable text and
+a plain-text fallback where each line spells its address out.
 
 No log line carries a recipient's address (ADR-0034): the senders log the
 subject and the body, and the dispatcher's own lines name the account by its
@@ -19,11 +19,14 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from html import escape
 from itertools import count
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
 
 from clearcare_pipeline.send_alerts.settings import Links
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from mypy_boto3_sesv2 import SESV2Client
 
 # The unsubscribe footer line, whose address is the account's signed-out
 # token: a capability, and logs are read by more people than an inbox.
@@ -70,6 +73,40 @@ class LogSender:
             subject,
             UNSUBSCRIBE_LINE.sub(r"\1[redacted]", text),
         )
+        return message_id
+
+
+class SesSender:
+    """The real sender: SESv2's SendEmail, a plain-text and HTML digest."""
+
+    def __init__(self, client: "SESV2Client", from_address: str) -> None:
+        """Creates the sender over one SESv2 client and its From line."""
+        self._client = client
+        self._from = from_address
+
+    def send(self, to: str, subject: str, text: str, html: str) -> str:
+        """Sends one email and returns SES's message id.
+
+        The plain text is the fallback; the HTML part carries the same
+        digest with the targets as clickable text. The one-click
+        unsubscribe headers wait on CCARE-270's route and the raw-MIME
+        send path; the visible signed-out link is in the body meanwhile.
+        """
+        response = self._client.send_email(
+            FromEmailAddress=self._from,
+            Destination={"ToAddresses": [to]},
+            Content={
+                "Simple": {
+                    "Subject": {"Data": subject, "Charset": "UTF-8"},
+                    "Body": {
+                        "Text": {"Data": text, "Charset": "UTF-8"},
+                        "Html": {"Data": html, "Charset": "UTF-8"},
+                    },
+                }
+            },
+        )
+        message_id = response["MessageId"]
+        logger.info("ses accepted the email as message %s", message_id)
         return message_id
 
 
