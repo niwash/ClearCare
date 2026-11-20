@@ -155,13 +155,13 @@ Earlier judgement is associated with whether a regulation is reassessed and with
 
 ## References and research materials
 
-[1] ClearCare. [ADR 0015 on next-report pairing](https://github.com/niwash/ClearCare/blob/CCARE-276-inspection-research-report/docs/adr/0015-re-assessment-view.md).
+[1] ClearCare. [ADR 0015 on next-report pairing](https://github.com/niwash/ClearCare/blob/main/docs/adr/0015-re-assessment-view.md).
 
 [2] ClearCare. [View-backed re-assessment endpoint](https://api.clearcare.ie/statistics/re-assessment). Study results use the preserved 17 November 2026 response, because the live endpoint can change.
 
-[3] ClearCare. [Study methods and snapshot description](https://github.com/niwash/ClearCare/blob/CCARE-276-inspection-research-report/Research/solo-reassessment/README.md), [detailed findings](https://github.com/niwash/ClearCare/blob/CCARE-276-inspection-research-report/Research/solo-reassessment/presentation-findings.md) and [result tables and scripts](https://github.com/niwash/ClearCare/blob/CCARE-276-inspection-research-report/Research/solo-reassessment).
+[3] ClearCare. [Study methods and snapshot description](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment/README.md), [detailed findings](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment/presentation-findings.md) and [result tables and scripts](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment).
 
-[4] Health Information and Quality Authority. Original inspection reports for Aclare House, The Marlay, Claremount, TLC Carton, Clonskeagh and Bishopscourt. Exact dates, official URLs and page references are listed in the source-audit appendix. [Additional audit records](https://github.com/niwash/ClearCare/blob/CCARE-276-inspection-research-report/Research/solo-reassessment/audit-results.csv).
+[4] Health Information and Quality Authority. Original inspection reports for Aclare House, The Marlay, Claremount, TLC Carton, Clonskeagh and Bishopscourt. Exact dates, official URLs and page references are listed in the source-audit appendix. [Additional audit records](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment/audit-results.csv).
 
 ## Appendix A Regulation counts
 
