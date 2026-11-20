@@ -29,10 +29,13 @@ export interface PendingPick {
 export function readSuggestion(text: { mainText: string; secondaryText: string }): Omit<PlaceSuggestion, "locate"> {
   // Every suggestion is in Ireland (includedRegionCodes), so the country says nothing.
   const where = text.secondaryText.replace(/(^|,\s*)Ireland$/, "");
-  // By name rather than by type: administrative_area_level_2 is also Cork City, and a Roscommon
-  // inside County Roscommon.
-  const county = text.mainText.startsWith("County ") ? countyNamed(text.mainText) : null;
-  return { main: text.mainText, label: [text.mainText, where].filter(Boolean).join(", "), county };
+  // By name rather than by type: administrative_area_level_2 is also Cork City. Google names a
+  // county "County Cavan", or "Cavan" inside "County Cavan", which it places at the county's middle;
+  // the town is "Cavan" with no county after it.
+  const named = text.mainText.startsWith("County ") || where === `County ${text.mainText}`;
+  const county = named ? countyNamed(text.mainText) : null;
+  const label = county ? `County ${county}` : [text.mainText, where].filter(Boolean).join(", ");
+  return { main: text.mainText, label, county };
 }
 
 // A routing key alone ("D6W", "A98"), which keeps the Eircode filter it has always had rather than
