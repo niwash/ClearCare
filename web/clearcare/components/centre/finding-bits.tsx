@@ -1,5 +1,5 @@
 // components/centre/finding-bits.tsx
-// Small pieces What to look at first and What happened next share (CCARE-212): a judgement as a
+// Small pieces Issues found and How the home responded share (CCARE-212): a judgement as a
 // coloured chip, what became of a finding in a word or two, and where a passage is in the report.
 // Written for families rather than inspectors: plain words, with the judgement's own label kept so
 // it matches the report and the history table.
@@ -161,7 +161,7 @@ export function Quotes({ quotes, bare = false }: { quotes: string[]; bare?: bool
   );
 }
 
-// What to ask the home, by how the story ended (What happened next, and What to ask). The reports stop
+// What to ask the home, by how the story ended (How the home responded, and What to ask). The reports stop
 // at the last inspection, so only the home can say what has happened since.
 // several: the question asked once about more than one topic (What to ask), so "this" is "these".
 export function askTheHome({ kind }: Pick<Outcome, "kind">, findingDate?: string, several = false) {

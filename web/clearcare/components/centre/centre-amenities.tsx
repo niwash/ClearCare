@@ -7,7 +7,7 @@
 import { ShowHide } from "@/components/ui/chevron";
 import { Icon } from "@/components/ui/icons";
 import { sectionCardClass, sectionHeadingClass } from "./section-icon";
-import { formatDate, type AmenityItem, type CentreAmenities } from "@/lib/centres";
+import { formatDate, noneFoundWords, type AmenityItem, type CentreAmenities } from "@/lib/centres";
 import type { ReactNode } from "react";
 import { AmenityIcon } from "./amenity-icon";
 import { AmenityTags, Passages } from "./amenity-tags";
@@ -94,7 +94,9 @@ export function CentreAmenitiesSection({ amenities, reportUrl, fromLatest = fals
           <ListCard key={label} label={label} icon={icon}>
             {items.length === 0 ? (
               // Nothing the report clearly supports, which doesn't mean the home has none.
-              <span className="text-ink-muted">None found in the report</span>
+              <span className="text-ink-muted">
+                {noneFoundWords(amenities, fromLatest)}
+              </span>
             ) : (
               <>
                 {/* On paper, the plain list rather than the tags that open on hover or tap. */}

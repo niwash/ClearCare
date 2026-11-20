@@ -36,6 +36,8 @@ import {
   getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  fromLatestReport,
+  noneFoundWords,
   type CentreAmenities,
   type CentreDetail,
   type CentreReports,
@@ -464,10 +466,10 @@ function buildGroups(columns: Column[], showAllRegulations: boolean): Group[] {
             key,
             // Larger and darker than other rows' labels: each heads a long list beside it.
             label: <span className="text-base font-semibold text-ink">{label}</span>,
-            cells: each(({ amenities }) => {
+            cells: each(({ amenities, reports }) => {
               if (!amenities) return <Muted>Not read from its reports yet</Muted>;
               const mentioned = new Set(amenities[key].map(({ item }) => item));
-              if (mentioned.size === 0) return <Muted>None found in the report</Muted>;
+              if (mentioned.size === 0) return <Muted>{noneFoundWords(amenities, fromLatestReport(amenities, reports?.inspections))}</Muted>;
               return (
                 <ul className="list-disc space-y-1 pl-4 text-sm marker:text-ink-muted">
                   {items

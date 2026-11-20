@@ -1,5 +1,5 @@
 // components/centre/promise-trail.tsx
-// One regulation's story on What happened next (CCARE-207, CCARE-212): what the inspector found, what
+// One regulation's story on How the home responded (CCARE-207, CCARE-212): what the inspector found, what
 // the home said it would do, and how the regulation was next judged, told down a timeline rather than
 // in three technical columns. Closed, it says the whole story in a line, with how it ended; open, each
 // step has the report's own words and where they are.
@@ -36,7 +36,7 @@ const inspectionsWord = (count: number) => (count === 1 ? "inspection" : `${coun
 type PromiseTrailProps = {
   trail: Trail;
   inspections: Inspection[];
-  // What to look at first, where the regulation's highlight is (CCARE-212).
+  // Issues found, where the regulation's highlight is (CCARE-212).
   highlightsHref: string;
   // What to ask, where this story's question is listed with the others.
   questionsHref: string;
@@ -164,14 +164,14 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
           </Step>
         </ol>
 
-        {/* Back to the regulation's highlight on What to look at first, so nobody has to look for
+        {/* Back to the regulation's highlight on Issues found, so nobody has to look for
             where they came from. Every trail has one: trails are only made for highlighted regulations. */}
         <div className="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-1 print:hidden">
           <a
             href={`${highlightsHref}#${highlightAnchor(regulation)}`}
             className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold tap-target"
           >
-            <span aria-hidden>←</span> Back to What to look at first
+            <span aria-hidden>←</span> Back to Issues found
           </a>
           {/* Closes the story from its end, as it can be long. */}
           <ShowLess className="print:hidden" />

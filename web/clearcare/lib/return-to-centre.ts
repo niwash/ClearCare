@@ -8,8 +8,8 @@
 // The record's tabs, by the end of their path, with how the way back names them.
 const TABS: Record<string, string> = {
   overview: "Overview",
-  "look-first": "What to look at first",
-  "next-steps": "What happened next",
+  "look-first": "Issues found",
+  "next-steps": "How the home responded",
   inspections: "Inspection history",
   questions: "What to ask",
 };

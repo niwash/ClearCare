@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { FairDealBand } from "@/components/home/fair-deal-band";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
 import { HomeHero } from "@/components/home/home-hero";
 import { NewHere } from "@/components/home/new-here";
@@ -32,6 +33,9 @@ export default async function StartPage() {
       <FeatureCarousel />
 
       <HomeHero />
+
+      {/* What Fair Deal is, in a band of its own (CCARE-278). */}
+      <FairDealBand />
 
       <SiteFeatures />
 

@@ -213,8 +213,14 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   if (response.status === 404) return { status: "not-found" };
   if (!response.ok) return { status: "unavailable", httpStatus: response.status };
   const { centre, ...beside }: CentreResult = await response.json();
-  return { status: "found", centre: { ...centre, ...beside } };
+  return { status: "found", centre: { ...centre, ...beside, address: tidyAddress(centre.address) } };
 });
+
+// The register's address as printed, without the space it sometimes has before a comma
+// ("Acres , Fermoy"), so every page and spreadsheet that shows it reads "Acres, Fermoy".
+export function tidyAddress(address: string) {
+  return address.replace(/\s+,/g, ",");
+}
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
 interface CentreReportsResult {
@@ -357,6 +363,21 @@ export interface CentreAmenities {
   model: string;
 }
 
+// Whether the amenities were read from the latest of the home's regulation reports ClearCare has read.
+export function fromLatestReport(amenities: Pick<CentreAmenities, "report_id"> | null, inspections: { id: string }[] | undefined) {
+  return !!amenities && inspections?.at(-1)?.id === String(amenities.report_id);
+}
+
+// What a list of the home's offers says when the AI tool found nothing for it (CCARE-278). It said
+// "None found in the report"; in user testing (P2_3) the participant didn't know which report. It names
+// the report by its date when the amenities have one, since "the latest" is judged only from the reports
+// ClearCare has read, and a newer thematic or unread report would make it wrong. Without a date it says
+// "the latest" only when fromLatest. Nothing found doesn't mean the home has none.
+export function noneFoundWords(amenities: Pick<CentreAmenities, "inspection_date">, fromLatest: boolean) {
+  if (amenities.inspection_date) return `None found mentioned in the ${formatDate(amenities.inspection_date)} inspection report`;
+  return fromLatest ? "None found mentioned in the latest inspection report" : "None found mentioned in the inspection report";
+}
+
 interface CentreAmenitiesResult {
   centre_id: string;
   amenities: CentreAmenities | null;
@@ -410,7 +431,7 @@ export function trailAnchor(regulation: Regulation) {
   return `reg-${regulation.number}`;
 }
 
-// A regulation's highlight in "What to look at first", which its trail links back up to.
+// A regulation's highlight in "Issues found", which its trail links back up to.
 export function highlightAnchor(regulation: Regulation) {
   return `first-reg-${regulation.number}`;
 }

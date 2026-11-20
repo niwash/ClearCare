@@ -72,8 +72,8 @@ export type CentreSection = "look-first" | "inspections" | "next-steps" | "quest
 
 // All four tabs on every home, so a family finds the same ones each time; a page with nothing on it
 // says why (NothingToFlag, and the inspections page's own message when there are no reports). Each
-// tab is coloured like the band its page starts with, so the current one runs into it. What happened
-// next follows What to look at first, as it follows up the same regulations; the full inspection
+// tab is coloured like the band its page starts with, so the current one runs into it. How the home
+// responded follows Issues found, as it follows up the same regulations; the full inspection
 // history after them, and What to ask last, as what the family can do with it all. Read by the
 // record's layout and by the Overview, which places its own pager (CCARE-258).
 export function centreTabs(id: string): CentreTab[] {
@@ -87,9 +87,9 @@ export function centreTabs(id: string): CentreTab[] {
 }
 
 export const CENTRE_SECTION_TITLES: Record<CentreSection, string> = {
-  "look-first": "What to look at first",
+  "look-first": "Issues found",
   inspections: "Inspection history",
-  "next-steps": "What happened next",
+  "next-steps": "How the home responded",
   questions: "What to ask",
 };
 

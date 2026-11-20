@@ -1,14 +1,15 @@
 // app/centres/[id]/page.tsx
 // A home's record: the overview (CCARE-212). The extra conditions on its registration when it has
 // any and what changed at it in the last six months (CCARE-235), the facts and what the home offers,
-// the things a family needs before anything else, and a pointer to what to ask on a visit. What to
-// look at first, what happened next, the inspection history and what to ask have pages of their own
+// the things a family needs before anything else, and a pointer to what to ask on a visit. Issues
+// found, how the home responded, the inspection history and what to ask have pages of their own
 // (look-first/, next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { ExtraConditions } from "@/components/centre/extra-conditions";
+import { RecentChanges } from "@/components/centre/recent-changes";
 import { CompareButton } from "@/components/compare/compare-button";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
@@ -19,6 +20,7 @@ import { Icon, type IconName } from "@/components/ui/icons";
 import {
   centrePhone,
   formatDate,
+  fromLatestReport,
   formatWeeklyPrice,
   HOME_TYPE_LABELS,
   type CentreDetail,
@@ -27,6 +29,7 @@ import {
 } from "@/lib/centres";
 import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
 import { TabPager } from "@/components/centre/tab-pager";
+import { returnQuery } from "@/lib/return-to-centre";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -45,7 +48,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
-  const { centre, reports, amenities, hiqaCheckedAt } = record;
+  const { centre, reports, amenities, hiqaCheckedAt, events } = record;
 
   return (
     <>
@@ -57,8 +60,16 @@ export default async function CentrePage({ params }: CentrePageProps) {
             note={centre.chief_inspector_note ?? null}
             registerDate={centre.register_snapshot.fetched_at}
           />
-          {/* Recent changes was here; taken off the overview (CCARE-258). The same changes are on the
-              timeline in Inspection history. */}
+          {/* Taken off in CCARE-258, back as an amber note in CCARE-278. Not there when the events
+              couldn't be read, or from an API without them. */}
+          {events && (
+            <RecentChanges
+              events={events}
+              today={new Date().toISOString().slice(0, 10)}
+              currentNote={centre.chief_inspector_note ?? null}
+              timelineHref={centrePath(centre.centre_id, "inspections")}
+            />
+          )}
           <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} />
         </div>
       </Band>
@@ -68,7 +79,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
         <CentreAmenitiesSection
           amenities={amenities}
           reportUrl={reports?.inspections.find((inspection) => inspection.id === String(amenities?.report_id))?.reportUrl}
-          fromLatest={reports?.inspections.at(-1)?.id === String(amenities?.report_id)}
+          fromLatest={fromLatestReport(amenities, reports?.inspections)}
         />
         {/* The next page, where the Overview's facts end (CCARE-258), rather than at the foot of the
             page after the pointer to What to ask. */}
@@ -248,6 +259,15 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                     <Note>Ask the home</Note>
                   </>
                 )}
+                {/* That Fair Deal can help pay it, and where to read how (CCARE-278): in user testing
+                    (P2_3) the participant read "(Fair Deal)" here without it occurring to them to find
+                    out what it was. */}
+                <Note>
+                  Fair Deal, the government scheme, can help pay for nursing home care.{" "}
+                  <Link href={`/guides/fair-deal?${returnQuery(centre.centre_id)}`} className="whitespace-nowrap text-ink-muted adult:text-primary print:hidden">
+                    How Fair Deal works →
+                  </Link>
+                </Note>
               </SummaryRow>
             )}
             {/* The latest inspection with regulation judgments, so it can say what it found. A newer

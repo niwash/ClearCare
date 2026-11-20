@@ -10,6 +10,34 @@ export const JUDGEMENT_LABELS: Record<Judgement, string> = {
 
 export const JUDGEMENT_ORDER: Judgement[] = ["compliant", "substantially-compliant", "not-compliant", "not-assessed"];
 
+// What each judgement means, shown on hover or tap in the key (CCARE-278). The names stay HIQA's, as
+// the reports a family opens use them: in user testing (P2_2) the participant asked what
+// "substantially compliant" meant, and took "not assessed" for a bad result.
+//
+// The three judgements are HIQA's, quoted from Table 1, "Judgment descriptors", of its
+// Assessment-judgment framework for designated centres for older people (Version 4.1, May 2025,
+// REGULATIONS_SOURCE in lib/regulations.ts): the first sentence of each, word for word. "Not assessed"
+// is not one of HIQA's judgements but ClearCare's word for a regulation an inspection didn't judge,
+// so its meaning is ClearCare's and says so.
+export const JUDGEMENT_MEANINGS: Record<Judgement, { text: string; from: "hiqa" | "clearcare" }> = {
+  compliant: {
+    text: "A judgment of compliant means the provider and or the person in charge are in full compliance with the relevant regulation.",
+    from: "hiqa",
+  },
+  "substantially-compliant": {
+    text: "A judgment of substantially compliant means that the provider or person in charge has generally met the requirements of the regulation but some action is required to be fully compliant.",
+    from: "hiqa",
+  },
+  "not-compliant": {
+    text: "A judgment of not compliant means the provider or person in charge has not complied with a regulation and considerable action is required to come into compliance.",
+    from: "hiqa",
+  },
+  "not-assessed": {
+    text: "The inspection didn't look at this regulation. It isn't a good or a bad result.",
+    from: "clearcare",
+  },
+};
+
 // Each judgement has its own shape as well as its own colour.
 export function JudgementIcon({ judgement, size = 14 }: { judgement: Judgement; size?: number }) {
   return (

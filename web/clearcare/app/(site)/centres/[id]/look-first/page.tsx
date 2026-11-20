@@ -1,7 +1,7 @@
 // app/centres/[id]/look-first/page.tsx
-// What to look at first: the regulations a family should read about before anything else, each in
+// Issues found: the regulations a family should read about before anything else, each in
 // the inspector's or the provider's own words (CCARE-207), on a page of its own (CCARE-212). Each
-// links to its trail on What happened next, which links back here.
+// links to its trail on How the home responded, which links back here.
 import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreHighlights } from "@/components/centre/centre-highlights";
@@ -25,7 +25,7 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
   const { centre, reports, findingsRead, hasCompliancePlan } = record;
-  // The inspection What to look at first's rules go by (addFindings): the latest that judged regulations.
+  // The inspection Issues found's rules go by (addFindings): the latest that judged regulations.
   const latestJudged = reports?.inspections.filter((inspection) => inspection.regulationJudgements).at(-1);
 
   return (
@@ -43,7 +43,7 @@ export default async function LookFirstPage({ params }: LookFirstPageProps) {
         <section aria-labelledby="first-h" className="flex flex-col gap-3">
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <h2 id="first-h" className={sectionHeadingClass}>
-              What to look at first
+              Issues found
             </h2>
             <RecordPrintButton />
           </div>

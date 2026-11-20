@@ -44,6 +44,7 @@ import { Icon, type IconName } from "@/components/ui/icons";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { ClampedWords, WordsToggle, wordsGroupClass } from "./register-words";
 import { ShowInGrid } from "./show-in-grid";
+import { partHeaderClass, partHeadingClass } from "./section-icon";
 
 // What a row says: the kind of thing it is, then what changed. words: HIQA's own words for the
 // change, a condition's or the note's, apart from ours so that a page that already quotes them can
@@ -104,7 +105,7 @@ function isUnannounced(inspectionType: string | null) {
 
 // What an inspection's row says, on one line where it fits: the regulations judged not compliant by
 // title, which is what a family reads the row for, then how many were substantially compliant and
-// how many compliant, as a mark and a number. More than three are not named: the row says how many
+// how many compliant, as a mark, a number and the judgement's name. More than three are not named: the row says how many
 // there are, "12 not compliant", where the titles would be (MOST_NOT_COMPLIANT_NAMED in
 // lib/judgements.ts). Only the titles, or that count, stand out. The titles are in the report, so
 // they are there when the page has read it. The API's event has only how many regulations got each
@@ -144,8 +145,8 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
             <li key={regulation.number} className="flex items-baseline font-medium">
               <Mark judgement="not-compliant" />
               <span className="sr-only">{JUDGEMENT_LABELS["not-compliant"]}: </span>
-              {/* Points to its cell in the grid beside the timeline, rather than leading to What happened
-                  next (CCARE-258). */}
+              {/* Points to its cell in the grid beside the timeline, rather than leading to How the home
+                  responded (CCARE-258). */}
               <ShowInGrid inspectionId={String(event.report_id)} regulation={regulation.number}>
                 {regulation.title}
               </ShowInGrid>
@@ -161,17 +162,13 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
               </ShowInGrid>
             </li>
           )}
+          {/* The count and its judgement in words, "6 compliant", as the Overview says it (CCARE-278):
+              with the mark and the number alone, participants in user testing (P2_2, P2_3) missed how
+              many regulations were compliant. */}
           {counted.map(([judgement, count]) => (
-            <li key={judgement} className="whitespace-nowrap text-ink-muted">
+            <li key={judgement} className="whitespace-nowrap">
               <Mark judgement={judgement} />
-              {allCompliant ? (
-                `All ${count} compliant`
-              ) : (
-                <>
-                  {count}
-                  <span className="sr-only"> {JUDGEMENT_LABELS[judgement].toLowerCase()}</span>
-                </>
-              )}
+              {allCompliant ? `All ${count} compliant` : `${count} ${JUDGEMENT_LABELS[judgement].toLowerCase()}`}
             </li>
           ))}
           {notice && <li className={mutedClass}>{notice}</li>}
@@ -202,6 +199,12 @@ function Mark({ judgement }: { judgement: Judgement }) {
   );
 }
 
+// "Substantially Compliant" as "Substantially compliant".
+function sentenceCase(words: string) {
+  const lower = words.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 // Judged against the National Standards, so it has one overall judgment and no marks: those are for
 // judgments of regulations. The API doesn't say what the theme was, so the row doesn't either.
 function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
@@ -211,7 +214,9 @@ function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
     link: <ReportLink event={event} />,
     body: (
       <p className={judgedClass}>
-        {event.overall_judgment} overall
+        {/* In lower case after its first letter, as the site writes the judgements everywhere else:
+            HIQA prints it "Substantially Compliant". */}
+        {sentenceCase(event.overall_judgment)} overall
         {notice && <span className={mutedClass}>{notice}</span>}
       </p>
     ),
@@ -364,11 +369,12 @@ function ReportLink({ event }: { event: ReportEvent }) {
     <a href={event.report_url} className={`shrink-0 text-sm ${rowLinkClass} ${event.published_date ? "" : "print:hidden"}`}>
       {/* One box, so the words keep their spaces where tap-target-top makes the link a flex
           container. */}
+      {/* "See HIQA inspection report" rather than "Report" (CCARE-278): in user testing (P2_2) the
+          participant asked for it to say whose report it is and where it goes. */}
       <span className="whitespace-nowrap">
-        <span className="sr-only">HIQA&apos;s </span>
-        Report
+        See HIQA inspection report
         <span className="sr-only">
-          {event.date && ` of the inspection on ${formatDate(event.date)}`}
+          {event.date && ` of ${formatDate(event.date)}`}
           {event.date && event.published_date && ","}
           {event.published_date && " published"}
         </span>
@@ -410,7 +416,7 @@ function ReportRequest({ event, href }: { event: ReportEvent; href: string }) {
 }
 
 // Each kind of thing's picture on the line: a magnifier for an inspection, as for what the inspector
-// found on What happened next, a calendar for a registration, the register's card for a change to it,
+// found on How the home responded, a calendar for a registration, the register's card for a change to it,
 // and the euro for a price.
 function rowIcon(kind: CentreEvent["kind"]): IconName {
   switch (kind) {
@@ -427,9 +433,21 @@ function rowIcon(kind: CentreEvent["kind"]): IconName {
   }
 }
 
-// One thing that happened, as a step down a timeline (CCARE-258), as the stories on What happened next
-// are told: its picture in a dot on a line that runs down to the next thing in the year, then the kind
-// of thing with its date, then what changed. It was a row of three columns, date, kind and change; in
+// A row of the timeline, its year's or a thing's: the dates' column, the line with its dots, then the
+// words (CCARE-278). Shared so the year and the things under it line up.
+const railRowClass = "flex gap-3 sm:gap-4";
+// Wide enough for "12 Sept" in the dates' small face; the dates and years end against the line.
+// From sm: on a phone the date sits beside the label and the year beside the line, as the column
+// left the words too narrow in Easier to Read's larger text.
+const dateColumnClass = "hidden w-16 shrink-0 text-right sm:block";
+// The dots' column, as wide as a dot (size-8), holding the line that runs down through it.
+const railClass = "relative flex w-8 shrink-0 justify-center";
+const lineClass = "absolute left-[0.9375rem] w-px bg-line";
+
+// One thing that happened, as a step down a timeline (CCARE-258), as the stories on How the home responded
+// are told: its date left of the line (CCARE-278), its picture in a dot on the line that runs down to
+// the next thing, then the kind of thing and what changed. It was a row of three columns, date, kind
+// and change; in
 // user testing (P2_1) the participant struggled to find what the latest inspection found, so the
 // latest has its dot filled and says "Latest inspection". Things of one day share its date: the date
 // shows once, and is still there for a screen reader.
@@ -453,38 +471,43 @@ function Row({
   children: ReactNode;
 }) {
   return (
-    <li className="relative flex gap-3 sm:gap-4">
-      {/* The line down to the next thing in the year. */}
-      {!last && <span aria-hidden className="absolute top-8 bottom-0 left-[0.9375rem] w-px bg-line" />}
-      <span
-        aria-hidden
-        className={`relative grid size-8 shrink-0 place-items-center rounded-full border ${
-          latest ? "border-primary bg-primary text-on-primary" : "border-line bg-surface text-ink-muted"
-        }`}
-      >
-        <Icon name={icon} className="size-4" />
-      </span>
+    <li className={railRowClass}>
+      {/* The date in the column left of the line, level with the dot (CCARE-278), under its year, so
+          the dates read down the timeline at a glance. A second thing on the same day leaves it
+          blank on screen, and a screen reader still hears it. From sm only: on a phone the column
+          left the words too narrow in Easier to Read, and the date goes beside the label instead. */}
+      <div className={`${dateColumnClass} pt-1.5 text-sm font-medium text-ink-muted tabular-nums`}>
+        {date && (
+          <time dateTime={date} className={showsDate ? "" : "sr-only"}>
+            {formatDayOfYear(date)}
+          </time>
+        )}
+      </div>
+      <div aria-hidden className={railClass}>
+        {/* The line down to the next thing. */}
+        {!last && <span className={`${lineClass} top-8 bottom-0`} />}
+        <span
+          className={`relative grid size-8 place-items-center rounded-full border ${
+            latest ? "border-primary bg-primary text-on-primary" : "border-line bg-surface text-ink-muted"
+          }`}
+        >
+          <Icon name={icon} className="size-4" />
+        </span>
+      </div>
       <div className={`flex min-w-0 flex-1 flex-col gap-1.5 pt-1 ${last ? "" : "pb-5"}`}>
-        {/* The kind of thing, then its date beside it, as each step on What happened next has
-            (CCARE-258). */}
+        {/* The kind of thing, its date on a phone, then its report beside it. */}
         <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <span className="font-semibold">{label}</span>
           {date && (
-            <time dateTime={date} className={showsDate ? "text-sm text-ink-muted" : "sr-only"}>
+            <time dateTime={date} className={showsDate ? "text-sm text-ink-muted sm:hidden" : "sr-only sm:hidden"}>
               {formatDayOfYear(date)}
             </time>
           )}
-          {/* The report beside the date, so it is plainly this inspection's (CCARE-258). */}
-          {link && (
-            <span className="inline-flex items-baseline gap-x-2.5 text-sm">
-              {/* Not on a phone, where the link often wraps to a line of its own and the dot would start
-                  it. */}
-              <span aria-hidden className="hidden text-ink-muted sm:inline">
-                ·
-              </span>
-              {link}
-            </span>
-          )}
+          {/* The report beside the label, so it is plainly this inspection's (CCARE-258). No dot
+              before it: when the label filled the line, the link wrapped to the next and the dot
+              started it. min-w-0, so a long one ("No longer on hiqa.ie · Ask HIQA for it") wraps
+              within the card rather than running past its edge. */}
+          {link && <span className="min-w-0 text-sm">{link}</span>}
           {latest && (
             <span className="rounded-full bg-tint-blue px-2.5 py-0.5 text-xs font-semibold text-on-tint-blue adult:rounded-md adult:border adult:border-line">
               Latest inspection
@@ -498,15 +521,27 @@ function Row({
 }
 
 // latest: the latest inspection's event, whose row says so. One line runs down the whole timeline,
-// through the years, from the first thing to the last (CCARE-258): each year's heading sits in the
-// words' column, beside the line, and carries the line on to its first thing.
+// through the years, from the first thing to the last (CCARE-258): each year's heading sits at the
+// head of the dates' column, left of the line, and carries the line on to its first thing.
 function Years({ years, reports, latest }: { years: TimelineYear[]; reports?: ReportsRead; latest?: CentreEvent }) {
   return years.map(({ year, rows }, yearIndex) => (
     <div key={year} className="flex flex-col">
-      <h4 className={`relative pb-3 pl-11 font-heading text-2xl font-semibold text-ink sm:pl-12 ${yearIndex === 0 ? "pt-2" : "pt-1"}`}>
-        {yearIndex > 0 && <span aria-hidden className="absolute top-0 bottom-0 left-[0.9375rem] w-px bg-line" />}
-        {year}
-      </h4>
+      {/* The year at the head of the dates' column, left of the line, over its first date (CCARE-278).
+          The line carries on past it from the year before; above the first year there is nothing for
+          it to come from. On a phone, where there is no dates' column, it sits after the line, in the
+          words' column (order-last). */}
+      <div className={railRowClass}>
+        <h4
+          className={`order-last font-heading text-lg font-semibold text-ink tabular-nums sm:order-none sm:w-16 sm:shrink-0 sm:text-right ${
+            yearIndex === 0 ? "pb-2" : "py-2"
+          }`}
+        >
+          {year}
+        </h4>
+        <div aria-hidden className={railClass}>
+          {yearIndex > 0 && <span className={`${lineClass} top-0 bottom-0`} />}
+        </div>
+      </div>
       <ol>
         {rows.map(({ event, showsDate }, index) => {
           const { label, body, words, link } = rowWords(event, reports);
@@ -549,22 +584,22 @@ const REGISTER_CHANGES_DATED_BY_THE_REGISTER: CentreEvent["kind"][] = [
   "note_removed",
 ];
 
-// updated: when ClearCare last downloaded HIQA's register, from which the register's changes come, if
-// known; said under the timeline (CCARE-258).
-export function Timeline({ events, reports, updated }: { events: CentreEvent[]; reports?: ReportsRead; updated?: ISODate }) {
+// The home's events, newest first, by year. Its notes on the data are TimelineNotes, under its card.
+export function Timeline({ events, reports }: { events: CentreEvent[]; reports?: ReportsRead }) {
   const { shown, folded } = foldOlderYears(rowsByYear(events));
   const foldedRows = folded.reduce((count, year) => count + year.rows.length, 0);
   // The latest inspection: the first one down the timeline, which runs newest first.
   const latest = [...shown, ...folded]
     .flatMap(({ rows }) => rows)
     .find(({ event }) => event.kind === "inspection" || event.kind === "thematic_inspection" || event.kind === "unread_report")?.event;
-  // Each of the notes is said once, here, and only of a timeline with a row it is about.
-  const hasRegisterChange = events.some((event) => REGISTER_CHANGES_DATED_BY_THE_REGISTER.includes(event.kind));
 
   return (
     <div>
-      {/* For screen readers only (CCARE-258): on screen the years and dates say what this is. */}
-      <h3 className="sr-only">What has happened at this home</h3>
+      {/* On screen as well (CCARE-278), as the grid beside it has its heading: without one the card
+          read as three parts with nothing to say what the timeline was. */}
+      <div className={partHeaderClass}>
+        <h3 className={partHeadingClass}>What has happened at this home</h3>
+      </div>
       <Years years={shown} reports={reports} latest={latest} />
       {/* The older years, closed until opened: the same <details> as the site's other folds, with no
           script, and print opens it (globals.css). "group/section" keeps Show and Hide to it, apart
@@ -580,24 +615,33 @@ export function Timeline({ events, reports, updated }: { events: CentreEvent[]; 
           <Years years={folded} reports={reports} latest={latest} />
         </details>
       )}
-      {/* Notes on the data, at the foot rather than over the first year (CCARE-258): how current the
-          timeline is, as the home page's example says it (sample-centre.tsx), and, where the timeline
-          has one, how a change on the register is dated. The register doesn't say when a change
-          happened, so it is dated by when we first saw it (ADR-0031); a registration has its own date. */}
-      {(updated || hasRegisterChange) && (
-        <div className="mt-5 flex flex-col gap-1 border-t border-line-soft pt-4 text-sm text-ink-muted">
-          {updated && (
-            <p>
-              ClearCare last updated its data on <time dateTime={updated}>{formatDate(updated)}</time>
-            </p>
-          )}
-          {hasRegisterChange && (
-            <p>
-              Changes to HIQA&apos;s register are dated by when ClearCare first saw them, which may be later than the
-              change itself.
-            </p>
-          )}
-        </div>
+    </div>
+  );
+}
+
+// Notes on the timeline's data, under the card it is on rather than in it (CCARE-278), so they read
+// as a footnote to the section and not as the timeline's last row: how current the timeline is, as
+// the home page's example says it (sample-centre.tsx), and, where the timeline has one, how a change
+// on the register is dated. The register doesn't say when a change happened, so it is dated by when
+// we first saw it (ADR-0031); a registration has its own date. Each is said only of a timeline with
+// a row it is about.
+// updated: when ClearCare last downloaded HIQA's register, from which the register's changes come, if
+// known.
+export function TimelineNotes({ events, updated }: { events: CentreEvent[] | null; updated?: ISODate }) {
+  const hasRegisterChange = Boolean(events?.some((event) => REGISTER_CHANGES_DATED_BY_THE_REGISTER.includes(event.kind)));
+  if (!updated && !hasRegisterChange) return null;
+  return (
+    <div className="flex flex-col gap-1 px-1 text-sm text-ink-muted">
+      {updated && (
+        <p>
+          ClearCare last updated its data on <time dateTime={updated}>{formatDate(updated)}</time>
+        </p>
+      )}
+      {hasRegisterChange && (
+        <p>
+          Changes to HIQA&apos;s register are dated by when ClearCare first saw them, which may be later than the change
+          itself.
+        </p>
       )}
     </div>
   );
