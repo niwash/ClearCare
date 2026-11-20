@@ -199,6 +199,12 @@ function Mark({ judgement }: { judgement: Judgement }) {
   );
 }
 
+// "Substantially Compliant" as "Substantially compliant".
+function sentenceCase(words: string) {
+  const lower = words.toLowerCase();
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 // Judged against the National Standards, so it has one overall judgment and no marks: those are for
 // judgments of regulations. The API doesn't say what the theme was, so the row doesn't either.
 function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
@@ -208,7 +214,9 @@ function thematicInspectionRow(event: ThematicInspectionEvent): RowWords {
     link: <ReportLink event={event} />,
     body: (
       <p className={judgedClass}>
-        {event.overall_judgment} overall
+        {/* In lower case after its first letter, as the site writes the judgements everywhere else:
+            HIQA prints it "Substantially Compliant". */}
+        {sentenceCase(event.overall_judgment)} overall
         {notice && <span className={mutedClass}>{notice}</span>}
       </p>
     ),
@@ -429,7 +437,9 @@ function rowIcon(kind: CentreEvent["kind"]): IconName {
 // words (CCARE-278). Shared so the year and the things under it line up.
 const railRowClass = "flex gap-3 sm:gap-4";
 // Wide enough for "12 Sept" in the dates' small face; the dates and years end against the line.
-const dateColumnClass = "w-14 shrink-0 text-right sm:w-16";
+// From sm: on a phone the date sits beside the label and the year beside the line, as the column
+// left the words too narrow in Easier to Read's larger text.
+const dateColumnClass = "hidden w-16 shrink-0 text-right sm:block";
 // The dots' column, as wide as a dot (size-8), holding the line that runs down through it.
 const railClass = "relative flex w-8 shrink-0 justify-center";
 const lineClass = "absolute left-[0.9375rem] w-px bg-line";
@@ -464,7 +474,8 @@ function Row({
     <li className={railRowClass}>
       {/* The date in the column left of the line, level with the dot (CCARE-278), under its year, so
           the dates read down the timeline at a glance. A second thing on the same day leaves it
-          blank on screen, and a screen reader still hears it. */}
+          blank on screen, and a screen reader still hears it. From sm only: on a phone the column
+          left the words too narrow in Easier to Read, and the date goes beside the label instead. */}
       <div className={`${dateColumnClass} pt-1.5 text-sm font-medium text-ink-muted tabular-nums`}>
         {date && (
           <time dateTime={date} className={showsDate ? "" : "sr-only"}>
@@ -484,20 +495,19 @@ function Row({
         </span>
       </div>
       <div className={`flex min-w-0 flex-1 flex-col gap-1.5 pt-1 ${last ? "" : "pb-5"}`}>
-        {/* The kind of thing, then its report beside it. */}
+        {/* The kind of thing, its date on a phone, then its report beside it. */}
         <p className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
           <span className="font-semibold">{label}</span>
-          {/* The report beside the label, so it is plainly this inspection's (CCARE-258). */}
-          {link && (
-            <span className="inline-flex items-baseline gap-x-2.5 text-sm">
-              {/* Not on a phone, where the link often wraps to a line of its own and the dot would start
-                  it. */}
-              <span aria-hidden className="hidden text-ink-muted sm:inline">
-                ·
-              </span>
-              {link}
-            </span>
+          {date && (
+            <time dateTime={date} className={showsDate ? "text-sm text-ink-muted sm:hidden" : "sr-only sm:hidden"}>
+              {formatDayOfYear(date)}
+            </time>
           )}
+          {/* The report beside the label, so it is plainly this inspection's (CCARE-258). No dot
+              before it: when the label filled the line, the link wrapped to the next and the dot
+              started it. min-w-0, so a long one ("No longer on hiqa.ie · Ask HIQA for it") wraps
+              within the card rather than running past its edge. */}
+          {link && <span className="min-w-0 text-sm">{link}</span>}
           {latest && (
             <span className="rounded-full bg-tint-blue px-2.5 py-0.5 text-xs font-semibold text-on-tint-blue adult:rounded-md adult:border adult:border-line">
               Latest inspection
@@ -518,9 +528,14 @@ function Years({ years, reports, latest }: { years: TimelineYear[]; reports?: Re
     <div key={year} className="flex flex-col">
       {/* The year at the head of the dates' column, left of the line, over its first date (CCARE-278).
           The line carries on past it from the year before; above the first year there is nothing for
-          it to come from. */}
+          it to come from. On a phone, where there is no dates' column, it sits after the line, in the
+          words' column (order-last). */}
       <div className={railRowClass}>
-        <h4 className={`${dateColumnClass} font-heading text-lg font-semibold text-ink tabular-nums ${yearIndex === 0 ? "pb-2" : "py-2"}`}>
+        <h4
+          className={`order-last font-heading text-lg font-semibold text-ink tabular-nums sm:order-none sm:w-16 sm:shrink-0 sm:text-right ${
+            yearIndex === 0 ? "pb-2" : "py-2"
+          }`}
+        >
           {year}
         </h4>
         <div aria-hidden className={railClass}>
