@@ -84,8 +84,9 @@ account reading five county alerts does not want five emails, and the
 receipt table's shape (one row per account per ingest run) was designed for
 exactly this grouping (ADR-0034). The SES sender sends both parts: a
 plain-text digest, and an HTML one whose targets are clickable text. The
-one-click `List-Unsubscribe` headers are deferred until CCARE-270 owns the
-`/alerts/unsubscribe` route, because they need the raw-MIME send path; the
-simple send carries no custom headers, and every email bears the visible
-signed-out link meanwhile. The subscribe endpoints the site needs are
-CCARE-270's as well.
+one-click `List-Unsubscribe` headers still wait on a raw-MIME send path;
+the API's `POST /alerts/unsubscribe` route (CCARE-270) gives them their
+target, and until then the simple send carries no custom headers and
+every email bears the visible signed-out link. That link opens a site
+page (CCARE-271), which asks the visitor to confirm and then posts the
+token to the route, so following the link alone changes nothing.
