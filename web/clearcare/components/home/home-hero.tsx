@@ -43,11 +43,9 @@ export function HomeHero() {
               know what it was (P2_1, CCARE-258). No comment inside the paragraph: one between two lines
               of text takes away the space between the sentences. */}
           <p className="max-w-xl text-ink-muted md:text-lg lg:max-w-none">
-            When someone you love needs nursing home care, you want to know they will be safe and well looked after.
             HIQA (the Health Information and Quality Authority) inspects every nursing home for older people in
-            Ireland, but its reports are long and hard to compare.
-            ClearCare sums up what each inspection found in a way that is easier to understand, so your family can see
-            how a home is doing and talk through the choice together.
+            Ireland, but its reports are long and hard to compare. ClearCare sums them up in plain words, so your family
+            can see how a home is doing and choose together.
           </p>
 
           {/* A name, a county or an Eircode here. The search page takes a county as the County filter
