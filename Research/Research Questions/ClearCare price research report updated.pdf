@@ -109,21 +109,21 @@ endobj
 14 0 obj
 <<
 /A <<
-/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/CCARE-275-price-research-report/Research/october-price-benchmark/findings.md)
+/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/main/Research/october-price-benchmark/findings.md)
 >> /Border [ 0 0 0 ] /Rect [ 188.1665 168.2 268.6172 179 ] /Subtype /Link /Type /Annot
 >>
 endobj
 15 0 obj
 <<
 /A <<
-/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/CCARE-275-price-research-report/Research/october-price-benchmark/README.md)
+/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/main/Research/october-price-benchmark/README.md)
 >> /Border [ 0 0 0 ] /Rect [ 272.8975 168.2 385.9951 179 ] /Subtype /Link /Type /Annot
 >>
 endobj
 16 0 obj
 <<
 /A <<
-/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/CCARE-275-price-research-report/Research/october-price-benchmark)
+/S /URI /Type /Action /URI (https://github.com/niwash/ClearCare/blob/main/Research/october-price-benchmark)
 >> /Border [ 0 0 0 ] /Rect [ 403.8325 168.2 459.3662 179 ] /Subtype /Link /Type /Annot
 >>
 endobj
@@ -441,7 +441,7 @@ endobj
 endobj
 27 0 obj
 <<
-/Author (ClearCare) /CreationDate (D:20261119230621+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20261119230621+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+/Author (ClearCare) /CreationDate (D:20261120000532+00'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20261120000532+00'00') /Producer (ReportLab PDF Library - \(opensource\)) 
   /Subject (\(unspecified\)) /Title (Nursing home contract prices in Ireland) /Trapped /False
 >>
 endobj
@@ -509,30 +509,30 @@ xref
 0000134562 00000 n 
 0000134776 00000 n 
 0000134992 00000 n 
-0000135254 00000 n 
-0000135514 00000 n 
-0000135764 00000 n 
-0000136021 00000 n 
-0000136781 00000 n 
-0000165877 00000 n 
-0000166120 00000 n 
-0000167282 00000 n 
-0000168031 00000 n 
-0000192403 00000 n 
-0000192660 00000 n 
-0000193787 00000 n 
-0000193857 00000 n 
-0000194160 00000 n 
-0000194251 00000 n 
-0000196643 00000 n 
-0000199004 00000 n 
-0000201490 00000 n 
-0000203987 00000 n 
-0000206121 00000 n 
+0000135227 00000 n 
+0000135460 00000 n 
+0000135683 00000 n 
+0000135940 00000 n 
+0000136700 00000 n 
+0000165796 00000 n 
+0000166039 00000 n 
+0000167201 00000 n 
+0000167950 00000 n 
+0000192322 00000 n 
+0000192579 00000 n 
+0000193706 00000 n 
+0000193776 00000 n 
+0000194079 00000 n 
+0000194170 00000 n 
+0000196562 00000 n 
+0000198923 00000 n 
+0000201409 00000 n 
+0000203906 00000 n 
+0000206040 00000 n 
 trailer
 <<
 /ID 
-[<e66a9ef4c708a149a4fae3e031a6fbc0><e66a9ef4c708a149a4fae3e031a6fbc0>]
+[<095c16c37236bc55db69aec85b459737><095c16c37236bc55db69aec85b459737>]
 % ReportLab generated PDF document -- digest (opensource)
 
 /Info 27 0 R
@@ -540,5 +540,5 @@ trailer
 /Size 35
 >>
 startxref
-208437
+208356
 %%EOF
