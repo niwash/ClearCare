@@ -104,7 +104,7 @@ function isUnannounced(inspectionType: string | null) {
 
 // What an inspection's row says, on one line where it fits: the regulations judged not compliant by
 // title, which is what a family reads the row for, then how many were substantially compliant and
-// how many compliant, as a mark and a number. More than three are not named: the row says how many
+// how many compliant, as a mark, a number and the judgement's name. More than three are not named: the row says how many
 // there are, "12 not compliant", where the titles would be (MOST_NOT_COMPLIANT_NAMED in
 // lib/judgements.ts). Only the titles, or that count, stand out. The titles are in the report, so
 // they are there when the page has read it. The API's event has only how many regulations got each
@@ -161,17 +161,13 @@ function inspectionRow(event: InspectionEvent, reports?: ReportsRead): RowWords 
               </ShowInGrid>
             </li>
           )}
+          {/* The count and its judgement in words, "6 compliant", as the Overview says it (CCARE-278):
+              with the mark and the number alone, participants in user testing (P2_2, P2_3) missed how
+              many regulations were compliant. */}
           {counted.map(([judgement, count]) => (
-            <li key={judgement} className="whitespace-nowrap text-ink-muted">
+            <li key={judgement} className="whitespace-nowrap">
               <Mark judgement={judgement} />
-              {allCompliant ? (
-                `All ${count} compliant`
-              ) : (
-                <>
-                  {count}
-                  <span className="sr-only"> {JUDGEMENT_LABELS[judgement].toLowerCase()}</span>
-                </>
-              )}
+              {allCompliant ? `All ${count} compliant` : `${count} ${JUDGEMENT_LABELS[judgement].toLowerCase()}`}
             </li>
           ))}
           {notice && <li className={mutedClass}>{notice}</li>}
@@ -364,11 +360,12 @@ function ReportLink({ event }: { event: ReportEvent }) {
     <a href={event.report_url} className={`shrink-0 text-sm ${rowLinkClass} ${event.published_date ? "" : "print:hidden"}`}>
       {/* One box, so the words keep their spaces where tap-target-top makes the link a flex
           container. */}
+      {/* "See HIQA inspection report" rather than "Report" (CCARE-278): in user testing (P2_2) the
+          participant asked for it to say whose report it is and where it goes. */}
       <span className="whitespace-nowrap">
-        <span className="sr-only">HIQA&apos;s </span>
-        Report
+        See HIQA inspection report
         <span className="sr-only">
-          {event.date && ` of the inspection on ${formatDate(event.date)}`}
+          {event.date && ` of ${formatDate(event.date)}`}
           {event.date && event.published_date && ","}
           {event.published_date && " published"}
         </span>

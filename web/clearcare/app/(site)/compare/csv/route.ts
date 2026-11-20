@@ -12,6 +12,7 @@ import {
   getCentreAmenities,
   getCentreReports,
   HOME_TYPE_LABELS,
+  noneFoundWords,
   type CentreAmenities,
   type CentreDetail,
   type CentreReports,
@@ -83,11 +84,11 @@ export async function GET(request: Request) {
     [],
     ["What the home offers (read by an AI tool from each home's inspection report; call the home to confirm)"],
     ...AMENITY_LISTS.map(([key, label]) =>
-      row(label, ({ amenities }) =>
+      row(label, ({ amenities, reports }) =>
         !amenities
           ? "Not read from its reports yet"
           : amenities[key].length === 0
-            ? "None found in the report"
+            ? noneFoundWords(amenities, reports?.inspections)
             : amenities[key].map(({ item }) => item).join("; "),
       ),
     ),

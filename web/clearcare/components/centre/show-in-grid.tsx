@@ -84,7 +84,9 @@ export function ShowInGrid({ inspectionId, regulation, children }: ShowInGridPro
 
   return (
     // A button for the keyboard and screen readers, which hear whether it is pressed, but drawn as the
-    // words it is, with a dotted underline that says something happens; solid while pressed.
+    // words it is, with a thin solid underline that says something happens; thicker and coloured while
+    // pressed. Not dotted (CCARE-278): on this page a dotted underline is a definition to hover over
+    // (Definition, components/ui/definition.tsx), and the two shouldn't look alike.
     <button
       type="button"
       onClick={press}
@@ -92,8 +94,8 @@ export function ShowInGrid({ inspectionId, regulation, children }: ShowInGridPro
       onMouseLeave={() => mark(pressedNow)}
       aria-pressed={pressed}
       aria-controls="judgement-grid"
-      className={`cursor-pointer text-left font-medium text-ink underline decoration-1 underline-offset-4 hover:decoration-solid ${
-        pressed ? "decoration-primary decoration-solid decoration-2" : "decoration-ink-muted decoration-dotted"
+      className={`cursor-pointer text-left font-medium text-ink underline decoration-solid underline-offset-4 ${
+        pressed ? "decoration-primary decoration-2" : "decoration-ink-muted decoration-1 hover:decoration-ink"
       }`}
     >
       {children}
