@@ -134,7 +134,7 @@ County-level information provides an effective within-edition benchmark for publ
 
 ## References and research materials
 
-[1] Health Service Executive. Nursing Homes Support Scheme maximum agreed prices, Section 40 list 231, printed 14 October 2026. [Official source PDF](https://www.hse.ie/documents/3223/HSE_Section40_List_231_Published_List_14.10.2026.pdf).
+[1] Health Service Executive. Nursing Homes Support Scheme maximum agreed prices, Section 40 list 231, printed 14 October 2026. [Original official URL](https://www.hse.ie/documents/3223/HSE_Section40_List_231_Published_List_14.10.2026.pdf). Official URLs may change as newer editions are published. The exact study PDF is preserved in [inputs.zip](https://github.com/niwash/ClearCare/blob/main/Research/october-price-benchmark/inputs.zip), with the SHA-256 recorded in reference [5].
 
 [2] National Treatment Purchase Fund. Nursing Homes FAQs, including contract-price considerations. Consulted 19 November 2026. [Official guidance](https://www.ntpf.ie/information-for-nursing-homes/nursing-homes-faqs/).
 
