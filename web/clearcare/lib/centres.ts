@@ -213,8 +213,14 @@ export const getCentre = cache(async (id: string): Promise<CentreLookup> => {
   if (response.status === 404) return { status: "not-found" };
   if (!response.ok) return { status: "unavailable", httpStatus: response.status };
   const { centre, ...beside }: CentreResult = await response.json();
-  return { status: "found", centre: { ...centre, ...beside } };
+  return { status: "found", centre: { ...centre, ...beside, address: tidyAddress(centre.address) } };
 });
+
+// The register's address as printed, without the space it sometimes has before a comma
+// ("Acres , Fermoy"), so every page and spreadsheet that shows it reads "Acres, Fermoy".
+export function tidyAddress(address: string) {
+  return address.replace(/\s+,/g, ",");
+}
 
 // GET /centres/{centre_id}/reports (CentreReportsResult in api/openapi.yaml), newest first.
 interface CentreReportsResult {
