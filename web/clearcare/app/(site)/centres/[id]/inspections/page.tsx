@@ -5,7 +5,7 @@ import { Band } from "@/components/centre/centre-band";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { InspectionHistory } from "@/components/centre/inspection-history";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
-import { Timeline } from "@/components/centre/timeline";
+import { Timeline, TimelineNotes } from "@/components/centre/timeline";
 import { formatDate } from "@/lib/centres";
 import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
 import { missingReportsNote } from "@/lib/events";
@@ -52,9 +52,13 @@ export default async function InspectionsPage({ params }: InspectionsPageProps) 
             <RecordPrintButton />
           </div>
           {events && events.length > 0 && (
-            <div className={`${sectionCardClass} px-4 py-5 md:px-7`}>
-              <Timeline events={events} updated={centre.register_snapshot.fetched_at} />
-            </div>
+            <>
+              <div className={`${sectionCardClass} px-4 py-5 md:px-7`}>
+                <Timeline events={events} />
+              </div>
+              {/* Under the card, outside it, as on Inspection history (CCARE-278). */}
+              <TimelineNotes events={events} updated={centre.register_snapshot.fetched_at} />
+            </>
           )}
           {missingReports === "none-published" && (
             <p className={`${sectionCardClass} p-6 text-ink-muted`}>
