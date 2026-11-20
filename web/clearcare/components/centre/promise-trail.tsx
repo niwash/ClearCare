@@ -65,7 +65,9 @@ export function PromiseTrail({ trail, inspections, highlightsHref, questionsHref
             </span>
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-3">
+        {/* flex-wrap (CCARE-287): on a phone in Easier to Read, a long outcome ("To be checked at
+            next inspection") left no room for Show, which ran out of the card. */}
+        <div className="flex shrink-0 flex-wrap items-center gap-3">
           <OutcomePill outcome={outcome} />
           <ShowHide group="section" className="print:hidden" />
         </div>
