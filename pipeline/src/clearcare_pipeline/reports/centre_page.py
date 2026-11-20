@@ -165,6 +165,7 @@ class _CentrePageParser(HTMLParser):
         self._in_centre_id_field = False
         self._reading_centre_id = False
         self._row: dict[str, str] | None = None
+        self._row_has_cells = False
         self._column: str | None = None
 
     def handle_starttag(
@@ -196,7 +197,9 @@ class _CentrePageParser(HTMLParser):
             self.columns.append(attributes.get("id", ""))
         elif tag == "tr":
             self._row = {}
+            self._row_has_cells = False
         elif tag == "td" and self._row is not None:
+            self._row_has_cells = True
             self._column = attributes.get("headers")
         elif tag == "time" and self._row is not None and self._column:
             self._row[self._column] = attributes.get("datetime", "")
@@ -219,7 +222,12 @@ class _CentrePageParser(HTMLParser):
         elif tag == "td":
             self._column = None
         elif tag == "tr" and self._row is not None:
-            if self._row:
+            # The heading row has no td cells and is left out. A row with
+            # cells is kept even when nothing was read from them, so that
+            # it fails as a row and the list does not read as empty: the
+            # reports of an empty list are marked as no longer listed
+            # (db/V29).
+            if self._row_has_cells:
                 self.rows.append(self._row)
             self._row = None
 

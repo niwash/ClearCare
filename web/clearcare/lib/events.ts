@@ -14,7 +14,9 @@ export interface InspectionEvent {
   kind: "inspection";
   date: ISODate | null; // null when neither the report nor HIQA's list gives a date that can be right
   inspection_type: string | null; // HIQA's "Type of inspection" as printed: "Unannounced", "Announced"…
-  published_date: ISODate | null; // null when HIQA no longer lists the report
+  published_date: ISODate | null; // null when the report left HIQA's list before the lists were kept
+  // Whether HIQA lists the report on the home's page. Absent from an API deployed before CCARE-274.
+  still_listed?: boolean;
   report_id: number;
   report_url: string;
   // Not from the API: added by markNoLongerOnline when HIQA no longer has the report online, as an
@@ -31,17 +33,20 @@ export interface ThematicInspectionEvent {
   date: ISODate;
   inspection_type: string | null; // null when no type was read from the report
   published_date: ISODate | null;
+  still_listed?: boolean; // as InspectionEvent's
   overall_judgment: string; // as printed
   report_url: string;
   requestHref?: string; // as InspectionEvent's
 }
 
-// A report HIQA lists that ClearCare holds no reading of.
+// A report HIQA lists, or has listed, that ClearCare holds no reading of.
 export interface UnreadReportEvent {
   kind: "unread_report";
   date: ISODate | null;
   published_date: ISODate;
+  still_listed?: boolean; // as InspectionEvent's
   report_url: string;
+  requestHref?: string; // as InspectionEvent's
 }
 
 // Dated by the registration date. Every register change below it is dated by the day the register
@@ -257,12 +262,17 @@ export function noListedReport(events: CentreEvent[]) {
 
 // A report HIQA no longer has online (CCARE-236, #198). HIQA keeps three years of reports on a
 // home's page and sends older ones on request, so the report stays on ClearCare, with what was read
-// from it; only its link goes, as hiqa.ie answers 403 for the file. A report read before db/V22 kept
-// HIQA's lists, and no longer listed, has no published date. Until the home's page on hiqa.ie has
-// been read (hiqaCheckedAt null) no report has one, so none is taken to be gone. A report that leaves
-// the list from now on keeps its date: for those the pipeline and the API are to say it is gone.
-function isNoLongerOnline(event: CentreEvent, hiqaCheckedAt: string | null): event is InspectionEvent | ThematicInspectionEvent {
-  return hiqaCheckedAt !== null && (event.kind === "inspection" || event.kind === "thematic_inspection") && event.published_date === null;
+// from it; only its link goes, as hiqa.ie answers 403 for the file. The API says which reports HIQA
+// no longer lists (still_listed, CCARE-274), read or not, and those keep their published date. The
+// site and the API deploy separately, so the site also has to work against an API that doesn't send
+// still_listed yet: the rule from before it stays, that a report with no published date is gone. That
+// is a report read before db/V22 kept HIQA's lists, and no longer listed. Until the home's page on
+// hiqa.ie has been read (hiqaCheckedAt null) no report is known to be listed, so none is taken to be
+// gone.
+function isNoLongerOnline(event: CentreEvent, hiqaCheckedAt: string | null): event is InspectionEvent | ThematicInspectionEvent | UnreadReportEvent {
+  if (hiqaCheckedAt === null) return false;
+  if (event.kind !== "inspection" && event.kind !== "thematic_inspection" && event.kind !== "unread_report") return false;
+  return event.still_listed === false || event.published_date === null;
 }
 
 // The ids of the regulation inspection reports HIQA no longer has online.

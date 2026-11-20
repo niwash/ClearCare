@@ -54,7 +54,7 @@ record CentreSearchParameters(
   // The amenity filters take one item name per value, so they may be repeated.
   private static final List<String> REPEATABLE =
       List.of("care_type", "room_type", "facility", "activity");
-  private static final List<String> SORTS = List.of("name", "latest_inspection", "distance");
+  private static final List<String> SORTS = List.of("name", "latest_inspection", "distance", "price");
   private static final int MAX_TEXT_LENGTH = 100;
   private static final int DEFAULT_PAGE_SIZE = 20;
   private static final int MAX_PAGE_SIZE = 50;
@@ -233,7 +233,7 @@ record CentreSearchParameters(
       return "name";
     }
     if (!SORTS.contains(value)) {
-      throw badRequest("sort must be name, latest_inspection or distance");
+      throw badRequest("sort must be name, latest_inspection, distance or price");
     }
     return value;
   }

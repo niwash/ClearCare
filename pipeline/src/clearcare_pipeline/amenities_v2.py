@@ -227,13 +227,17 @@ def _page_variants(text: str) -> tuple[str, str]:
     return _normalise(text), _normalise(_LINE_END_HYPHEN.sub("", text))
 
 
-def _not_inside_a_number(phrase: str) -> re.Pattern[str]:
-    """Matches the phrase only where no digit touches either end.
+def _quote_pattern(phrase: str) -> re.Pattern[str]:
+    """Matches the phrase only where it is not part of something longer.
 
-    So "2 single rooms" is not found in "12 single rooms". A letter may touch
-    it, because PDF extraction sometimes glues one on ("bell. tResidents").
+    No digit may touch either end, so "2 single rooms" is not found in
+    "12 single rooms". A letter may touch a longer quote, because PDF
+    extraction sometimes glues one on ("bell. tResidents"), but not a quote
+    of one or two words, which would otherwise be found inside a word:
+    "Mass" in "massage".
     """
-    return re.compile(rf"(?<!\d){re.escape(phrase)}(?!\d)")
+    adjacent = r"\w" if len(phrase.split()) <= 2 else r"\d"
+    return re.compile(rf"(?<!{adjacent}){re.escape(phrase)}(?!{adjacent})")
 
 
 def _search_ranges(start: int, end: int, last: int) -> list[tuple[int, int]]:
@@ -263,7 +267,7 @@ def _find_pages(
     words = _normalise(quote)
     if not words:
         return None
-    pattern = _not_inside_a_number(words)
+    pattern = _quote_pattern(words)
     for low, high in _search_ranges(start, end, len(pages)):
         for page in range(low, high + 1):
             if any(pattern.search(text) for text in pages[page - 1]):

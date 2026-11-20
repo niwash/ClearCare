@@ -44,8 +44,9 @@ paths:
         whose newest report has no date come last, together with centres
         without a report, and ties are in name order. `sort=distance` orders
         them by `distance_m`, nearest first, and needs `near`; centres without
-        a distance come last, and ties are in name order. Results are not
-        ranked.
+        a distance come last, and ties are in name order. `sort=price` orders
+        them by `contract_price`, lowest first; centres without a price come
+        last, and ties are in name order. Results are not ranked.
 
         An unknown parameter, an unknown item name or sort, `sort=distance`
         without `near`, or a parameter other than the four filters given more
@@ -66,7 +67,7 @@ paths:
           description: The order of the results, as described above.
           schema:
             type: string
-            enum: [name, latest_inspection, distance]
+            enum: [name, latest_inspection, distance, price]
             default: name
         - name: page
           in: query
@@ -110,6 +111,7 @@ paths:
                       activities: ["Music and singing", "Bingo"]
                       facilities: ["Garden", "Lounge/day room"]
                     fair_deal: true
+                    contract_price: 1908.00
                     latest_inspection:
                       date: "2026-01-15"
                     distance_m: null
@@ -415,8 +417,14 @@ paths:
         the report prints; one that was not is an `unread_report`, dated as
         HIQA lists it. A listed date that cannot be right, one before 2007 or
         after the day the report was published, is not given: `date` is
-        `null`. A report that was read and that HIQA no longer lists is still
-        an event, with `published_date` `null`.
+        `null`.
+
+        `still_listed` is `false` when the report was not on the list of the
+        centre's page when ClearCare last read it, or when ClearCare has no
+        listing for it. HIQA takes reports off the page after three years,
+        and the file is then usually gone. The report is still an event. One
+        that was read and that left the list before ClearCare kept the lists
+        has `published_date` `null` as well.
 
         A `registration` is dated by the registration date. Every other
         register change is dated by the day the register first showed it,
@@ -472,6 +480,7 @@ paths:
                     date: "2026-05-13"
                     inspection_type: Unannounced
                     published_date: "2026-06-20"
+                    still_listed: true
                     report_id: 1
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-13-may-2026.pdf
                     compliant: 14
@@ -480,11 +489,13 @@ paths:
                   - kind: unread_report
                     date: null
                     published_date: "2026-04-15"
+                    still_listed: true
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-9-january-2026.pdf
                   - kind: thematic_inspection
                     date: "2025-11-04"
                     inspection_type: Unannounced
                     published_date: "2025-12-10"
+                    still_listed: true
                     overall_judgment: Substantially Compliant
                     report_url: https://www.hiqa.ie/system/files/inspectionreports/34-elm-hall-nursing-home-4-november-2025.pdf
                   - kind: registration
@@ -942,9 +953,9 @@ paths:
 
         A document the search page could not have produced is refused with 400:
         an option that is not a slug of lower-case letters, digits and hyphens,
-        an order that is not `name` or `latest_inspection`, or more options than
-        a page can hold. Lists that are left out are stored empty, and a missing
-        `sort` is stored as `name`.
+        an order that is not `name`, `latest_inspection` or `price`, or more
+        options than a page can hold. Lists that are left out are stored
+        empty, and a missing `sort` is stored as `name`.
       parameters:
         - name: X-ClearCare-Sub
           in: header
@@ -987,7 +998,7 @@ paths:
               example:
                 title: Bad Request
                 status: 400
-                detail: sort must be name or latest_inspection
+                detail: sort_by must be name, latest_inspection or price
                 instance: /preferences
         "401":
           description: The request did not come from the site.
@@ -1035,6 +1046,241 @@ paths:
             application/problem+json:
               schema:
                 $ref: "#/components/schemas/Problem"
+
+  /alerts/subscriptions:
+    get:
+      operationId: listAlertSubscriptions
+      summary: The alerts this account follows
+      description: |
+        Returns the account's active subscriptions, newest first. Each row
+        names the package and the single target inside it: a centre, a county,
+        or nothing at all for the all-reports package. With nothing followed
+        the list is empty.
+
+        The account is named the same way as for the saved search: the site's
+        server sends the account's Cognito subject with the token the site and
+        the API share (ADR-0025).
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          description: >
+            The account's Cognito subject claim, sent by the site's server only.
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          description: The token the site's server and the API share.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The account's subscriptions, newest first.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscriptions"
+              example:
+                subscriptions:
+                  - id: 12
+                    package_id: 1
+                    title: Alerts for a nursing home
+                    description: >-
+                      Get an email when a new inspection report is published for
+                      the nursing home you follow.
+                    scope: CENTRE
+                    centre_id: "117"
+                    county_id: null
+                    created_at: "2026-11-20T09:14:02Z"
+                  - id: 11
+                    package_id: 3
+                    title: Alerts for every report
+                    description: >-
+                      Get an email whenever a new inspection report is published.
+                    scope: ALL
+                    centre_id: null
+                    county_id: null
+                    created_at: "2026-11-19T18:02:31Z"
+        "401":
+          description: >
+            No subject, or a token that is not the site's: the request did not
+            come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Unauthorized
+                status: 401
+                detail: The request is not from the site.
+                instance: /alerts/subscriptions
+        "503":
+          description: This API has no token configured, so it keeps no subscriptions.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    post:
+      operationId: addAlertSubscription
+      summary: Follow a centre, a county or every report
+      description: |
+        Adds one subscription for this account and returns it as stored. Adding
+        the same target twice returns the row that already exists rather than a
+        second one, so a double click is harmless.
+
+        `package_id` names a row in `clearcare.alert_packages`. A package whose
+        scope is `CENTRE` takes `centre_id` and no `county_id`; `COUNTY` takes
+        `county_id` and no `centre_id`; `ALL` takes neither. The package must be
+        active, and the target must exist on the register.
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AlertSubscriptionRequest"
+            examples:
+              centre:
+                value:
+                  package_id: 1
+                  centre_id: "117"
+              county:
+                value:
+                  package_id: 2
+                  county_id: 8
+              every_report:
+                value:
+                  package_id: 3
+      responses:
+        "200":
+          description: The subscription as it is now stored.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertSubscription"
+        "400":
+          description: >
+            Not a subscription the site could have sent: an unknown or inactive
+            package, a target the package's scope does not take, an empty
+            target, or a centre or county that does not exist.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Bad Request
+                status: 400
+                detail: no centre with that id
+                instance: /alerts/subscriptions
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/subscriptions/{id}:
+    delete:
+      operationId: cancelAlertSubscription
+      summary: Stop following one target
+      description: >
+        Deletes one subscription of this account. The id comes from the list
+        route. An id that is already gone, or one that belongs to another
+        account, is answered the same way, so the button can be pressed twice.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The account does not follow that target now.
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+  /alerts/unsubscribe:
+    post:
+      operationId: unsubscribeFromAlerts
+      summary: Stop every alert from an email link
+      description: |
+        Deletes every subscription of the account behind this token. It is the
+        one route that takes no session and no site token: the email link
+        carries a random per-account capability created when the first digest
+        was composed, and holding it is the proof (ADR-0034). The token is not
+        personal data: it is derived from nothing and is dropped with the
+        account.
+
+        It is a POST because it changes state. The site's page asks the visitor
+        to confirm first, so a mail client or scanner that only opens the link
+        changes nothing.
+
+        A token that no account holds is refused with 404. Repeating the call
+        with a valid token answers 204 even after the rows are gone, so a
+        reloaded page, or a second click, is not an error.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: The capability from the unsubscribe link in the email.
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The account follows nothing now.
+        "404":
+          description: No account holds this token.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+              example:
+                title: Not Found
+                status: 404
+                detail: This unsubscribe link is not valid.
+                instance: /alerts/unsubscribe
 
 components:
   parameters:
@@ -1170,7 +1416,7 @@ components:
           $ref: "#/components/schemas/Facets"
         sort:
           type: string
-          enum: [name, latest_inspection, distance]
+          enum: [name, latest_inspection, distance, price]
           description: The order applied to the results.
 
     CentreSummary:
@@ -1180,7 +1426,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/Centre"
         - type: object
-          required: [amenities, fair_deal, latest_inspection, distance_m]
+          required: [amenities, fair_deal, contract_price, latest_inspection, distance_m]
           properties:
             amenities:
               description: >
@@ -1198,6 +1444,14 @@ components:
                 Whether a contract price is stored for the centre, the one
                 `GET /centres/{centre_id}` returns as `contract_price`. It
                 does not show that the centre is on the newest HSE list.
+            contract_price:
+              type: [number, "null"]
+              description: >
+                The latest published contract price for the centre, in euro
+                per resident per week: the value `GET /centres/{centre_id}`
+                returns as `contract_price`. null when no price list has been
+                loaded for it.
+              example: 1908.00
             latest_inspection:
               description: >
                 The centre's newest loaded inspection report, or null when
@@ -1667,6 +1921,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - report_id
         - report_url
         - compliant
@@ -1690,8 +1945,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         report_id:
           type: integer
           format: int64
@@ -1722,6 +1984,7 @@ components:
         - date
         - inspection_type
         - published_date
+        - still_listed
         - overall_judgment
         - report_url
       properties:
@@ -1739,8 +2002,15 @@ components:
           type: [string, "null"]
           format: date
           description: >
-            The day HIQA published the report. Null when HIQA no longer lists
-            the report on the centre's page.
+            The day HIQA published the report. Null for a report that left
+            HIQA's list before ClearCare kept the lists.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. False too when ClearCare has
+            no listing for the report. HIQA takes reports off the page after
+            three years, and the file at `report_url` is then usually gone.
         overall_judgment:
           type: string
           description: The overall judgment, as the report prints it.
@@ -1752,9 +2022,10 @@ components:
     UnreadReportEvent:
       type: object
       description: >
-        A report HIQA lists for the centre that ClearCare holds no reading of:
-        its file is not stored yet, or its layout cannot be read.
-      required: [kind, date, published_date, report_url]
+        A report HIQA lists or has listed for the centre that ClearCare holds
+        no reading of: its file is not stored yet, or its layout cannot be
+        read.
+      required: [kind, date, published_date, still_listed, report_url]
       properties:
         kind:
           const: unread_report
@@ -1769,6 +2040,13 @@ components:
           type: string
           format: date
           description: The day HIQA published the report.
+        still_listed:
+          type: boolean
+          description: >
+            Whether the report was on the list of the centre's page on
+            hiqa.ie when ClearCare last read it. HIQA takes reports off the
+            page after three years, and the file at `report_url` is then
+            usually gone.
         report_url:
           type: string
           format: uri
@@ -2688,7 +2966,7 @@ components:
             pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
         sort_by:
           type: string
-          enum: [name, latest_inspection]
+          enum: [name, latest_inspection, price]
           description: >
             `distance` cannot be saved, because it needs `near` and a place is
             never stored.
@@ -2708,3 +2986,67 @@ components:
           type: [string, "null"]
           format: date-time
           description: When the saved search was last stored, to the second.
+
+    AlertSubscription:
+      type: object
+      description: >
+        One target an account follows, as the API returns it: the package and
+        the single target inside it. A centre row carries `centre_id` and a
+        null `county_id`; a county row carries the reverse; the all-reports
+        row has both null.
+      required:
+        [id, package_id, title, description, scope, centre_id, county_id,
+         created_at]
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: The subscription's id, used to cancel it.
+        package_id:
+          type: integer
+        title:
+          type: string
+          description: The package's title, as the site shows it.
+        description:
+          type: [string, "null"]
+        scope:
+          type: string
+          enum: [CENTRE, COUNTY, ALL]
+        centre_id:
+          type: [string, "null"]
+          pattern: "^[0-9]+$"
+        county_id:
+          type: [integer, "null"]
+        created_at:
+          type: string
+          format: date-time
+
+    AlertSubscriptions:
+      type: object
+      description: The account's subscriptions, newest first.
+      required: [subscriptions]
+      properties:
+        subscriptions:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlertSubscription"
+
+    AlertSubscriptionRequest:
+      type: object
+      description: >
+        One target to follow. The package's scope decides which target field
+        is sent: `CENTRE` takes `centre_id`, `COUNTY` takes `county_id`, and
+        `ALL` takes neither.
+      required: [package_id]
+      properties:
+        package_id:
+          type: integer
+          description: The package to follow. It must be active.
+        centre_id:
+          type: string
+          pattern: "^[0-9]+$"
+          description: The centre, for a CENTRE package.
+        county_id:
+          type: integer
+          description: The county, for a COUNTY package.
+

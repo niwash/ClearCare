@@ -1,0 +1,95 @@
+regulation,earlier_judgment,starting_judgments,with_later_report,reassessed,later_compliant,later_substantially_compliant,later_not_compliant,omitted,no_later_report,homes_start,homes_followup,homes_reassessed,homes_later_not_compliant,homes_later_compliant,homes_later_substantially_compliant
+Regulation 10,Compliant,473,361,30,26,4,0,331,112,384,333,28,0,24,4
+Regulation 10,Not compliant,2,2,2,1,1,0,0,0,2,2,2,0,1,1
+Regulation 10,Substantially compliant,36,30,13,12,1,0,17,6,35,29,12,0,12,1
+Regulation 11,Compliant,857,674,314,310,4,0,360,183,463,417,205,0,204,4
+Regulation 11,Not compliant,2,1,0,0,0,0,1,1,2,1,0,0,0,0
+Regulation 11,Substantially compliant,21,14,9,6,2,1,5,7,19,13,9,1,6,2
+Regulation 12,Compliant,417,328,44,37,6,1,284,89,334,279,37,1,30,6
+Regulation 12,Not compliant,29,27,16,5,5,6,11,2,23,21,11,4,5,5
+Regulation 12,Substantially compliant,109,91,53,28,21,4,38,18,81,70,39,4,28,17
+Regulation 13,Compliant,251,192,10,9,1,0,182,59,227,182,10,0,9,1
+Regulation 13,Not compliant,3,3,2,1,0,1,1,0,2,2,1,1,1,0
+Regulation 13,Substantially compliant,21,18,10,10,0,0,8,3,21,18,10,0,10,0
+Regulation 14,Compliant,547,449,109,107,1,1,340,98,373,339,79,1,77,1
+Regulation 14,Not compliant,23,20,13,11,0,2,7,3,21,19,13,2,11,0
+Regulation 14,Substantially compliant,1,0,0,0,0,0,0,1,1,0,0,0,0,0
+Regulation 15,Compliant,1374,963,818,694,63,61,145,411,527,499,431,59,385,58
+Regulation 15,Not compliant,157,129,123,78,16,29,6,28,115,97,92,25,73,16
+Regulation 15,Substantially compliant,171,140,133,99,21,13,7,31,133,117,111,13,94,19
+Regulation 16,Compliant,1102,782,607,455,115,37,175,320,506,467,371,36,284,115
+Regulation 16,Not compliant,165,122,112,46,26,40,10,43,109,84,77,29,46,26
+Regulation 16,Substantially compliant,345,254,230,133,65,32,24,91,239,187,170,30,124,51
+Regulation 17,Compliant,418,299,190,90,90,10,109,119,294,231,149,10,75,90
+Regulation 17,Not compliant,350,282,262,33,107,122,20,68,194,171,160,72,33,102
+Regulation 17,Substantially compliant,810,611,508,118,314,76,103,199,407,360,313,71,116,208
+Regulation 18,Compliant,582,414,129,90,34,5,285,168,401,330,102,5,70,33
+Regulation 18,Not compliant,54,42,37,29,6,2,5,12,51,40,35,2,29,6
+Regulation 18,Substantially compliant,174,138,100,67,25,8,38,36,138,111,82,8,64,18
+Regulation 19,Compliant,373,275,30,25,4,1,245,98,314,244,27,1,22,4
+Regulation 19,Not compliant,13,11,8,7,1,0,3,2,12,10,8,0,7,1
+Regulation 19,Substantially compliant,89,76,42,34,6,2,34,13,83,71,39,2,34,6
+Regulation 20,Compliant,266,223,17,15,2,0,206,43,242,209,15,0,13,2
+Regulation 20,Not compliant,3,2,1,1,0,0,1,1,3,2,1,0,1,0
+Regulation 20,Substantially compliant,69,63,27,21,5,1,36,6,64,59,25,1,21,5
+Regulation 21,Compliant,521,388,131,77,47,7,257,133,366,301,104,7,62,44
+Regulation 21,Not compliant,108,87,73,23,16,34,14,21,71,59,48,19,23,16
+Regulation 21,Substantially compliant,342,265,162,80,65,17,103,77,239,201,124,17,78,56
+Regulation 22,Compliant,413,312,21,21,0,0,291,101,353,285,20,0,20,0
+Regulation 22,Substantially compliant,3,3,0,0,0,0,3,0,3,3,0,0,0,0
+Regulation 23,Compliant,531,357,355,177,132,46,2,174,310,253,251,46,127,129
+Regulation 23,Not compliant,680,530,529,61,173,295,1,150,313,274,274,148,60,166
+Regulation 23,Substantially compliant,793,582,581,142,267,172,1,211,435,381,380,159,136,191
+Regulation 24,Compliant,411,302,32,25,5,2,270,109,342,280,30,2,24,5
+Regulation 24,Not compliant,34,28,20,11,6,3,8,6,29,23,18,3,11,6
+Regulation 24,Substantially compliant,182,137,83,54,25,4,54,45,151,115,73,4,54,22
+Regulation 25,Compliant,374,270,43,33,10,0,227,104,302,229,38,0,28,10
+Regulation 25,Not compliant,18,14,12,11,0,1,2,4,16,12,10,1,10,0
+Regulation 25,Substantially compliant,89,66,36,28,6,2,30,23,78,60,32,2,28,6
+Regulation 26,Compliant,435,326,76,73,3,0,250,109,314,262,55,0,52,3
+Regulation 26,Not compliant,7,4,4,2,1,1,0,3,6,4,4,1,2,1
+Regulation 26,Substantially compliant,37,24,13,7,5,1,11,13,31,21,13,1,7,5
+Regulation 27,Compliant,301,220,86,25,46,15,134,81,254,201,79,15,22,46
+Regulation 27,Not compliant,201,163,131,35,57,39,32,38,148,120,96,29,35,53
+Regulation 27,Substantially compliant,653,536,353,89,204,60,183,117,376,347,250,57,89,161
+Regulation 28,Compliant,255,187,55,14,30,11,132,68,223,174,50,11,13,30
+Regulation 28,Not compliant,344,289,226,28,87,111,63,55,211,182,148,72,28,85
+Regulation 28,Substantially compliant,454,359,210,70,89,51,149,95,319,278,164,51,69,69
+Regulation 29,Compliant,341,257,22,18,3,1,235,84,277,226,20,1,16,3
+Regulation 29,Not compliant,42,33,28,17,6,5,5,9,35,28,25,5,17,6
+Regulation 29,Substantially compliant,132,104,52,32,12,8,52,28,109,87,40,8,32,7
+Regulation 3,Compliant,288,241,36,29,7,0,205,47,238,209,33,0,28,6
+Regulation 3,Not compliant,12,10,8,2,1,5,2,2,6,6,5,2,2,1
+Regulation 3,Substantially compliant,136,118,49,26,23,0,69,18,105,92,39,0,25,20
+Regulation 30,Compliant,124,109,4,3,0,1,105,15,116,104,4,1,3,0
+Regulation 30,Not compliant,7,3,2,2,0,0,1,4,7,3,2,0,2,0
+Regulation 30,Substantially compliant,17,16,6,4,1,1,10,1,16,16,6,1,4,1
+Regulation 31,Compliant,794,597,314,237,2,75,283,197,439,398,208,70,157,2
+Regulation 31,Not compliant,249,197,154,109,3,42,43,52,179,153,120,36,104,3
+Regulation 31,Substantially compliant,44,42,31,19,4,8,11,2,39,37,26,8,18,3
+Regulation 32,Compliant,22,22,0,0,0,0,22,0,22,22,0,0,0,0
+Regulation 32,Not compliant,8,8,0,0,0,0,8,0,8,8,0,0,0,0
+Regulation 33,Compliant,19,18,1,1,0,0,17,1,18,18,1,0,1,0
+Regulation 33,Not compliant,2,2,0,0,0,0,2,0,2,2,0,0,0,0
+Regulation 33,Substantially compliant,2,2,0,0,0,0,2,0,2,2,0,0,0,0
+Regulation 34,Compliant,792,565,293,224,50,19,272,227,456,397,201,18,157,48
+Regulation 34,Not compliant,80,64,53,28,13,12,11,16,64,56,47,12,28,12
+Regulation 34,Substantially compliant,305,252,178,118,51,9,74,53,231,204,149,9,115,47
+Regulation 4,Compliant,429,348,41,31,8,2,307,81,350,300,40,2,30,8
+Regulation 4,Not compliant,33,27,19,9,5,5,8,6,27,21,15,3,9,5
+Regulation 4,Substantially compliant,153,127,67,30,31,6,60,26,113,96,50,6,30,21
+Regulation 5,Compliant,867,601,496,300,157,39,105,266,459,388,327,38,207,151
+Regulation 5,Not compliant,224,184,178,54,64,60,6,40,138,119,116,46,53,59
+Regulation 5,Substantially compliant,656,481,456,187,207,62,25,175,375,311,299,57,180,147
+Regulation 6,Compliant,1184,870,627,549,58,20,243,314,507,465,342,20,302,58
+Regulation 6,Not compliant,75,67,63,34,13,16,4,8,56,50,48,14,34,12
+Regulation 6,Substantially compliant,180,147,121,85,29,7,26,33,137,119,98,6,81,24
+Regulation 7,Compliant,643,434,180,139,32,9,254,209,407,323,135,8,104,32
+Regulation 7,Not compliant,84,75,65,33,20,12,10,9,66,61,52,10,32,19
+Regulation 7,Substantially compliant,218,177,113,66,31,16,64,41,163,140,90,15,63,25
+Regulation 8,Compliant,961,679,339,279,33,27,340,282,506,450,238,25,204,33
+Regulation 8,Not compliant,117,109,99,61,8,30,10,8,79,75,69,20,59,8
+Regulation 8,Substantially compliant,131,91,64,51,9,4,27,40,112,81,60,4,50,9
+Regulation 9,Compliant,943,641,488,351,105,32,153,302,473,404,298,30,217,103
+Regulation 9,Not compliant,240,200,179,55,52,72,21,40,150,136,123,47,55,52
+Regulation 9,Substantially compliant,426,332,306,152,104,50,26,94,277,237,222,48,142,81

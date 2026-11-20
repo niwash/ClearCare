@@ -1,0 +1,19 @@
+{
+  "providers": 328,
+  "shared_provider_homes": 106,
+  "largest_exact_provider_group": 27,
+  "screened_features": [
+    "Garden",
+    "Activities room",
+    "Hairdressing/beauty salon"
+  ],
+  "model_features": [
+    "Garden"
+  ],
+  "feature_status": {
+    "missing_v2": 327,
+    "eligible": 63,
+    "evidence_check_failed": 21
+  },
+  "feature_n": 63
+}

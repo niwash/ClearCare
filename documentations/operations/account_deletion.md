@@ -1,10 +1,13 @@
 # Deleting an account
 
-An account is an entry in the Cognito pool, and the database holds two things for it: a row in
+An account is an entry in the Cognito pool, and the database holds a row in
 `clearcare.users`, which is the pool's subject claim and a number the site files things against, and
-the saved search that row owns in `clearcare.user_preferences`. Nothing else is kept: no name, no
-address, no history, and the words typed into the search boxes are not stored. Deleting an account
-means deleting all three, in the order below.
+the saved search that row owns in `clearcare.user_preferences`. The alerts it follows hang off the
+same row: the subscriptions in `clearcare.alert_subscriptions`, the receipts in
+`clearcare.alert_notifications` of what was emailed, and the token in `clearcare.alert_unsubscribe`
+the email's unsubscribe link carries. Nothing else is kept: no name, no address, no history, and the
+words typed into the search boxes are not stored. Deleting an account means deleting all three, in
+the order below.
 
 The order matters. The subject claim is the only thing that connects those rows to an address, and it
 is read from the pool: delete the pool entry first and what is left in the database is a value nobody
@@ -38,8 +41,10 @@ whoever holds the browser.
    ```
 
    The saved search goes with it: `clearcare.user_preferences.user_id` references `users.id` with
-   `ON DELETE CASCADE`. A visitor who used "Forget my preferences" has no saved search left but still
-   has a `users` row, so this step is needed either way.
+   `ON DELETE CASCADE`. The alert rows go the same way: `alert_subscriptions`, `alert_notifications`
+   and `alert_unsubscribe` all reference `users.id` with `ON DELETE CASCADE`. A visitor who used
+   "Forget my preferences" has no saved search left but still has a `users` row, so this step is
+   needed either way.
 4. Delete the user, from the console (User pools → the pool → Users → Delete user) or:
 
    ```sh
@@ -49,14 +54,15 @@ whoever holds the browser.
    ```
 
 5. Reply once it is done. Say that the account is closed, its address removed from the pool and the
-   search kept for it deleted, and that any page they had open may keep working until they close it.
+   search and alert subscriptions kept for it deleted, and that any page they had open may keep
+   working until they close it.
 6. Note the date of the request in the operations log. The address is not written down: it is what
    the request asked to remove. CloudTrail keeps the API call for 90 days; nothing in ClearCare
    keeps a list of deleted accounts.
 
 ## What is not covered yet
 
-There is no self-service deletion and no deletion queue. Requests are handled by hand — the two rows
+There is no self-service deletion and no deletion queue. Requests are handled by hand — the rows
 above included — which is appropriate while the number of accounts is small and is the first thing to
 automate if it grows. A route that did it would have to delete the same rows in the same order, as
 ADR-0025 records.

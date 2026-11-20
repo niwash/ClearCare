@@ -243,7 +243,7 @@ describe("a home with no listed report", () => {
   });
 });
 
-describe("reports HIQA no longer has online (CCARE-236)", () => {
+describe("reports HIQA no longer has online (CCARE-236, CCARE-274)", () => {
   const hiqaCheckedAt = "2026-11-13T06:24:29Z";
   const gone = { ...inspection("2023-06-28", null), report_id: 1660 } as CentreEvent;
   const goneThematic = { ...thematicInspection, published_date: null } as CentreEvent;
@@ -262,9 +262,27 @@ describe("reports HIQA no longer has online (CCARE-236)", () => {
     assert.deepEqual([marked[0], marked[1], marked[4]], [published, registration("2025-05-31"), unreadReport]);
   });
 
+  // CCARE-274: the API says so of a report that left HIQA's list after the lists were kept. It
+  // keeps its published date, and one that was never read can be gone too.
+  const left = { ...inspection("2023-10-04", "2023-11-15"), report_id: 2210, still_listed: false } as CentreEvent;
+  const leftUnread = { ...unreadReport, still_listed: false } as CentreEvent;
+  const listed = { ...inspection("2025-09-25"), still_listed: true } as CentreEvent;
+  const listedUnread = { ...unreadReport, still_listed: true } as CentreEvent;
+
+  test("are also the reports the API says HIQA no longer lists, read or not", () => {
+    const events = [listed, left, listedUnread, leftUnread];
+    assert.deepEqual(noLongerOnlineReportIds(events, hiqaCheckedAt), new Set([2210]));
+    assert.deepEqual(markNoLongerOnline(events, hiqaCheckedAt, "591"), [
+      listed,
+      { ...left, requestHref: reportRequestHref("591", "2023-10-04") },
+      listedUnread,
+      { ...leftUnread, requestHref: reportRequestHref("591", "2024-01-12") },
+    ]);
+  });
+
   test("are none until the home's page on hiqa.ie has been read, when no report has a published date", () => {
-    assert.deepEqual(noLongerOnlineReportIds([gone], null), new Set());
-    assert.deepEqual(markNoLongerOnline([gone, goneThematic], null, "591"), [gone, goneThematic]);
+    assert.deepEqual(noLongerOnlineReportIds([gone, left], null), new Set());
+    assert.deepEqual(markNoLongerOnline([gone, goneThematic, left, leftUnread], null, "591"), [gone, goneThematic, left, leftUnread]);
   });
 
   test("are asked for as HIQA asks: by email, with the centre ID and the inspection's year", () => {

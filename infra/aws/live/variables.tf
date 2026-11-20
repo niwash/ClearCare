@@ -145,3 +145,42 @@ variable "google_maps_map_id" {
   type        = string
   default     = ""
 }
+
+variable "cognito_user_pool_id" {
+  description = "The user_pool_id output from cognito/production. The pipeline looks up alert recipients in this pool."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.cognito_user_pool_id == "" || can(regex("^[a-z0-9-]+_[A-Za-z0-9]+$", var.cognito_user_pool_id))
+    error_message = "Use a Cognito user pool ID such as eu-north-1_Ab123, or leave it empty."
+  }
+}
+
+variable "ses_domain" {
+  description = "Existing SES domain identity for user alerts."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.ses_domain == "" || can(regex("^([a-z0-9]([a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9]([a-z0-9-]*[a-z0-9])?$", var.ses_domain))
+    error_message = "Use the verified domain name, such as clearcare.ie, or leave it empty."
+  }
+}
+
+variable "alerts_from" {
+  description = "From line for user alerts, with a mailbox on the verified SES domain."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = var.alerts_from == "" || can(regex("^[^<>]*<[^@<> ]+@[^@<> ]+>$", var.alerts_from))
+    error_message = "Use the form ClearCare <alerts@example.com>, or leave it empty."
+  }
+}
+
+variable "alerts_enabled" {
+  description = "Whether the pipeline may send user alerts once the pool, domain and From address are set."
+  type        = bool
+  default     = false
+}
