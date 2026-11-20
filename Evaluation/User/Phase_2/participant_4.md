@@ -13,7 +13,7 @@
 | Transcribed                  | Yes                                        |
 | Interviewer(s)               | C20361521 - Twila Habab                    |
 | Relationship to the decision | Choose for a family member                 |
-| Knows Fair Deal              | Partially (heard of it, unsure what it is) |
+| Knows Fair Deal              | Partially (see more on Task 6)             |
 | GitHub Repository Tag        | phase2-evaluation-2                        |
 | GitHub Commit                | e045135                                    |
 
@@ -165,9 +165,10 @@ Participant is requested to imagine choosing a nursing home for their grandmothe
 
 **Think-aloud / observations**
 
-1. Participant chose the Fair Deal navigation bar item.
-2. Participant opened all accordions and skimmed through.
-3. Participant had heard about Fair Deal before and realised that it does not sound as bad as it seems.
+1. Participant was asked if they have heard of Fair Deal, and they responded with "No, is that something being tied to the family home?". Interviewer asked to confirm the assumption. 
+2. Participant chose the Fair Deal navigation bar item.
+3. Participant opened all accordions and skimmed through.
+4. Participant had decided that they have heard about Fair Deal before and realised that it does not sound as bad as it seems.
 
 **Issues or confusion**
 
