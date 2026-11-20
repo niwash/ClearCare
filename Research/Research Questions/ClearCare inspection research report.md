@@ -204,7 +204,7 @@ The following table reproduces all exported regulation identifiers. Reassessment
 
 ## Appendix B Source audit references
 
-The table lists all twelve checked source reports. Printed-entry omissions refer to legally distinct registration regulations. The Bishopscourt October 2023 URL uses 11 October in its filename, while the study uses the recorded inspection date of 10 October. Filenames were not used to override the stored inspection date.
+The table lists all twelve checked source reports. Official links may become unavailable over time. Exact copies of all twelve PDFs are preserved in [audit-pdfs/](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment/audit-pdfs), with report IDs, original URLs and SHA-256 checksums mapped in [audit-evidence.json](https://github.com/niwash/ClearCare/blob/main/Research/solo-reassessment/audit-evidence.json). Printed-entry omissions refer to legally distinct registration regulations. The Bishopscourt October 2023 URL uses 11 October in its filename, while the study uses the recorded inspection date of 10 October. Filenames were not used to override the stored inspection date.
 
 | Home and inspection date | PDF pages | Exported / printed | Missing entry | Source |
 |---|---|---|---|---|
