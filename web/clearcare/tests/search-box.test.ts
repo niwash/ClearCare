@@ -45,11 +45,23 @@ describe("a suggestion", () => {
     assert.equal(readSuggestion({ mainText: "County Cavan", secondaryText: "Ireland" }).county, "Cavan");
   });
 
-  // Google's types don't tell them apart: administrative_area_level_2 is also Cork City, and a
-  // Roscommon inside County Roscommon.
+  // As Google gave them on 20 Nov 2026 for every county but Dublin: the town is "Cavan" in "Ireland",
+  // and the county is "Cavan" in "County Cavan", found at the county's middle.
+  test("is a county when Google names it inside itself, and the box says County", () => {
+    for (const name of ["Cavan", "Meath", "Roscommon"]) {
+      const read = readSuggestion({ mainText: name, secondaryText: `County ${name}, Ireland` });
+      assert.equal(read.county, name);
+      assert.equal(read.label, `County ${name}`);
+    }
+  });
+
+  // Google's types don't tell them apart: administrative_area_level_2 is also Cork City.
   test("is a place when it is a town, an area or a city, even one named after its county", () => {
-    for (const mainText of ["Cavan", "Cork City", "Roscommon", "Rathmines", "A98 C2C0"]) {
+    for (const mainText of ["Cavan", "Roscommon", "Rathmines", "A98 C2C0"]) {
       assert.equal(readSuggestion({ mainText, secondaryText: "Ireland" }).county, null, mainText);
+    }
+    for (const [mainText, where] of [["Cork City", "County Cork"], ["Carlow", "County Laois"], ["Fingal", "County Dublin"]]) {
+      assert.equal(readSuggestion({ mainText, secondaryText: `${where}, Ireland` }).county, null, mainText);
     }
   });
 
