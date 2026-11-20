@@ -257,6 +257,15 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                     <Note>Ask the home</Note>
                   </>
                 )}
+                {/* That Fair Deal can help pay it, and where to read how (CCARE-278): in user testing
+                    (P2_3) the participant read "(Fair Deal)" here without it occurring to them to find
+                    out what it was. */}
+                <Note>
+                  Fair Deal, the government scheme, can help pay for nursing home care.{" "}
+                  <Link href="/guides/fair-deal" className="whitespace-nowrap text-ink-muted adult:text-primary print:hidden">
+                    How Fair Deal works →
+                  </Link>
+                </Note>
               </SummaryRow>
             )}
             {/* The latest inspection with regulation judgments, so it can say what it found. A newer
