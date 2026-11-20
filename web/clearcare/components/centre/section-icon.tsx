@@ -12,6 +12,13 @@ export const sectionHeadingClass =
 export const sectionCardClass =
   "rounded-2xl border border-line-soft bg-surface shadow-sm adult:rounded-lg adult:border-line adult:shadow-none";
 
+// The heading over each part of a section's card, such as the timeline and the grid on Inspection
+// history (CCARE-278): the size and face of the site's other subheadings (the guides', the promise
+// trails', the shortlist's), so the card reads as its parts at a glance. Shared so the two columns'
+// headings match.
+export const partHeaderClass = "mb-4 flex flex-col gap-1";
+export const partHeadingClass = "font-heading text-lg font-semibold text-ink md:text-xl";
+
 // Where a jump to a section or a trail lands: a little below the top of the window, so its heading
 // isn't pressed against the edge. The header doesn't stay on screen, and the record's pages have no
 // sticky menu since the sections became pages (CCARE-212), so this is all the room it needs.

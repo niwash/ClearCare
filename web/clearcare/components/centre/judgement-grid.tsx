@@ -23,6 +23,7 @@ import type { ReactNode } from "react";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { MoreRegulations } from "./more-regulations";
+import { partHeaderClass, partHeadingClass } from "./section-icon";
 
 // What is behind a cell's mark. How strong the fills are is set once, in globals.css
 // (--finding-fill-strength). A regulation the inspection did not judge has no mark and no fill, only
@@ -68,15 +69,6 @@ function GridCell({ cell, regulation, inspection }: { cell: Cell; regulation: Re
   );
 }
 
-// "16 other regulations: compliant whenever they were judged." Of a home where no regulation was
-// ever a finding there is no grid for them to be other than, so it is "All 14 regulations".
-function restWords(count: number, hasRows: boolean) {
-  const regulations = count === 1 ? "regulation" : "regulations";
-  const judged = count === 1 ? "it was" : "they were";
-  // Not "All 1": that is not English.
-  const subject = hasRows ? `${count} other ${regulations}` : count === 1 ? `1 ${regulations}` : `All ${count} ${regulations}`;
-  return `${subject}: compliant whenever ${judged} judged.`;
-}
 
 // A regulation's title, with HIQA's words for it a hover or tap away (CCARE-278): in user testing (P2_4)
 // the participant didn't know what "Premises" meant. A regulation ClearCare has no quote for is its
@@ -129,7 +121,9 @@ function RestList({ regulations, className = "" }: { regulations: Regulation[]; 
     <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 ${className}`}>
       {regulations.map((regulation) => (
         <li key={regulation.number} className="break-inside-avoid py-0.5">
-          <RegulationTitle regulation={regulation} />
+          {/* align-top: the title is a button, and a button sits on its last line, so a title that
+              wraps had its bullet beside its second line rather than its first. */}
+          <RegulationTitle regulation={regulation} className="align-top" />
         </li>
       ))}
     </ul>
@@ -144,16 +138,12 @@ export function JudgementGrid({ inspections, history, trails }: JudgementGridPro
 
   return (
     <div>
-      {/* Left out when no report judged a regulation: thematic inspections alone. */}
-      {(rows.length > 0 || rest.length > 0) && (
-        // Says which regulations are in the grid (CCARE-258): "Each regulation, inspection by
-        // inspection" read as all of them, but the rows are only those not fully compliant at least
-        // once; the rest are listed under it.
-        <div id="grid-h" className="flex flex-col gap-0.5">
-          <h3 className="font-semibold">
-            {rows.length > 0 ? "Regulations not fully compliant at least once" : "Regulations judged"}
-          </h3>
-          {rows.length > 0 && <p className="text-sm text-ink-muted">How each was judged at every inspection.</p>}
+      {/* Says which regulations are in the grid (CCARE-258): "Each regulation, inspection by
+          inspection" read as all of them, but the rows are only those not fully compliant at least
+          once; the rest are listed under it. Left out with no grid: the list's heading says it all. */}
+      {rows.length > 0 && (
+        <div id="grid-h" className={partHeaderClass}>
+          <h3 className={partHeadingClass}>Regulations not fully compliant at least once</h3>
         </div>
       )}
 
@@ -212,11 +202,15 @@ export function JudgementGrid({ inspections, history, trails }: JudgementGridPro
       {/* A bulleted list, the first few in view and the rest behind a "Show more" button, so a family sees
           what the list is without it outgrowing the grid. Columns on wider screens keep it short. */}
       {rest.length > 0 && (
-        // A line between it and the grid above; with no grid there is nothing to divide it from.
-        <div className={`mt-3 text-sm ${rows.length > 0 ? "border-t border-line pt-3" : ""}`}>
-          <p id="rest-h" className="text-ink-muted">
-            {restWords(rest.length, rows.length > 0)}
-          </p>
+        // Room between it and the grid above; with no grid there is nothing to keep it from.
+        <div className={`text-sm ${rows.length > 0 ? "mt-8" : ""}`}>
+          {/* A heading as large as the grid's (CCARE-278), with the count, so a family under a grid of
+              findings sees the home still has compliant regulations. */}
+          <div className={partHeaderClass}>
+            <h3 id="rest-h" className={partHeadingClass}>
+              Regulations always found compliant: {rest.length}
+            </h3>
+          </div>
           <RestList regulations={shown} className="mt-2" />
           {hidden.length > 0 && (
             <MoreRegulations count={hidden.length}>

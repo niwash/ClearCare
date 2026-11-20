@@ -6,7 +6,7 @@ import { JudgementGrid } from "./judgement-grid";
 import { JUDGEMENT_LABELS, JUDGEMENT_MEANINGS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 import { Definition } from "@/components/ui/definition";
 import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
-import { Timeline } from "./timeline";
+import { Timeline, TimelineNotes } from "./timeline";
 
 // The most inspections the grid shows beside the timeline, at half the card's width.
 const GRID_COLUMNS_BESIDE = 4;
@@ -43,7 +43,11 @@ export function InspectionHistory({ inspections, history, trails, events, trails
         <RecordPrintButton />
       </div>
       <div className={sectionCardClass}>
-        <div className="px-4 pb-4 pt-5 md:px-7">
+        {/* On the band the compare page's group headings have (CCARE-278), so the key reads as the
+            card's header, apart from the timeline and the grid under it it is the key to. Its top
+            corners rounded as the card's are. Its own edge, in the band's line colour, laid over the
+            card's (-m-px): the card's light edge disappeared against the band. */}
+        <div className="-mx-px -mt-px rounded-t-2xl border border-b-0 border-section-line bg-section px-4 py-3 md:px-7 adult:rounded-t-lg">
           {/* Each judgement's meaning on hover or tap (CCARE-278). */}
           <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
             {JUDGEMENT_ORDER.map((judgement) => (
@@ -74,11 +78,11 @@ export function InspectionHistory({ inspections, history, trails, events, trails
             links moved under the findings. One over the other on smaller screens, in one column no
             wider than the card (grid-cols-1, minmax(0, 1fr)): without it the column grew to the grid's
             whole table and the page scrolled sideways on a phone. */}
-        <div className={`grid grid-cols-1 border-t border-line-soft ${beside ? "lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]" : ""}`}>
+        <div className={`grid grid-cols-1 border-t border-section-line ${beside ? "lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]" : ""}`}>
           {/* Inside this section so it shares the key above: its inspection rows use the same marks. */}
           {events && events.length > 0 && (
             <div className="px-4 py-5 md:px-7">
-              <Timeline events={events} reports={{ inspections, history, trails, trailsHref }} updated={updated} />
+              <Timeline events={events} reports={{ inspections, history, trails, trailsHref }} />
             </div>
           )}
 
@@ -93,6 +97,8 @@ export function InspectionHistory({ inspections, history, trails, events, trails
           </div>
         </div>
       </div>
+      {/* Under the card, outside it (CCARE-278): a footnote to the section, not the timeline's last row. */}
+      {hasTimeline && <TimelineNotes events={events} updated={updated} />}
     </section>
   );
 }
