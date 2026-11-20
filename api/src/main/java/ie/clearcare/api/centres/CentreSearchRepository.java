@@ -30,9 +30,9 @@ class CentreSearchRepository {
       "SELECT fetched_at, url, sha256 FROM clearcare.published_register_snapshot";
 
   // centre_summary is every centre of the published snapshot with the item names of each list its
-  // latest extracted report mentions, in the report's order (empty when it has none), whether a
-  // contract price is stored for it, and its newest report, in the order of the centre's report
-  // list (CentreReportsRepository).
+  // latest extracted report mentions, in the report's order (empty when it has none), its contract
+  // price in force, if one is stored for it, and its newest report, in the order of the centre's
+  // report list (CentreReportsRepository).
   //
   // Every parameter that is not null must match. For name and address, each word of the folded
   // input must be the start of a word of the folded column. search_key leaves only a-z, 0-9 and
@@ -77,6 +77,7 @@ class CentreSearchRepository {
                       WITH ORDINALITY AS list (entry, ordinality)
                   ORDER BY list.ordinality) AS facilities,
               contract_price.centre_id IS NOT NULL AS fair_deal,
+              contract_price.price AS contract_price,
               latest_report.report_id AS latest_report_id,
               latest_report.inspection_date AS latest_inspection_date
           FROM clearcare.centre_search
@@ -136,7 +137,7 @@ class CentreSearchRepository {
       %s
       SELECT centre_id, centre_name, address, county, eircode, maximum_occupancy, hiqa_url,
           amenities_report_id, amenities_inspection_date, care_types, room_types, activities,
-          facilities, fair_deal, latest_report_id, latest_inspection_date,
+          facilities, fair_deal, contract_price, latest_report_id, latest_inspection_date,
           %s AS distance_m
       FROM matching
       LEFT JOIN clearcare.centre_point USING (centre_id)
@@ -157,6 +158,10 @@ class CentreSearchRepository {
   // are in name order. Centres without a point come last.
   private static final String PAGE_BY_DISTANCE =
       PAGE.formatted(MATCHING, DISTANCE_M, "distance_m NULLS LAST, " + BY_NAME);
+
+  // Lowest price first. Centres with no contract price come last.
+  private static final String PAGE_BY_PRICE =
+      PAGE.formatted(MATCHING, DISTANCE_M, "contract_price NULLS LAST, " + BY_NAME);
 
   // Every matching centre that has a point in centre_point, with no limit: a map of one page of
   // them would show empty country where there are centres (ADR-0029). The inner join leaves out a
@@ -270,6 +275,7 @@ class CentreSearchRepository {
         switch (parameters.sort()) {
           case "latest_inspection" -> PAGE_BY_LATEST_INSPECTION;
           case "distance" -> PAGE_BY_DISTANCE;
+          case "price" -> PAGE_BY_PRICE;
           default -> PAGE_BY_NAME;
         };
     List<CentreSummary> centres =
@@ -415,6 +421,7 @@ class CentreSearchRepository {
         row.getString("hiqa_url"),
         mentionedAmenities(row),
         row.getBoolean("fair_deal"),
+        row.getBigDecimal("contract_price"),
         latestInspection(row),
         row.getObject("distance_m", Integer.class));
   }

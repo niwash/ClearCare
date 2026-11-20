@@ -30,6 +30,7 @@ STARTUP = [
     "extract_text",
     "split_commitments",
     "amenities",
+    "send_alerts",
 ]
 REGISTER_JOB = [
     "snapshots",
@@ -49,7 +50,15 @@ REPORTS_JOB = [
     "split_commitments",
     "amenities",
 ]
-EVERY_STAGE_OF_EVERY_JOB = [*STARTUP, *REGISTER_JOB, *PRICES_JOB, *REPORTS_JOB]
+# The dispatcher's job: no download, its own hourly clock (CCARE-267).
+ALERTS_JOB = ["send_alerts"]
+EVERY_STAGE_OF_EVERY_JOB = [
+    *STARTUP,
+    *REGISTER_JOB,
+    *PRICES_JOB,
+    *REPORTS_JOB,
+    *ALERTS_JOB,
+]
 CHECKPOINT = "state/pipeline.json"
 FIRST_CHECKPOINT = b'{"version": 1, "schedule": {}, "manifests": {}}'
 
@@ -139,11 +148,18 @@ def test_after_a_failed_crawl_nothing_runs_for_a_day_even_after_a_restart(
 
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=23))
-    assert stages.names() == STARTUP
+    # The dispatcher's job is due hourly, so it runs even while the failed
+    # crawl waits out its day.
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
 
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=24))
-    assert stages.names() == [*STARTUP, *REGISTER_JOB, *REPORTS_JOB]
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
 
 
 def test_a_crawl_stopped_midway_waits_a_day_too(tmp_path: Path) -> None:
@@ -153,7 +169,7 @@ def test_a_crawl_stopped_midway_waits_a_day_too(tmp_path: Path) -> None:
     stages = FakeStages()
     _start(tmp_path, stages, START + timedelta(hours=1))
 
-    assert stages.names() == STARTUP
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
 
 
 def test_upload_and_load_run_after_failed_downloads_and_uploads(
@@ -180,7 +196,7 @@ def test_the_price_lists_are_downloaded_once_a_week(tmp_path: Path) -> None:
 
     stages = FakeStages()
     _start(tmp_path, stages, START + timedelta(days=6))
-    assert stages.names() == [*STARTUP, *REGISTER_JOB]
+    assert stages.names() == [*STARTUP, *REGISTER_JOB, *ALERTS_JOB]
 
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(days=7))
@@ -205,7 +221,7 @@ def test_a_new_crawl_scope_makes_the_reports_job_due(tmp_path: Path) -> None:
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(hours=1), crawl="all")
 
-    assert stages.names() == [*STARTUP, *REPORTS_JOB]
+    assert stages.names() == [*STARTUP, *REPORTS_JOB, *ALERTS_JOB]
     assert ("reports", "--data-dir", str(tmp_path)) in stages.calls
 
 
@@ -214,7 +230,8 @@ def test_crawl_off_only_uploads_and_loads_what_is_there(tmp_path: Path) -> None:
 
     _start(tmp_path, stages, START, crawl="off")
 
-    assert stages.names() == STARTUP
+    # The dispatcher is not a crawl job: it runs with the crawl off too.
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
 
 
 def test_with_bucket_state_a_new_task_skips_downloads_that_are_not_due(
@@ -232,7 +249,9 @@ def test_with_bucket_state_a_new_task_skips_downloads_that_are_not_due(
     )
 
     assert code == 0
-    assert stages.names() == STARTUP
+    # The checkpoint carried the dispatcher's state across, so the job is
+    # due again on its own hourly clock.
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
 
 
 @pytest.mark.parametrize(

@@ -293,9 +293,18 @@ def test_the_inspection_date_is_stored_as_hiqa_lists_it(
     ]
 
 
-def test_a_report_hiqa_no_longer_lists_stays(
-    database: Database, tmp_path: Path
+def _still_listed(database: Database) -> dict[str, bool]:
+    with database.connect(PIPELINE) as connection:
+        rows = connection.execute(
+            "SELECT file_name, still_listed FROM clearcare.listed_report"
+        ).fetchall()
+    return dict(rows)
+
+
+def test_a_report_hiqa_no_longer_lists_stays_and_is_marked(
+    database: Database, tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
+    caplog.set_level(logging.INFO)
     _register(database, "34")
     _download_run(
         tmp_path, _report("a.pdf", "a" * 64), _report("b.pdf", "b" * 64)
@@ -310,6 +319,70 @@ def test_a_report_hiqa_no_longer_lists_stays(
     _load(tmp_path)
 
     assert _file_names(database) == [("34", "a.pdf"), ("34", "b.pdf")]
+    assert _still_listed(database) == {"a.pdf": True, "b.pdf": False}
+    assert "1 reports left HIQA's lists" in caplog.text
+    # Loading the same manifest again finds nothing to mark.
+    caplog.clear()
+    _load(tmp_path)
+    assert _still_listed(database) == {"a.pdf": True, "b.pdf": False}
+    assert "0 of 1 listed reports added or changed" in caplog.text
+    assert "0 reports left HIQA's lists" in caplog.text
+
+
+def test_a_report_that_comes_back_onto_the_list_is_still_listed_again(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34")
+    both = (_report("a.pdf", "a" * 64), _report("b.pdf", "b" * 64))
+    _download_run(tmp_path, *both)
+    _load(tmp_path)
+    _download_run(
+        tmp_path,
+        _report("a.pdf", "a" * 64),
+        fetched_at="2026-10-03T09:00:00+00:00",
+    )
+    _load(tmp_path)
+    left = _still_listed(database)
+    _download_run(tmp_path, *both, fetched_at="2026-10-04T09:00:00+00:00")
+
+    _load(tmp_path)
+
+    assert left == {"a.pdf": True, "b.pdf": False}
+    assert _still_listed(database) == {"a.pdf": True, "b.pdf": True}
+
+
+def test_a_centre_whose_page_lists_nothing_has_every_report_marked(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34")
+    _download_run(
+        tmp_path, _report("a.pdf", "a" * 64), _report("b.pdf", "b" * 64)
+    )
+    _load(tmp_path)
+    # A read that worked and listed no report: both have left.
+    _download_run(tmp_path, fetched_at="2026-10-03T09:00:00+00:00")
+
+    _load(tmp_path)
+
+    assert _still_listed(database) == {"a.pdf": False, "b.pdf": False}
+
+
+def test_a_centre_with_no_page_read_that_worked_keeps_its_marks(
+    database: Database, tmp_path: Path
+) -> None:
+    _register(database, "34", "35")
+    _download_run(
+        tmp_path / "earlier", _report("c.pdf", "c" * 64), centre_id="35"
+    )
+    _load(tmp_path / "earlier")
+    # This manifest has only a failed read of centre 35's page, which says
+    # nothing about its list.
+    _download_run(tmp_path / "later", _report("a.pdf", "a" * 64))
+    _download_run(tmp_path / "later", centre_id="35", error="HTTP 503")
+
+    _load(tmp_path / "later")
+
+    assert _still_listed(database) == {"a.pdf": True, "c.pdf": True}
 
 
 def test_the_list_of_a_centre_the_register_lacks_waits_for_it(

@@ -48,6 +48,7 @@ from clearcare_pipeline.s3_settings import (
     make_s3_client,
 )
 from clearcare_pipeline.schedule import bucket_state
+from clearcare_pipeline.send_alerts.__main__ import main as send_alerts
 from clearcare_pipeline.snapshots.__main__ import main as snapshots
 from clearcare_pipeline.split_commitments import main as split_commitments
 from clearcare_pipeline.upload.__main__ import main as upload
@@ -72,6 +73,8 @@ STAGES: Mapping[str, Stage] = {
     "amenities": amenities,
     # It reads only stored text, so it takes no data directory.
     "split_commitments": lambda _: split_commitments([]),
+    # It reads only the database and Cognito, so it takes no data directory.
+    "send_alerts": lambda _: send_alerts([]),
 }
 STATE_NAME = "schedule-state.json"
 CHECK_SECONDS = 3600.0
@@ -271,6 +274,8 @@ def _run_due(
         "extract_text",
         "split_commitments",
         "amenities",
+        # Last: the emails follow whatever the loads above just wrote.
+        "send_alerts",
     ):
         _run_stage(stages, (name,), data_dir, attempt)
     jobs = _jobs(crawl)
@@ -313,8 +318,18 @@ def _store_from(env: Mapping[str, str]) -> ObjectStore:
 
 
 def _jobs(crawl: str) -> tuple[Job, ...]:
+    alerts = Job(
+        # The dispatcher reads only the database, so there is nothing to
+        # download: it wakes hourly for the events and the failed sends the
+        # last hours left, whatever the crawls are doing (CCARE-267).
+        name="send_alerts",
+        scope="all",
+        download=(),
+        then=("send_alerts",),
+        wait_after_success=timedelta(hours=1),
+    )
     if crawl == "off":
-        return ()
+        return (alerts,)
     county = () if crawl == "all" else ("--county", crawl)
     return (
         # Geocoding here as well as at start, as a long-running pipeline
@@ -352,6 +367,7 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
             ),
             wait_after_success=timedelta(days=7),
         ),
+        alerts,
     )
 
 
@@ -397,7 +413,13 @@ def _run_job(
         # forward either (ADR-0014).
         bucket_state.save(checkpoints, data_dir, data_dir / STATE_NAME)
     logger.info("%s job (%s) started", job.name, job.scope)
-    status = _run_stage(stages, job.download, data_dir, attempt)
+    # A job with nothing to download (the dispatcher, CCARE-267) goes
+    # straight to its stages, as if its download had succeeded.
+    status = (
+        _run_stage(stages, job.download, data_dir, attempt)
+        if job.download
+        else EXIT_DONE
+    )
     if status == 0:
         attempt_state = replace(
             attempt_state,
@@ -419,7 +441,9 @@ def _run_job(
         attempt_state.next_attempt.isoformat(timespec="seconds"),
     )
     uploaded = True
-    if bucket:
+    if bucket and job.download:
+        # The upload exists to push what the download fetched, so a job
+        # with no download has nothing to upload either.
         uploaded = _run_stage(stages, ("upload",), data_dir, attempt) == 0
     if checkpoints is not None:
         # The checkpoint may list only files the bucket holds, so a failed

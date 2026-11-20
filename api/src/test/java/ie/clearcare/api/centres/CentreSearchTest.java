@@ -347,6 +347,7 @@ class CentreSearchTest {
                       "facilities": ["Garden"]
                     },
                     "fair_deal": true,
+                    "contract_price": 1908.00,
                     "latest_inspection": {"date": "2026-05-13"},
                     "distance_m": null
                   }],
@@ -373,17 +374,19 @@ class CentreSearchTest {
 
   static Stream<Arguments> describesWhatIsKnownOfEachCentre() {
     return Stream.of(
+        // St Joseph's in Cork is on both price lists; the private one is the later.
         arguments(
             "county=Cork",
             """
             {"amenities": {"report_id": 4, "inspection_date": null},
-             "fair_deal": true, "latest_inspection": {"date": null}}
+             "fair_deal": true, "contract_price": 1850.00, "latest_inspection": {"date": null}}
             """),
         // Stella Maris has a report that has not been read.
         arguments(
             "county=Galway",
             """
-            {"amenities": null, "fair_deal": false, "latest_inspection": {"date": "2026-03-01"}}
+            {"amenities": null, "fair_deal": false, "contract_price": null,
+             "latest_inspection": {"date": "2026-03-01"}}
             """),
         // St Joseph's in Dublin has no report.
         arguments(
@@ -463,6 +466,19 @@ class CentreSearchTest {
                 "$.centres[*].centre_id",
                 is(List.of(ARAS, ST_JOSEPHS_DUBLIN, ELM_HALL, ST_JOSEPHS_CORK, STELLA_MARIS))))
         .andExpect(jsonPath("$.sort").value("distance"));
+  }
+
+  // Lowest price first: St Joseph's in Cork at 1,850, Elm Hall at 1,908 and Áras at 2,200. St
+  // Joseph's in Dublin and Stella Maris have no price and come last, in name order.
+  @Test
+  void sortsByTheContractPrice() throws Exception {
+    search("sort=price")
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                "$.centres[*].centre_id",
+                is(List.of(ST_JOSEPHS_CORK, ELM_HALL, ARAS, ST_JOSEPHS_DUBLIN, STELLA_MARIS))))
+        .andExpect(jsonPath("$.sort").value("price"));
   }
 
   @Test
@@ -712,7 +728,7 @@ class CentreSearchTest {
                 + " room_type, facility, activity, near, sort, page, page_size"),
         arguments("name=a&name=b", "name must be given only once"),
         arguments("sort=name&sort=name", "sort must be given only once"),
-        arguments("sort=newest", "sort must be name, latest_inspection or distance"),
+        arguments("sort=newest", "sort must be name, latest_inspection, distance or price"),
         arguments("sort=distance", "sort=distance needs near, such as near=53.35,-6.26"),
         arguments("near=53.35", NEAR_RULE),
         arguments("near=90.01,-6.26", NEAR_RULE),
