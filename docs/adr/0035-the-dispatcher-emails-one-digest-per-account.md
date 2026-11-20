@@ -82,8 +82,10 @@ events.
 A digest could have been one email per package, or per event, but the
 account reading five county alerts does not want five emails, and the
 receipt table's shape (one row per account per ingest run) was designed for
-exactly this grouping (ADR-0034). The SES sender sends plain text for now;
-the HTML template and the one-click `List-Unsubscribe` headers are
-CCARE-268's template work on top of the same call, and the subscribe
-endpoints the site needs are CCARE-270's, which owns the
-`/alerts/unsubscribe` route the links assume.
+exactly this grouping (ADR-0034). The SES sender sends both parts: a
+plain-text digest, and an HTML one whose targets are clickable text. The
+one-click `List-Unsubscribe` headers are deferred until CCARE-270 owns the
+`/alerts/unsubscribe` route, because they need the raw-MIME send path; the
+simple send carries no custom headers, and every email bears the visible
+signed-out link meanwhile. The subscribe endpoints the site needs are
+CCARE-270's as well.
