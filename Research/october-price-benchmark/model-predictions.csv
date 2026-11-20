@@ -1,0 +1,2023 @@
+sample,evaluation,model,hiqa_id,fold,observed,prediction
+All priced homes,Home shuffled,County,199,5,1220,1275.3297939150498
+All priced homes,Home shuffled,County,203,2,1272,1267.9275870591955
+All priced homes,Home shuffled,County,238,4,1263,1269.4191882704101
+All priced homes,Home shuffled,County,5417,5,1277,1275.3297939150498
+All priced homes,Home shuffled,County,5454,5,1289,1275.3297939150498
+All priced homes,Home shuffled,County,128,2,1303,1290.4396558826627
+All priced homes,Home shuffled,County,135,5,1329,1289.1413402493072
+All priced homes,Home shuffled,County,136,3,1228,1303.533998234976
+All priced homes,Home shuffled,County,151,1,1297,1294.011254298719
+All priced homes,Home shuffled,County,160,2,1307,1290.4396558826627
+All priced homes,Home shuffled,County,4913,4,1306,1292.1565630502928
+All priced homes,Home shuffled,County,5413,1,1292,1294.011254298719
+All priced homes,Home shuffled,County,444,4,1270,1265.509594135205
+All priced homes,Home shuffled,County,445,2,1304,1263.3297419119972
+All priced homes,Home shuffled,County,447,2,1248,1263.3297419119972
+All priced homes,Home shuffled,County,448,1,1244,1272.4067525792314
+All priced homes,Home shuffled,County,450,3,1269,1265.8737987644831
+All priced homes,Home shuffled,County,451,3,1270,1265.8737987644831
+All priced homes,Home shuffled,County,452,5,1262,1266.9081256131956
+All priced homes,Home shuffled,County,5393,2,1265,1263.3297419119972
+All priced homes,Home shuffled,County,5768,4,1271,1265.509594135205
+All priced homes,Home shuffled,County,683,2,1274,1263.3297419119972
+All priced homes,Home shuffled,County,729,1,1230,1272.4067525792314
+All priced homes,Home shuffled,County,187,3,1280,1306.2862923815812
+All priced homes,Home shuffled,County,189,2,1273,1315.0163573152815
+All priced homes,Home shuffled,County,197,5,1282,1307.4997050484762
+All priced homes,Home shuffled,County,198,3,1321,1306.2862923815812
+All priced homes,Home shuffled,County,200,2,1290,1315.0163573152815
+All priced homes,Home shuffled,County,202,5,1265,1307.4997050484762
+All priced homes,Home shuffled,County,206,1,1300,1310.7856088051976
+All priced homes,Home shuffled,County,208,1,1330,1310.7856088051976
+All priced homes,Home shuffled,County,209,4,1301,1313.7023985338012
+All priced homes,Home shuffled,County,210,1,1301,1310.7856088051976
+All priced homes,Home shuffled,County,216,5,1232,1307.4997050484762
+All priced homes,Home shuffled,County,220,2,1289,1315.0163573152815
+All priced homes,Home shuffled,County,223,1,1332,1310.7856088051976
+All priced homes,Home shuffled,County,227,4,1315,1313.7023985338012
+All priced homes,Home shuffled,County,229,4,1284,1313.7023985338012
+All priced homes,Home shuffled,County,230,2,1298,1315.0163573152815
+All priced homes,Home shuffled,County,233,5,1290,1307.4997050484762
+All priced homes,Home shuffled,County,235,1,1327,1310.7856088051976
+All priced homes,Home shuffled,County,253,4,1309,1313.7023985338012
+All priced homes,Home shuffled,County,257,5,1486,1307.4997050484762
+All priced homes,Home shuffled,County,258,1,1332,1310.7856088051976
+All priced homes,Home shuffled,County,261,1,1338,1310.7856088051976
+All priced homes,Home shuffled,County,275,1,1270,1310.7856088051976
+All priced homes,Home shuffled,County,277,2,1305,1315.0163573152815
+All priced homes,Home shuffled,County,280,2,1301,1315.0163573152815
+All priced homes,Home shuffled,County,284,3,1460,1306.2862923815812
+All priced homes,Home shuffled,County,290,5,1492,1307.4997050484762
+All priced homes,Home shuffled,County,291,4,1279,1313.7023985338012
+All priced homes,Home shuffled,County,292,4,1310,1313.7023985338012
+All priced homes,Home shuffled,County,297,2,1294,1315.0163573152815
+All priced homes,Home shuffled,County,307,5,1292,1307.4997050484762
+All priced homes,Home shuffled,County,4447,3,1295,1306.2862923815812
+All priced homes,Home shuffled,County,4451,2,1292,1315.0163573152815
+All priced homes,Home shuffled,County,4452,5,1270,1307.4997050484762
+All priced homes,Home shuffled,County,4455,5,1319,1307.4997050484762
+All priced homes,Home shuffled,County,4456,5,1297,1307.4997050484762
+All priced homes,Home shuffled,County,4921,3,1290,1306.2862923815812
+All priced homes,Home shuffled,County,5314,2,1290,1315.0163573152815
+All priced homes,Home shuffled,County,5522,4,1285,1313.7023985338012
+All priced homes,Home shuffled,County,558,3,1392,1306.2862923815812
+All priced homes,Home shuffled,County,5681,5,1327,1307.4997050484762
+All priced homes,Home shuffled,County,705,3,1322,1306.2862923815812
+All priced homes,Home shuffled,County,747,1,1280,1310.7856088051976
+All priced homes,Home shuffled,County,8228,1,1305,1310.7856088051976
+All priced homes,Home shuffled,County,8616,1,1304,1310.7856088051976
+All priced homes,Home shuffled,County,8711,5,1296,1307.4997050484762
+All priced homes,Home shuffled,County,9186,4,1285,1313.7023985338012
+All priced homes,Home shuffled,County,311,3,1245,1264.467248455604
+All priced homes,Home shuffled,County,312,3,1270,1264.467248455604
+All priced homes,Home shuffled,County,313,3,1279,1264.467248455604
+All priced homes,Home shuffled,County,314,3,1242,1264.467248455604
+All priced homes,Home shuffled,County,320,2,1245,1261.3864946079982
+All priced homes,Home shuffled,County,322,3,1270,1264.467248455604
+All priced homes,Home shuffled,County,323,1,1245,1260.097047799301
+All priced homes,Home shuffled,County,345,1,1275,1260.097047799301
+All priced homes,Home shuffled,County,346,2,1274,1261.3864946079982
+All priced homes,Home shuffled,County,353,1,1275,1260.097047799301
+All priced homes,Home shuffled,County,368,3,1234,1264.467248455604
+All priced homes,Home shuffled,County,392,5,1277,1262.0824484787624
+All priced homes,Home shuffled,County,5791,5,1234,1262.0824484787624
+All priced homes,Home shuffled,County,1,2,1430,1415.1944297737843
+All priced homes,Home shuffled,County,101,5,1388,1415.8628682430844
+All priced homes,Home shuffled,County,102,1,1508,1411.2403876872154
+All priced homes,Home shuffled,County,108,3,1401,1413.3932057006593
+All priced homes,Home shuffled,County,113,1,1502,1411.2403876872154
+All priced homes,Home shuffled,County,115,5,1400,1415.8628682430844
+All priced homes,Home shuffled,County,116,5,1410,1415.8628682430844
+All priced homes,Home shuffled,County,117,3,1449,1413.3932057006593
+All priced homes,Home shuffled,County,125,4,1400,1414.5846658521114
+All priced homes,Home shuffled,County,13,3,1393,1413.3932057006593
+All priced homes,Home shuffled,County,133,4,1419,1414.5846658521114
+All priced homes,Home shuffled,County,134,2,1416,1415.1944297737843
+All priced homes,Home shuffled,County,138,3,1402,1413.3932057006593
+All priced homes,Home shuffled,County,139,5,1342,1415.8628682430844
+All priced homes,Home shuffled,County,14,2,1407,1415.1944297737843
+All priced homes,Home shuffled,County,142,4,1367,1414.5846658521114
+All priced homes,Home shuffled,County,149,3,1479,1413.3932057006593
+All priced homes,Home shuffled,County,150,2,1412,1415.1944297737843
+All priced homes,Home shuffled,County,154,2,1413,1415.1944297737843
+All priced homes,Home shuffled,County,155,2,1380,1415.1944297737843
+All priced homes,Home shuffled,County,157,4,1377,1414.5846658521114
+All priced homes,Home shuffled,County,159,1,1394,1411.2403876872154
+All priced homes,Home shuffled,County,161,5,1385,1415.8628682430844
+All priced homes,Home shuffled,County,17,5,1403,1415.8628682430844
+All priced homes,Home shuffled,County,174,2,1409,1415.1944297737843
+All priced homes,Home shuffled,County,176,3,1384,1413.3932057006593
+All priced homes,Home shuffled,County,178,3,1401,1413.3932057006593
+All priced homes,Home shuffled,County,179,5,1396,1415.8628682430844
+All priced homes,Home shuffled,County,181,2,1445,1415.1944297737843
+All priced homes,Home shuffled,County,182,5,1443,1415.8628682430844
+All priced homes,Home shuffled,County,183,5,1447,1415.8628682430844
+All priced homes,Home shuffled,County,184,3,1405,1413.3932057006593
+All priced homes,Home shuffled,County,22,3,1397,1413.3932057006593
+All priced homes,Home shuffled,County,24,4,1396,1414.5846658521114
+All priced homes,Home shuffled,County,28,2,1392,1415.1944297737843
+All priced homes,Home shuffled,County,38,4,1418,1414.5846658521114
+All priced homes,Home shuffled,County,39,1,1418,1411.2403876872154
+All priced homes,Home shuffled,County,4,1,1422,1411.2403876872154
+All priced homes,Home shuffled,County,4042,1,1474,1411.2403876872154
+All priced homes,Home shuffled,County,41,3,1437,1413.3932057006593
+All priced homes,Home shuffled,County,44,3,1393,1413.3932057006593
+All priced homes,Home shuffled,County,46,5,1478,1415.8628682430844
+All priced homes,Home shuffled,County,47,1,1413,1411.2403876872154
+All priced homes,Home shuffled,County,5,5,1380,1415.8628682430844
+All priced homes,Home shuffled,County,50,3,1377,1413.3932057006593
+All priced homes,Home shuffled,County,5191,1,1414,1411.2403876872154
+All priced homes,Home shuffled,County,5205,2,1396,1415.1944297737843
+All priced homes,Home shuffled,County,5238,4,1438,1414.5846658521114
+All priced homes,Home shuffled,County,53,1,1474,1411.2403876872154
+All priced homes,Home shuffled,County,5307,2,1410,1415.1944297737843
+All priced homes,Home shuffled,County,5466,1,1402,1411.2403876872154
+All priced homes,Home shuffled,County,5506,3,1420,1413.3932057006593
+All priced homes,Home shuffled,County,5590,1,1406,1411.2403876872154
+All priced homes,Home shuffled,County,5756,5,1449,1415.8628682430844
+All priced homes,Home shuffled,County,58,2,1401,1415.1944297737843
+All priced homes,Home shuffled,County,5800,4,1398,1414.5846658521114
+All priced homes,Home shuffled,County,5880,4,1410,1414.5846658521114
+All priced homes,Home shuffled,County,59,2,1433,1415.1944297737843
+All priced homes,Home shuffled,County,64,2,1395,1415.1944297737843
+All priced homes,Home shuffled,County,65,4,1472,1414.5846658521114
+All priced homes,Home shuffled,County,6616,3,1475,1413.3932057006593
+All priced homes,Home shuffled,County,686,3,1420,1413.3932057006593
+All priced homes,Home shuffled,County,692,5,1403,1415.8628682430844
+All priced homes,Home shuffled,County,693,1,1384,1411.2403876872154
+All priced homes,Home shuffled,County,694,2,1449,1415.1944297737843
+All priced homes,Home shuffled,County,7,3,1424,1413.3932057006593
+All priced homes,Home shuffled,County,71,4,1400,1414.5846658521114
+All priced homes,Home shuffled,County,735,1,1398,1411.2403876872154
+All priced homes,Home shuffled,County,744,2,1396,1415.1944297737843
+All priced homes,Home shuffled,County,759,1,1417,1411.2403876872154
+All priced homes,Home shuffled,County,763,4,1417,1414.5846658521114
+All priced homes,Home shuffled,County,7729,2,1424,1415.1944297737843
+All priced homes,Home shuffled,County,7752,2,1400,1415.1944297737843
+All priced homes,Home shuffled,County,7785,3,1455,1413.3932057006593
+All priced homes,Home shuffled,County,78,4,1435,1414.5846658521114
+All priced homes,Home shuffled,County,7910,1,1429,1411.2403876872154
+All priced homes,Home shuffled,County,7976,2,1400,1415.1944297737843
+All priced homes,Home shuffled,County,80,5,1372,1415.8628682430844
+All priced homes,Home shuffled,County,8033,4,1439,1414.5846658521114
+All priced homes,Home shuffled,County,8302,1,1401,1411.2403876872154
+All priced homes,Home shuffled,County,8600,2,1440,1415.1944297737843
+All priced homes,Home shuffled,County,8662,2,1395,1415.1944297737843
+All priced homes,Home shuffled,County,8692,3,1415,1413.3932057006593
+All priced homes,Home shuffled,County,8904,4,1416,1414.5846658521114
+All priced homes,Home shuffled,County,9182,3,1416,1413.3932057006593
+All priced homes,Home shuffled,County,96,2,1423,1415.1944297737843
+All priced homes,Home shuffled,County,309,4,1262,1270.5456642230017
+All priced homes,Home shuffled,County,318,3,1300,1270.1974161518679
+All priced homes,Home shuffled,County,328,2,1267,1270.1055174118392
+All priced homes,Home shuffled,County,341,3,1260,1270.1974161518679
+All priced homes,Home shuffled,County,343,2,1210,1270.1055174118392
+All priced homes,Home shuffled,County,344,3,1277,1270.1974161518679
+All priced homes,Home shuffled,County,347,3,1270,1270.1974161518679
+All priced homes,Home shuffled,County,349,2,1288,1270.1055174118392
+All priced homes,Home shuffled,County,351,1,1268,1269.5580565108262
+All priced homes,Home shuffled,County,355,3,1252,1270.1974161518679
+All priced homes,Home shuffled,County,359,2,1319,1270.1055174118392
+All priced homes,Home shuffled,County,361,1,1258,1269.5580565108262
+All priced homes,Home shuffled,County,362,5,1276,1269.5168752325915
+All priced homes,Home shuffled,County,365,4,1259,1270.5456642230017
+All priced homes,Home shuffled,County,367,4,1268,1270.5456642230017
+All priced homes,Home shuffled,County,371,4,1248,1270.5456642230017
+All priced homes,Home shuffled,County,378,5,1272,1269.5168752325915
+All priced homes,Home shuffled,County,381,3,1280,1270.1974161518679
+All priced homes,Home shuffled,County,382,1,1275,1269.5580565108262
+All priced homes,Home shuffled,County,390,4,1304,1270.5456642230017
+All priced homes,Home shuffled,County,391,4,1275,1270.5456642230017
+All priced homes,Home shuffled,County,393,1,1275,1269.5580565108262
+All priced homes,Home shuffled,County,396,3,1258,1270.1974161518679
+All priced homes,Home shuffled,County,398,2,1267,1270.1055174118392
+All priced homes,Home shuffled,County,4583,2,1260,1270.1055174118392
+All priced homes,Home shuffled,County,5164,1,1280,1269.5580565108262
+All priced homes,Home shuffled,County,5242,4,1257,1270.5456642230017
+All priced homes,Home shuffled,County,5491,4,1266,1270.5456642230017
+All priced homes,Home shuffled,County,5812,5,1270,1269.5168752325915
+All priced homes,Home shuffled,County,726,3,1252,1270.1974161518679
+All priced homes,Home shuffled,County,764,2,1270,1270.1055174118392
+All priced homes,Home shuffled,County,190,3,1243,1265.1158658429888
+All priced homes,Home shuffled,County,194,5,1262,1262.4607216727038
+All priced homes,Home shuffled,County,219,4,1200,1269.2579951126709
+All priced homes,Home shuffled,County,239,2,1275,1262.3567642535368
+All priced homes,Home shuffled,County,241,4,1283,1269.2579951126709
+All priced homes,Home shuffled,County,246,2,1274,1262.3567642535368
+All priced homes,Home shuffled,County,264,4,1252,1269.2579951126709
+All priced homes,Home shuffled,County,265,1,1257,1264.8792203620196
+All priced homes,Home shuffled,County,274,4,1252,1269.2579951126709
+All priced homes,Home shuffled,County,287,5,1310,1262.4607216727038
+All priced homes,Home shuffled,County,288,5,1230,1262.4607216727038
+All priced homes,Home shuffled,County,289,4,1275,1269.2579951126709
+All priced homes,Home shuffled,County,5406,3,1275,1265.1158658429888
+All priced homes,Home shuffled,County,571,5,1281,1262.4607216727038
+All priced homes,Home shuffled,County,685,2,1270,1262.3567642535368
+All priced homes,Home shuffled,County,7842,2,1265,1262.3567642535368
+All priced homes,Home shuffled,County,106,5,1350,1334.7135272675107
+All priced homes,Home shuffled,County,112,4,1307,1346.9468200795322
+All priced homes,Home shuffled,County,12,3,1275,1343.5965548691574
+All priced homes,Home shuffled,County,25,5,1358,1334.7135272675107
+All priced homes,Home shuffled,County,27,3,1393,1343.5965548691574
+All priced homes,Home shuffled,County,34,1,1349,1345.4745603407243
+All priced homes,Home shuffled,County,40,4,1282,1346.9468200795322
+All priced homes,Home shuffled,County,4593,1,1340,1345.4745603407243
+All priced homes,Home shuffled,County,49,1,1326,1345.4745603407243
+All priced homes,Home shuffled,County,5536,4,1388,1346.9468200795322
+All priced homes,Home shuffled,County,56,5,1360,1334.7135272675107
+All priced homes,Home shuffled,County,60,4,1326,1346.9468200795322
+All priced homes,Home shuffled,County,66,5,1340,1334.7135272675107
+All priced homes,Home shuffled,County,684,5,1380,1334.7135272675107
+All priced homes,Home shuffled,County,701,5,1360,1334.7135272675107
+All priced homes,Home shuffled,County,72,2,1362,1339.928312383999
+All priced homes,Home shuffled,County,77,3,1350,1343.5965548691574
+All priced homes,Home shuffled,County,83,5,1369,1334.7135272675107
+All priced homes,Home shuffled,County,9,1,1315,1345.4745603407243
+All priced homes,Home shuffled,County,91,2,1382,1339.928312383999
+All priced homes,Home shuffled,County,191,5,1280,1274.998938174515
+All priced homes,Home shuffled,County,207,4,1272,1275.6773268168945
+All priced homes,Home shuffled,County,224,3,1281,1279.6768553778331
+All priced homes,Home shuffled,County,232,3,1277,1279.6768553778331
+All priced homes,Home shuffled,County,254,1,1280,1273.7584407240392
+All priced homes,Home shuffled,County,5557,1,1275,1273.7584407240392
+All priced homes,Home shuffled,County,707,3,1269,1279.6768553778331
+All priced homes,Home shuffled,County,7180,1,1285,1273.7584407240392
+All priced homes,Home shuffled,County,8695,3,1245,1279.6768553778331
+All priced homes,Home shuffled,County,8962,4,1275,1275.6773268168945
+All priced homes,Home shuffled,County,4454,4,1304,1278.6986471173502
+All priced homes,Home shuffled,County,52,1,1270,1297.533762896157
+All priced homes,Home shuffled,County,8667,1,1277,1297.533762896157
+All priced homes,Home shuffled,County,357,3,1277,1282.3689938224156
+All priced homes,Home shuffled,County,395,5,1274,1283.9946908725747
+All priced homes,Home shuffled,County,404,1,1270,1271.059306988462
+All priced homes,Home shuffled,County,405,2,1280,1269.1551726644693
+All priced homes,Home shuffled,County,408,5,1266,1271.9994411444816
+All priced homes,Home shuffled,County,409,4,1270,1268.5938789030615
+All priced homes,Home shuffled,County,411,3,1280,1275.763221535824
+All priced homes,Home shuffled,County,413,2,1262,1269.1551726644693
+All priced homes,Home shuffled,County,416,2,1271,1269.1551726644693
+All priced homes,Home shuffled,County,417,3,1240,1275.763221535824
+All priced homes,Home shuffled,County,423,4,1289,1268.5938789030615
+All priced homes,Home shuffled,County,427,3,1252,1275.763221535824
+All priced homes,Home shuffled,County,428,1,1255,1271.059306988462
+All priced homes,Home shuffled,County,429,5,1265,1271.9994411444816
+All priced homes,Home shuffled,County,433,1,1282,1271.059306988462
+All priced homes,Home shuffled,County,435,2,1285,1269.1551726644693
+All priced homes,Home shuffled,County,436,3,1230,1275.763221535824
+All priced homes,Home shuffled,County,4664,4,1280,1268.5938789030615
+All priced homes,Home shuffled,County,4682,4,1284,1268.5938789030615
+All priced homes,Home shuffled,County,5560,1,1280,1271.059306988462
+All priced homes,Home shuffled,County,5636,2,1292,1269.1551726644693
+All priced homes,Home shuffled,County,5668,4,1275,1268.5938789030615
+All priced homes,Home shuffled,County,9298,5,1267,1271.9994411444816
+All priced homes,Home shuffled,County,109,1,1233,1295.3558419307712
+All priced homes,Home shuffled,County,4632,5,1275,1281.3297939150498
+All priced homes,Home shuffled,County,5394,3,1320,1266.2459958816105
+All priced homes,Home shuffled,County,114,2,1258,1306.3297419119972
+All priced homes,Home shuffled,County,118,1,1325,1294.5084407240392
+All priced homes,Home shuffled,County,121,4,1285,1304.442277336007
+All priced homes,Home shuffled,County,122,3,1321,1297.967248455604
+All priced homes,Home shuffled,County,130,4,1296,1304.442277336007
+All priced homes,Home shuffled,County,147,1,1330,1294.5084407240392
+All priced homes,Home shuffled,County,168,3,1306,1297.967248455604
+All priced homes,Home shuffled,County,4450,2,1302,1306.3297419119972
+All priced homes,Home shuffled,County,8237,4,1297,1304.442277336007
+All priced homes,Home shuffled,County,308,3,1260,1277.249199176322
+All priced homes,Home shuffled,County,315,4,1250,1271.1497100965748
+All priced homes,Home shuffled,County,317,5,1253,1274.4659587830101
+All priced homes,Home shuffled,County,321,3,1254,1277.249199176322
+All priced homes,Home shuffled,County,325,4,1258,1271.1497100965748
+All priced homes,Home shuffled,County,329,5,1268,1274.4659587830101
+All priced homes,Home shuffled,County,334,1,1285,1269.8513481378702
+All priced homes,Home shuffled,County,342,1,1265,1269.8513481378702
+All priced homes,Home shuffled,County,348,1,1290,1269.8513481378702
+All priced homes,Home shuffled,County,364,5,1285,1274.4659587830101
+All priced homes,Home shuffled,County,376,2,1247,1275.0398709559986
+All priced homes,Home shuffled,County,379,2,1275,1275.0398709559986
+All priced homes,Home shuffled,County,386,1,1291,1269.8513481378702
+All priced homes,Home shuffled,County,389,4,1333,1271.1497100965748
+All priced homes,Home shuffled,County,5504,1,1284,1269.8513481378702
+All priced homes,Home shuffled,County,5589,4,1284,1271.1497100965748
+All priced homes,Home shuffled,County,6384,3,1250,1277.249199176322
+All priced homes,Home shuffled,County,131,3,1355,1315.8081169202842
+All priced homes,Home shuffled,County,141,4,1315,1316.238149334773
+All priced homes,Home shuffled,County,143,2,1318,1320.4027096639986
+All priced homes,Home shuffled,County,144,2,1297,1320.4027096639986
+All priced homes,Home shuffled,County,145,1,1369,1312.3569132819007
+All priced homes,Home shuffled,County,152,5,1309,1316.061836359072
+All priced homes,Home shuffled,County,162,4,1325,1316.238149334773
+All priced homes,Home shuffled,County,166,2,1290,1320.4027096639986
+All priced homes,Home shuffled,County,167,2,1320,1320.4027096639986
+All priced homes,Home shuffled,County,171,4,1290,1316.238149334773
+All priced homes,Home shuffled,County,185,4,1320,1316.238149334773
+All priced homes,Home shuffled,County,186,5,1321,1316.061836359072
+All priced homes,Home shuffled,County,4589,3,1287,1315.8081169202842
+All priced homes,Home shuffled,County,5531,1,1332,1312.3569132819007
+All priced homes,Home shuffled,County,700,5,1324,1316.061836359072
+All priced homes,Home shuffled,County,737,4,1328,1316.238149334773
+All priced homes,Home shuffled,County,8238,4,1320,1316.238149334773
+All priced homes,Home shuffled,County,8713,2,1300,1320.4027096639986
+All priced homes,Home shuffled,County,124,4,1293,1288.0319804506835
+All priced homes,Home shuffled,County,148,2,1299,1286.6594838239942
+All priced homes,Home shuffled,County,169,3,1276,1292.4344969112078
+All priced homes,Home shuffled,County,5312,4,1287,1288.0319804506835
+All priced homes,Home shuffled,County,21,3,1281,1271.4344969112078
+All priced homes,Home shuffled,County,4690,1,1273,1270.0168814480785
+All priced homes,Home shuffled,County,5665,3,1232,1271.4344969112078
+All priced homes,Home shuffled,County,663,5,1276,1264.59787634903
+All priced homes,Home shuffled,County,733,1,1246,1270.0168814480785
+All priced homes,Home shuffled,County,339,1,1241,1260.633440724039
+All priced homes,Home shuffled,County,350,4,1257,1260.6826568920083
+All priced homes,Home shuffled,County,372,5,1237,1258.99848310645
+All priced homes,Home shuffled,County,373,3,1271,1256.842248455604
+All priced homes,Home shuffled,County,383,4,1278,1260.6826568920083
+All priced homes,Home shuffled,County,384,5,1276,1258.99848310645
+All priced homes,Home shuffled,County,4457,4,1225,1260.6826568920083
+All priced homes,Home shuffled,County,738,2,1250,1259.4547419119972
+All priced homes,Home shuffled,County,316,1,1288,1318.6135051584627
+All priced homes,Home shuffled,County,330,4,1414,1311.6826568920083
+All priced homes,Home shuffled,County,363,5,1276,1334.9982302908584
+All priced homes,Home shuffled,County,369,1,1405,1318.6135051584627
+All priced homes,Home shuffled,County,397,3,1315,1328.4563312741384
+All priced homes,Home shuffled,County,5421,2,1297,1331.4396558826627
+All priced homes,Home shuffled,County,188,5,1270,1272.874336359072
+All priced homes,Home shuffled,County,204,4,1275,1273.3379019691452
+All priced homes,Home shuffled,County,222,5,1295,1272.874336359072
+All priced homes,Home shuffled,County,250,3,1278,1271.7494279830871
+All priced homes,Home shuffled,County,267,5,1255,1272.874336359072
+All priced homes,Home shuffled,County,271,1,1246,1275.6698821805865
+All priced homes,Home shuffled,County,278,2,1300,1273.7021075164432
+All priced homes,Home shuffled,County,293,5,1280,1272.874336359072
+All priced homes,Home shuffled,County,302,1,1274,1275.6698821805865
+All priced homes,Home shuffled,County,304,5,1286,1272.874336359072
+All priced homes,Home shuffled,County,406,3,1295,1271.7494279830871
+All priced homes,Home shuffled,County,407,4,1275,1273.3379019691452
+All priced homes,Home shuffled,County,410,1,1251,1275.6698821805865
+All priced homes,Home shuffled,County,419,2,1268,1273.7021075164432
+All priced homes,Home shuffled,County,422,2,1261,1273.7021075164432
+All priced homes,Home shuffled,County,434,2,1291,1273.7021075164432
+All priced homes,Home shuffled,County,437,5,1245,1272.874336359072
+All priced homes,Home shuffled,County,4584,2,1278,1273.7021075164432
+All priced homes,Home shuffled,County,4587,5,1286,1272.874336359072
+All priced homes,Home shuffled,County,5284,2,1235,1273.7021075164432
+All priced homes,Home shuffled,County,5519,4,1268,1273.3379019691452
+All priced homes,Home shuffled,County,5573,3,1280,1271.7494279830871
+All priced homes,Home shuffled,County,7883,5,1277,1272.874336359072
+All priced homes,Home shuffled,County,231,4,1279,1290.4422773360072
+All priced homes,Home shuffled,County,242,1,1273,1289.3445876320523
+All priced homes,Home shuffled,County,245,2,1280,1295.2729892159962
+All priced homes,Home shuffled,County,255,1,1305,1289.3445876320523
+All priced homes,Home shuffled,County,7819,2,1262,1295.2729892159962
+All priced homes,Home shuffled,County,8484,5,1315,1285.5699116778785
+All priced homes,Home shuffled,County,8637,3,1309,1286.3911410921187
+All priced homes,Home shuffled,County,15,4,1271,1246.01918827041
+All priced homes,Home shuffled,County,5422,4,1272,1246.01918827041
+All priced homes,Home shuffled,County,5702,3,1243,1260.533998234976
+All priced homes,Home shuffled,County,68,4,1303,1246.01918827041
+All priced homes,Home shuffled,County,84,2,1247,1258.7047419119972
+All priced homes,Home shuffled,County,86,3,1250,1260.533998234976
+All priced homes,Home shuffled,County,88,4,1239,1246.01918827041
+All priced homes,Home shuffled,County,98,5,1201,1264.4986727181438
+All priced homes,Home shuffled,County,240,3,1285,1273.5614989704027
+All priced homes,Home shuffled,County,243,3,1274,1273.5614989704027
+All priced homes,Home shuffled,County,244,1,1279,1274.5630584213682
+All priced homes,Home shuffled,County,251,3,1279,1273.5614989704027
+All priced homes,Home shuffled,County,252,2,1292,1273.474138235427
+All priced homes,Home shuffled,County,4370,5,1247,1279.1808528859228
+All priced homes,Home shuffled,County,5595,5,1212,1279.1808528859228
+All priced homes,Home shuffled,County,5701,1,1248,1274.5630584213682
+All priced homes,Home shuffled,County,5826,1,1262,1274.5630584213682
+All priced homes,Home shuffled,County,602,5,1305,1279.1808528859228
+All priced homes,Home shuffled,County,696,1,1316,1274.5630584213682
+All priced homes,Home shuffled,County,7221,5,1286,1279.1808528859228
+All priced homes,Home shuffled,County,756,1,1268,1274.5630584213682
+All priced homes,Home shuffled,County,9029,1,1277,1274.5630584213682
+All priced homes,Home shuffled,County,10,1,1321,1340.0048232708796
+All priced homes,Home shuffled,County,107,4,1395,1328.2730627568033
+All priced homes,Home shuffled,County,16,3,1363,1336.1825325096554
+All priced homes,Home shuffled,County,3,5,1285,1342.8453370573193
+All priced homes,Home shuffled,County,31,3,1295,1336.1825325096554
+All priced homes,Home shuffled,County,33,2,1363,1333.7898709559986
+All priced homes,Home shuffled,County,36,4,1373,1328.2730627568033
+All priced homes,Home shuffled,County,45,2,1355,1333.7898709559986
+All priced homes,Home shuffled,County,5187,1,1315,1340.0048232708796
+All priced homes,Home shuffled,County,5381,5,1322,1342.8453370573193
+All priced homes,Home shuffled,County,54,1,1338,1340.0048232708796
+All priced homes,Home shuffled,County,5774,3,1358,1336.1825325096554
+All priced homes,Home shuffled,County,755,4,1365,1328.2730627568033
+All priced homes,Home shuffled,County,7714,1,1325,1340.0048232708796
+All priced homes,Home shuffled,County,8471,5,1339,1342.8453370573193
+All priced homes,Home shuffled,County,8793,5,1326,1342.8453370573193
+All priced homes,Home shuffled,County,89,5,1330,1342.8453370573193
+All priced homes,Home shuffled,County + log capacity,199,5,1220,1275.9693055739858
+All priced homes,Home shuffled,County + log capacity,203,2,1272,1266.595373708054
+All priced homes,Home shuffled,County + log capacity,238,4,1263,1268.8088803072828
+All priced homes,Home shuffled,County + log capacity,5417,5,1277,1276.567787551491
+All priced homes,Home shuffled,County + log capacity,5454,5,1289,1275.5525526833082
+All priced homes,Home shuffled,County + log capacity,128,2,1303,1293.3607289703893
+All priced homes,Home shuffled,County + log capacity,135,5,1329,1292.6559614305813
+All priced homes,Home shuffled,County + log capacity,136,3,1228,1299.008161429472
+All priced homes,Home shuffled,County + log capacity,151,1,1297,1295.8489639537277
+All priced homes,Home shuffled,County + log capacity,160,2,1307,1280.4675630189824
+All priced homes,Home shuffled,County + log capacity,4913,4,1306,1298.8627434427176
+All priced homes,Home shuffled,County + log capacity,5413,1,1292,1293.4911821171147
+All priced homes,Home shuffled,County + log capacity,444,4,1270,1279.6863203874882
+All priced homes,Home shuffled,County + log capacity,445,2,1304,1273.9763151615728
+All priced homes,Home shuffled,County + log capacity,447,2,1248,1263.9408916021937
+All priced homes,Home shuffled,County + log capacity,448,1,1244,1263.7011690353825
+All priced homes,Home shuffled,County + log capacity,450,3,1269,1257.4848011962633
+All priced homes,Home shuffled,County + log capacity,451,3,1270,1260.9552860266685
+All priced homes,Home shuffled,County + log capacity,452,5,1262,1264.4143605823597
+All priced homes,Home shuffled,County + log capacity,5393,2,1265,1255.00423500578
+All priced homes,Home shuffled,County + log capacity,5768,4,1271,1274.614973116991
+All priced homes,Home shuffled,County + log capacity,683,2,1274,1264.7348953398434
+All priced homes,Home shuffled,County + log capacity,729,1,1230,1280.3912578200816
+All priced homes,Home shuffled,County + log capacity,187,3,1280,1306.073278483419
+All priced homes,Home shuffled,County + log capacity,189,2,1273,1319.2107304190408
+All priced homes,Home shuffled,County + log capacity,197,5,1282,1308.752588589055
+All priced homes,Home shuffled,County + log capacity,198,3,1321,1310.0368506143063
+All priced homes,Home shuffled,County + log capacity,200,2,1290,1316.6049537626413
+All priced homes,Home shuffled,County + log capacity,202,5,1265,1296.5326376137907
+All priced homes,Home shuffled,County + log capacity,206,1,1300,1313.0027303497411
+All priced homes,Home shuffled,County + log capacity,208,1,1330,1301.8451585085954
+All priced homes,Home shuffled,County + log capacity,209,4,1301,1316.878192351926
+All priced homes,Home shuffled,County + log capacity,210,1,1301,1308.8613509293516
+All priced homes,Home shuffled,County + log capacity,216,5,1232,1305.1894442112293
+All priced homes,Home shuffled,County + log capacity,220,2,1289,1303.6601026910619
+All priced homes,Home shuffled,County + log capacity,223,1,1332,1311.9138113245144
+All priced homes,Home shuffled,County + log capacity,227,4,1315,1312.730003894042
+All priced homes,Home shuffled,County + log capacity,229,4,1284,1310.0125887185854
+All priced homes,Home shuffled,County + log capacity,230,2,1298,1313.7826745685084
+All priced homes,Home shuffled,County + log capacity,233,5,1290,1298.6599364577178
+All priced homes,Home shuffled,County + log capacity,235,1,1327,1322.2344804078357
+All priced homes,Home shuffled,County + log capacity,253,4,1309,1327.1448433392616
+All priced homes,Home shuffled,County + log capacity,257,5,1486,1317.438601310623
+All priced homes,Home shuffled,County + log capacity,258,1,1332,1303.2325897504672
+All priced homes,Home shuffled,County + log capacity,261,1,1338,1313.4142768856975
+All priced homes,Home shuffled,County + log capacity,275,1,1270,1299.7336995741944
+All priced homes,Home shuffled,County + log capacity,277,2,1305,1318.0803247619951
+All priced homes,Home shuffled,County + log capacity,280,2,1301,1314.089212884602
+All priced homes,Home shuffled,County + log capacity,284,3,1460,1313.642574200957
+All priced homes,Home shuffled,County + log capacity,290,5,1492,1318.1001135375918
+All priced homes,Home shuffled,County + log capacity,291,4,1279,1307.295173543129
+All priced homes,Home shuffled,County + log capacity,292,4,1310,1321.5904985994432
+All priced homes,Home shuffled,County + log capacity,297,2,1294,1311.0837400836442
+All priced homes,Home shuffled,County + log capacity,307,5,1292,1308.1217408751304
+All priced homes,Home shuffled,County + log capacity,4447,3,1295,1306.073278483419
+All priced homes,Home shuffled,County + log capacity,4451,2,1292,1309.1216643536168
+All priced homes,Home shuffled,County + log capacity,4452,5,1270,1307.2237717226328
+All priced homes,Home shuffled,County + log capacity,4455,5,1319,1322.298431245478
+All priced homes,Home shuffled,County + log capacity,4456,5,1297,1304.6201683578538
+All priced homes,Home shuffled,County + log capacity,4921,3,1290,1303.198951038595
+All priced homes,Home shuffled,County + log capacity,5314,2,1290,1303.0529786369564
+All priced homes,Home shuffled,County + log capacity,5522,4,1285,1309.1525008313597
+All priced homes,Home shuffled,County + log capacity,558,3,1392,1304.7344095456285
+All priced homes,Home shuffled,County + log capacity,5681,5,1327,1297.6447015895353
+All priced homes,Home shuffled,County + log capacity,705,3,1322,1312.2294902643466
+All priced homes,Home shuffled,County + log capacity,747,1,1280,1301.3481781189782
+All priced homes,Home shuffled,County + log capacity,8228,1,1305,1318.4115546024223
+All priced homes,Home shuffled,County + log capacity,8616,1,1304,1312.3602411056245
+All priced homes,Home shuffled,County + log capacity,8711,5,1296,1316.5289584798154
+All priced homes,Home shuffled,County + log capacity,9186,4,1285,1311.9953848983425
+All priced homes,Home shuffled,County + log capacity,311,3,1245,1261.0485438386227
+All priced homes,Home shuffled,County + log capacity,312,3,1270,1263.774631331904
+All priced homes,Home shuffled,County + log capacity,313,3,1279,1263.774631331904
+All priced homes,Home shuffled,County + log capacity,314,3,1242,1258.8520258149463
+All priced homes,Home shuffled,County + log capacity,320,2,1245,1261.7803790429305
+All priced homes,Home shuffled,County + log capacity,322,3,1270,1265.3891358585568
+All priced homes,Home shuffled,County + log capacity,323,1,1245,1258.5215370815301
+All priced homes,Home shuffled,County + log capacity,345,1,1275,1262.3098546742638
+All priced homes,Home shuffled,County + log capacity,346,2,1274,1264.7097844716013
+All priced homes,Home shuffled,County + log capacity,353,1,1275,1260.0026941094222
+All priced homes,Home shuffled,County + log capacity,368,3,1234,1263.0986840403523
+All priced homes,Home shuffled,County + log capacity,392,5,1277,1260.8147320309804
+All priced homes,Home shuffled,County + log capacity,5791,5,1234,1265.7293835568887
+All priced homes,Home shuffled,County + log capacity,1,2,1430,1400.333760743877
+All priced homes,Home shuffled,County + log capacity,101,5,1388,1413.1236275096217
+All priced homes,Home shuffled,County + log capacity,102,1,1508,1409.1992491719125
+All priced homes,Home shuffled,County + log capacity,108,3,1401,1423.3301028805777
+All priced homes,Home shuffled,County + log capacity,113,1,1502,1412.0524638111926
+All priced homes,Home shuffled,County + log capacity,115,5,1400,1412.714187587217
+All priced homes,Home shuffled,County + log capacity,116,5,1410,1416.2773319650428
+All priced homes,Home shuffled,County + log capacity,117,3,1449,1412.8719633640071
+All priced homes,Home shuffled,County + log capacity,125,4,1400,1401.7833626830638
+All priced homes,Home shuffled,County + log capacity,13,3,1393,1412.7212622333
+All priced homes,Home shuffled,County + log capacity,133,4,1419,1423.5039671049158
+All priced homes,Home shuffled,County + log capacity,134,2,1416,1407.893304884005
+All priced homes,Home shuffled,County + log capacity,138,3,1402,1407.7682545240664
+All priced homes,Home shuffled,County + log capacity,139,5,1342,1422.980989824604
+All priced homes,Home shuffled,County + log capacity,14,2,1407,1427.485414204372
+All priced homes,Home shuffled,County + log capacity,142,4,1367,1407.3513147603708
+All priced homes,Home shuffled,County + log capacity,149,3,1479,1418.5171690241966
+All priced homes,Home shuffled,County + log capacity,150,2,1412,1415.5166828428826
+All priced homes,Home shuffled,County + log capacity,154,2,1413,1408.2411774812958
+All priced homes,Home shuffled,County + log capacity,155,2,1380,1411.626416137206
+All priced homes,Home shuffled,County + log capacity,157,4,1377,1417.4250138910147
+All priced homes,Home shuffled,County + log capacity,159,1,1394,1402.752673830388
+All priced homes,Home shuffled,County + log capacity,161,5,1385,1407.2302602079333
+All priced homes,Home shuffled,County + log capacity,17,5,1403,1411.6229404599871
+All priced homes,Home shuffled,County + log capacity,174,2,1409,1414.6318889381637
+All priced homes,Home shuffled,County + log capacity,176,3,1384,1405.3086508216588
+All priced homes,Home shuffled,County + log capacity,178,3,1401,1409.555309047065
+All priced homes,Home shuffled,County + log capacity,179,5,1396,1416.580409797241
+All priced homes,Home shuffled,County + log capacity,181,2,1445,1410.4792485087219
+All priced homes,Home shuffled,County + log capacity,182,5,1443,1414.806708937446
+All priced homes,Home shuffled,County + log capacity,183,5,1447,1423.067099739407
+All priced homes,Home shuffled,County + log capacity,184,3,1405,1408.4746040078937
+All priced homes,Home shuffled,County + log capacity,22,3,1397,1409.136311259339
+All priced homes,Home shuffled,County + log capacity,24,4,1396,1391.9182849794502
+All priced homes,Home shuffled,County + log capacity,28,2,1392,1404.7869869113306
+All priced homes,Home shuffled,County + log capacity,38,4,1418,1408.0709373239952
+All priced homes,Home shuffled,County + log capacity,39,1,1418,1407.3800278584374
+All priced homes,Home shuffled,County + log capacity,4,1,1422,1409.4099483444259
+All priced homes,Home shuffled,County + log capacity,4042,1,1474,1411.168345451171
+All priced homes,Home shuffled,County + log capacity,41,3,1437,1414.7815169195287
+All priced homes,Home shuffled,County + log capacity,44,3,1393,1412.2556945694485
+All priced homes,Home shuffled,County + log capacity,46,5,1478,1403.7619768444715
+All priced homes,Home shuffled,County + log capacity,47,1,1413,1404.070614582002
+All priced homes,Home shuffled,County + log capacity,5,5,1380,1409.0763926636557
+All priced homes,Home shuffled,County + log capacity,50,3,1377,1411.2574588373543
+All priced homes,Home shuffled,County + log capacity,5191,1,1414,1417.3346676907554
+All priced homes,Home shuffled,County + log capacity,5205,2,1396,1428.3536611496204
+All priced homes,Home shuffled,County + log capacity,5238,4,1438,1404.1372947781044
+All priced homes,Home shuffled,County + log capacity,53,1,1474,1418.1127752019825
+All priced homes,Home shuffled,County + log capacity,5307,2,1410,1418.7979143049813
+All priced homes,Home shuffled,County + log capacity,5466,1,1402,1412.2223812312438
+All priced homes,Home shuffled,County + log capacity,5506,3,1420,1408.4746040078937
+All priced homes,Home shuffled,County + log capacity,5590,1,1406,1414.1067928627328
+All priced homes,Home shuffled,County + log capacity,5756,5,1449,1416.1227887719704
+All priced homes,Home shuffled,County + log capacity,58,2,1401,1408.2411774812958
+All priced homes,Home shuffled,County + log capacity,5800,4,1398,1427.4376096508067
+All priced homes,Home shuffled,County + log capacity,5880,4,1410,1411.576340879868
+All priced homes,Home shuffled,County + log capacity,59,2,1433,1423.4240995803013
+All priced homes,Home shuffled,County + log capacity,64,2,1395,1414.8578736686047
+All priced homes,Home shuffled,County + log capacity,65,4,1472,1426.2213822803724
+All priced homes,Home shuffled,County + log capacity,6616,3,1475,1419.0281751449347
+All priced homes,Home shuffled,County + log capacity,686,3,1420,1408.6998502780968
+All priced homes,Home shuffled,County + log capacity,692,5,1403,1421.5090767488555
+All priced homes,Home shuffled,County + log capacity,693,1,1384,1397.755396113663
+All priced homes,Home shuffled,County + log capacity,694,2,1449,1426.8782901502666
+All priced homes,Home shuffled,County + log capacity,7,3,1424,1415.6198480511803
+All priced homes,Home shuffled,County + log capacity,71,4,1400,1406.601060903477
+All priced homes,Home shuffled,County + log capacity,735,1,1398,1415.7549933653693
+All priced homes,Home shuffled,County + log capacity,744,2,1396,1414.1697746481032
+All priced homes,Home shuffled,County + log capacity,759,1,1417,1419.925030941455
+All priced homes,Home shuffled,County + log capacity,763,4,1417,1417.4250138910147
+All priced homes,Home shuffled,County + log capacity,7729,2,1424,1429.6143313547227
+All priced homes,Home shuffled,County + log capacity,7752,2,1400,1427.385866085663
+All priced homes,Home shuffled,County + log capacity,7785,3,1455,1417.7945688809648
+All priced homes,Home shuffled,County + log capacity,78,4,1435,1429.4354022626387
+All priced homes,Home shuffled,County + log capacity,7910,1,1429,1414.3962202791936
+All priced homes,Home shuffled,County + log capacity,7976,2,1400,1423.4240995803013
+All priced homes,Home shuffled,County + log capacity,80,5,1372,1421.410613375516
+All priced homes,Home shuffled,County + log capacity,8033,4,1439,1426.717987087182
+All priced homes,Home shuffled,County + log capacity,8302,1,1401,1415.7549933653693
+All priced homes,Home shuffled,County + log capacity,8600,2,1440,1426.565558723824
+All priced homes,Home shuffled,County + log capacity,8662,2,1395,1420.130321628339
+All priced homes,Home shuffled,County + log capacity,8692,3,1415,1420.854273694081
+All priced homes,Home shuffled,County + log capacity,8904,4,1416,1422.2877397344816
+All priced homes,Home shuffled,County + log capacity,9182,3,1416,1404.9959843826061
+All priced homes,Home shuffled,County + log capacity,96,2,1423,1409.2402130787843
+All priced homes,Home shuffled,County + log capacity,309,4,1262,1272.8679070308797
+All priced homes,Home shuffled,County + log capacity,318,3,1300,1269.58842574023
+All priced homes,Home shuffled,County + log capacity,328,2,1267,1277.631157065857
+All priced homes,Home shuffled,County + log capacity,341,3,1260,1273.497198280387
+All priced homes,Home shuffled,County + log capacity,343,2,1210,1267.3375372700164
+All priced homes,Home shuffled,County + log capacity,344,3,1277,1271.6219280546088
+All priced homes,Home shuffled,County + log capacity,347,3,1270,1263.727262988171
+All priced homes,Home shuffled,County + log capacity,349,2,1288,1277.631157065857
+All priced homes,Home shuffled,County + log capacity,351,1,1268,1270.829246651898
+All priced homes,Home shuffled,County + log capacity,355,3,1252,1271.4145242893765
+All priced homes,Home shuffled,County + log capacity,359,2,1319,1260.4022583316403
+All priced homes,Home shuffled,County + log capacity,361,1,1258,1273.7676940634599
+All priced homes,Home shuffled,County + log capacity,362,5,1276,1267.2580694102285
+All priced homes,Home shuffled,County + log capacity,365,4,1259,1272.8679070308797
+All priced homes,Home shuffled,County + log capacity,367,4,1268,1273.197417649748
+All priced homes,Home shuffled,County + log capacity,371,4,1248,1263.4137641317338
+All priced homes,Home shuffled,County + log capacity,378,5,1272,1274.116270462862
+All priced homes,Home shuffled,County + log capacity,381,3,1280,1263.2815128285952
+All priced homes,Home shuffled,County + log capacity,382,1,1275,1269.070849545153
+All priced homes,Home shuffled,County + log capacity,390,4,1304,1267.4607723727665
+All priced homes,Home shuffled,County + log capacity,391,4,1275,1253.8307453229368
+All priced homes,Home shuffled,County + log capacity,393,1,1275,1266.288243210939
+All priced homes,Home shuffled,County + log capacity,396,3,1258,1269.83487353161
+All priced homes,Home shuffled,County + log capacity,398,2,1267,1272.729213129396
+All priced homes,Home shuffled,County + log capacity,4583,2,1260,1268.9684842433371
+All priced homes,Home shuffled,County + log capacity,5164,1,1280,1269.9793764707263
+All priced homes,Home shuffled,County + log capacity,5242,4,1257,1258.902092593434
+All priced homes,Home shuffled,County + log capacity,5491,4,1266,1268.7671702970474
+All priced homes,Home shuffled,County + log capacity,5812,5,1270,1278.7852741683214
+All priced homes,Home shuffled,County + log capacity,726,3,1252,1273.6675036243703
+All priced homes,Home shuffled,County + log capacity,764,2,1270,1275.2449540074354
+All priced homes,Home shuffled,County + log capacity,190,3,1243,1263.9277466240292
+All priced homes,Home shuffled,County + log capacity,194,5,1262,1265.683051690357
+All priced homes,Home shuffled,County + log capacity,219,4,1200,1276.2216399604542
+All priced homes,Home shuffled,County + log capacity,239,2,1275,1254.6821769801916
+All priced homes,Home shuffled,County + log capacity,241,4,1283,1261.1985892354128
+All priced homes,Home shuffled,County + log capacity,246,2,1274,1264.1728374818058
+All priced homes,Home shuffled,County + log capacity,264,4,1252,1276.2216399604542
+All priced homes,Home shuffled,County + log capacity,265,1,1257,1270.6533000751576
+All priced homes,Home shuffled,County + log capacity,274,4,1252,1259.9388888347069
+All priced homes,Home shuffled,County + log capacity,287,5,1310,1263.4750062231471
+All priced homes,Home shuffled,County + log capacity,288,5,1230,1263.951310743999
+All priced homes,Home shuffled,County + log capacity,289,4,1275,1258.5821961406714
+All priced homes,Home shuffled,County + log capacity,5406,3,1275,1262.22559683374
+All priced homes,Home shuffled,County + log capacity,571,5,1281,1255.387475479084
+All priced homes,Home shuffled,County + log capacity,685,2,1270,1266.5590405402274
+All priced homes,Home shuffled,County + log capacity,7842,2,1265,1270.662823446383
+All priced homes,Home shuffled,County + log capacity,106,5,1350,1335.0612628095005
+All priced homes,Home shuffled,County + log capacity,112,4,1307,1340.0748351896557
+All priced homes,Home shuffled,County + log capacity,12,3,1275,1339.8052112934508
+All priced homes,Home shuffled,County + log capacity,25,5,1358,1335.0612628095005
+All priced homes,Home shuffled,County + log capacity,27,3,1393,1346.492453979268
+All priced homes,Home shuffled,County + log capacity,34,1,1349,1344.6418157375724
+All priced homes,Home shuffled,County + log capacity,40,4,1282,1348.3132561967209
+All priced homes,Home shuffled,County + log capacity,4593,1,1340,1348.7966735801672
+All priced homes,Home shuffled,County + log capacity,49,1,1326,1340.711135489696
+All priced homes,Home shuffled,County + log capacity,5536,4,1388,1336.7856410856177
+All priced homes,Home shuffled,County + log capacity,56,5,1360,1335.630538662876
+All priced homes,Home shuffled,County + log capacity,60,4,1326,1338.0920390098988
+All priced homes,Home shuffled,County + log capacity,66,5,1340,1336.8598683543057
+All priced homes,Home shuffled,County + log capacity,684,5,1380,1343.2456226611255
+All priced homes,Home shuffled,County + log capacity,701,5,1360,1338.5628353267773
+All priced homes,Home shuffled,County + log capacity,72,2,1362,1336.1029622756214
+All priced homes,Home shuffled,County + log capacity,77,3,1350,1336.4140118370126
+All priced homes,Home shuffled,County + log capacity,83,5,1369,1345.3568390207731
+All priced homes,Home shuffled,County + log capacity,9,1,1315,1343.064223540002
+All priced homes,Home shuffled,County + log capacity,91,2,1382,1355.5403956295283
+All priced homes,Home shuffled,County + log capacity,191,5,1280,1274.0439694737584
+All priced homes,Home shuffled,County + log capacity,207,4,1272,1277.5835250201264
+All priced homes,Home shuffled,County + log capacity,224,3,1281,1279.9744287522547
+All priced homes,Home shuffled,County + log capacity,232,3,1277,1276.6577744353128
+All priced homes,Home shuffled,County + log capacity,254,1,1280,1276.3132783569167
+All priced homes,Home shuffled,County + log capacity,5557,1,1275,1269.91990881442
+All priced homes,Home shuffled,County + log capacity,707,3,1269,1275.8023156663446
+All priced homes,Home shuffled,County + log capacity,7180,1,1285,1278.1976899884057
+All priced homes,Home shuffled,County + log capacity,8695,3,1245,1282.606582451008
+All priced homes,Home shuffled,County + log capacity,8962,4,1275,1279.6874060454693
+All priced homes,Home shuffled,County + log capacity,4454,4,1304,1276.1410882637067
+All priced homes,Home shuffled,County + log capacity,52,1,1270,1301.0363981155795
+All priced homes,Home shuffled,County + log capacity,8667,1,1277,1300.8572332110575
+All priced homes,Home shuffled,County + log capacity,357,3,1277,1279.6346742583107
+All priced homes,Home shuffled,County + log capacity,395,5,1274,1287.3822935222613
+All priced homes,Home shuffled,County + log capacity,404,1,1270,1278.5870847323165
+All priced homes,Home shuffled,County + log capacity,405,2,1280,1260.370022407438
+All priced homes,Home shuffled,County + log capacity,408,5,1266,1276.125093446827
+All priced homes,Home shuffled,County + log capacity,409,4,1270,1274.4369934584902
+All priced homes,Home shuffled,County + log capacity,411,3,1280,1275.8291021440484
+All priced homes,Home shuffled,County + log capacity,413,2,1262,1260.8463578093033
+All priced homes,Home shuffled,County + log capacity,416,2,1271,1258.302999298406
+All priced homes,Home shuffled,County + log capacity,417,3,1240,1277.2014329246306
+All priced homes,Home shuffled,County + log capacity,423,4,1289,1273.3518321553208
+All priced homes,Home shuffled,County + log capacity,427,3,1252,1274.4902332062582
+All priced homes,Home shuffled,County + log capacity,428,1,1255,1274.3739426419822
+All priced homes,Home shuffled,County + log capacity,429,5,1265,1277.30126659758
+All priced homes,Home shuffled,County + log capacity,433,1,1282,1273.4808263879686
+All priced homes,Home shuffled,County + log capacity,435,2,1285,1269.0326952299579
+All priced homes,Home shuffled,County + log capacity,436,3,1230,1274.003003594902
+All priced homes,Home shuffled,County + log capacity,4664,4,1280,1277.5630915385923
+All priced homes,Home shuffled,County + log capacity,4682,4,1284,1273.9027615192706
+All priced homes,Home shuffled,County + log capacity,5560,1,1280,1268.8169441330426
+All priced homes,Home shuffled,County + log capacity,5636,2,1292,1251.4635700725307
+All priced homes,Home shuffled,County + log capacity,5668,4,1275,1253.1250719412837
+All priced homes,Home shuffled,County + log capacity,9298,5,1267,1278.369658006439
+All priced homes,Home shuffled,County + log capacity,109,1,1233,1290.0189241868225
+All priced homes,Home shuffled,County + log capacity,4632,5,1275,1279.7768671384645
+All priced homes,Home shuffled,County + log capacity,5394,3,1320,1273.9355817544633
+All priced homes,Home shuffled,County + log capacity,114,2,1258,1293.7057135506955
+All priced homes,Home shuffled,County + log capacity,118,1,1325,1295.389794998071
+All priced homes,Home shuffled,County + log capacity,121,4,1285,1298.9488051748785
+All priced homes,Home shuffled,County + log capacity,122,3,1321,1297.6317783146771
+All priced homes,Home shuffled,County + log capacity,130,4,1296,1309.922946971549
+All priced homes,Home shuffled,County + log capacity,147,1,1330,1304.2051372327567
+All priced homes,Home shuffled,County + log capacity,168,3,1306,1288.9082647318892
+All priced homes,Home shuffled,County + log capacity,4450,2,1302,1312.6493645357598
+All priced homes,Home shuffled,County + log capacity,8237,4,1297,1318.0463378488155
+All priced homes,Home shuffled,County + log capacity,308,3,1260,1278.6600082266166
+All priced homes,Home shuffled,County + log capacity,315,4,1250,1267.081451805121
+All priced homes,Home shuffled,County + log capacity,317,5,1253,1275.3342760694431
+All priced homes,Home shuffled,County + log capacity,321,3,1254,1277.2342213801596
+All priced homes,Home shuffled,County + log capacity,325,4,1258,1270.5798054489458
+All priced homes,Home shuffled,County + log capacity,329,5,1268,1278.861241067901
+All priced homes,Home shuffled,County + log capacity,334,1,1285,1272.904546669869
+All priced homes,Home shuffled,County + log capacity,342,1,1265,1274.2008466321508
+All priced homes,Home shuffled,County + log capacity,348,1,1290,1266.6242114466836
+All priced homes,Home shuffled,County + log capacity,364,5,1285,1275.5608431979906
+All priced homes,Home shuffled,County + log capacity,376,2,1247,1268.1705510193835
+All priced homes,Home shuffled,County + log capacity,379,2,1275,1267.6942156175185
+All priced homes,Home shuffled,County + log capacity,386,1,1291,1276.289423862541
+All priced homes,Home shuffled,County + log capacity,389,4,1333,1259.0521903378426
+All priced homes,Home shuffled,County + log capacity,5504,1,1284,1273.1296533026214
+All priced homes,Home shuffled,County + log capacity,5589,4,1284,1269.8601828853214
+All priced homes,Home shuffled,County + log capacity,6384,3,1250,1279.0341032751046
+All priced homes,Home shuffled,County + log capacity,131,3,1355,1320.705651700197
+All priced homes,Home shuffled,County + log capacity,141,4,1315,1300.2417376907936
+All priced homes,Home shuffled,County + log capacity,143,2,1318,1323.5334538458083
+All priced homes,Home shuffled,County + log capacity,144,2,1297,1315.1300781935086
+All priced homes,Home shuffled,County + log capacity,145,1,1369,1327.487789194843
+All priced homes,Home shuffled,County + log capacity,152,5,1309,1316.5916421796903
+All priced homes,Home shuffled,County + log capacity,162,4,1325,1302.2395303026256
+All priced homes,Home shuffled,County + log capacity,166,2,1290,1310.5563869892176
+All priced homes,Home shuffled,County + log capacity,167,2,1320,1312.379630585862
+All priced homes,Home shuffled,County + log capacity,171,4,1290,1299.5221151271692
+All priced homes,Home shuffled,County + log capacity,185,4,1320,1315.9661510453207
+All priced homes,Home shuffled,County + log capacity,186,5,1321,1310.6314102795545
+All priced homes,Home shuffled,County + log capacity,4589,3,1287,1318.3390855541072
+All priced homes,Home shuffled,County + log capacity,5531,1,1332,1308.770389340065
+All priced homes,Home shuffled,County + log capacity,700,5,1324,1322.6679729531184
+All priced homes,Home shuffled,County + log capacity,737,4,1328,1328.040071096202
+All priced homes,Home shuffled,County + log capacity,8238,4,1320,1328.040071096202
+All priced homes,Home shuffled,County + log capacity,8713,2,1300,1327.5625526848676
+All priced homes,Home shuffled,County + log capacity,124,4,1293,1306.4696607196981
+All priced homes,Home shuffled,County + log capacity,148,2,1299,1280.6112585546002
+All priced homes,Home shuffled,County + log capacity,169,3,1276,1283.9822964207901
+All priced homes,Home shuffled,County + log capacity,5312,4,1287,1300.6786908855765
+All priced homes,Home shuffled,County + log capacity,21,3,1281,1269.5155459086943
+All priced homes,Home shuffled,County + log capacity,4690,1,1273,1271.883576847825
+All priced homes,Home shuffled,County + log capacity,5665,3,1232,1267.3544713973026
+All priced homes,Home shuffled,County + log capacity,663,5,1276,1261.1282371081272
+All priced homes,Home shuffled,County + log capacity,733,1,1246,1283.1026834614343
+All priced homes,Home shuffled,County + log capacity,339,1,1241,1251.8510682538042
+All priced homes,Home shuffled,County + log capacity,350,4,1257,1262.4996536849344
+All priced homes,Home shuffled,County + log capacity,372,5,1237,1259.4538430415769
+All priced homes,Home shuffled,County + log capacity,373,3,1271,1258.3562599283575
+All priced homes,Home shuffled,County + log capacity,383,4,1278,1254.0922907560716
+All priced homes,Home shuffled,County + log capacity,384,5,1276,1259.4538430415769
+All priced homes,Home shuffled,County + log capacity,4457,4,1225,1271.3826478252229
+All priced homes,Home shuffled,County + log capacity,738,2,1250,1261.9797031939795
+All priced homes,Home shuffled,County + log capacity,316,1,1288,1316.7810392108768
+All priced homes,Home shuffled,County + log capacity,330,4,1414,1302.1114708855298
+All priced homes,Home shuffled,County + log capacity,363,5,1276,1337.6617638560601
+All priced homes,Home shuffled,County + log capacity,369,1,1405,1323.197944804938
+All priced homes,Home shuffled,County + log capacity,397,3,1315,1327.405459420192
+All priced homes,Home shuffled,County + log capacity,5421,2,1297,1333.3817839945516
+All priced homes,Home shuffled,County + log capacity,188,5,1270,1275.2793381592526
+All priced homes,Home shuffled,County + log capacity,204,4,1275,1265.9430525762123
+All priced homes,Home shuffled,County + log capacity,222,5,1295,1270.4311702348614
+All priced homes,Home shuffled,County + log capacity,250,3,1278,1280.8483126828723
+All priced homes,Home shuffled,County + log capacity,267,5,1255,1275.043616192654
+All priced homes,Home shuffled,County + log capacity,271,1,1246,1281.2776207340476
+All priced homes,Home shuffled,County + log capacity,278,2,1300,1269.0393315391625
+All priced homes,Home shuffled,County + log capacity,293,5,1280,1267.1918074151895
+All priced homes,Home shuffled,County + log capacity,302,1,1274,1270.5448733905027
+All priced homes,Home shuffled,County + log capacity,304,5,1286,1273.519560738458
+All priced homes,Home shuffled,County + log capacity,406,3,1295,1270.9080720466734
+All priced homes,Home shuffled,County + log capacity,407,4,1275,1278.1620623748665
+All priced homes,Home shuffled,County + log capacity,410,1,1251,1271.9323046323746
+All priced homes,Home shuffled,County + log capacity,419,2,1268,1284.9393354027861
+All priced homes,Home shuffled,County + log capacity,422,2,1261,1277.4715334178754
+All priced homes,Home shuffled,County + log capacity,434,2,1291,1267.3489615404292
+All priced homes,Home shuffled,County + log capacity,437,5,1245,1269.3191062591168
+All priced homes,Home shuffled,County + log capacity,4584,2,1278,1278.9469044172292
+All priced homes,Home shuffled,County + log capacity,4587,5,1286,1267.1918074151895
+All priced homes,Home shuffled,County + log capacity,5284,2,1235,1267.3489615404292
+All priced homes,Home shuffled,County + log capacity,5519,4,1268,1274.8119158100599
+All priced homes,Home shuffled,County + log capacity,5573,3,1280,1266.6614138212672
+All priced homes,Home shuffled,County + log capacity,7883,5,1277,1276.3914021349972
+All priced homes,Home shuffled,County + log capacity,231,4,1279,1299.82757075173
+All priced homes,Home shuffled,County + log capacity,242,1,1273,1290.189323197999
+All priced homes,Home shuffled,County + log capacity,245,2,1280,1287.3386175009546
+All priced homes,Home shuffled,County + log capacity,255,1,1305,1286.566648259058
+All priced homes,Home shuffled,County + log capacity,7819,2,1262,1291.7918436684083
+All priced homes,Home shuffled,County + log capacity,8484,5,1315,1288.8309453416996
+All priced homes,Home shuffled,County + log capacity,8637,3,1309,1288.8768401435636
+All priced homes,Home shuffled,County + log capacity,15,4,1271,1252.9519287710389
+All priced homes,Home shuffled,County + log capacity,5422,4,1272,1245.2066393553566
+All priced homes,Home shuffled,County + log capacity,5702,3,1243,1267.85305342938
+All priced homes,Home shuffled,County + log capacity,68,4,1303,1242.5902462606155
+All priced homes,Home shuffled,County + log capacity,84,2,1247,1258.2211804685444
+All priced homes,Home shuffled,County + log capacity,86,3,1250,1255.6177963430084
+All priced homes,Home shuffled,County + log capacity,88,4,1239,1242.5902462606155
+All priced homes,Home shuffled,County + log capacity,98,5,1201,1263.7228136468316
+All priced homes,Home shuffled,County + log capacity,240,3,1285,1277.0378421338971
+All priced homes,Home shuffled,County + log capacity,243,3,1274,1270.787060429322
+All priced homes,Home shuffled,County + log capacity,244,1,1279,1276.9990850415527
+All priced homes,Home shuffled,County + log capacity,251,3,1279,1271.2060582170482
+All priced homes,Home shuffled,County + log capacity,252,2,1292,1272.8932683711425
+All priced homes,Home shuffled,County + log capacity,4370,5,1247,1272.6927341067983
+All priced homes,Home shuffled,County + log capacity,5595,5,1212,1277.4236363155046
+All priced homes,Home shuffled,County + log capacity,5701,1,1248,1281.7161730955067
+All priced homes,Home shuffled,County + log capacity,5826,1,1262,1281.9963627582774
+All priced homes,Home shuffled,County + log capacity,602,5,1305,1271.1347111162468
+All priced homes,Home shuffled,County + log capacity,696,1,1316,1276.7949194426515
+All priced homes,Home shuffled,County + log capacity,7221,5,1286,1277.8062227381445
+All priced homes,Home shuffled,County + log capacity,756,1,1268,1278.1617589409293
+All priced homes,Home shuffled,County + log capacity,9029,1,1277,1282.1342532050753
+All priced homes,Home shuffled,County + log capacity,10,1,1321,1335.6711675353502
+All priced homes,Home shuffled,County + log capacity,107,4,1395,1325.305714091239
+All priced homes,Home shuffled,County + log capacity,16,3,1363,1337.8341264711405
+All priced homes,Home shuffled,County + log capacity,3,5,1285,1341.8946833903924
+All priced homes,Home shuffled,County + log capacity,31,3,1295,1329.576180552204
+All priced homes,Home shuffled,County + log capacity,33,2,1363,1332.0876211365382
+All priced homes,Home shuffled,County + log capacity,36,4,1373,1327.423654645314
+All priced homes,Home shuffled,County + log capacity,45,2,1355,1334.0785768732833
+All priced homes,Home shuffled,County + log capacity,5187,1,1315,1332.5787017909022
+All priced homes,Home shuffled,County + log capacity,5381,5,1322,1344.775007404897
+All priced homes,Home shuffled,County + log capacity,54,1,1338,1333.3313876391278
+All priced homes,Home shuffled,County + log capacity,5774,3,1358,1342.0807846965467
+All priced homes,Home shuffled,County + log capacity,755,4,1365,1337.3361840729794
+All priced homes,Home shuffled,County + log capacity,7714,1,1325,1345.250351720449
+All priced homes,Home shuffled,County + log capacity,8471,5,1339,1348.752884443026
+All priced homes,Home shuffled,County + log capacity,8793,5,1326,1352.0118735759838
+All priced homes,Home shuffled,County + log capacity,89,5,1330,1335.5388935926871
+All priced homes,Provider grouped,County,199,2,1220,1282.205941076556
+All priced homes,Provider grouped,County,203,3,1272,1267.981072009786
+All priced homes,Provider grouped,County,238,2,1263,1282.205941076556
+All priced homes,Provider grouped,County,5417,5,1277,1261.5209684568863
+All priced homes,Provider grouped,County,5454,5,1289,1261.5209684568863
+All priced homes,Provider grouped,County,128,4,1303,1305.9296720493141
+All priced homes,Provider grouped,County,135,3,1329,1289.129337149847
+All priced homes,Provider grouped,County,136,4,1228,1305.9296720493141
+All priced homes,Provider grouped,County,151,5,1297,1291.5139789712575
+All priced homes,Provider grouped,County,160,5,1307,1291.5139789712575
+All priced homes,Provider grouped,County,4913,2,1306,1292.4033949008892
+All priced homes,Provider grouped,County,5413,4,1292,1305.9296720493141
+All priced homes,Provider grouped,County,444,4,1270,1263.5211943209388
+All priced homes,Provider grouped,County,445,4,1304,1263.5211943209388
+All priced homes,Provider grouped,County,447,1,1248,1267.9303753100721
+All priced homes,Provider grouped,County,448,4,1244,1263.5211943209388
+All priced homes,Provider grouped,County,450,3,1269,1269.890536004893
+All priced homes,Provider grouped,County,451,4,1270,1263.5211943209388
+All priced homes,Provider grouped,County,452,1,1262,1267.9303753100721
+All priced homes,Provider grouped,County,5393,4,1265,1263.5211943209388
+All priced homes,Provider grouped,County,5768,5,1271,1266.0985339843223
+All priced homes,Provider grouped,County,683,1,1274,1267.9303753100721
+All priced homes,Provider grouped,County,729,3,1230,1269.890536004893
+All priced homes,Provider grouped,County,187,4,1280,1305.774280006664
+All priced homes,Provider grouped,County,189,3,1273,1310.8352800013224
+All priced homes,Provider grouped,County,197,2,1282,1315.3371649830785
+All priced homes,Provider grouped,County,198,4,1321,1305.774280006664
+All priced homes,Provider grouped,County,200,4,1290,1305.774280006664
+All priced homes,Provider grouped,County,202,1,1265,1306.9835099418592
+All priced homes,Provider grouped,County,206,2,1300,1315.3371649830785
+All priced homes,Provider grouped,County,208,3,1330,1310.8352800013224
+All priced homes,Provider grouped,County,209,5,1301,1313.7770968456887
+All priced homes,Provider grouped,County,210,4,1301,1305.774280006664
+All priced homes,Provider grouped,County,216,2,1232,1315.3371649830785
+All priced homes,Provider grouped,County,220,3,1289,1310.8352800013224
+All priced homes,Provider grouped,County,223,1,1332,1306.9835099418592
+All priced homes,Provider grouped,County,227,5,1315,1313.7770968456887
+All priced homes,Provider grouped,County,229,3,1284,1310.8352800013224
+All priced homes,Provider grouped,County,230,4,1298,1305.774280006664
+All priced homes,Provider grouped,County,233,1,1290,1306.9835099418592
+All priced homes,Provider grouped,County,235,5,1327,1313.7770968456887
+All priced homes,Provider grouped,County,253,2,1309,1315.3371649830785
+All priced homes,Provider grouped,County,257,4,1486,1305.774280006664
+All priced homes,Provider grouped,County,258,1,1332,1306.9835099418592
+All priced homes,Provider grouped,County,261,1,1338,1306.9835099418592
+All priced homes,Provider grouped,County,275,5,1270,1313.7770968456887
+All priced homes,Provider grouped,County,277,3,1305,1310.8352800013224
+All priced homes,Provider grouped,County,280,4,1301,1305.774280006664
+All priced homes,Provider grouped,County,284,4,1460,1305.774280006664
+All priced homes,Provider grouped,County,290,1,1492,1306.9835099418592
+All priced homes,Provider grouped,County,291,2,1279,1315.3371649830785
+All priced homes,Provider grouped,County,292,3,1310,1310.8352800013224
+All priced homes,Provider grouped,County,297,5,1294,1313.7770968456887
+All priced homes,Provider grouped,County,307,3,1292,1310.8352800013224
+All priced homes,Provider grouped,County,4447,1,1295,1306.9835099418592
+All priced homes,Provider grouped,County,4451,4,1292,1305.774280006664
+All priced homes,Provider grouped,County,4452,5,1270,1313.7770968456887
+All priced homes,Provider grouped,County,4455,3,1319,1310.8352800013224
+All priced homes,Provider grouped,County,4456,2,1297,1315.3371649830785
+All priced homes,Provider grouped,County,4921,2,1290,1315.3371649830785
+All priced homes,Provider grouped,County,5314,4,1290,1305.774280006664
+All priced homes,Provider grouped,County,5522,4,1285,1305.774280006664
+All priced homes,Provider grouped,County,558,3,1392,1310.8352800013224
+All priced homes,Provider grouped,County,5681,3,1327,1310.8352800013224
+All priced homes,Provider grouped,County,705,1,1322,1306.9835099418592
+All priced homes,Provider grouped,County,747,1,1280,1306.9835099418592
+All priced homes,Provider grouped,County,8228,5,1305,1313.7770968456887
+All priced homes,Provider grouped,County,8616,1,1304,1306.9835099418592
+All priced homes,Provider grouped,County,8711,3,1296,1310.8352800013224
+All priced homes,Provider grouped,County,9186,5,1285,1313.7770968456887
+All priced homes,Provider grouped,County,311,4,1245,1266.3648360246568
+All priced homes,Provider grouped,County,312,3,1270,1259.6131700061162
+All priced homes,Provider grouped,County,313,4,1279,1266.3648360246568
+All priced homes,Provider grouped,County,314,2,1242,1262.6018280235555
+All priced homes,Provider grouped,County,320,3,1245,1259.6131700061162
+All priced homes,Provider grouped,County,322,3,1270,1259.6131700061162
+All priced homes,Provider grouped,County,323,3,1245,1259.6131700061162
+All priced homes,Provider grouped,County,345,5,1275,1260.083374909811
+All priced homes,Provider grouped,County,346,3,1274,1259.6131700061162
+All priced homes,Provider grouped,County,353,3,1275,1259.6131700061162
+All priced homes,Provider grouped,County,368,4,1234,1266.3648360246568
+All priced homes,Provider grouped,County,392,1,1277,1259.7210290608193
+All priced homes,Provider grouped,County,5791,4,1234,1266.3648360246568
+All priced homes,Provider grouped,County,1,2,1430,1415.5527581635909
+All priced homes,Provider grouped,County,101,2,1388,1415.5527581635909
+All priced homes,Provider grouped,County,102,4,1508,1410.7448288271553
+All priced homes,Provider grouped,County,108,1,1401,1415.8925827857836
+All priced homes,Provider grouped,County,113,4,1502,1410.7448288271553
+All priced homes,Provider grouped,County,115,2,1400,1415.5527581635909
+All priced homes,Provider grouped,County,116,2,1410,1415.5527581635909
+All priced homes,Provider grouped,County,117,5,1449,1415.0267163311223
+All priced homes,Provider grouped,County,125,2,1400,1415.5527581635909
+All priced homes,Provider grouped,County,13,3,1393,1412.9406573920135
+All priced homes,Provider grouped,County,133,2,1419,1415.5527581635909
+All priced homes,Provider grouped,County,134,4,1416,1410.7448288271553
+All priced homes,Provider grouped,County,138,2,1402,1415.5527581635909
+All priced homes,Provider grouped,County,139,1,1342,1415.8925827857836
+All priced homes,Provider grouped,County,14,5,1407,1415.0267163311223
+All priced homes,Provider grouped,County,142,4,1367,1410.7448288271553
+All priced homes,Provider grouped,County,149,4,1479,1410.7448288271553
+All priced homes,Provider grouped,County,150,4,1412,1410.7448288271553
+All priced homes,Provider grouped,County,154,3,1413,1412.9406573920135
+All priced homes,Provider grouped,County,155,1,1380,1415.8925827857836
+All priced homes,Provider grouped,County,157,5,1377,1415.0267163311223
+All priced homes,Provider grouped,County,159,1,1394,1415.8925827857836
+All priced homes,Provider grouped,County,161,2,1385,1415.5527581635909
+All priced homes,Provider grouped,County,17,4,1403,1410.7448288271553
+All priced homes,Provider grouped,County,174,3,1409,1412.9406573920135
+All priced homes,Provider grouped,County,176,5,1384,1415.0267163311223
+All priced homes,Provider grouped,County,178,2,1401,1415.5527581635909
+All priced homes,Provider grouped,County,179,4,1396,1410.7448288271553
+All priced homes,Provider grouped,County,181,1,1445,1415.8925827857836
+All priced homes,Provider grouped,County,182,2,1443,1415.5527581635909
+All priced homes,Provider grouped,County,183,3,1447,1412.9406573920135
+All priced homes,Provider grouped,County,184,3,1405,1412.9406573920135
+All priced homes,Provider grouped,County,22,1,1397,1415.8925827857836
+All priced homes,Provider grouped,County,24,2,1396,1415.5527581635909
+All priced homes,Provider grouped,County,28,2,1392,1415.5527581635909
+All priced homes,Provider grouped,County,38,4,1418,1410.7448288271553
+All priced homes,Provider grouped,County,39,4,1418,1410.7448288271553
+All priced homes,Provider grouped,County,4,5,1422,1415.0267163311223
+All priced homes,Provider grouped,County,4042,2,1474,1415.5527581635909
+All priced homes,Provider grouped,County,41,4,1437,1410.7448288271553
+All priced homes,Provider grouped,County,44,2,1393,1415.5527581635909
+All priced homes,Provider grouped,County,46,2,1478,1415.5527581635909
+All priced homes,Provider grouped,County,47,3,1413,1412.9406573920135
+All priced homes,Provider grouped,County,5,2,1380,1415.5527581635909
+All priced homes,Provider grouped,County,50,5,1377,1415.0267163311223
+All priced homes,Provider grouped,County,5191,2,1414,1415.5527581635909
+All priced homes,Provider grouped,County,5205,2,1396,1415.5527581635909
+All priced homes,Provider grouped,County,5238,2,1438,1415.5527581635909
+All priced homes,Provider grouped,County,53,3,1474,1412.9406573920135
+All priced homes,Provider grouped,County,5307,3,1410,1412.9406573920135
+All priced homes,Provider grouped,County,5466,2,1402,1415.5527581635909
+All priced homes,Provider grouped,County,5506,3,1420,1412.9406573920135
+All priced homes,Provider grouped,County,5590,4,1406,1410.7448288271553
+All priced homes,Provider grouped,County,5756,4,1449,1410.7448288271553
+All priced homes,Provider grouped,County,58,4,1401,1410.7448288271553
+All priced homes,Provider grouped,County,5800,3,1398,1412.9406573920135
+All priced homes,Provider grouped,County,5880,3,1410,1412.9406573920135
+All priced homes,Provider grouped,County,59,1,1433,1415.8925827857836
+All priced homes,Provider grouped,County,64,3,1395,1412.9406573920135
+All priced homes,Provider grouped,County,65,4,1472,1410.7448288271553
+All priced homes,Provider grouped,County,6616,5,1475,1415.0267163311223
+All priced homes,Provider grouped,County,686,3,1420,1412.9406573920135
+All priced homes,Provider grouped,County,692,1,1403,1415.8925827857836
+All priced homes,Provider grouped,County,693,1,1384,1415.8925827857836
+All priced homes,Provider grouped,County,694,1,1449,1415.8925827857836
+All priced homes,Provider grouped,County,7,3,1424,1412.9406573920135
+All priced homes,Provider grouped,County,71,2,1400,1415.5527581635909
+All priced homes,Provider grouped,County,735,4,1398,1410.7448288271553
+All priced homes,Provider grouped,County,744,5,1396,1415.0267163311223
+All priced homes,Provider grouped,County,759,2,1417,1415.5527581635909
+All priced homes,Provider grouped,County,763,4,1417,1410.7448288271553
+All priced homes,Provider grouped,County,7729,1,1424,1415.8925827857836
+All priced homes,Provider grouped,County,7752,1,1400,1415.8925827857836
+All priced homes,Provider grouped,County,7785,1,1455,1415.8925827857836
+All priced homes,Provider grouped,County,78,3,1435,1412.9406573920135
+All priced homes,Provider grouped,County,7910,1,1429,1415.8925827857836
+All priced homes,Provider grouped,County,7976,2,1400,1415.5527581635909
+All priced homes,Provider grouped,County,80,1,1372,1415.8925827857836
+All priced homes,Provider grouped,County,8033,3,1439,1412.9406573920135
+All priced homes,Provider grouped,County,8302,4,1401,1410.7448288271553
+All priced homes,Provider grouped,County,8600,3,1440,1412.9406573920135
+All priced homes,Provider grouped,County,8662,5,1395,1415.0267163311223
+All priced homes,Provider grouped,County,8692,1,1415,1415.8925827857836
+All priced homes,Provider grouped,County,8904,2,1416,1415.5527581635909
+All priced homes,Provider grouped,County,9182,3,1416,1412.9406573920135
+All priced homes,Provider grouped,County,96,4,1423,1410.7448288271553
+All priced homes,Provider grouped,County,309,2,1262,1268.6176568460926
+All priced homes,Provider grouped,County,318,1,1300,1269.976791770024
+All priced homes,Provider grouped,County,328,5,1267,1266.3514727751106
+All priced homes,Provider grouped,County,341,4,1260,1274.2941677017911
+All priced homes,Provider grouped,County,343,4,1210,1274.2941677017911
+All priced homes,Provider grouped,County,344,5,1277,1266.3514727751106
+All priced homes,Provider grouped,County,347,5,1270,1266.3514727751106
+All priced homes,Provider grouped,County,349,5,1288,1266.3514727751106
+All priced homes,Provider grouped,County,351,1,1268,1269.976791770024
+All priced homes,Provider grouped,County,355,4,1252,1274.2941677017911
+All priced homes,Provider grouped,County,359,2,1319,1268.6176568460926
+All priced homes,Provider grouped,County,361,1,1258,1269.976791770024
+All priced homes,Provider grouped,County,362,3,1276,1269.9967365534114
+All priced homes,Provider grouped,County,365,1,1259,1269.976791770024
+All priced homes,Provider grouped,County,367,4,1268,1274.2941677017911
+All priced homes,Provider grouped,County,371,3,1248,1269.9967365534114
+All priced homes,Provider grouped,County,378,5,1272,1266.3514727751106
+All priced homes,Provider grouped,County,381,3,1280,1269.9967365534114
+All priced homes,Provider grouped,County,382,5,1275,1266.3514727751106
+All priced homes,Provider grouped,County,390,5,1304,1266.3514727751106
+All priced homes,Provider grouped,County,391,2,1275,1268.6176568460926
+All priced homes,Provider grouped,County,393,5,1275,1266.3514727751106
+All priced homes,Provider grouped,County,396,2,1258,1268.6176568460926
+All priced homes,Provider grouped,County,398,2,1267,1268.6176568460926
+All priced homes,Provider grouped,County,4583,4,1260,1274.2941677017911
+All priced homes,Provider grouped,County,5164,5,1280,1266.3514727751106
+All priced homes,Provider grouped,County,5242,1,1257,1269.976791770024
+All priced homes,Provider grouped,County,5491,2,1266,1268.6176568460926
+All priced homes,Provider grouped,County,5812,2,1270,1268.6176568460926
+All priced homes,Provider grouped,County,726,4,1252,1274.2941677017911
+All priced homes,Provider grouped,County,764,2,1270,1268.6176568460926
+All priced homes,Provider grouped,County,190,3,1243,1265.127024003262
+All priced homes,Provider grouped,County,194,5,1262,1272.0093193141718
+All priced homes,Provider grouped,County,219,5,1200,1272.0093193141718
+All priced homes,Provider grouped,County,239,3,1275,1265.127024003262
+All priced homes,Provider grouped,County,241,5,1283,1272.0093193141718
+All priced homes,Provider grouped,County,246,5,1274,1272.0093193141718
+All priced homes,Provider grouped,County,264,2,1252,1263.7731260218732
+All priced homes,Provider grouped,County,265,1,1257,1264.3582251860435
+All priced homes,Provider grouped,County,274,5,1252,1272.0093193141718
+All priced homes,Provider grouped,County,287,4,1310,1261.5405225154104
+All priced homes,Provider grouped,County,288,5,1230,1272.0093193141718
+All priced homes,Provider grouped,County,289,2,1275,1263.7731260218732
+All priced homes,Provider grouped,County,5406,2,1275,1263.7731260218732
+All priced homes,Provider grouped,County,571,5,1281,1272.0093193141718
+All priced homes,Provider grouped,County,685,1,1270,1264.3582251860435
+All priced homes,Provider grouped,County,7842,5,1265,1272.0093193141718
+All priced homes,Provider grouped,County,106,2,1350,1342.4902091281235
+All priced homes,Provider grouped,County,112,5,1307,1344.8802421142216
+All priced homes,Provider grouped,County,12,4,1275,1342.7440211909748
+All priced homes,Provider grouped,County,25,1,1358,1344.4651876550363
+All priced homes,Provider grouped,County,27,3,1393,1336.869085003058
+All priced homes,Provider grouped,County,34,5,1349,1344.8802421142216
+All priced homes,Provider grouped,County,40,1,1282,1344.4651876550363
+All priced homes,Provider grouped,County,4593,3,1340,1336.869085003058
+All priced homes,Provider grouped,County,49,2,1326,1342.4902091281235
+All priced homes,Provider grouped,County,5536,5,1388,1344.8802421142216
+All priced homes,Provider grouped,County,56,3,1360,1336.869085003058
+All priced homes,Provider grouped,County,60,5,1326,1344.8802421142216
+All priced homes,Provider grouped,County,66,3,1340,1336.869085003058
+All priced homes,Provider grouped,County,684,3,1380,1336.869085003058
+All priced homes,Provider grouped,County,701,1,1360,1344.4651876550363
+All priced homes,Provider grouped,County,72,2,1362,1342.4902091281235
+All priced homes,Provider grouped,County,77,4,1350,1342.7440211909748
+All priced homes,Provider grouped,County,83,4,1369,1342.7440211909748
+All priced homes,Provider grouped,County,9,5,1315,1344.8802421142216
+All priced homes,Provider grouped,County,91,4,1382,1342.7440211909748
+All priced homes,Provider grouped,County,191,1,1280,1279.339053970093
+All priced homes,Provider grouped,County,207,1,1272,1279.339053970093
+All priced homes,Provider grouped,County,224,2,1281,1273.9748234723177
+All priced homes,Provider grouped,County,232,2,1277,1273.9748234723177
+All priced homes,Provider grouped,County,254,3,1280,1274.9905360048929
+All priced homes,Provider grouped,County,5557,1,1275,1279.339053970093
+All priced homes,Provider grouped,County,707,2,1269,1273.9748234723177
+All priced homes,Provider grouped,County,7180,2,1285,1273.9748234723177
+All priced homes,Provider grouped,County,8695,1,1245,1279.339053970093
+All priced homes,Provider grouped,County,8962,5,1275,1275.5083873827543
+All priced homes,Provider grouped,County,4454,1,1304,1278.4577925968833
+All priced homes,Provider grouped,County,52,3,1270,1290.63512001631
+All priced homes,Provider grouped,County,8667,4,1277,1288.2161200821904
+All priced homes,Provider grouped,County,357,4,1277,1282.3241801232857
+All priced homes,Provider grouped,County,395,5,1274,1284.0419369137726
+All priced homes,Provider grouped,County,404,1,1270,1269.0233361119156
+All priced homes,Provider grouped,County,405,2,1280,1272.3235424614568
+All priced homes,Provider grouped,County,408,5,1266,1268.7552421142216
+All priced homes,Provider grouped,County,409,1,1270,1269.0233361119156
+All priced homes,Provider grouped,County,411,1,1280,1269.0233361119156
+All priced homes,Provider grouped,County,413,2,1262,1272.3235424614568
+All priced homes,Provider grouped,County,416,5,1271,1268.7552421142216
+All priced homes,Provider grouped,County,417,4,1240,1275.9814926445563
+All priced homes,Provider grouped,County,423,1,1289,1269.0233361119156
+All priced homes,Provider grouped,County,427,4,1252,1275.9814926445563
+All priced homes,Provider grouped,County,428,2,1255,1272.3235424614568
+All priced homes,Provider grouped,County,429,1,1265,1269.0233361119156
+All priced homes,Provider grouped,County,433,5,1282,1268.7552421142216
+All priced homes,Provider grouped,County,435,1,1285,1269.0233361119156
+All priced homes,Provider grouped,County,436,4,1230,1275.9814926445563
+All priced homes,Provider grouped,County,4664,5,1280,1268.7552421142216
+All priced homes,Provider grouped,County,4682,3,1284,1270.0952680024463
+All priced homes,Provider grouped,County,5560,3,1280,1270.0952680024463
+All priced homes,Provider grouped,County,5636,5,1292,1268.7552421142216
+All priced homes,Provider grouped,County,5668,5,1275,1268.7552421142216
+All priced homes,Provider grouped,County,9298,2,1267,1272.3235424614568
+All priced homes,Provider grouped,County,109,4,1233,1295.2161200821904
+All priced homes,Provider grouped,County,4632,5,1275,1281.3612912758483
+All priced homes,Provider grouped,County,5394,1,1320,1265.4577925968833
+All priced homes,Provider grouped,County,114,4,1258,1305.8498178051746
+All priced homes,Provider grouped,County,118,1,1325,1293.9104825415216
+All priced homes,Provider grouped,County,121,5,1285,1303.8691248325065
+All priced homes,Provider grouped,County,122,2,1321,1298.869307145136
+All priced homes,Provider grouped,County,130,1,1296,1293.9104825415216
+All priced homes,Provider grouped,County,147,1,1330,1293.9104825415216
+All priced homes,Provider grouped,County,168,3,1306,1300.5450400054367
+All priced homes,Provider grouped,County,4450,5,1302,1303.8691248325065
+All priced homes,Provider grouped,County,8237,5,1297,1303.8691248325065
+All priced homes,Provider grouped,County,308,2,1260,1276.254917620415
+All priced homes,Provider grouped,County,315,5,1250,1271.791705273396
+All priced homes,Provider grouped,County,317,1,1253,1275.3582251860435
+All priced homes,Provider grouped,County,321,2,1254,1276.254917620415
+All priced homes,Provider grouped,County,325,3,1258,1273.2603573365955
+All priced homes,Provider grouped,County,329,4,1268,1271.5463114461836
+All priced homes,Provider grouped,County,334,5,1285,1271.791705273396
+All priced homes,Provider grouped,County,342,2,1265,1276.254917620415
+All priced homes,Provider grouped,County,348,1,1290,1275.3582251860435
+All priced homes,Provider grouped,County,364,4,1285,1271.5463114461836
+All priced homes,Provider grouped,County,376,1,1247,1275.3582251860435
+All priced homes,Provider grouped,County,379,3,1275,1273.2603573365955
+All priced homes,Provider grouped,County,386,3,1291,1273.2603573365955
+All priced homes,Provider grouped,County,389,5,1333,1271.791705273396
+All priced homes,Provider grouped,County,5504,4,1284,1271.5463114461836
+All priced homes,Provider grouped,County,5589,4,1284,1271.5463114461836
+All priced homes,Provider grouped,County,6384,5,1250,1271.791705273396
+All priced homes,Provider grouped,County,131,2,1355,1314.2016974504447
+All priced homes,Provider grouped,County,141,4,1315,1316.6655225154107
+All priced homes,Provider grouped,County,143,2,1318,1314.2016974504447
+All priced homes,Provider grouped,County,144,1,1297,1312.8644481492208
+All priced homes,Provider grouped,County,145,1,1369,1312.8644481492208
+All priced homes,Provider grouped,County,152,4,1309,1316.6655225154107
+All priced homes,Provider grouped,County,162,1,1325,1312.8644481492208
+All priced homes,Provider grouped,County,166,2,1290,1314.2016974504447
+All priced homes,Provider grouped,County,167,4,1320,1316.6655225154107
+All priced homes,Provider grouped,County,171,5,1290,1317.7108161075028
+All priced homes,Provider grouped,County,185,1,1320,1312.8644481492208
+All priced homes,Provider grouped,County,186,2,1321,1314.2016974504447
+All priced homes,Provider grouped,County,4589,1,1287,1312.8644481492208
+All priced homes,Provider grouped,County,5531,1,1332,1312.8644481492208
+All priced homes,Provider grouped,County,700,1,1324,1312.8644481492208
+All priced homes,Provider grouped,County,737,2,1328,1314.2016974504447
+All priced homes,Provider grouped,County,8238,5,1320,1317.7108161075028
+All priced homes,Provider grouped,County,8713,3,1300,1317.2725200027182
+All priced homes,Provider grouped,County,124,1,1293,1283.7911259302166
+All priced homes,Provider grouped,County,148,1,1299,1283.7911259302166
+All priced homes,Provider grouped,County,169,4,1276,1292.4120900616429
+All priced homes,Provider grouped,County,5312,5,1287,1289.7709684568863
+All priced homes,Provider grouped,County,21,2,1281,1263.5647528612446
+All priced homes,Provider grouped,County,4690,1,1273,1264.67467555813
+All priced homes,Provider grouped,County,5665,3,1232,1280.2263400122326
+All priced homes,Provider grouped,County,663,5,1276,1264.616774765509
+All priced homes,Provider grouped,County,733,3,1246,1280.2263400122326
+All priced homes,Provider grouped,County,339,3,1241,1258.1293371498473
+All priced homes,Provider grouped,County,350,5,1257,1257.1806456379243
+All priced homes,Provider grouped,County,372,2,1237,1259.6891091866034
+All priced homes,Provider grouped,County,373,2,1271,1259.6891091866034
+All priced homes,Provider grouped,County,383,3,1278,1258.1293371498473
+All priced homes,Provider grouped,County,384,5,1276,1257.1806456379243
+All priced homes,Provider grouped,County,4457,4,1225,1262.5810450308213
+All priced homes,Provider grouped,County,738,5,1250,1257.1806456379243
+All priced homes,Provider grouped,County,316,2,1288,1332.9706273843706
+All priced homes,Provider grouped,County,330,4,1414,1292.4120900616426
+All priced homes,Provider grouped,County,363,1,1276,1338.4746755581298
+All priced homes,Provider grouped,County,369,4,1405,1292.4120900616426
+All priced homes,Provider grouped,County,397,1,1315,1338.4746755581298
+All priced homes,Provider grouped,County,5421,4,1297,1292.4120900616426
+All priced homes,Provider grouped,County,188,1,1270,1273.289698990484
+All priced homes,Provider grouped,County,204,3,1275,1270.306585003058
+All priced homes,Provider grouped,County,222,4,1295,1272.0824180123284
+All priced homes,Provider grouped,County,250,4,1278,1272.0824180123284
+All priced homes,Provider grouped,County,267,5,1255,1275.593169048679
+All priced homes,Provider grouped,County,271,5,1246,1275.593169048679
+All priced homes,Provider grouped,County,278,5,1300,1275.593169048679
+All priced homes,Provider grouped,County,293,3,1280,1270.306585003058
+All priced homes,Provider grouped,County,302,3,1274,1270.306585003058
+All priced homes,Provider grouped,County,304,3,1286,1270.306585003058
+All priced homes,Provider grouped,County,406,3,1295,1270.306585003058
+All priced homes,Provider grouped,County,407,1,1275,1273.289698990484
+All priced homes,Provider grouped,County,410,2,1251,1275.6283529230102
+All priced homes,Provider grouped,County,419,4,1268,1272.0824180123284
+All priced homes,Provider grouped,County,422,3,1261,1270.306585003058
+All priced homes,Provider grouped,County,434,5,1291,1275.593169048679
+All priced homes,Provider grouped,County,437,2,1245,1275.6283529230102
+All priced homes,Provider grouped,County,4584,3,1278,1270.306585003058
+All priced homes,Provider grouped,County,4587,3,1286,1270.306585003058
+All priced homes,Provider grouped,County,5284,5,1235,1275.593169048679
+All priced homes,Provider grouped,County,5519,5,1268,1275.593169048679
+All priced homes,Provider grouped,County,5573,5,1280,1275.593169048679
+All priced homes,Provider grouped,County,7883,4,1277,1272.0824180123284
+All priced homes,Provider grouped,County,231,3,1279,1295.4842266748217
+All priced homes,Provider grouped,County,242,4,1273,1291.5211943209385
+All priced homes,Provider grouped,County,245,5,1280,1290.583410546792
+All priced homes,Provider grouped,County,255,1,1305,1276.47467555813
+All priced homes,Provider grouped,County,7819,3,1262,1295.4842266748217
+All priced homes,Provider grouped,County,8484,1,1315,1276.47467555813
+All priced homes,Provider grouped,County,8637,1,1309,1276.47467555813
+All priced homes,Provider grouped,County,15,3,1271,1265.817560008155
+All priced homes,Provider grouped,County,5422,4,1272,1255.5810450308213
+All priced homes,Provider grouped,County,5702,5,1243,1264.6806456379243
+All priced homes,Provider grouped,County,68,1,1303,1251.4216722238311
+All priced homes,Provider grouped,County,84,5,1247,1264.6806456379243
+All priced homes,Provider grouped,County,86,3,1250,1265.817560008155
+All priced homes,Provider grouped,County,88,5,1239,1264.6806456379243
+All priced homes,Provider grouped,County,98,3,1201,1265.817560008155
+All priced homes,Provider grouped,County,240,1,1285,1268.037337779065
+All priced homes,Provider grouped,County,243,1,1274,1268.037337779065
+All priced homes,Provider grouped,County,244,2,1279,1272.901980358852
+All priced homes,Provider grouped,County,251,4,1279,1275.220696687214
+All priced homes,Provider grouped,County,252,4,1292,1275.220696687214
+All priced homes,Provider grouped,County,4370,4,1247,1275.220696687214
+All priced homes,Provider grouped,County,5595,5,1212,1279.2202767019674
+All priced homes,Provider grouped,County,5701,3,1248,1277.300412311456
+All priced homes,Provider grouped,County,5826,2,1262,1272.901980358852
+All priced homes,Provider grouped,County,602,2,1305,1272.901980358852
+All priced homes,Provider grouped,County,696,1,1316,1268.037337779065
+All priced homes,Provider grouped,County,7221,1,1286,1268.037337779065
+All priced homes,Provider grouped,County,756,3,1268,1277.300412311456
+All priced homes,Provider grouped,County,9029,1,1277,1268.037337779065
+All priced homes,Provider grouped,County,10,2,1321,1329.9839785732931
+All priced homes,Provider grouped,County,107,3,1395,1330.9927200037637
+All priced homes,Provider grouped,County,16,3,1363,1330.9927200037637
+All priced homes,Provider grouped,County,3,3,1285,1330.9927200037637
+All priced homes,Provider grouped,County,31,5,1295,1340.1302421142216
+All priced homes,Provider grouped,County,33,2,1363,1329.9839785732931
+All priced homes,Provider grouped,County,36,2,1373,1329.9839785732931
+All priced homes,Provider grouped,County,45,3,1355,1330.9927200037637
+All priced homes,Provider grouped,County,5187,4,1315,1337.8616682497982
+All priced homes,Provider grouped,County,5381,5,1322,1340.1302421142216
+All priced homes,Provider grouped,County,54,2,1338,1329.9839785732931
+All priced homes,Provider grouped,County,5774,3,1358,1330.9927200037637
+All priced homes,Provider grouped,County,755,2,1365,1329.9839785732931
+All priced homes,Provider grouped,County,7714,1,1325,1337.8358361119156
+All priced homes,Provider grouped,County,8471,2,1339,1329.9839785732931
+All priced homes,Provider grouped,County,8793,1,1326,1337.8358361119156
+All priced homes,Provider grouped,County,89,2,1330,1329.9839785732931
+All priced homes,Provider grouped,County + log capacity,199,2,1220,1282.500718701819
+All priced homes,Provider grouped,County + log capacity,203,3,1272,1266.6718189654437
+All priced homes,Provider grouped,County + log capacity,238,2,1263,1281.6087355570728
+All priced homes,Provider grouped,County + log capacity,5417,5,1277,1262.9737464535608
+All priced homes,Provider grouped,County + log capacity,5454,5,1289,1261.5549223885876
+All priced homes,Provider grouped,County + log capacity,128,4,1303,1307.5935090854682
+All priced homes,Provider grouped,County + log capacity,135,3,1329,1293.9117397181187
+All priced homes,Provider grouped,County + log capacity,136,4,1228,1302.6058547798793
+All priced homes,Provider grouped,County + log capacity,151,5,1297,1292.2876673711376
+All priced homes,Provider grouped,County + log capacity,160,5,1307,1280.7155476487649
+All priced homes,Provider grouped,County + log capacity,4913,2,1306,1298.6187457192627
+All priced homes,Provider grouped,County + log capacity,5413,4,1292,1305.1742213906
+All priced homes,Provider grouped,County + log capacity,444,4,1270,1268.7950944120596
+All priced homes,Provider grouped,County + log capacity,445,4,1304,1268.5777930216548
+All priced homes,Provider grouped,County + log capacity,447,1,1248,1268.0372521613654
+All priced homes,Provider grouped,County + log capacity,448,4,1244,1257.9808180377327
+All priced homes,Provider grouped,County + log capacity,450,3,1269,1258.7082388679144
+All priced homes,Provider grouped,County + log capacity,451,4,1270,1260.3519645775857
+All priced homes,Provider grouped,County + log capacity,452,1,1262,1265.4590652887475
+All priced homes,Provider grouped,County + log capacity,5393,4,1265,1258.7686775386117
+All priced homes,Provider grouped,County + log capacity,5768,5,1271,1273.3056466869484
+All priced homes,Provider grouped,County + log capacity,683,1,1274,1268.6540320578015
+All priced homes,Provider grouped,County + log capacity,729,3,1230,1279.4730151656338
+All priced homes,Provider grouped,County + log capacity,187,4,1280,1305.5064212498464
+All priced homes,Provider grouped,County + log capacity,189,3,1273,1315.9030135885089
+All priced homes,Provider grouped,County + log capacity,197,2,1282,1316.713437265279
+All priced homes,Provider grouped,County + log capacity,198,4,1321,1308.5352156507458
+All priced homes,Provider grouped,County + log capacity,200,4,1290,1306.9656214173192
+All priced homes,Provider grouped,County + log capacity,202,1,1265,1295.0894602147757
+All priced homes,Provider grouped,County + log capacity,206,2,1300,1318.364581082241
+All priced homes,Provider grouped,County + log capacity,208,3,1330,1300.489653473247
+All priced homes,Provider grouped,County + log capacity,209,5,1301,1316.7365297327456
+All priced homes,Provider grouped,County + log capacity,210,4,1301,1304.8390813046005
+All priced homes,Provider grouped,County + log capacity,216,2,1232,1311.6753517540446
+All priced homes,Provider grouped,County + log capacity,220,3,1289,1299.8879991618155
+All priced homes,Provider grouped,County + log capacity,223,1,1332,1307.8921508186356
+All priced homes,Provider grouped,County + log capacity,227,5,1315,1312.8994534684582
+All priced homes,Provider grouped,County + log capacity,229,3,1284,1307.5333278276698
+All priced homes,Provider grouped,County + log capacity,230,4,1298,1305.5064212498464
+All priced homes,Provider grouped,County + log capacity,233,1,1290,1297.281798848122
+All priced homes,Provider grouped,County + log capacity,235,5,1327,1328.4289274836847
+All priced homes,Provider grouped,County + log capacity,253,2,1309,1327.7087864070243
+All priced homes,Provider grouped,County + log capacity,257,4,1486,1312.5131852915104
+All priced homes,Provider grouped,County + log capacity,258,1,1332,1299.9650044817877
+All priced homes,Provider grouped,County + log capacity,261,1,1338,1309.2622817357474
+All priced homes,Provider grouped,County + log capacity,275,5,1270,1300.566656499919
+All priced homes,Provider grouped,County + log capacity,277,3,1305,1314.7388507506942
+All priced homes,Provider grouped,County + log capacity,280,4,1301,1305.6649104464896
+All priced homes,Provider grouped,County + log capacity,284,4,1460,1311.2905573096837
+All priced homes,Provider grouped,County + log capacity,290,1,1492,1317.3163376591438
+All priced homes,Provider grouped,County + log capacity,291,2,1279,1309.132224792336
+All priced homes,Provider grouped,County + log capacity,292,3,1310,1318.003672439089
+All priced homes,Provider grouped,County + log capacity,297,5,1294,1310.3858431598087
+All priced homes,Provider grouped,County + log capacity,307,3,1292,1311.5397691434116
+All priced homes,Provider grouped,County + log capacity,4447,1,1295,1306.1074638243822
+All priced homes,Provider grouped,County + log capacity,4451,4,1292,1303.0965438357687
+All priced homes,Provider grouped,County + log capacity,4452,5,1270,1313.2288826570473
+All priced homes,Provider grouped,County + log capacity,4455,3,1319,1330.909595777758
+All priced homes,Provider grouped,County + log capacity,4456,2,1297,1310.8704277530314
+All priced homes,Provider grouped,County + log capacity,4921,2,1290,1310.0242079370823
+All priced homes,Provider grouped,County + log capacity,5314,4,1290,1299.9588573756555
+All priced homes,Provider grouped,County + log capacity,5522,4,1285,1303.7205045805622
+All priced homes,Provider grouped,County + log capacity,558,3,1392,1308.2749474550167
+All priced homes,Provider grouped,County + log capacity,5681,3,1327,1297.224831784852
+All priced homes,Provider grouped,County + log capacity,705,1,1322,1313.1753467247402
+All priced homes,Provider grouped,County + log capacity,747,1,1280,1298.244278126141
+All priced homes,Provider grouped,County + log capacity,8228,5,1305,1323.6950742219346
+All priced homes,Provider grouped,County + log capacity,8616,1,1304,1308.2998024577284
+All priced homes,Provider grouped,County + log capacity,8711,3,1296,1323.0266778100909
+All priced homes,Provider grouped,County + log capacity,9186,5,1285,1312.2199305537422
+All priced homes,Provider grouped,County + log capacity,311,4,1245,1264.344702514836
+All priced homes,Provider grouped,County + log capacity,312,3,1270,1260.2599903870662
+All priced homes,Provider grouped,County + log capacity,313,4,1279,1266.4278634271022
+All priced homes,Provider grouped,County + log capacity,314,2,1242,1254.4050928674988
+All priced homes,Provider grouped,County + log capacity,320,3,1245,1260.2599903870662
+All priced homes,Provider grouped,County + log capacity,322,3,1270,1262.717452367002
+All priced homes,Provider grouped,County + log capacity,323,3,1245,1258.1312399925148
+All priced homes,Provider grouped,County + log capacity,345,5,1275,1262.9548974192514
+All priced homes,Provider grouped,County + log capacity,346,3,1274,1263.2768763303511
+All priced homes,Provider grouped,County + log capacity,353,3,1275,1259.9243580518103
+All priced homes,Provider grouped,County + log capacity,368,4,1234,1265.9113330589526
+All priced homes,Provider grouped,County + log capacity,392,1,1277,1258.1450705491525
+All priced homes,Provider grouped,County + log capacity,5791,4,1234,1268.7303104645362
+All priced homes,Provider grouped,County + log capacity,1,2,1430,1397.9134042744245
+All priced homes,Provider grouped,County + log capacity,101,2,1388,1410.52762370863
+All priced homes,Provider grouped,County + log capacity,102,4,1508,1409.4365508963926
+All priced homes,Provider grouped,County + log capacity,108,1,1401,1428.1938146658836
+All priced homes,Provider grouped,County + log capacity,113,4,1502,1411.1706651654747
+All priced homes,Provider grouped,County + log capacity,115,2,1400,1409.9486987137225
+All priced homes,Provider grouped,County + log capacity,116,2,1410,1414.9867842249569
+All priced homes,Provider grouped,County + log capacity,117,5,1449,1414.5673118379425
+All priced homes,Provider grouped,County + log capacity,125,2,1400,1402.1947341968282
+All priced homes,Provider grouped,County + log capacity,13,3,1393,1412.3931223109223
+All priced homes,Provider grouped,County + log capacity,133,2,1419,1422.5222333691024
+All priced homes,Provider grouped,County + log capacity,134,4,1416,1406.6918121662175
+All priced homes,Provider grouped,County + log capacity,138,2,1402,1405.5908133432602
+All priced homes,Provider grouped,County + log capacity,139,1,1342,1424.084425777808
+All priced homes,Provider grouped,County + log capacity,14,5,1407,1427.6344529145285
+All priced homes,Provider grouped,County + log capacity,142,4,1367,1407.3882027527613
+All priced homes,Provider grouped,County + log capacity,149,4,1479,1414.7216832962365
+All priced homes,Provider grouped,County + log capacity,150,4,1412,1410.6333195895184
+All priced homes,Provider grouped,County + log capacity,154,3,1413,1405.5788324474886
+All priced homes,Provider grouped,County + log capacity,155,1,1380,1413.5037275133384
+All priced homes,Provider grouped,County + log capacity,157,5,1377,1417.7332567428366
+All priced homes,Provider grouped,County + log capacity,159,1,1394,1408.8410130803366
+All priced homes,Provider grouped,County + log capacity,161,2,1385,1402.1947341968282
+All priced homes,Provider grouped,County + log capacity,17,4,1403,1407.8734084512157
+All priced homes,Provider grouped,County + log capacity,174,3,1409,1412.1603890231393
+All priced homes,Provider grouped,County + log capacity,176,5,1384,1402.792045767057
+All priced homes,Provider grouped,County + log capacity,178,2,1401,1408.4057367234402
+All priced homes,Provider grouped,County + log capacity,179,4,1396,1411.2739368291693
+All priced homes,Provider grouped,County + log capacity,181,1,1445,1412.6126108881376
+All priced homes,Provider grouped,County + log capacity,182,2,1443,1412.9074060740372
+All priced homes,Provider grouped,County + log capacity,183,3,1447,1423.2105046933038
+All priced homes,Provider grouped,County + log capacity,184,3,1405,1405.9292190152448
+All priced homes,Provider grouped,County + log capacity,22,1,1397,1411.898069707629
+All priced homes,Provider grouped,County + log capacity,24,2,1396,1392.9623779069232
+All priced homes,Provider grouped,County + log capacity,28,2,1392,1402.6594880132193
+All priced homes,Provider grouped,County + log capacity,38,4,1418,1407.7149192545728
+All priced homes,Provider grouped,County + log capacity,39,4,1418,1408.3308725520844
+All priced homes,Provider grouped,County + log capacity,4,5,1422,1412.8492832273719
+All priced homes,Provider grouped,County + log capacity,4042,2,1474,1414.0948010802106
+All priced homes,Provider grouped,County + log capacity,41,4,1437,1411.8670557520184
+All priced homes,Provider grouped,County + log capacity,44,2,1393,1412.659316144006
+All priced homes,Provider grouped,County + log capacity,46,2,1478,1397.2907768183245
+All priced homes,Provider grouped,County + log capacity,47,3,1413,1404.4789517414433
+All priced homes,Provider grouped,County + log capacity,5,2,1380,1404.8050615343554
+All priced homes,Provider grouped,County + log capacity,50,5,1377,1412.0537015292928
+All priced homes,Provider grouped,County + log capacity,5191,2,1414,1421.820098918384
+All priced homes,Provider grouped,County + log capacity,5205,2,1396,1427.7759777610945
+All priced homes,Provider grouped,County + log capacity,5238,2,1438,1404.3976909739145
+All priced homes,Provider grouped,County + log capacity,53,3,1474,1421.4786697490927
+All priced homes,Provider grouped,County + log capacity,5307,3,1410,1416.4508239508248
+All priced homes,Provider grouped,County + log capacity,5466,2,1402,1415.4153192135125
+All priced homes,Provider grouped,County + log capacity,5506,3,1420,1405.9292190152448
+All priced homes,Provider grouped,County + log capacity,5590,4,1406,1412.4192362588026
+All priced homes,Provider grouped,County + log capacity,5756,4,1449,1410.9600360913298
+All priced homes,Provider grouped,County + log capacity,58,4,1401,1406.8716723846117
+All priced homes,Provider grouped,County + log capacity,5800,3,1398,1424.7725031781215
+All priced homes,Provider grouped,County + log capacity,5880,3,1410,1410.428554078928
+All priced homes,Provider grouped,County + log capacity,59,1,1433,1422.6681352197252
+All priced homes,Provider grouped,County + log capacity,64,3,1395,1412.3931223109223
+All priced homes,Provider grouped,County + log capacity,65,4,1472,1415.9554194587365
+All priced homes,Provider grouped,County + log capacity,6616,5,1475,1424.1518730078337
+All priced homes,Provider grouped,County + log capacity,686,3,1420,1406.2720698007388
+All priced homes,Provider grouped,County + log capacity,692,1,1403,1422.5675106015024
+All priced homes,Provider grouped,County + log capacity,693,1,1384,1404.277812912197
+All priced homes,Provider grouped,County + log capacity,694,1,1449,1425.3513408533906
+All priced homes,Provider grouped,County + log capacity,7,3,1424,1416.805104021367
+All priced homes,Provider grouped,County + log capacity,71,2,1400,1406.7034373012957
+All priced homes,Provider grouped,County + log capacity,735,4,1398,1413.4209723254069
+All priced homes,Provider grouped,County + log capacity,744,5,1396,1413.6078474516064
+All priced homes,Provider grouped,County + log capacity,759,2,1417,1425.0653603308108
+All priced homes,Provider grouped,County + log capacity,763,4,1417,1411.9617721579339
+All priced homes,Provider grouped,County + log capacity,7729,1,1424,1427.4766900560585
+All priced homes,Provider grouped,County + log capacity,7752,1,1400,1425.7456244291757
+All priced homes,Provider grouped,County + log capacity,7785,1,1455,1421.838525489279
+All priced homes,Provider grouped,County + log capacity,78,3,1435,1426.5791830817725
+All priced homes,Provider grouped,County + log capacity,7910,1,1429,1419.473168450671
+All priced homes,Provider grouped,County + log capacity,7976,2,1400,1422.5222333691024
+All priced homes,Provider grouped,County + log capacity,80,1,1372,1422.4660368203467
+All priced homes,Provider grouped,County + log capacity,8033,3,1439,1424.1217211018368
+All priced homes,Provider grouped,County + log capacity,8302,4,1401,1413.4209723254069
+All priced homes,Provider grouped,County + log capacity,8600,3,1440,1424.450432687221
+All priced homes,Provider grouped,County + log capacity,8662,5,1395,1419.886647691105
+All priced homes,Provider grouped,County + log capacity,8692,1,1415,1425.3513408533906
+All priced homes,Provider grouped,County + log capacity,8904,2,1416,1421.3840117807138
+All priced homes,Provider grouped,County + log capacity,9182,3,1416,1400.634358994303
+All priced homes,Provider grouped,County + log capacity,96,4,1423,1407.3882027527613
+All priced homes,Provider grouped,County + log capacity,309,2,1262,1271.6196350543403
+All priced homes,Provider grouped,County + log capacity,318,1,1300,1269.4551960559652
+All priced homes,Provider grouped,County + log capacity,328,5,1267,1274.3098643478604
+All priced homes,Provider grouped,County + log capacity,341,4,1260,1277.158338688168
+All priced homes,Provider grouped,County + log capacity,343,4,1210,1272.9376836572665
+All priced homes,Provider grouped,County + log capacity,344,5,1277,1269.1461894595795
+All priced homes,Provider grouped,County + log capacity,347,5,1270,1256.8550430634314
+All priced homes,Provider grouped,County + log capacity,349,5,1288,1274.3098643478604
+All priced homes,Provider grouped,County + log capacity,351,1,1268,1271.0608538616743
+All priced homes,Provider grouped,County + log capacity,355,4,1252,1275.5668471965118
+All priced homes,Provider grouped,County + log capacity,359,2,1319,1257.8474185790305
+All priced homes,Provider grouped,County + log capacity,361,1,1258,1273.74405949534
+All priced homes,Provider grouped,County + log capacity,362,3,1276,1265.7420126154864
+All priced homes,Provider grouped,County + log capacity,365,1,1259,1272.2523795260017
+All priced homes,Provider grouped,County + log capacity,367,4,1268,1276.1828004940237
+All priced homes,Provider grouped,County + log capacity,371,3,1248,1263.8072842557112
+All priced homes,Provider grouped,County + log capacity,378,5,1272,1272.5918357372898
+All priced homes,Provider grouped,County + log capacity,381,3,1280,1259.0487248288196
+All priced homes,Provider grouped,County + log capacity,382,5,1275,1265.9802445546852
+All priced homes,Provider grouped,County + log capacity,390,5,1304,1264.7718258635225
+All priced homes,Provider grouped,County + log capacity,391,2,1275,1253.803469290954
+All priced homes,Provider grouped,County + log capacity,393,5,1275,1262.5345982769752
+All priced homes,Provider grouped,County + log capacity,396,2,1258,1268.1701076879863
+All priced homes,Provider grouped,County + log capacity,398,2,1267,1270.9850310681663
+All priced homes,Provider grouped,County + log capacity,4583,4,1260,1273.7809305272276
+All priced homes,Provider grouped,County + log capacity,5164,5,1280,1267.1052554413532
+All priced homes,Provider grouped,County + log capacity,5242,1,1257,1262.7260558857338
+All priced homes,Provider grouped,County + log capacity,5491,2,1266,1267.7819093196538
+All priced homes,Provider grouped,County + log capacity,5812,2,1270,1281.072846977932
+All priced homes,Provider grouped,County + log capacity,726,4,1252,1277.288478838332
+All priced homes,Provider grouped,County + log capacity,764,2,1270,1273.6662146468373
+All priced homes,Provider grouped,County + log capacity,190,3,1243,1263.0591224249197
+All priced homes,Provider grouped,County + log capacity,194,5,1262,1276.5539179186148
+All priced homes,Provider grouped,County + log capacity,219,5,1200,1279.1476570874036
+All priced homes,Provider grouped,County + log capacity,239,3,1275,1256.1916039742105
+All priced homes,Provider grouped,County + log capacity,241,5,1283,1265.2513281381528
+All priced homes,Provider grouped,County + log capacity,246,5,1274,1273.4681018738597
+All priced homes,Provider grouped,County + log capacity,264,2,1252,1270.6046830491348
+All priced homes,Provider grouped,County + log capacity,265,1,1257,1269.8605106606874
+All priced homes,Provider grouped,County + log capacity,274,5,1252,1264.0861046781447
+All priced homes,Provider grouped,County + log capacity,287,4,1310,1262.3231801370914
+All priced homes,Provider grouped,County + log capacity,288,5,1230,1274.1337530818903
+All priced homes,Provider grouped,County + log capacity,289,2,1275,1254.09658904392
+All priced homes,Provider grouped,County + log capacity,5406,2,1275,1259.1693699821433
+All priced homes,Provider grouped,County + log capacity,571,5,1281,1262.1655120933979
+All priced homes,Provider grouped,County + log capacity,685,1,1270,1267.8848368388058
+All priced homes,Provider grouped,County + log capacity,7842,5,1265,1280.3046095909954
+All priced homes,Provider grouped,County + log capacity,106,2,1350,1340.5094046215092
+All priced homes,Provider grouped,County + log capacity,112,5,1307,1338.076590677621
+All priced homes,Provider grouped,County + log capacity,12,4,1275,1340.5189884828594
+All priced homes,Provider grouped,County + log capacity,25,1,1358,1343.71353688819
+All priced homes,Provider grouped,County + log capacity,27,3,1393,1343.1236828009894
+All priced homes,Provider grouped,County + log capacity,34,5,1349,1342.5931898566243
+All priced homes,Provider grouped,County + log capacity,40,1,1282,1346.3967425218557
+All priced homes,Provider grouped,County + log capacity,4593,3,1340,1342.390590559285
+All priced homes,Provider grouped,County + log capacity,49,2,1326,1336.125921620694
+All priced homes,Provider grouped,County + log capacity,5536,5,1388,1335.0340845925248
+All priced homes,Provider grouped,County + log capacity,56,3,1360,1337.6157138872854
+All priced homes,Provider grouped,County + log capacity,60,5,1326,1336.2425032836875
+All priced homes,Provider grouped,County + log capacity,66,3,1340,1339.2953656520763
+All priced homes,Provider grouped,County + log capacity,684,3,1380,1348.0203184175925
+All priced homes,Provider grouped,County + log capacity,701,1,1360,1347.3221660796194
+All priced homes,Provider grouped,County + log capacity,72,2,1362,1337.1682262560346
+All priced homes,Provider grouped,County + log capacity,77,4,1350,1337.927577102718
+All priced homes,Provider grouped,County + log capacity,83,4,1369,1349.535556321051
+All priced homes,Provider grouped,County + log capacity,9,5,1315,1340.6396887032397
+All priced homes,Provider grouped,County + log capacity,91,4,1382,1350.9022301066718
+All priced homes,Provider grouped,County + log capacity,191,1,1280,1278.486728793578
+All priced homes,Provider grouped,County + log capacity,207,1,1272,1280.3121310808178
+All priced homes,Provider grouped,County + log capacity,224,2,1281,1274.4658755258208
+All priced homes,Provider grouped,County + log capacity,232,2,1277,1269.2415649854415
+All priced homes,Provider grouped,County + log capacity,254,3,1280,1277.982970288378
+All priced homes,Provider grouped,County + log capacity,5557,1,1275,1275.6047653833384
+All priced homes,Provider grouped,County + log capacity,707,2,1269,1267.8940678282156
+All priced homes,Provider grouped,County + log capacity,7180,2,1285,1278.611977892309
+All priced homes,Provider grouped,County + log capacity,8695,1,1245,1283.1635152840158
+All priced homes,Provider grouped,County + log capacity,8962,5,1275,1279.0158331368734
+All priced homes,Provider grouped,County + log capacity,4454,1,1304,1276.7884908736787
+All priced homes,Provider grouped,County + log capacity,52,3,1270,1293.4417307439605
+All priced homes,Provider grouped,County + log capacity,8667,4,1277,1289.4268892097646
+All priced homes,Provider grouped,County + log capacity,357,4,1277,1280.2517615814945
+All priced homes,Provider grouped,County + log capacity,395,5,1274,1288.668374601721
+All priced homes,Provider grouped,County + log capacity,404,1,1270,1276.6690317046834
+All priced homes,Provider grouped,County + log capacity,405,2,1280,1265.053328654515
+All priced homes,Provider grouped,County + log capacity,408,5,1266,1271.9216512710007
+All priced homes,Provider grouped,County + log capacity,409,1,1270,1273.94998529424
+All priced homes,Provider grouped,County + log capacity,411,1,1280,1270.4307585347715
+All priced homes,Provider grouped,County + log capacity,413,2,1262,1265.5609893077124
+All priced homes,Provider grouped,County + log capacity,416,5,1271,1257.9399046815572
+All priced homes,Provider grouped,County + log capacity,417,4,1240,1277.0796563411443
+All priced homes,Provider grouped,County + log capacity,423,1,1289,1273.2097779957546
+All priced homes,Provider grouped,County + log capacity,427,4,1252,1275.0078720376027
+All priced homes,Provider grouped,County + log capacity,428,2,1255,1275.6966014926845
+All priced homes,Provider grouped,County + log capacity,429,1,1265,1274.9812945925178
+All priced homes,Provider grouped,County + log capacity,433,5,1282,1269.5311071331125
+All priced homes,Provider grouped,County + log capacity,435,1,1285,1271.7934874376715
+All priced homes,Provider grouped,County + log capacity,436,4,1230,1274.6355517492127
+All priced homes,Provider grouped,County + log capacity,4664,5,1280,1275.0585039465448
+All priced homes,Provider grouped,County + log capacity,4682,3,1284,1274.5550551512813
+All priced homes,Provider grouped,County + log capacity,5560,3,1280,1266.8151152458447
+All priced homes,Provider grouped,County + log capacity,5636,5,1292,1250.73529577505
+All priced homes,Provider grouped,County + log capacity,5668,5,1275,1252.4533243856206
+All priced homes,Provider grouped,County + log capacity,9298,2,1267,1280.1699902716034
+All priced homes,Provider grouped,County + log capacity,109,4,1233,1291.8729219902548
+All priced homes,Provider grouped,County + log capacity,4632,5,1275,1279.11912627849
+All priced homes,Provider grouped,County + log capacity,5394,1,1320,1274.5025942658112
+All priced homes,Provider grouped,County + log capacity,114,4,1258,1298.9595937681909
+All priced homes,Provider grouped,County + log capacity,118,1,1325,1295.27734356768
+All priced homes,Provider grouped,County + log capacity,121,5,1285,1299.2595639862216
+All priced homes,Provider grouped,County + log capacity,122,2,1321,1299.9437426965835
+All priced homes,Provider grouped,County + log capacity,130,1,1296,1298.2574672920643
+All priced homes,Provider grouped,County + log capacity,147,1,1330,1303.3269604686768
+All priced homes,Provider grouped,County + log capacity,168,3,1306,1286.8557300428097
+All priced homes,Provider grouped,County + log capacity,4450,5,1302,1312.9695344473432
+All priced homes,Provider grouped,County + log capacity,8237,5,1297,1316.9247906444612
+All priced homes,Provider grouped,County + log capacity,308,2,1260,1278.6150024971253
+All priced homes,Provider grouped,County + log capacity,315,5,1250,1268.3833378762988
+All priced homes,Provider grouped,County + log capacity,317,1,1253,1275.3840311092704
+All priced homes,Provider grouped,County + log capacity,321,2,1254,1276.3691388832326
+All priced homes,Provider grouped,County + log capacity,325,3,1258,1273.673452618843
+All priced homes,Provider grouped,County + log capacity,329,4,1268,1274.6360889570785
+All priced homes,Provider grouped,County + log capacity,334,5,1285,1274.0394814702784
+All priced homes,Provider grouped,County + log capacity,342,2,1265,1281.1152226220274
+All priced homes,Provider grouped,County + log capacity,348,1,1290,1271.1957922881181
+All priced homes,Provider grouped,County + log capacity,364,4,1285,1272.3722128034067
+All priced homes,Provider grouped,County + log capacity,376,1,1247,1270.1495177462077
+All priced homes,Provider grouped,County + log capacity,379,3,1275,1266.5587672468807
+All priced homes,Provider grouped,County + log capacity,386,3,1291,1280.1373559145204
+All priced homes,Provider grouped,County + log capacity,389,5,1333,1260.956267262548
+All priced homes,Provider grouped,County + log capacity,5504,4,1284,1273.3829974214443
+All priced homes,Provider grouped,County + log capacity,5589,4,1284,1271.731595563756
+All priced homes,Provider grouped,County + log capacity,6384,5,1250,1273.7558884052662
+All priced homes,Provider grouped,County + log capacity,131,2,1355,1321.7191683525205
+All priced homes,Provider grouped,County + log capacity,141,4,1315,1309.309479554069
+All priced homes,Provider grouped,County + log capacity,143,2,1318,1318.6741724418878
+All priced homes,Provider grouped,County + log capacity,144,1,1297,1309.9168704024864
+All priced homes,Provider grouped,County + log capacity,145,1,1369,1326.725480292318
+All priced homes,Provider grouped,County + log capacity,152,4,1309,1316.3162435957329
+All priced homes,Provider grouped,County + log capacity,162,1,1325,1304.7583819820713
+All priced homes,Provider grouped,County + log capacity,166,2,1290,1304.8436945659944
+All priced homes,Provider grouped,County + log capacity,167,4,1320,1312.2278798890147
+All priced homes,Provider grouped,County + log capacity,171,5,1290,1303.2381632888248
+All priced homes,Provider grouped,County + log capacity,185,1,1320,1314.121547465032
+All priced homes,Provider grouped,County + log capacity,186,2,1321,1306.7868401553962
+All priced homes,Provider grouped,County + log capacity,4589,1,1287,1315.9469497522718
+All priced homes,Provider grouped,County + log capacity,5531,1,1332,1309.6339262490833
+All priced homes,Provider grouped,County + log capacity,700,1,1324,1320.1848974979018
+All priced homes,Provider grouped,County + log capacity,737,2,1328,1326.7864964169698
+All priced homes,Provider grouped,County + log capacity,8238,5,1320,1329.6172859024066
+All priced homes,Provider grouped,County + log capacity,8713,3,1300,1325.8085435357632
+All priced homes,Provider grouped,County + log capacity,124,1,1293,1293.7528696907164
+All priced homes,Provider grouped,County + log capacity,148,1,1299,1281.7322379454022
+All priced homes,Provider grouped,County + log capacity,169,4,1276,1285.9617919539592
+All priced homes,Provider grouped,County + log capacity,5312,5,1287,1297.1415758435735
+All priced homes,Provider grouped,County + log capacity,21,2,1281,1261.8586709264036
+All priced homes,Provider grouped,County + log capacity,4690,1,1273,1264.0193029459483
+All priced homes,Provider grouped,County + log capacity,5665,3,1232,1277.640686622821
+All priced homes,Provider grouped,County + log capacity,663,5,1276,1259.7247006950772
+All priced homes,Provider grouped,County + log capacity,733,3,1246,1295.0436114312176
+All priced homes,Provider grouped,County + log capacity,339,3,1241,1246.3538884765521
+All priced homes,Provider grouped,County + log capacity,350,5,1257,1258.874812215607
+All priced homes,Provider grouped,County + log capacity,372,2,1237,1260.5178946598855
+All priced homes,Provider grouped,County + log capacity,373,2,1271,1262.1970719066223
+All priced homes,Provider grouped,County + log capacity,383,3,1278,1249.2604490862486
+All priced homes,Provider grouped,County + log capacity,384,5,1276,1258.3026064795015
+All priced homes,Provider grouped,County + log capacity,4457,4,1225,1267.6788645860627
+All priced homes,Provider grouped,County + log capacity,738,5,1250,1260.2231990642483
+All priced homes,Provider grouped,County + log capacity,316,2,1288,1329.629365462508
+All priced homes,Provider grouped,County + log capacity,330,4,1414,1288.5532988924683
+All priced homes,Provider grouped,County + log capacity,363,1,1276,1341.1535391169332
+All priced homes,Provider grouped,County + log capacity,369,4,1405,1294.8180685610096
+All priced homes,Provider grouped,County + log capacity,397,1,1315,1337.8228916789126
+All priced homes,Provider grouped,County + log capacity,5421,4,1297,1293.173809446223
+All priced homes,Provider grouped,County + log capacity,188,1,1270,1276.430707057964
+All priced homes,Provider grouped,County + log capacity,204,3,1275,1262.50939832284
+All priced homes,Provider grouped,County + log capacity,222,4,1295,1271.3342022740412
+All priced homes,Provider grouped,County + log capacity,250,4,1278,1279.6265048784073
+All priced homes,Provider grouped,County + log capacity,267,5,1255,1278.2509910279061
+All priced homes,Provider grouped,County + log capacity,271,5,1246,1281.822920145693
+All priced homes,Provider grouped,County + log capacity,278,5,1300,1269.6979952727577
+All priced homes,Provider grouped,County + log capacity,293,3,1280,1261.8841437893657
+All priced homes,Provider grouped,County + log capacity,302,3,1274,1263.1110526342716
+All priced homes,Provider grouped,County + log capacity,304,3,1286,1270.5298489331408
+All priced homes,Provider grouped,County + log capacity,406,3,1295,1267.6972650087587
+All priced homes,Provider grouped,County + log capacity,407,1,1275,1276.9023193356634
+All priced homes,Provider grouped,County + log capacity,410,2,1251,1270.6814342736225
+All priced homes,Provider grouped,County + log capacity,419,4,1268,1278.5208265340991
+All priced homes,Provider grouped,County + log capacity,422,3,1261,1272.9342594595303
+All priced homes,Provider grouped,County + log capacity,434,5,1291,1267.9173708454894
+All priced homes,Provider grouped,County + log capacity,437,2,1245,1270.6814342736225
+All priced homes,Provider grouped,County + log capacity,4584,3,1278,1274.4536893020224
+All priced homes,Provider grouped,County + log capacity,4587,3,1286,1261.8841437893657
+All priced homes,Provider grouped,County + log capacity,5284,5,1235,1267.9173708454894
+All priced homes,Provider grouped,County + log capacity,5519,5,1268,1276.1210734861272
+All priced homes,Provider grouped,County + log capacity,5573,5,1280,1266.6121792280026
+All priced homes,Provider grouped,County + log capacity,7883,4,1277,1275.4225659807594
+All priced homes,Provider grouped,County + log capacity,231,3,1279,1303.7767002727942
+All priced homes,Provider grouped,County + log capacity,242,4,1273,1292.2331346868027
+All priced homes,Provider grouped,County + log capacity,245,5,1280,1282.7844104249425
+All priced homes,Provider grouped,County + log capacity,255,1,1305,1274.8280873014262
+All priced homes,Provider grouped,County + log capacity,7819,3,1262,1294.2959110338315
+All priced homes,Provider grouped,County + log capacity,8484,1,1315,1280.0979151442232
+All priced homes,Provider grouped,County + log capacity,8637,1,1309,1279.7036315684381
+All priced homes,Provider grouped,County + log capacity,15,3,1271,1271.7282256903068
+All priced homes,Provider grouped,County + log capacity,5422,4,1272,1255.1769023506065
+All priced homes,Provider grouped,County + log capacity,5702,5,1243,1276.9395619243417
+All priced homes,Provider grouped,County + log capacity,68,1,1303,1248.881483101926
+All priced homes,Provider grouped,County + log capacity,84,5,1247,1265.4993663464525
+All priced homes,Provider grouped,County + log capacity,86,3,1250,1257.5575603306759
+All priced homes,Provider grouped,County + log capacity,88,5,1239,1262.8004564275743
+All priced homes,Provider grouped,County + log capacity,98,3,1201,1264.4466074100162
+All priced homes,Provider grouped,County + log capacity,240,1,1285,1272.8210388107382
+All priced homes,Provider grouped,County + log capacity,243,1,1274,1265.6445811618137
+All priced homes,Provider grouped,County + log capacity,244,2,1279,1273.1670563325274
+All priced homes,Provider grouped,County + log capacity,251,4,1279,1273.0363050114738
+All priced homes,Provider grouped,County + log capacity,252,4,1292,1274.4693073064868
+All priced homes,Provider grouped,County + log capacity,4370,4,1247,1271.0918991455464
+All priced homes,Provider grouped,County + log capacity,5595,5,1212,1278.337187460955
+All priced homes,Provider grouped,County + log capacity,5701,3,1248,1284.106763268706
+All priced homes,Provider grouped,County + log capacity,5826,2,1262,1279.4277506721685
+All priced homes,Provider grouped,County + log capacity,602,2,1305,1262.9543520939428
+All priced homes,Provider grouped,County + log capacity,696,1,1316,1268.8558967732322
+All priced homes,Provider grouped,County + log capacity,7221,1,1286,1268.474132273754
+All priced homes,Provider grouped,County + log capacity,756,3,1268,1279.8037190331745
+All priced homes,Provider grouped,County + log capacity,9029,1,1277,1273.731441040244
+All priced homes,Provider grouped,County + log capacity,10,2,1321,1324.5304488811912
+All priced homes,Provider grouped,County + log capacity,107,3,1395,1328.5622345070733
+All priced homes,Provider grouped,County + log capacity,16,3,1363,1333.9746393708022
+All priced homes,Provider grouped,County + log capacity,3,3,1285,1329.5486489186137
+All priced homes,Provider grouped,County + log capacity,31,5,1295,1329.259499550893
+All priced homes,Provider grouped,County + log capacity,33,2,1363,1327.345372261371
+All priced homes,Provider grouped,County + log capacity,36,2,1373,1327.9799762475452
+All priced homes,Provider grouped,County + log capacity,45,3,1355,1331.9147527856142
+All priced homes,Provider grouped,County + log capacity,5187,4,1315,1333.5366697025459
+All priced homes,Provider grouped,County + log capacity,5381,5,1322,1341.6144667338951
+All priced homes,Provider grouped,County + log capacity,54,2,1338,1321.5991235511501
+All priced homes,Provider grouped,County + log capacity,5774,3,1358,1340.4385426664799
+All priced homes,Provider grouped,County + log capacity,755,2,1365,1337.2567408265868
+All priced homes,Provider grouped,County + log capacity,7714,1,1325,1344.2047512080424
+All priced homes,Provider grouped,County + log capacity,8471,2,1339,1336.7157851682387
+All priced homes,Provider grouped,County + log capacity,8793,1,1326,1347.6977344529912
+All priced homes,Provider grouped,County + log capacity,89,2,1330,1318.0319461795696
+Source-checked Dublin v2 subset,Home shuffled,County,1,2,1430,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,101,2,1388,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,102,2,1508,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,108,1,1401,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,116,4,1410,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,117,1,1449,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,13,5,1393,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,133,1,1419,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,138,5,1402,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,139,1,1342,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,14,2,1407,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,142,1,1367,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,154,3,1413,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,155,4,1380,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,157,3,1377,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,161,3,1385,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,17,2,1403,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,176,5,1384,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,178,4,1401,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,179,2,1396,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,181,3,1445,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,182,5,1443,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,183,1,1447,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,184,1,1405,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,22,5,1397,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,28,3,1392,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,39,5,1418,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,41,4,1437,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,44,4,1393,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,46,2,1478,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,5,4,1380,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,50,3,1377,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,5191,4,1414,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,5205,4,1396,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,5238,1,1438,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,53,2,1474,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,5466,5,1402,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,5590,4,1406,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,58,3,1401,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,5800,2,1398,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,5880,1,1410,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,65,4,1472,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,6616,4,1475,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,692,3,1403,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,693,5,1384,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,694,2,1449,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,71,3,1400,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,735,4,1398,1413.7843137254902
+Source-checked Dublin v2 subset,Home shuffled,County,759,1,1417,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,763,5,1417,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,7729,3,1424,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,7752,2,1400,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,7785,5,1455,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,78,5,1435,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,7910,3,1429,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,80,3,1372,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County,8033,1,1439,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,8302,2,1401,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,8600,1,1440,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,8662,1,1395,1413.92
+Source-checked Dublin v2 subset,Home shuffled,County,8692,2,1415,1410.36
+Source-checked Dublin v2 subset,Home shuffled,County,8904,5,1416,1414.0980392156862
+Source-checked Dublin v2 subset,Home shuffled,County,96,3,1423,1416.48
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,1,2,1430,1392.552306651333
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,101,2,1388,1405.6229571345855
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,102,2,1508,1406.7630207510529
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,108,1,1401,1422.0497043992107
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,116,4,1410,1413.7781859887286
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,117,1,1449,1413.4076649109822
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,13,5,1393,1413.8925972295644
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,133,1,1419,1418.0725568028172
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,138,5,1402,1413.2953861520755
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,139,1,1342,1419.0919421370118
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,14,2,1407,1422.5365950327464
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,142,1,1367,1410.142269315101
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,154,3,1413,1414.8663291290236
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,155,4,1380,1413.3420065983692
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,157,3,1377,1416.5808271976039
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,161,3,1385,1414.1888358705876
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,17,2,1403,1403.4242921047723
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,176,5,1384,1412.9988183565981
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,178,4,1401,1413.208422478217
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,179,2,1396,1410.687508290216
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,181,3,1445,1415.2560911036385
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,182,5,1443,1413.855451827241
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,183,1,1447,1419.1558152839557
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,184,1,1405,1409.7739255504348
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,22,5,1397,1413.4603401931151
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,28,3,1392,1414.2647789008374
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,39,5,1418,1413.583043688497
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,41,4,1437,1413.9211361037817
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,44,4,1393,1413.5766821424031
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,46,2,1478,1391.9071501355133
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5,4,1380,1412.8966889228109
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,50,3,1377,1415.6418622569552
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5191,4,1414,1414.3697898887551
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5205,4,1396,1414.8854285369828
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5238,1,1438,1408.564317786958
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,53,2,1474,1418.334140089701
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5466,5,1402,1414.0474258945974
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5590,4,1406,1414.0196792502627
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,58,3,1401,1414.8663291290236
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5800,2,1398,1421.8661318969348
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,5880,1,1410,1412.2165832454716
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,65,4,1472,1414.6507529929488
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,6616,4,1475,1414.5002656091942
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,692,3,1403,1417.4878888156777
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,693,5,1384,1412.6600404752987
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,694,2,1449,1421.8661318969348
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,71,3,1400,1414.9255798502481
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,735,4,1398,1414.1984509068745
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,759,1,1417,1419.4066958101566
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,763,5,1417,1414.155958518194
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,7729,3,1424,1418.5884820702697
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,7752,2,1400,1422.426661414761
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,7785,5,1455,1414.5043134043315
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,78,5,1435,1415.0163560829235
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,7910,3,1429,1416.794165530528
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,80,3,1372,1417.4651393195365
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8033,1,1439,1419.65050833096
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8302,2,1401,1415.2733788473024
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8600,1,1440,1419.8289635631493
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8662,1,1395,1416.2309877746832
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8692,2,1415,1421.8661318969348
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,8904,5,1416,1414.5043134043315
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity,96,3,1423,1415.040312028769
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,1,2,1430,1394.7626390223654
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,101,2,1388,1405.6786729761996
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,102,2,1508,1406.6308041010304
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,108,1,1401,1417.40721545934
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,116,4,1410,1413.285941798033
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,117,1,1449,1413.9126468121026
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,13,5,1393,1413.4198281584827
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,133,1,1419,1415.7989822043633
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,138,5,1402,1413.397087331044
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,139,1,1342,1416.2111895349572
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,14,2,1407,1423.8328492716778
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,142,1,1367,1412.5922236543818
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,154,3,1413,1414.934101944337
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,155,4,1380,1412.8955930024892
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,157,3,1377,1416.303191570049
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,161,3,1385,1414.2521064013474
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,17,2,1403,1407.8710922064843
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,176,5,1384,1413.0957869092329
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,178,4,1401,1412.7760449413986
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,179,2,1396,1409.9083639503888
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,181,3,1445,1414.9696519363008
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,182,5,1443,1413.3820899901477
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,183,1,1447,1415.3287496897017
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,184,1,1405,1412.443277034413
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,22,5,1397,1413.5646737072543
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,28,3,1392,1414.3285541113528
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,39,5,1418,1413.689335303962
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,41,4,1437,1413.413871742609
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,44,4,1393,1413.105610527347
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,46,2,1478,1394.2238325994372
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5,4,1380,1414.782274335287
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,50,3,1377,1415.714788881224
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5191,4,1414,1413.8153842130541
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5205,4,1396,1414.276843258851
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5238,1,1438,1411.954149743169
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,53,2,1474,1416.2944954181837
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5466,5,1402,1414.16112811732
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5590,4,1406,1415.787268911869
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,58,3,1401,1414.934101944337
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5800,2,1398,1423.2729078697798
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,5880,1,1410,1413.4310108915236
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,65,4,1472,1414.0668257339933
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,6616,4,1475,1413.9321504827285
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,692,3,1403,1417.5730832179015
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,693,5,1384,1412.7516028134123
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,694,2,1449,1423.2729078697798
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,71,3,1400,1414.993746416501
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,735,4,1398,1413.6620482997007
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,759,1,1417,1415.4301978747349
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,763,5,1417,1414.2713927035923
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,7729,3,1424,1418.68099047001
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,7752,2,1400,1419.712389714905
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,7785,5,1455,1414.6253066340118
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,78,5,1435,1414.5615199459749
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,7910,3,1429,1416.8747497914812
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,80,3,1372,1417.5501825398794
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8033,1,1439,1416.4370561155758
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8302,2,1401,1413.7382818854744
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8600,1,1440,1416.5092177922488
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8662,1,1395,1415.0543096769804
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8692,2,1415,1419.2442600486304
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,8904,5,1416,1414.6253066340118
+Source-checked Dublin v2 subset,Home shuffled,County + log capacity + documented garden,96,3,1423,1415.1092410482397
+Source-checked Dublin v2 subset,Provider grouped,County,1,3,1430,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,101,2,1388,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,102,2,1508,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,108,4,1401,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,116,1,1410,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,117,4,1449,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,13,2,1393,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,133,1,1419,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,138,4,1402,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,139,3,1342,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,14,5,1407,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,142,3,1367,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,154,3,1413,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,155,2,1380,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,157,5,1377,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,161,5,1385,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,17,4,1403,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,176,3,1384,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,178,4,1401,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,179,3,1396,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,181,2,1445,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,182,5,1443,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,183,5,1447,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,184,4,1405,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,22,2,1397,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,28,4,1392,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,39,3,1418,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,41,2,1437,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,44,1,1393,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,46,4,1478,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,5,1,1380,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,50,5,1377,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,5191,1,1414,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,5205,2,1396,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,5238,1,1438,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,53,1,1474,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,5466,1,1402,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,5590,5,1406,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,58,1,1401,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,5800,4,1398,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,5880,3,1410,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,65,1,1472,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,6616,3,1475,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,692,3,1403,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,693,2,1384,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,694,5,1449,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,71,2,1400,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,735,1,1398,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,759,3,1417,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,763,5,1417,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,7729,1,1424,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,7752,1,1400,1412.8
+Source-checked Dublin v2 subset,Provider grouped,County,7785,4,1455,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,78,3,1435,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,7910,3,1429,1414.92
+Source-checked Dublin v2 subset,Provider grouped,County,80,5,1372,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,8033,4,1439,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,8302,2,1401,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,8600,5,1440,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,8662,4,1395,1412.686274509804
+Source-checked Dublin v2 subset,Provider grouped,County,8692,2,1415,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County,8904,5,1416,1414.2941176470588
+Source-checked Dublin v2 subset,Provider grouped,County,96,2,1423,1413.96
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,1,3,1430,1407.2831849684283
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,101,2,1388,1410.7257007307182
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,102,2,1508,1411.3593971376656
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,108,4,1401,1424.7007089687606
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,116,1,1410,1412.8319371009366
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,117,4,1449,1410.8585370041524
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,13,2,1393,1412.3758381439175
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,133,1,1419,1415.3043210241594
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,138,4,1402,1404.1033760782714
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,139,3,1342,1418.7475402644463
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,14,5,1407,1418.9218835935446
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,142,3,1367,1411.3816214044061
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,154,3,1413,1410.9219003235962
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,155,2,1380,1410.392265658393
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,157,5,1377,1415.1279195268535
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,161,5,1385,1409.5838317477564
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,17,4,1403,1406.468683595759
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,176,3,1384,1408.9252521187336
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,178,4,1401,1406.468683595759
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,179,3,1396,1414.8399928371364
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,181,2,1445,1409.6880973002958
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,182,5,1443,1413.6410956550294
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,183,5,1447,1418.0646173678094
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,184,4,1405,1405.0382852948449
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,22,2,1397,1409.1234604439717
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,28,4,1392,1401.6402590044047
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,39,3,1418,1412.220614047848
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,41,2,1437,1414.2449645131119
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,44,1,1393,1412.0682938787368
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,46,4,1478,1397.129069450218
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5,1,1380,1409.491309752862
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,50,5,1377,1412.9516139551508
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5191,1,1414,1415.073950425846
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5205,2,1396,1420.659986228093
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5238,1,1438,1409.3576513066084
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,53,1,1474,1415.3937923511958
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5466,1,1402,1412.972539604646
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5590,5,1406,1415.485059302105
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,58,1,1401,1409.9951981633146
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5800,4,1398,1421.4237538946597
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,5880,3,1410,1413.08886013876
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,65,1,1472,1416.1387220126828
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,6616,3,1475,1418.2560899354164
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,692,3,1403,1417.8489388677328
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,693,2,1384,1403.101865105977
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,694,5,1449,1418.676822967475
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,71,2,1400,1408.5231392891985
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,735,1,1398,1414.4246236035663
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,759,3,1417,1419.006594429154
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,763,5,1417,1415.1279195268535
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,7729,1,1424,1417.4689044168163
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,7752,1,1400,1416.689660749002
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,7785,4,1455,1417.3739934074347
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,78,3,1435,1420.3053081534053
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,7910,3,1429,1416.0158896491087
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,80,5,1372,1417.1775523882861
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8033,4,1439,1420.8578562950634
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8302,2,1401,1416.0898203083827
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8600,5,1440,1418.5505915018668
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8662,4,1395,1415.3807242313908
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8692,2,1415,1419.754356093139
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,8904,5,1416,1416.8514830153526
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity,96,2,1423,1408.9275375332143
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,1,3,1430,1407.6403148137897
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,101,2,1388,1411.448080401182
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,102,2,1508,1411.9872492078118
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,108,4,1401,1423.3717259157283
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,116,1,1410,1412.2762796268264
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,117,4,1449,1410.0791871192816
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,13,2,1393,1411.7615063923354
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,133,1,1419,1413.0243576420664
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,138,4,1402,1403.5922543667411
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,139,3,1342,1419.2980673848758
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,14,5,1407,1414.4020093458794
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,142,3,1367,1411.8078895849196
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,154,3,1413,1411.3404132660676
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,155,2,1380,1411.1643833688756
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,157,5,1377,1413.1011673831458
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,161,5,1385,1412.9143646308776
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,17,4,1403,1409.8134723177623
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,176,3,1384,1409.3100827204087
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,178,4,1401,1405.863642269024
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,179,3,1396,1415.3246018134464
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,181,2,1445,1409.474692064057
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,182,5,1443,1412.5913779255588
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,183,5,1447,1414.1080772315875
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,184,4,1405,1404.4900410048663
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,22,2,1397,1410.0848440408863
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,28,4,1392,1401.226940646591
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,39,3,1418,1412.6610355659764
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,41,2,1437,1414.4423805628464
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,44,1,1393,1412.0452213754568
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,46,4,1478,1396.8948775628153
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5,1,1380,1413.4879261692206
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,50,5,1377,1414.0690810013327
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5191,1,1414,1412.9546535890927
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5205,2,1396,1419.9004825256336
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5238,1,1438,1411.2250525916622
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,53,1,1474,1413.0514293003641
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5466,1,1402,1412.318822227482
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5590,5,1406,1413.2236204159215
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,58,1,1401,1411.4179574163165
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5800,4,1398,1424.1747194298482
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,5880,3,1410,1413.5439284838349
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,65,1,1472,1413.2768253229738
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,6616,3,1475,1418.798326563096
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,692,3,1403,1418.38430708415
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,693,2,1384,1404.9614815966618
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,694,5,1449,1414.3179850535557
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,71,2,1400,1409.5740719470807
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,735,1,1398,1412.758184458271
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,759,3,1417,1417.3525886828802
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,763,5,1417,1414.815274049458
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,7729,1,1424,1413.6793033537701
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,7752,1,1400,1413.443524819971
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,7785,4,1455,1416.3359333321318
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,78,3,1435,1418.673210982789
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,7910,3,1429,1416.5203353483155
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,80,5,1372,1415.5180346416728
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8033,4,1439,1419.6814619611441
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8302,2,1401,1416.0120418180393
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8600,5,1440,1415.9888105541547
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8662,4,1395,1414.4218111898795
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8692,2,1415,1419.1299439621228
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,8904,5,1416,1415.4062347628078
+Source-checked Dublin v2 subset,Provider grouped,County + log capacity + documented garden,96,2,1423,1409.9181466747243
