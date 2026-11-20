@@ -5,6 +5,7 @@
 | Field                        | Value                                          |
 | ---------------------------- | ---------------------------------------------- |
 | Participant ID               | P2_1                                           |
+| Age group                    | Under 30                                       |
 | Date                         | 16/11/2026                                     |
 | Time                         | 40 minutes                                     |
 | Session type                 | In person                                      |

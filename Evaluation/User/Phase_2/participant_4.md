@@ -5,6 +5,7 @@
 | Field                        | Value                                      |
 | ---------------------------- | ------------------------------------------ |
 | Participant ID               | P2_4                                       |
+| Age group                    | 30-49                                      |
 | Date                         | 18/11/2026                                 |
 | Time                         | 20 minutes                                 |
 | Session type                 | In person                                  |
