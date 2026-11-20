@@ -11,6 +11,7 @@ import type { CentreSummary } from "@/lib/search";
 import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
 import { townAndCounty } from "@/lib/town";
 import Link from "next/link";
+import { Fragment } from "react";
 
 interface CardResultProps {
   centre: CentreSummary;
@@ -42,7 +43,16 @@ export function CardResult({ centre, selection }: CardResultProps) {
               {centre.centre_name}
             </Link>
           </h3>
-          <p className="mt-1 text-sm text-ink-muted">{facts.join(" · ")}</p>
+          {/* Each fact kept whole on its line (CCARE-287), so a line breaks between them, at a dot,
+              and never inside one: "Fair Deal" ended a line with "€1,220 a week" starting the next. */}
+          <p className="mt-1 text-sm text-ink-muted">
+            {facts.map((fact, index) => (
+              <Fragment key={index}>
+                {index > 0 && " · "}
+                <span className="whitespace-nowrap">{fact}</span>
+              </Fragment>
+            ))}
+          </p>
           {distance && <p className="mt-1 text-sm font-semibold text-ink">{distance}</p>}
         </div>
         <CompareButton home={{ id: centre.centre_id, name: centre.centre_name }} variant="result" className="" />
