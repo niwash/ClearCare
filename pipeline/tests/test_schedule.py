@@ -180,6 +180,49 @@ def test_a_job_is_due_on_its_day_when_the_run_reaches_it_earlier(
     ]
 
 
+def test_a_job_that_ran_late_in_the_evening_waits_half_a_day(
+    tmp_path: Path,
+) -> None:
+    evening = START + timedelta(hours=17, minutes=30)
+    _start(tmp_path, FakeStages(), evening)
+
+    # After midnight the day has changed, but the last crawl has only just
+    # ended.
+    stages = FakeStages()
+    _start(tmp_path, stages, evening + timedelta(hours=1, minutes=5))
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
+
+    stages.calls.clear()
+    _start(tmp_path, stages, evening + timedelta(hours=12))
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
+
+
+def test_a_crawl_that_failed_late_in_the_evening_waits_half_a_day(
+    tmp_path: Path,
+) -> None:
+    evening = START + timedelta(hours=17, minutes=40)
+    stages = FakeStages({"reports": 1})
+    _start(tmp_path, stages, evening)
+
+    stages.calls.clear()
+    _start(tmp_path, stages, evening + timedelta(hours=1, minutes=5))
+    assert stages.names() == [*STARTUP, *ALERTS_JOB]
+
+    stages.calls.clear()
+    _start(tmp_path, stages, evening + timedelta(hours=12))
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
+
+
 def test_a_shorter_wait_applies_to_the_state_already_stored(
     tmp_path: Path,
 ) -> None:
@@ -206,7 +249,9 @@ def test_a_shorter_wait_applies_to_the_state_already_stored(
     ]
 
 
-def test_a_crawl_stopped_midway_waits_a_day_too(tmp_path: Path) -> None:
+def test_a_crawl_stopped_midway_waits_for_the_next_day_too(
+    tmp_path: Path,
+) -> None:
     with pytest.raises(Stopped):
         _start(tmp_path, FakeStages({"reports": Stopped()}), START)
 

@@ -387,8 +387,10 @@ def _due(job: Job, state: JobState | None, now: datetime) -> bool:
     # By the day: the task starts at the same time every day, but a job
     # starts minutes into it, and not the same number every day. By the
     # minute, a run that reached the job earlier than the last one found it
-    # not due, and the job lost that day (CCARE-288).
-    return now.date() >= due.date()
+    # not due, and the job lost that day (CCARE-288). Not more than half a
+    # day early: a job that ran late in the evening would run again after
+    # midnight, and HIQA would get no rest after a failed crawl.
+    return now.date() >= due.date() and now >= due - timedelta(hours=12)
 
 
 def _run_job(
