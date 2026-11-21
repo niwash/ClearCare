@@ -788,6 +788,7 @@ class CentreSearchTest {
                       "contract_price": 1908.00,
                       "home_type": "public",
                       "contract_price_date": "2026-09-01",
+                      "typical_contract_price": 2054.00,
                       "registration": {
                         "registered_from": "2024-06-01",
                         "registered_until": "2027-05-31"
@@ -888,7 +889,46 @@ class CentreSearchTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.contract_price").value(nullValue()))
         .andExpect(jsonPath("$.home_type").value(nullValue()))
-        .andExpect(jsonPath("$.contract_price_date").value(nullValue()));
+        .andExpect(jsonPath("$.contract_price_date").value(nullValue()))
+        .andExpect(jsonPath("$.typical_contract_price").value(nullValue()));
+  }
+
+  // The middle of the prices in force for homes of the same kind: 34 and 456 are the public
+  // homes, at 1908 and 2200. 9 is private now, so its old public price is not counted, and it
+  // is the only private home.
+  @Test
+  void returnsTheMiddlePriceOfHomesOfTheSameKind() throws Exception {
+    mvc.perform(get("/centres/" + ELM_HALL))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.typical_contract_price").value(2054.00));
+    mvc.perform(get("/centres/" + ST_JOSEPHS_CORK))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.typical_contract_price").value(1850.00));
+  }
+
+  // A home that has left the register keeps its last price in the lists. The site no longer
+  // shows the home, so its price is not one a home's own is compared with.
+  @Test
+  void leavesOutThePriceOfAHomeNoLongerInTheRegister() throws Exception {
+    execute(
+        """
+        INSERT INTO clearcare.centre (centre_id) VALUES ('998');
+        INSERT INTO clearcare.contract_price (list_id, centre_id, price)
+        SELECT id, '998', 1100.00
+        FROM clearcare.contract_price_list
+        WHERE home_type = 'public' AND version = 1;
+        """);
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.typical_contract_price").value(2054.00));
+    } finally {
+      execute(
+          """
+          DELETE FROM clearcare.contract_price WHERE centre_id = '998';
+          DELETE FROM clearcare.centre WHERE centre_id = '998';
+          """);
+    }
   }
 
   // A value that is not a centre ID at all is not found either, rather than refused.

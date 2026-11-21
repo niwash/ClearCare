@@ -134,6 +134,8 @@ interface CentreResultFields {
   // The date of the list the price is from: the day a public list's prices start, or the day a
   // private list was published (CCARE-235).
   contract_price_date?: ISODate | null;
+  // The median price in force for homes of the same type. Without it the Overview leaves the note out.
+  typical_contract_price?: number | null;
   // The registration as it stands, its extra conditions in the order of their numbers, and the
   // Chief Inspector's note on it (CCARE-235). null, or empty, when the register gives none.
   registration?: Registration | null;
