@@ -10,7 +10,8 @@ import java.util.List;
  *
  * <p>contractPrice is the latest published price, in euro per resident per week, homeType is the
  * kind of home that price is for, "public" or "private", and contractPriceDate is the date of the
- * list it came from. All three are null when no price list has been loaded for the centre.
+ * list it came from. typicalContractPrice is the median price in force for homes of that kind.
+ * All four are null when no price list has been loaded for the centre.
  *
  * <p>registration is null when the snapshot was loaded before db/V21, which then has no extra
  * conditions either. chiefInspectorNote is null when the register gives none.
@@ -21,6 +22,7 @@ record CentreResult(
     BigDecimal contractPrice,
     String homeType,
     LocalDate contractPriceDate,
+    BigDecimal typicalContractPrice,
     Registration registration,
     List<ExtraCondition> extraConditions,
     String chiefInspectorNote) {}
