@@ -216,11 +216,14 @@ class CentreSearchRepository {
       """;
 
   // The view keeps one price per centre, so older prices do not count toward the median (db/V24).
+  // It keeps a centre's last price after the centre leaves the register too, so the median is
+  // over the centres of the served snapshot only.
   private static final String CONTRACT_PRICE =
       """
       SELECT centre.price, centre.home_type, centre.record_date,
           (SELECT CAST(percentile_cont(0.5) WITHIN GROUP (ORDER BY price) AS numeric(10,2))
            FROM clearcare.centre_contract_price
+           JOIN clearcare.centre_search USING (centre_id)
            WHERE home_type = centre.home_type) AS typical_contract_price
       FROM clearcare.centre_contract_price AS centre
       WHERE centre.centre_id = :centre_id
