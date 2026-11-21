@@ -140,20 +140,64 @@ def test_first_start_uploads_and_loads_then_runs_every_job(
     assert stages.names() == EVERY_STAGE_OF_EVERY_JOB
 
 
-def test_after_a_failed_crawl_nothing_runs_for_a_day_even_after_a_restart(
+def test_after_a_failed_crawl_nothing_runs_until_the_next_day(
     tmp_path: Path,
 ) -> None:
     stages = FakeStages({"reports": 1})
     _start(tmp_path, stages, START)
 
     stages.calls.clear()
-    _start(tmp_path, stages, START + timedelta(hours=23))
+    _start(tmp_path, stages, START + timedelta(hours=17))
     # The dispatcher's job is due hourly, so it runs even while the failed
-    # crawl waits out its day.
+    # crawl waits for the next day.
     assert stages.names() == [*STARTUP, *ALERTS_JOB]
 
     stages.calls.clear()
-    _start(tmp_path, stages, START + timedelta(hours=24))
+    _start(tmp_path, stages, START + timedelta(hours=23))
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
+
+
+def test_a_job_is_due_on_its_day_when_the_run_reaches_it_earlier(
+    tmp_path: Path,
+) -> None:
+    # The task starts at 06:00 every day, but a job starts minutes later,
+    # and not the same number every day.
+    _start(tmp_path, FakeStages(), START + timedelta(minutes=12))
+
+    stages = FakeStages()
+    _start(tmp_path, stages, START + timedelta(days=1, minutes=7))
+
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
+
+
+def test_a_shorter_wait_applies_to_the_state_already_stored(
+    tmp_path: Path,
+) -> None:
+    # Written when the reports were downloaded once a week.
+    week = {
+        "scope": "all",
+        "last_success": START.isoformat(),
+        "next_attempt": (START + timedelta(days=7)).isoformat(),
+        "last_outcome": "succeeded",
+    }
+    (tmp_path / "schedule-state.json").write_text(
+        json.dumps({"register": week, "prices": week, "reports": week}),
+        encoding="utf-8",
+    )
+
+    stages = FakeStages()
+    _start(tmp_path, stages, START + timedelta(days=1))
+
     assert stages.names() == [
         *STARTUP,
         *REGISTER_JOB,
@@ -196,7 +240,12 @@ def test_the_price_lists_are_downloaded_once_a_week(tmp_path: Path) -> None:
 
     stages = FakeStages()
     _start(tmp_path, stages, START + timedelta(days=6))
-    assert stages.names() == [*STARTUP, *REGISTER_JOB, *ALERTS_JOB]
+    assert stages.names() == [
+        *STARTUP,
+        *REGISTER_JOB,
+        *REPORTS_JOB,
+        *ALERTS_JOB,
+    ]
 
     stages.calls.clear()
     _start(tmp_path, stages, START + timedelta(days=7))
