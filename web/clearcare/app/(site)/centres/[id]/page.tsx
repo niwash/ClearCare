@@ -29,6 +29,7 @@ import {
 } from "@/lib/centres";
 import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
 import { TabPager } from "@/components/centre/tab-pager";
+import { farBelowTypical } from "@/lib/price-context";
 import { returnQuery } from "@/lib/return-to-centre";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
@@ -165,6 +166,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
 function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail; reports: CentreReports | null; hiqaCheckedAt: string | null }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
+  const typicalPrice = centre.typical_contract_price;
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // Most register addresses already end with the Eircode, so it only gets its own row when missing
   // or printed with an O for 0 (A98 C2CO), since the row is then the only place it shows right.
@@ -258,6 +260,15 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                     Not available
                     <Note>Ask the home</Note>
                   </>
+                )}
+                {/* The price is the HSE list's own figure, so it stays; the note says it is unusual and
+                    what such homes usually charge (CCARE-290). Not there from an API without the median. */}
+                {centre.home_type && typicalPrice != null && farBelowTypical(centre.contract_price, typicalPrice) && (
+                  <Note>
+                    Far below what {centre.home_type === "public" ? "public homes" : "private and voluntary homes"} usually
+                    charge, about {formatWeeklyPrice(Math.round(typicalPrice))} a week. This is the figure on the HSE&apos;s
+                    price list. Ask the home to confirm it.
+                  </Note>
                 )}
                 {/* That Fair Deal can help pay it, and where to read how (CCARE-278): in user testing
                     (P2_3) the participant read "(Fair Deal)" here without it occurring to them to find
