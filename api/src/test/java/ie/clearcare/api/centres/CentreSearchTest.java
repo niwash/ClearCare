@@ -906,6 +906,31 @@ class CentreSearchTest {
         .andExpect(jsonPath("$.typical_contract_price").value(1850.00));
   }
 
+  // A home that has left the register keeps its last price in the lists. The site no longer
+  // shows the home, so its price is not one a home's own is compared with.
+  @Test
+  void leavesOutThePriceOfAHomeNoLongerInTheRegister() throws Exception {
+    execute(
+        """
+        INSERT INTO clearcare.centre (centre_id) VALUES ('998');
+        INSERT INTO clearcare.contract_price (list_id, centre_id, price)
+        SELECT id, '998', 1100.00
+        FROM clearcare.contract_price_list
+        WHERE home_type = 'public' AND version = 1;
+        """);
+    try {
+      mvc.perform(get("/centres/" + ELM_HALL))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.typical_contract_price").value(2054.00));
+    } finally {
+      execute(
+          """
+          DELETE FROM clearcare.contract_price WHERE centre_id = '998';
+          DELETE FROM clearcare.centre WHERE centre_id = '998';
+          """);
+    }
+  }
+
   // A value that is not a centre ID at all is not found either, rather than refused.
   @ParameterizedTest
   @ValueSource(strings = {"999", "elm-hall"})
