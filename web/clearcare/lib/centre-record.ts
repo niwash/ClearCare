@@ -14,6 +14,7 @@ import {
   getCentreFindings,
   getCentreReports,
   getHiqaCheckedAt,
+  getLatestInspectionDate,
   type CentreAmenities,
   type CentreDetail,
   type CentreReports,
@@ -109,8 +110,8 @@ export async function centreMetadata(id: string, section?: CentreSection) {
     return { title: lookup.status === "not-found" ? "Nursing home not found" : "Nursing home page unavailable" };
   }
   const { centre } = lookup;
-  // The page asks for the reports too, and one request shares the answer.
-  const latest = (await getCentreReports(id))?.inspections.at(-1);
+  // Only the overview's description gives the latest inspection date.
+  const inspectionDate = section ? null : await getLatestInspectionDate(id);
   return {
     title: section ? `${CENTRE_SECTION_TITLES[section]} · ${centre.centre_name}` : centre.centre_name,
     description: centreDescription(
@@ -119,7 +120,7 @@ export async function centreMetadata(id: string, section?: CentreSection) {
         where: townAndCounty(centre),
         residents: centre.maximum_occupancy,
         price: typeof centre.contract_price === "number" ? formatWeeklyPrice(centre.contract_price) : null,
-        inspected: latest ? formatDate(latest.date) : null,
+        inspected: inspectionDate ? formatDate(inspectionDate) : null,
       },
       section,
     ),

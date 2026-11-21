@@ -28,7 +28,7 @@ export function centreDescription(centre: DescribedCentre, section?: Section) {
   if (section) return SECTIONS[section](home);
   // The facts first: a search engine cuts a description at about 160 characters.
   const facts = [
-    centre.residents !== null && `${centre.residents} residents`,
+    centre.residents !== null && `up to ${centre.residents} residents`,
     centre.price && `Fair Deal ${centre.price} a week`,
     centre.inspected && `inspected by HIQA on ${centre.inspected}`,
   ].filter(Boolean);

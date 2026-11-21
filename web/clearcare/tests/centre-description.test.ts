@@ -12,7 +12,7 @@ const glebe = { name: "Glebe House Nursing Home", where: "Kilternan, Co. Dublin"
 test("the overview gives where the home is, its size, its price and its latest inspection", () => {
   assert.equal(
     centreDescription(glebe),
-    "Glebe House Nursing Home, Kilternan, Co. Dublin: 54 residents, Fair Deal €1,418 a week, inspected by HIQA on 12 Nov 2025. What the inspectors found and how the home responded.",
+    "Glebe House Nursing Home, Kilternan, Co. Dublin: up to 54 residents, Fair Deal €1,418 a week, inspected by HIQA on 12 Nov 2025. What the inspectors found and how the home responded.",
   );
 });
 
@@ -23,7 +23,7 @@ test("a fact the home doesn't have is left out", () => {
   );
   assert.equal(
     centreDescription({ ...glebe, price: null }),
-    "Glebe House Nursing Home, Kilternan, Co. Dublin: 54 residents, inspected by HIQA on 12 Nov 2025. What the inspectors found and how the home responded.",
+    "Glebe House Nursing Home, Kilternan, Co. Dublin: up to 54 residents, inspected by HIQA on 12 Nov 2025. What the inspectors found and how the home responded.",
   );
 });
 

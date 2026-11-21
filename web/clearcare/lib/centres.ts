@@ -262,6 +262,12 @@ export const getHiqaCheckedAt = cache(async (id: string): Promise<string | null>
   return (await getCentreReportList(id))?.hiqa_checked_at ?? null;
 });
 
+// The list keeps the latest date even when getCentreReports skips a report it can't read.
+export const getLatestInspectionDate = cache(async (id: string): Promise<ISODate | null> => {
+  const list = await getCentreReportList(id);
+  return list?.reports.find((report) => report.inspection_date)?.inspection_date ?? null;
+});
+
 // The reports HIQA no longer has online, which keep everything but their link (CCARE-236). Only the
 // events say which they are; when those can't be read, every report keeps its link.
 const getNoLongerOnlineReportIds = cache(async (id: string): Promise<Set<number>> => {
