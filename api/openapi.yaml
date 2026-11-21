@@ -264,9 +264,9 @@ paths:
         Returns the centre with this `centre_id` from the register snapshot
         that ClearCare currently serves, with the fields of a search result,
         the centre's phone number, the latest contract price published for it,
-        the kind of home that price is for and the date of its list, and the
-        centre's registration in that snapshot: its dates, its extra
-        conditions and the Chief Inspector's note.
+        the kind of home that price is for, the date of its list, the median
+        price for homes of that kind, and the centre's registration in that
+        snapshot: its dates, its extra conditions and the Chief Inspector's note.
 
         Any value that is not the ID of a centre in that snapshot gives 404,
         including one that is not a number.
@@ -303,6 +303,7 @@ paths:
                 contract_price: 1908.00
                 home_type: public
                 contract_price_date: "2026-09-01"
+                typical_contract_price: 2054.00
                 registration:
                   registered_from: "2024-06-01"
                   registered_until: "2027-05-31"
@@ -1604,6 +1605,7 @@ components:
         - contract_price
         - home_type
         - contract_price_date
+        - typical_contract_price
         - registration
         - extra_conditions
         - chief_inspector_note
@@ -1635,6 +1637,12 @@ components:
             list's prices start, or the day a private list was published.
             Null when no price list has been loaded for the centre.
           example: "2026-09-01"
+        typical_contract_price:
+          type: [number, "null"]
+          description: >
+            The median contract price in force for homes of the same home_type,
+            in euro per resident per week. Null when the centre has no price.
+          example: 2054.00
         registration:
           oneOf:
             - $ref: "#/components/schemas/Registration"
