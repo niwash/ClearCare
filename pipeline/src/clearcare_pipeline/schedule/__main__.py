@@ -354,6 +354,9 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
             then=("load_contract_prices",),
             wait_after_success=timedelta(days=7),
         ),
+        # Every day, so a report is on the site the day after HIQA publishes
+        # it (CCARE-288). A look reads each centre's page and downloads only
+        # the files not stored yet.
         Job(
             name="reports",
             scope=crawl,
@@ -365,16 +368,29 @@ def _jobs(crawl: str) -> tuple[Job, ...]:
                 "split_commitments",
                 "amenities",
             ),
-            wait_after_success=timedelta(days=7),
+            wait_after_success=timedelta(days=1),
         ),
         alerts,
     )
 
 
 def _due(job: Job, state: JobState | None, now: datetime) -> bool:
-    return (
-        state is None or state.scope != job.scope or now >= state.next_attempt
-    )
+    if state is None or state.scope != job.scope:
+        return True
+    due = state.next_attempt
+    if state.last_outcome == "succeeded" and state.last_success is not None:
+        # From the job's wait as it is now, so a wait made shorter applies
+        # to the state a longer one wrote.
+        due = state.last_success + job.wait_after_success
+    if job.wait_after_success < timedelta(days=1):
+        return now >= due
+    # By the day: the task starts at the same time every day, but a job
+    # starts minutes into it, and not the same number every day. By the
+    # minute, a run that reached the job earlier than the last one found it
+    # not due, and the job lost that day (CCARE-288). Not more than half a
+    # day early: a job that ran late in the evening would run again after
+    # midnight, and HIQA would get no rest after a failed crawl.
+    return now.date() >= due.date() and now >= due - timedelta(hours=12)
 
 
 def _run_job(
@@ -402,7 +418,8 @@ def _run_job(
             if previous and previous.scope == job.scope
             else None
         ),
-        # A day, as a crawl stops at HIQA's verification page or on 429s.
+        # The next day, as a crawl stops at HIQA's verification page or on
+        # 429s.
         next_attempt=started + timedelta(days=1),
         last_outcome="started",
     )
