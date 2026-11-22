@@ -2,21 +2,21 @@
 
 ## Interview details
 
-| Field                        | Value                                      |
-| ---------------------------- | ------------------------------------------ |
-| Participant ID               | P2_4                                       |
-| Age group                    | 30-49                                      |
-| Date                         | 18/11/2026                                 |
-| Time                         | 20 minutes                                 |
-| Session type                 | In person                                  |
-| Device used                  | Computer                                   |
-| Recorded                     | Yes                                        |
-| Transcribed                  | Yes                                        |
-| Interviewer(s)               | C20361521 - Twila Habab                    |
-| Relationship to the decision | Choose for a family member                 |
-| Knows Fair Deal              | Partially (see more on Task 6)             |
-| GitHub Repository Tag        | phase2-evaluation-2                        |
-| GitHub Commit                | e045135                                    |
+| Field                     | Value                                            |
+| ------------------------- | ------------------------------------------------ |
+| Participant ID            | P2_4                                             |
+| Age group                 | 30-49                                            |
+| Date                      | 18/11/2026                                       |
+| Time                      | 20 minutes                                       |
+| Session type              | In person                                        |
+| Device used               | Computer                                         |
+| Recorded                  | Yes                                              |
+| Transcribed               | Yes                                              |
+| Interviewer(s)            | C20361521 - Twila Habab                          |
+| Experience of the process | Indirect (heard from family who went through it) |
+| Knows Fair Deal           | Partially (see more on Task 6)                   |
+| GitHub Repository Tag     | phase2-evaluation-2                              |
+| GitHub Commit             | e045135                                          |
 
 ## 1. Welcome, consent and think-aloud
 

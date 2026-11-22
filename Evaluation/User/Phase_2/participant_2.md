@@ -2,21 +2,21 @@
 
 ## Interview details
 
-| Field                        | Value                                          |
-| ---------------------------- | ---------------------------------------------- |
-| Participant ID               | P2_2                                           |
-| Age group                    | Under 30                                       |
-| Date                         | 18/11/2026                                     |
-| Time                         | 40 minutes                                     |
-| Session type                 | In person                                      |
-| Device used                  | Computer                                       |
-| Recorded                     | Yes                                            |
-| Transcribed                  | Yes                                            |
-| Interviewer(s)               | C20361521 - Twila Habab                        |
-| Relationship to the decision | Choose for a family member                     |
-| Knows Fair Deal              | No                                             |
-| GitHub Repository Tag        | phase2-evaluation-2                            |
-| GitHub Commit                | e045135                                        |
+| Field                     | Value                   |
+| ------------------------- | ----------------------- |
+| Participant ID            | P2_2                    |
+| Age group                 | Under 30                |
+| Date                      | 18/11/2026              |
+| Time                      | 40 minutes              |
+| Session type              | In person               |
+| Device used               | Computer                |
+| Recorded                  | Yes                     |
+| Transcribed               | Yes                     |
+| Interviewer(s)            | C20361521 - Twila Habab |
+| Experience of the process | None                    |
+| Knows Fair Deal           | No                      |
+| GitHub Repository Tag     | phase2-evaluation-2     |
+| GitHub Commit             | e045135                 |
 
 ## 1. Welcome, consent and think-aloud
 
