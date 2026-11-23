@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { AccountControls } from "@/components/auth/account-controls";
+import { AccountControls, AlertsButton } from "@/components/auth/account-controls";
 import { CompareStatus } from "@/components/compare/compare-status";
 import { ShortlistButton, ShortlistPanel } from "@/components/compare/shortlist-drawer";
 import { MobileMenu } from "@/components/layout/mobile-menu";
@@ -74,6 +74,8 @@ export function SiteHeader() {
             {/* The shortlist from any page (CCARE-258), first, before the display buttons: it opens the
                 one panel, ShortlistPanel below. */}
             <ShortlistButton variant="header" />
+            {/* Your alerts beside it, in the same outlined shape without the count (CCARE-271). */}
+            <AlertsButton />
             {/* Together, for the welcome tour's step about them. Both have words now (CCARE-258), so on
                 a small phone in the adult-centred design's larger text they wrap onto two rows
                 rather than running off the screen. */}

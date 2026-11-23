@@ -25,9 +25,9 @@ import tools.jackson.databind.json.JsonMapper;
  * one object shaped by the package's scope, written here and read back for every response, so the
  * site never parses it.
  *
- * <p>Cancel and unsubscribe delete rows rather than setting {@code is_active} (ADR-0034): the
- * partial unique index then lets the same target be followed again later, and the notification
- * history is left alone.
+ * <p>Cancel, cancel-all and unsubscribe delete rows rather than setting {@code is_active}
+ * (ADR-0034): the partial unique index then lets the same target be followed again later, and the
+ * notification history is left alone.
  */
 @Repository
 class AlertSubscriptionRepository {
@@ -62,6 +62,16 @@ class AlertSubscriptionRepository {
       SELECT id, scope, is_active
       FROM clearcare.alert_packages
       WHERE id = :id
+      """;
+
+  // What the site offers (CCARE-271), in the seed's order. The ids are the database's, so the site
+  // reads them rather than assuming 1, 2 and 3.
+  private static final String PACKAGES =
+      """
+      SELECT id, title, description, scope
+      FROM clearcare.alert_packages
+      WHERE is_active
+      ORDER BY id
       """;
 
   private static final String CENTRE =
@@ -100,6 +110,13 @@ class AlertSubscriptionRepository {
       WHERE s.user_id = u.id AND u.cognito_sub = :sub AND s.id = :id
       """;
 
+  private static final String CANCEL_SUB_ALL =
+      """
+      DELETE FROM clearcare.alert_subscriptions s
+      USING clearcare.users u
+      WHERE s.user_id = u.id AND u.cognito_sub = :sub
+      """;
+
   private static final String TOKEN_ACCOUNT =
       "SELECT user_id FROM clearcare.alert_unsubscribe WHERE token = :token";
 
@@ -121,6 +138,26 @@ class AlertSubscriptionRepository {
   /** The account's active subscriptions, newest first. An account with none gets an empty list. */
   List<AlertSubscription> list(String cognitoSub) {
     return jdbc.sql(LIST).param("sub", cognitoSub).query(this::subscription).list();
+  }
+
+  /**
+   * The packages the site may offer, with their ids, in the seed's order.
+   *
+   * <p>The site sends a package id on every subscription it adds, so it has to be told which ids
+   * this database holds: an identity column can be ahead of the seed's order, and a site that
+   * assumed the order would be refused with "package_id must name an active alert package".
+   */
+  List<AlertPackage> packages() {
+    return jdbc
+        .sql(PACKAGES)
+        .query(
+            (rs, row) ->
+                new AlertPackage(
+                    rs.getLong("id"),
+                    rs.getString("title"),
+                    rs.getString("description"),
+                    rs.getString("scope")))
+        .list();
   }
 
   /**
@@ -146,6 +183,17 @@ class AlertSubscriptionRepository {
   /** Deletes one of the account's subscriptions. Another account's id, or a gone one, changes nothing. */
   void cancel(String cognitoSub, long id) {
     jdbc.sql(CANCEL).param("sub", cognitoSub).param("id", id).update();
+  }
+
+  /**
+   * Deletes every subscription of the account, named by its subject.
+   *
+   * <p>The site's way to stop all alerts without the email's link, used when the visitor cancels the
+   * every-report alert: that is the broadest thing they can ask for, so cancelling it leaves nothing
+   * to send. A subject with no rows, or no account at all, changes nothing.
+   */
+  void cancelAll(String cognitoSub) {
+    jdbc.sql(CANCEL_SUB_ALL).param("sub", cognitoSub).update();
   }
 
   /**

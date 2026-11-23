@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.UUID;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,6 +107,44 @@ class AlertSubscriptionTest {
         .andExpect(status().isOk())
         .andExpect(content().contentType(MediaType.APPLICATION_JSON))
         .andExpect(jsonPath("$.subscriptions").isEmpty());
+  }
+
+  // What the site offers is the database's, not the seed's order (CCARE-271): the ids are read here
+  // rather than assumed, so a database whose sequence has moved on still works.
+  @Test
+  void listsThePackagesWithTheIdsASubscriptionMayName() throws Exception {
+    mvc.perform(get("/alerts/packages").header("X-ClearCare-Token", TOKEN))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.packages.length()").value(3))
+        .andExpect(jsonPath("$.packages[0].id").value(CENTRE_PACKAGE))
+        .andExpect(jsonPath("$.packages[0].scope").value("CENTRE"))
+        .andExpect(jsonPath("$.packages[0].title").value("Alerts for a nursing home"))
+        .andExpect(jsonPath("$.packages[1].scope").value("COUNTY"))
+        .andExpect(jsonPath("$.packages[2].scope").value("ALL"));
+  }
+
+  // The route exists so the site can send back the id it lists: the two have to agree.
+  @Test
+  void theIdItListsIsTheOneAnAddAccepts() throws Exception {
+    String body =
+        mvc.perform(get("/alerts/packages").header("X-ClearCare-Token", TOKEN))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    List<Number> centreIds = JsonPath.read(body, "$.packages[?(@.scope == 'CENTRE')].id");
+    assertThat(centreIds).hasSize(1);
+
+    add(EXTRA, centre(centreIds.get(0).longValue(), CENTRE))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.scope").value("CENTRE"));
+  }
+
+  @Test
+  void refusesThePackagesRouteWithoutTheSitesToken() throws Exception {
+    mvc.perform(get("/alerts/packages")).andExpect(status().isUnauthorized());
+    mvc.perform(get("/alerts/packages").header("X-ClearCare-Token", "not-the-token"))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -246,6 +285,21 @@ class AlertSubscriptionTest {
   }
 
   @Test
+  void cancelsEverySubscriptionOfThisAccount() throws Exception {
+    add(MINE, centre(CENTRE_PACKAGE, CENTRE)).andExpect(status().isOk());
+    add(MINE, county(COUNTY_PACKAGE, countyId("Cork"))).andExpect(status().isOk());
+    add(MINE, "{\"package_id\": %d}".formatted(ALL_PACKAGE)).andExpect(status().isOk());
+    add(THEIRS, centre(CENTRE_PACKAGE, CENTRE)).andExpect(status().isOk());
+    assertThat(rows(MINE)).isEqualTo(3);
+
+    cancelAll(MINE).andExpect(status().isNoContent());
+    // A second press is not an error, and another account keeps its rows.
+    cancelAll(MINE).andExpect(status().isNoContent());
+    read(MINE).andExpect(jsonPath("$.subscriptions").isEmpty());
+    read(THEIRS).andExpect(jsonPath("$.subscriptions.length()").value(1));
+  }
+
+  @Test
   void unsubscribesEverySubscriptionWithTheToken() throws Exception {
     add(UNSUBSCRIBING, centre(CENTRE_PACKAGE, CENTRE)).andExpect(status().isOk());
     add(UNSUBSCRIBING, "{\"package_id\": %d}".formatted(ALL_PACKAGE))
@@ -281,6 +335,13 @@ class AlertSubscriptionTest {
         .andExpect(status().isUnauthorized());
     mvc.perform(get("/alerts/subscriptions").header("X-ClearCare-Token", TOKEN))
         .andExpect(status().isUnauthorized());
+    mvc.perform(delete("/alerts/subscriptions").header("X-ClearCare-Token", TOKEN))
+        .andExpect(status().isUnauthorized());
+    mvc.perform(
+            delete("/alerts/subscriptions")
+                .header("X-ClearCare-Sub", REFUSED_AUTH)
+                .header("X-ClearCare-Token", "not-the-token"))
+        .andExpect(status().isUnauthorized());
   }
 
   private ResultActions read(String account) throws Exception {
@@ -297,6 +358,13 @@ class AlertSubscriptionTest {
             .header("X-ClearCare-Token", TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .content(body));
+  }
+
+  private ResultActions cancelAll(String account) throws Exception {
+    return mvc.perform(
+        delete("/alerts/subscriptions")
+            .header("X-ClearCare-Sub", account)
+            .header("X-ClearCare-Token", TOKEN));
   }
 
   private ResultActions cancel(String account, String id) throws Exception {
