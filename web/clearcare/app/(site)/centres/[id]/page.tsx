@@ -5,6 +5,7 @@
 // found, how the home responded, the inspection history and what to ask have pages of their own
 // (look-first/, next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
+import { AlertStrip } from "@/components/alerts/alert-strip";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
@@ -29,7 +30,12 @@ import {
 } from "@/lib/centres";
 import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
 import { TabPager } from "@/components/centre/tab-pager";
+import { farBelowTypical } from "@/lib/price-context";
 import { returnQuery } from "@/lib/return-to-centre";
+import { alertsConfigured, listAlerts } from "@/lib/alerts-api";
+import { followsCentre } from "@/lib/alerts";
+import { authRuntime } from "@/lib/auth";
+import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -50,10 +56,33 @@ export default async function CentrePage({ params }: CentrePageProps) {
   if (record.status !== "found") notFound();
   const { centre, reports, amenities, hiqaCheckedAt, events } = record;
 
+  // Whether this account already follows this home (CCARE-271). Read on the server, and only for a
+  // signed-in visitor: without a session there is nothing to ask the API for, and the strip offers
+  // the sign-in instead. A deployment without alerts shows no strip at all.
+  const sub = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
+  const followed = sub && alertsConfigured() ? await listAlerts(sub) : null;
+  const offerAlerts = authConfigured() && alertsConfigured();
+  const followedId = followed?.ok
+    ? (followed.subscriptions.find((row) => followsCentre(row, centre.centre_id))?.id ?? null)
+    : null;
+
   return (
     <>
       <Band tint="page">
         <div className="flex flex-col gap-6">
+          {/* The offer, first, under the tabs and above the facts: it is about this home, and on a
+              phone the right-hand column it could also sit in falls below the whole record
+              (CCARE-271). */}
+          {offerAlerts && (
+            // Keyed by the home, as the county strip is on search: a move from one home to another
+            // keeps the component mounted, and its state would otherwise still name the last one.
+            <AlertStrip
+              key={centre.centre_id}
+              target={{ kind: "centre", centreId: centre.centre_id }}
+              followedId={followedId}
+              signedIn={Boolean(sub)}
+            />
+          )}
           {/* Empty from an API without them, and for most homes; the box then isn't there. */}
           <ExtraConditions
             conditions={centre.extra_conditions ?? []}
@@ -165,6 +194,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
 function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail; reports: CentreReports | null; hiqaCheckedAt: string | null }) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
+  const typicalPrice = centre.typical_contract_price;
   const eircode = centre.eircode ? formatEircode(centre.eircode) : null;
   // Most register addresses already end with the Eircode, so it only gets its own row when missing
   // or printed with an O for 0 (A98 C2CO), since the row is then the only place it shows right.
@@ -258,6 +288,15 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
                     Not available
                     <Note>Ask the home</Note>
                   </>
+                )}
+                {/* The price is the HSE list's own figure, so it stays; the note says it is unusual and
+                    what such homes usually charge (CCARE-290). Not there from an API without the median. */}
+                {centre.home_type && typicalPrice != null && farBelowTypical(centre.contract_price, typicalPrice) && (
+                  <Note>
+                    Far below what {centre.home_type === "public" ? "public homes" : "private and voluntary homes"} usually
+                    charge, about {formatWeeklyPrice(Math.round(typicalPrice))} a week. This is the figure on the HSE&apos;s
+                    price list. Ask the home to confirm it.
+                  </Note>
                 )}
                 {/* That Fair Deal can help pay it, and where to read how (CCARE-278): in user testing
                     (P2_3) the participant read "(Fair Deal)" here without it occurring to them to find

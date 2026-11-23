@@ -215,10 +215,19 @@ class CentreSearchRepository {
       WHERE centre_id = :centre_id
       """;
 
-  // One price per centre: the view keeps the latest, so this is a lookup (db/V24).
+  // The view keeps one price per centre, so older prices do not count toward the median (db/V24).
+  // It keeps a centre's last price after the centre leaves the register too, so the median is
+  // over the centres of the served snapshot only.
   private static final String CONTRACT_PRICE =
-      "SELECT price, home_type, record_date FROM clearcare.centre_contract_price"
-          + " WHERE centre_id = :centre_id";
+      """
+      SELECT centre.price, centre.home_type, centre.record_date,
+          (SELECT CAST(percentile_cont(0.5) WITHIN GROUP (ORDER BY price) AS numeric(10,2))
+           FROM clearcare.centre_contract_price
+           JOIN clearcare.centre_search USING (centre_id)
+           WHERE home_type = centre.home_type) AS typical_contract_price
+      FROM clearcare.centre_contract_price AS centre
+      WHERE centre.centre_id = :centre_id
+      """;
 
   // One row per centre of the published snapshot (db/V24).
   private static final String REGISTRATION =
@@ -238,8 +247,10 @@ class CentreSearchRepository {
       ORDER BY number
       """;
 
-  // The price in force, the kind of home it is for, and the date of the list it is from.
-  private record ContractPrice(BigDecimal price, String homeType, LocalDate recordDate) {}
+  // The price in force, the kind of home it is for, the date of the list it is from, and the
+  // median price in force for homes of that kind.
+  private record ContractPrice(
+      BigDecimal price, String homeType, LocalDate recordDate, BigDecimal typicalContractPrice) {}
 
   // A centre's row in centre_registration. The dates are null when the snapshot was loaded
   // before db/V21.
@@ -313,7 +324,7 @@ class CentreSearchRepository {
   /**
    * Returns the centre with this centre_id, the register snapshot it was read from, its contract
    * price and its registration, or nothing if no snapshot has been published. The centre is null
-   * if the snapshot does not have it, and the price, home type and date are null if no list has
+   * if the snapshot does not have it, and the price fields are null if no list has
    * been loaded for it. All of them are read in one transaction, as in search.
    */
   @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ)
@@ -334,7 +345,7 @@ class CentreSearchRepository {
             .param("centre_id", centreId)
             .query(ContractPrice.class)
             .optional()
-            .orElse(new ContractPrice(null, null, null));
+            .orElse(new ContractPrice(null, null, null, null));
     RegisteredCentre registered =
         jdbc.sql(REGISTRATION)
             .param("centre_id", centreId)
@@ -350,6 +361,7 @@ class CentreSearchRepository {
             contractPrice.price(),
             contractPrice.homeType(),
             contractPrice.recordDate(),
+            contractPrice.typicalContractPrice(),
             registered.registeredFrom() == null
                 ? null
                 : new Registration(registered.registeredFrom(), registered.registeredUntil()),

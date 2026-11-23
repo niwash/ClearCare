@@ -1,5 +1,6 @@
 // app/search/page.tsx
 import { Alert } from "@/components/layout/alert";
+import { AlertStrip } from "@/components/alerts/alert-strip";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
@@ -17,6 +18,8 @@ import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
+import { alertsConfigured, listAlerts } from "@/lib/alerts-api";
+import { countyId, followsCounty } from "@/lib/alerts";
 import { formatDate } from "@/lib/centres";
 import { centresByCounty } from "@/lib/counties";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
@@ -138,6 +141,21 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const signedIn = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
   const kept = signedIn && preferencesConfigured() ? await readSavedSearch(signedIn) : null;
   const saved: SavedSearch | null = kept?.ok ? kept.saved : null;
+  // The alert strip above the results (CCARE-271): a county when the search is filtered to one, and
+  // every report otherwise. Whether the account already follows it is read here, so the strip says
+  // so before the button is pressed. A signed-in visitor reads once, for whichever strip it shows;
+  // a visitor signed out asks the API nothing.
+  const alertCounty = search.county || null;
+  const offerAlerts = authConfigured() && alertsConfigured();
+  const alertsHere = signedIn && offerAlerts ? await listAlerts(signedIn) : null;
+  const alertCountyId = alertCounty ? countyId(alertCounty) : null;
+  const followedCountyId =
+    alertsHere?.ok && alertCountyId !== null
+      ? (alertsHere.subscriptions.find((row) => followsCounty(row, alertCountyId))?.id ?? null)
+      : null;
+  const followedAllId = alertsHere?.ok
+    ? (alertsHere.subscriptions.find((row) => row.scope === "ALL")?.id ?? null)
+    : null;
   const initialSaved = {
     status: !signedIn
       ? ("signed_out" as const)
@@ -247,6 +265,29 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 )}
               </div>
             </div>
+
+            {/* The county the results are filtered to, offered as an alert above the list
+                (CCARE-271): the strip says which county before the homes do, and on a phone the
+                filter is behind "Filters", so this is the only place the county is named. */}
+            {alertCounty && offerAlerts && (
+              // Keyed by the county: the filters change the address with router.push, so the strip
+              // stays mounted and would otherwise keep the previous county's followed id, showing
+              // its state for this one and stopping the wrong row. A new key mounts it afresh
+              // with the id the page read for this county (CCARE-271).
+              <AlertStrip
+                key={alertCounty}
+                target={{ kind: "county", county: alertCounty }}
+                followedId={followedCountyId}
+                signedIn={Boolean(signedIn)}
+              />
+            )}
+            {/* With no county narrowing it, the strip offers every report on the site, from the
+                first visit to this page as well as from a search's results: the only other place
+                that package is named is /alerts, and a visitor reading the register is already the
+                one who wants it (CCARE-271). */}
+            {!alertCounty && offerAlerts && (
+              <AlertStrip target={{ kind: "all" }} followedId={followedAllId} signedIn={Boolean(signedIn)} />
+            )}
 
             {result === null ? (
               <>

@@ -3,6 +3,7 @@ import { IBM_Plex_Mono, Public_Sans, Source_Serif_4 } from "next/font/google";
 import { LeavingSiteDialog } from "@/components/layout/leaving-site-dialog";
 import { CursorHighlight } from "@/components/layout/cursor-highlight";
 import { APPLY_SAVED_THEME_SCRIPT } from "@/components/theme/theme";
+import { SITE_URL } from "@/lib/site-url";
 import { SLIDE_UP_SCRIPT } from "@/components/ui/slide-up-script";
 import "./globals.css";
 
@@ -27,7 +28,7 @@ const SHARE_IMAGE = { url: "/logos/og-image.png", width: 1200, height: 630, alt:
 
 export const metadata: Metadata = {
   // The live site, so the social preview image gets the absolute URL it needs.
-  metadataBase: new URL("https://clearcare.ie"),
+  metadataBase: new URL(SITE_URL),
   title: "ClearCare",
   icons: {
     icon: [
@@ -49,7 +50,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     images: [SHARE_IMAGE],
   },
-  description: "ClearCare is an interactive web application that makes HIQA nursing home inspection reports easier to search, understand, track, and compare. It ingests publicly available HIQA inspection PDFs, extracts regulation-level compliance judgements, and presents each nursing home’s compliance history in a structured format.",
+  // What a search engine shows under the home page, and under any page without its own.
+  description: "Find and compare nursing homes in Ireland: what HIQA's inspectors found at each home and how the home responded, with Fair Deal prices. Free, from public records.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

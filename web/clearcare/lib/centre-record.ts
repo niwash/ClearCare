@@ -5,18 +5,23 @@
 // per request, as getCentre and the others already are.
 import { cache } from "react";
 import type { CentreTab } from "@/components/centre/centre-tabs";
+import { centreDescription } from "@/lib/centre-description";
 import {
+  formatDate,
+  formatWeeklyPrice,
   getCentre,
   getCentreAmenities,
   getCentreFindings,
   getCentreReports,
   getHiqaCheckedAt,
+  getLatestInspectionDate,
   type CentreAmenities,
   type CentreDetail,
   type CentreReports,
 } from "@/lib/centres";
 import { getCentreEvents, markNoLongerOnline, type CentreEvent } from "@/lib/events";
 import { addFindings } from "@/lib/findings";
+import { townAndCounty } from "@/lib/town";
 
 export type CentreRecord =
   | { status: "not-found" }
@@ -98,10 +103,26 @@ export function centrePath(id: string, section?: CentreSection) {
 }
 
 // The tab's title: the home's name, after the subpage's when there is one.
+// And its description, from the home's own facts (CCARE-289).
 export async function centreMetadata(id: string, section?: CentreSection) {
   const lookup = await getCentre(id);
   if (lookup.status !== "found") {
     return { title: lookup.status === "not-found" ? "Nursing home not found" : "Nursing home page unavailable" };
   }
-  return { title: section ? `${CENTRE_SECTION_TITLES[section]} · ${lookup.centre.centre_name}` : lookup.centre.centre_name };
+  const { centre } = lookup;
+  // Only the overview's description gives the latest inspection date.
+  const inspectionDate = section ? null : await getLatestInspectionDate(id);
+  return {
+    title: section ? `${CENTRE_SECTION_TITLES[section]} · ${centre.centre_name}` : centre.centre_name,
+    description: centreDescription(
+      {
+        name: centre.centre_name,
+        where: townAndCounty(centre),
+        residents: centre.maximum_occupancy,
+        price: typeof centre.contract_price === "number" ? formatWeeklyPrice(centre.contract_price) : null,
+        inspected: inspectionDate ? formatDate(inspectionDate) : null,
+      },
+      section,
+    ),
+  };
 }

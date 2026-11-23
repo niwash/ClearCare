@@ -134,6 +134,8 @@ interface CentreResultFields {
   // The date of the list the price is from: the day a public list's prices start, or the day a
   // private list was published (CCARE-235).
   contract_price_date?: ISODate | null;
+  // The median price in force for homes of the same type. Without it the Overview leaves the note out.
+  typical_contract_price?: number | null;
   // The registration as it stands, its extra conditions in the order of their numbers, and the
   // Chief Inspector's note on it (CCARE-235). null, or empty, when the register gives none.
   registration?: Registration | null;
@@ -260,6 +262,12 @@ const getCentreReportList = cache(async (id: string): Promise<CentreReportsResul
 // null for a home with no report: that is the home the page needs it for (CCARE-235).
 export const getHiqaCheckedAt = cache(async (id: string): Promise<string | null> => {
   return (await getCentreReportList(id))?.hiqa_checked_at ?? null;
+});
+
+// The list keeps the latest date even when getCentreReports skips a report it can't read.
+export const getLatestInspectionDate = cache(async (id: string): Promise<ISODate | null> => {
+  const list = await getCentreReportList(id);
+  return list?.reports.find((report) => report.inspection_date)?.inspection_date ?? null;
 });
 
 // The reports HIQA no longer has online, which keep everything but their link (CCARE-236). Only the
