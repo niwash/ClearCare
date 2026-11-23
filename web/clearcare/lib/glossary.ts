@@ -75,7 +75,10 @@ export const GLOSSARY: GlossaryGroup[] = [
       {
         id: "announced-inspection",
         term: "Announced inspection",
-        meaning: "An inspection the home is told about beforehand. HIQA gives four weeks' notice.",
+        // No fixed notice period: ClearCare also shows short-notice announced inspections, told a day
+        // or two ahead (PR #232 review).
+        meaning:
+          "An inspection the home is told about beforehand. The notice can be a few weeks, or a day or two for a short-notice announced inspection.",
       },
       {
         id: "thematic-inspection",
@@ -330,7 +333,9 @@ export const GLOSSARY: GlossaryGroup[] = [
         term: "Full weekly cost",
         aka: ["Contract price", "Maximum contract price"],
         meaning:
-          "The weekly price of a resident's care that the HSE agreed with the home for Fair Deal, from the HSE's price list. It is the whole price, not what your family pays. Fair Deal works out your share of it. Extra charges aren't included.",
+          // "Agreed for Fair Deal" rather than "the HSE agreed": the NTPF agrees the price with private
+          // and voluntary homes, and the HSE sets it only for its own (PR #232 review).
+          "The weekly price of a resident's care agreed for Fair Deal, from the HSE's price list. It is the whole price, not what your family pays. Fair Deal works out your share of it. Extra charges aren't included.",
         more: fairDeal("how-much-will-you-pay"),
       },
       {
@@ -350,7 +355,9 @@ export const GLOSSARY: GlossaryGroup[] = [
         id: "financial-assessment",
         term: "Financial assessment",
         meaning:
-          "How the HSE works out what you pay towards your care under Fair Deal. You pay 80% of your income, and 7.5% a year of what you own above the disregard. It decides your share, not whether you can have Fair Deal.",
+          // A couple's rates as well as a single person's, as the Fair Deal guide gives them (PR #232
+          // review): with the single rates alone, a reader in a couple would work out twice their share.
+          "How the HSE works out what you pay towards your care under Fair Deal. A single person pays 80% of their income, and 7.5% a year of what they own above the disregard. For a couple it is 40% of their combined income and 3.75% a year of their combined assets above it. It decides your share, not whether you can have Fair Deal.",
         more: fairDeal("how-much-will-you-pay"),
       },
       {
