@@ -270,7 +270,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 (CCARE-271): the strip says which county before the homes do, and on a phone the
                 filter is behind "Filters", so this is the only place the county is named. */}
             {alertCounty && offerAlerts && (
+              // Keyed by the county: the filters change the address with router.push, so the strip
+              // stays mounted and would otherwise keep the previous county's followed id, showing
+              // its state for this one and stopping the wrong row. A new key mounts it afresh
+              // with the id the page read for this county (CCARE-271).
               <AlertStrip
+                key={alertCounty}
                 target={{ kind: "county", county: alertCounty }}
                 followedId={followedCountyId}
                 signedIn={Boolean(signedIn)}

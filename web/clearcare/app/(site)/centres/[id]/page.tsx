@@ -74,7 +74,10 @@ export default async function CentrePage({ params }: CentrePageProps) {
               phone the right-hand column it could also sit in falls below the whole record
               (CCARE-271). */}
           {offerAlerts && (
+            // Keyed by the home, as the county strip is on search: a move from one home to another
+            // keeps the component mounted, and its state would otherwise still name the last one.
             <AlertStrip
+              key={centre.centre_id}
               target={{ kind: "centre", centreId: centre.centre_id }}
               followedId={followedId}
               signedIn={Boolean(sub)}
