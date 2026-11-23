@@ -9,7 +9,7 @@ const PAGE_SIZE = 50;
 
 // Not /search, which is a question rather than a page, nor /compare and /survey, which are a
 // visitor's own.
-const SITE_PATHS = ["/", "/national", "/resources", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
+const SITE_PATHS = ["/", "/national", "/resources", "/resources/glossary", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
 
 export function sitemapPaths(centreIds: string[]) {
   return [...SITE_PATHS, ...centreIds.map((id) => `/centres/${id}`)];
