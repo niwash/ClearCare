@@ -83,7 +83,14 @@ export function GlossaryList({ groups, hiqaSourceUrl }: { groups: GlossaryGroup[
       term.scrollIntoView();
     }
     function reveal() {
-      const id = decodeURIComponent(window.location.hash.slice(1));
+      // A cut-off address (#%E0%A4) can't be decoded, and decodeURIComponent throws: it names no term,
+      // so the list is left as it is rather than falling to the error screen (PR #232 review).
+      let id: string;
+      try {
+        id = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        return;
+      }
       if (!termIds.has(id)) return;
       if (document.getElementById(id)) return openTerm(id);
       if (!anyChoice.current) return;
