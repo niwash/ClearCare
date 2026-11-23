@@ -10,7 +10,9 @@ export const JUDGEMENT_LABELS: Record<Judgement, string> = {
 
 export const JUDGEMENT_ORDER: Judgement[] = ["compliant", "substantially-compliant", "not-compliant", "not-assessed"];
 
-// What each judgement means, shown on hover or tap in the key (CCARE-278). The names stay HIQA's, as
+// What each judgement means, in HIQA's words, shown under the plain words in the glossary
+// (components/glossary/glossary-list.tsx). The key over a home's inspection history used these
+// until CCARE-283; it now gives the glossary's plain words (judgementMeaning, lib/glossary.ts). The names stay HIQA's, as
 // the reports a family opens use them: in user testing (P2_2) the participant asked what
 // "substantially compliant" meant, and took "not assessed" for a bad result.
 //

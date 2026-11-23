@@ -384,3 +384,11 @@ export const GLOSSARY: GlossaryGroup[] = [
     ],
   },
 ];
+
+// A judgement's plain words, as the glossary gives them, for the key over a home's inspection history
+// (components/centre/inspection-history.tsx), so the two say the same thing.
+export function judgementMeaning(judgement: Judgement): string {
+  const term = GLOSSARY.flatMap((group) => group.terms).find((each) => each.judgement === judgement);
+  if (!term) throw new Error(`The glossary has no term for the judgement ${judgement}`);
+  return term.meaning;
+}
