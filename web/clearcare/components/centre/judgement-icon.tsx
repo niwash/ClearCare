@@ -33,7 +33,7 @@ export const JUDGEMENT_MEANINGS: Record<Judgement, { text: string; from: "hiqa" 
     from: "hiqa",
   },
   "not-assessed": {
-    text: "The inspection didn't look at this regulation. It isn't a good or a bad result.",
+    text: "The inspection didn't look at this regulation. This does not mean the regulation has been met or not.",
     from: "clearcare",
   },
 };

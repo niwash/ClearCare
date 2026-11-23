@@ -94,6 +94,8 @@ export default function ResourcesPage() {
         </ul>
       </section>
 
+      <GlossaryCard />
+
       <OfficialInformation />
 
       {/* At the foot of the page, after everything to read, as the guides end (CCARE-258). It meets
@@ -116,6 +118,27 @@ function ResourcesHero() {
         <p className="max-w-3xl text-ink-muted md:text-lg">
           Help at every step, from the first conversation to moving in. Start with our guides.
         </p>
+      </div>
+    </section>
+  );
+}
+
+// The way to the glossary (CCARE-283), after the guides and before the official sites, whose pages
+// use the same words. One card, as wide as a guide card, the whole card the link like theirs.
+function GlossaryCard() {
+  return (
+    <section aria-labelledby="glossary-h" className="reveal">
+      <div className={`${linkCardClass} relative flex max-w-xl flex-col items-start gap-1.5 p-4 md:p-5`}>
+        <h2 id="glossary-h" className="font-heading text-lg font-semibold text-ink md:text-xl">
+          Glossary
+        </h2>
+        <p className="text-ink-muted">
+          What words like &ldquo;substantially compliant&rdquo;, &ldquo;full weekly cost&rdquo; and &ldquo;Fair Deal&rdquo; mean.
+        </p>
+        <Link href="/resources/glossary" className={`${stretchedActionClass} mt-2`}>
+          See the glossary
+          <span aria-hidden>→</span>
+        </Link>
       </div>
     </section>
   );
