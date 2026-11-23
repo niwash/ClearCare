@@ -833,7 +833,7 @@ function PhoneComparison({ columns, groups }: { columns: Column[]; groups: Group
       {groups.map((group) => (
         <details key={group.title} open className="group">
           {/* Stays at the top while its cards scroll by, so it's clear which group they're in. */}
-          <summary className="sticky top-0 z-10 -mx-4 flex min-h-12 cursor-pointer list-none items-center gap-2.5 border-y border-section-line bg-section px-4 py-1 [&::-webkit-details-marker]:hidden">
+          <summary className="sticky top-(--header-offset) z-10 -mx-4 flex min-h-12 cursor-pointer list-none items-center gap-2.5 border-y border-section-line bg-section px-4 py-1 [&::-webkit-details-marker]:hidden">
             <IconCircle path={group.icon} tint={group.tint} className="bg-surface!" />
             <h3 className="font-heading text-lg font-semibold">{group.title}</h3>
             <ShowHide className="ml-auto" />

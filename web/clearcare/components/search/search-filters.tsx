@@ -375,7 +375,7 @@ export function SearchFilters({
       </form>
 
       {/* Below md: Filters and the order under the box, kept at the top while the results scroll. */}
-      <div className="sticky top-0 z-20 -mx-4 -mt-6 flex gap-2 border-b border-line bg-surface px-4 py-3 md:hidden">
+      <div className="sticky top-(--header-offset) z-20 -mx-4 -mt-6 flex gap-2 border-b border-line bg-surface px-4 py-3 md:hidden">
         <button
           type="button"
           onClick={openSheet}

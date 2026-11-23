@@ -678,7 +678,7 @@ export default function FairDealGuide() {
 
         <section
           aria-labelledby="remember-h"
-          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 xl:[@media(min-height:70rem)]:sticky xl:top-6 adult:border adult:border-line"
+          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 xl:[@media(min-height:70rem)]:sticky xl:top-[calc(var(--header-offset)+1.5rem)] adult:border adult:border-line"
         >
           <h2 id="remember-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl xl:text-2xl">
             Key things to remember

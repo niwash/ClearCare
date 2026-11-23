@@ -325,7 +325,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
               ask for it before any search. The map is drawn inside it; keyed by the search, so a new
               search opens on its own pins. Before a search it has no list to lead back to. Beside the
               list it stays in view, with the window's height, while the list scrolls. */}
-          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-4 xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh-2rem)]" : ""}`}>
+          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-[calc(var(--header-offset)+1rem)] xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh-2rem)]" : ""}`}>
             <MapWhereShown everywhere={mapView || mapOfEveryHome}>
               {pins && mapId && (
                 <ResultsMap key={mapKey} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />

@@ -133,7 +133,7 @@ export default function UserJourneyGuide() {
           </ol>
         </Section>
 
-        <div className="flex flex-col gap-3 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-[calc(var(--header-offset)+1.5rem)]">
           <h2 className="font-heading text-xl font-semibold md:text-2xl">The steps as a picture</h2>
           {/* It opens full size when selected. */}
           <figure className="flex flex-col gap-2">

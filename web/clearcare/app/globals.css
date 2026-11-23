@@ -866,6 +866,16 @@ gmp-advanced-marker:focus-visible,
   max-width: var(--page-max);
 }
 
+/* The height of the navigation band, which stays at the top of the window as the page scrolls
+   (sticky-nav.tsx, CCARE-296). StickyNav sets it to the band's height, and to 0 while the band is
+   hidden (phones and tablets in the standard design). Whatever else sticks to the top sits this far
+   down, so it shows under the band rather than behind it, and a jump to an anchor stops below it.
+   0 until StickyNav has measured it. */
+:root {
+  --header-offset: 0px;
+  scroll-padding-top: var(--header-offset);
+}
+
 /* Small print: 13px in the standard design, and text-xs (about 16px) in the adult-centred one. */
 @utility text-small {
   font-size: 0.8125rem;

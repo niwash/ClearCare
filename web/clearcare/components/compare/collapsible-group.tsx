@@ -15,7 +15,7 @@ import { GROUP_HEADING } from "./sticky-home-names";
 // from the rows' background. The border round the heading is drawn as inset shadows, as a collapsed
 // table's borders stay behind when a cell sticks: the label cell takes the left side, the other cell
 // the right, so no line runs between them.
-const stuckClass = "sticky top-[var(--names-bar,0px)] z-10 bg-section";
+const stuckClass = "sticky top-[calc(var(--header-offset)+var(--names-bar,0px))] z-10 bg-section";
 // Written out in full so Tailwind finds them.
 const labelEdgeClass =
   "shadow-[inset_0_1px_0_var(--color-section-line),inset_0_-1px_0_var(--color-section-line),inset_1px_0_0_var(--color-section-line)]";

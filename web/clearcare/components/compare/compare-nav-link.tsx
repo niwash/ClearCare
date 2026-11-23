@@ -7,12 +7,13 @@ import Link from "next/link";
 import { compareHref } from "@/lib/compare";
 import { useComparedHomes } from "./compare-store";
 
-// current: this is the page being shown, which the navigation marks (nav-item.tsx, CCARE-258).
-export function CompareNavLink({ label, className, current }: { label: string; className: string; current?: boolean }) {
+// current: "page" for the page being shown, "true" for a page in its section, which the navigation
+// marks (nav-item.tsx, CCARE-258, CCARE-296).
+export function CompareNavLink({ label, className, current }: { label: string; className: string; current?: "page" | "true" }) {
   const homes = useComparedHomes();
 
   return (
-    <Link href={compareHref(homes?.map((home) => home.id) ?? [])} className={className} aria-current={current ? "page" : undefined}>
+    <Link href={compareHref(homes?.map((home) => home.id) ?? [])} className={className} aria-current={current}>
       {label}
     </Link>
   );
