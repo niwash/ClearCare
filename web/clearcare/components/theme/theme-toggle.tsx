@@ -39,7 +39,8 @@ export function useShownTheme(): Theme | null {
   return useSyncExternalStore(subscribe, shownTheme, () => null);
 }
 
-// "Dark mode", with a moon, and its state in words, as Easier to read beside it is (design-toggle.tsx).
+// "Dark mode", with a sun or a moon for the mode being shown, and its state in words, as Easier to
+// read beside it is (design-toggle.tsx).
 // It was a moon alone, labelled only for screen readers; in user testing (P2_1, CCARE-258) the
 // participant asked to turn on dark mode pressed Easier to read first, the one with words.
 export function ThemeToggle() {
@@ -56,8 +57,17 @@ export function ThemeToggle() {
       aria-pressed={dark}
       className="flex h-11 shrink-0 items-center gap-2 rounded-md border border-line px-3 text-sm font-semibold text-ink-muted hover:text-ink"
     >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" className="shrink-0">
-        <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+      {/* The mode being shown, as a picture (CCARE-296): a sun in light mode, a moon in dark mode.
+          The sun until the theme is known, as light is the default. */}
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="shrink-0">
+        {dark ? (
+          <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+        ) : (
+          <>
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+          </>
+        )}
       </svg>
       <span>
         Dark mode

@@ -45,16 +45,21 @@ export function StickyHomeNames({
       // Hidden on phones, where the cards replace the grid.
       const laidOut = frame.current.offsetParent !== null;
       const barHeight = bar.current.offsetHeight;
+      // The site's navigation band stays at the top of the window (sticky-nav.tsx, CCARE-296), so the
+      // bar hangs below it, and everything here is measured from its foot rather than the window's top.
+      const offset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-offset")) || 0;
       // From when the header row has gone up past the top until the grid's end reaches the bar.
       const show =
-        laidOut && head.getBoundingClientRect().bottom < 0 && frame.current.getBoundingClientRect().bottom > barHeight;
+        laidOut &&
+        head.getBoundingClientRect().bottom < offset &&
+        frame.current.getBoundingClientRect().bottom > offset + barHeight;
       setShown(show);
       frame.current.style.setProperty("--names-bar", show ? `${barHeight}px` : "0px");
       // A sticky cell sticks for the rest of the table, not just its group, so left alone each
       // heading would slide over the one before and leave a taller one showing beneath it. Each is
       // moved up by however far the next heading's row has come into it, from the rows' own places
       // (a row doesn't stick, only its cells), until it's gone behind the bar.
-      const top = show ? barHeight : 0;
+      const top = offset + (show ? barHeight : 0);
       const headings = [...frame.current.querySelectorAll<HTMLTableRowElement>(`[${GROUP_HEADING}]`)];
       headings.forEach((row, i) => {
         const box = row.getBoundingClientRect();
@@ -64,7 +69,7 @@ export function StickyHomeNames({
       });
       // A link or button the keyboard moves to scrolls into view below the bar and a group's
       // heading, not under them.
-      document.documentElement.style.scrollPaddingTop = laidOut ? `${barHeight + 64}px` : "";
+      document.documentElement.style.scrollPaddingTop = laidOut ? `${offset + barHeight + 64}px` : "";
     };
     const schedule = () => {
       if (!frameRequest) frameRequest = requestAnimationFrame(update);
@@ -90,7 +95,7 @@ export function StickyHomeNames({
       className="relative h-full rounded-2xl border border-line bg-surface shadow-sm adult:rounded-lg adult:shadow-none"
     >
       {/* No height, so it takes no room above the grid: the bar hangs from it, over the grid. */}
-      <div aria-hidden="true" inert className="sticky top-0 z-20 h-0">
+      <div aria-hidden="true" inert className="sticky top-(--header-offset) z-20 h-0">
         <div ref={bar} className={`absolute inset-x-0 top-0 border-b border-line shadow-md ${shown ? "" : "invisible"}`}>
           {/* The site's brand colour, as on the grid's own header row. */}
           <table className={`brand-band ${tableClass}`}>

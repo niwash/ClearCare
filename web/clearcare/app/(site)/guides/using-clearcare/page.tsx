@@ -209,7 +209,7 @@ export default function UsingClearCareGuide() {
         </section>
 
         {/* It opens full size when selected. */}
-        <div className="flex flex-col gap-3 lg:sticky lg:top-6">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-[calc(var(--header-offset)+1.5rem)]">
           <h2 className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">The steps as a picture</h2>
           <figure className="flex flex-col gap-2">
             <ImageViewer

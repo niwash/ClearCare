@@ -269,7 +269,7 @@ function ContactSection({
   return (
     <section id={id} aria-labelledby={`${id}-h`} className={`${fullWidthClass} ${SECTION_BANDS[id]} scroll-mt-6 adult:border-line adult:not-first:border-t`}>
       <div className="page-column grid gap-6 px-4 py-8 md:px-8 md:py-12 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-12">
-        <div className="flex items-center gap-4 lg:sticky lg:top-6 lg:self-start">
+        <div className="flex items-center gap-4 lg:sticky lg:top-[calc(var(--header-offset)+1.5rem)] lg:self-start">
           {/* On white, so it stands out from its band, which is near its own colour. */}
           <IconCircle path={ICON_PATHS[icon]} size="large" tint={tint} className="bg-surface!" />
           <h2 id={`${id}-h`} className="font-heading text-2xl font-semibold">

@@ -188,7 +188,7 @@ export default function ReadingInspectionReportsGuide() {
 
         <section
           aria-labelledby="checklist-h"
-          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 lg:[@media(min-height:56rem)]:sticky lg:top-6 adult:border adult:border-line"
+          className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 lg:[@media(min-height:56rem)]:sticky lg:top-[calc(var(--header-offset)+1.5rem)] adult:border adult:border-line"
         >
           <h2 id="checklist-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Quick checklist
