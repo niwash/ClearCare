@@ -198,6 +198,26 @@ describe("the orderings the site does not own", () => {
   });
 });
 
+describe("the strip's stop", () => {
+  const strip = read("components/alerts/alert-strip.tsx");
+  const searchPage = read("app/(site)/search/page.tsx");
+
+  // The every-report strip stands on the search page too, and stopping it must empty the account as
+  // the /alerts list does, not remove only its own row and leave homes and counties sending
+  // (CCARE-271).
+  test("stopping every report goes to the collection route", () => {
+    assert.match(strip, /target\.kind === "all"/);
+    assert.match(strip, /everything \? "\/api\/alerts\/subscriptions" :/);
+  });
+
+  // The filters change the address with router.push, so the strip stays mounted: without a key it
+  // would keep the previous county's id, show its state for the new county, and stop the old row
+  // (CCARE-271).
+  test("the county strip is keyed by the county it names", () => {
+    assert.match(searchPage, /<AlertStrip\s+key=\{alertCounty\}/);
+  });
+});
+
 describe("the unsubscribe token", () => {
   test("is the characters a link's capability can hold", () => {
     assert.equal(unsubscribeToken("abcDEF123_-"), "abcDEF123_-");

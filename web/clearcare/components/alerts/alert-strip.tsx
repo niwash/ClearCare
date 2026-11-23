@@ -109,10 +109,16 @@ export function AlertStrip({
 
   async function stop() {
     if (id === null) return;
+    // Every report is the broadest target there is, so stopping it stops every alert (CCARE-271):
+    // the collection's DELETE empties the account rather than removing this one row. The /alerts
+    // list does the same, and both must, or the strip would leave narrower alerts still sending.
+    const everything = target.kind === "all";
     setBusy(true);
     setError(null);
     try {
-      const response = await fetch(`/api/alerts/subscriptions/${id}`, { method: "DELETE" });
+      const response = await fetch(everything ? "/api/alerts/subscriptions" : `/api/alerts/subscriptions/${id}`, {
+        method: "DELETE",
+      });
       if (response.status === 401) {
         setExpired(true);
         return;
@@ -124,7 +130,7 @@ export function AlertStrip({
         return;
       }
       setId(null);
-      setSaid("You no longer receive alerts for this.");
+      setSaid(everything ? "You've stopped all your alerts." : "You no longer receive alerts for this.");
     } finally {
       setBusy(false);
     }
@@ -168,8 +174,14 @@ export function AlertStrip({
           </button>
         </form>
       ) : following ? (
-        <button type="button" onClick={stop} disabled={busy} className={QUIET_CLASS}>
-          {busy ? "Stopping…" : "Stop"}
+        <button
+          type="button"
+          onClick={stop}
+          disabled={busy}
+          className={QUIET_CLASS}
+          aria-label={target.kind === "all" ? "Stop all your alerts" : undefined}
+        >
+          {busy ? "Stopping…" : target.kind === "all" ? "Stop all" : "Stop"}
         </button>
       ) : (
         <button type="button" onClick={follow} disabled={busy} className={OFFER_CLASS}>
