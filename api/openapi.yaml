@@ -1048,6 +1048,64 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
 
+  /alerts/packages:
+    get:
+      operationId: listAlertPackages
+      summary: The alerts the site may offer
+      description: |
+        The active packages, in the seed's order, each with the id a subscription
+        names. The site reads this rather than assuming the ids: they come from
+        an identity column, so a database whose sequence has moved on numbers the
+        packages differently, and a site that sent a fixed id would be refused
+        with "package_id must name an active alert package".
+
+        It is about no account, so the site's token alone proves the caller.
+      parameters:
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          description: The token the site's server and the API share.
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The active packages, in the seed's order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AlertPackages"
+              example:
+                packages:
+                  - id: 1
+                    title: Alerts for a nursing home
+                    description: >-
+                      Get an email when a new inspection report is published for
+                      the nursing home you follow.
+                    scope: CENTRE
+                  - id: 2
+                    title: Alerts for a county
+                    description: >-
+                      Get an email when a new inspection report is published in
+                      the county you follow.
+                    scope: COUNTY
+                  - id: 3
+                    title: Alerts for every report
+                    description: >-
+                      Get an email whenever a new inspection report is published.
+                    scope: ALL
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
   /alerts/subscriptions:
     get:
       operationId: listAlertSubscriptions
@@ -1187,6 +1245,43 @@ paths:
                 status: 400
                 detail: no centre with that id
                 instance: /alerts/subscriptions
+        "401":
+          description: The request did not come from the site.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "503":
+          description: This API has no token configured.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+
+    delete:
+      operationId: cancelAllAlertSubscriptions
+      summary: Stop every alert this account follows
+      description: >
+        Deletes all of the account's active subscriptions. The site sends this
+        when the visitor stops the every-report alert: that is the broadest
+        thing an account can ask for, so nothing is left to send. The answer is
+        204 whether or not any rows were there, so a second press is not an
+        error.
+      parameters:
+        - name: X-ClearCare-Sub
+          in: header
+          required: true
+          schema:
+            type: string
+            maxLength: 128
+        - name: X-ClearCare-Token
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The account follows nothing now.
         "401":
           description: The request did not come from the site.
           content:
@@ -2995,6 +3090,34 @@ components:
           type: [string, "null"]
           format: date-time
           description: When the saved search was last stored, to the second.
+
+    AlertPackage:
+      type: object
+      description: >
+        One package the site may offer, with the id a subscription to it names. The
+        id is the database's, so the site reads it rather than assuming the seed's
+        order.
+      required: [id, title, description, scope]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: [string, "null"]
+        scope:
+          type: string
+          enum: [CENTRE, COUNTY, ALL]
+
+    AlertPackages:
+      type: object
+      description: The active packages, in the seed's order.
+      required: [packages]
+      properties:
+        packages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AlertPackage"
 
     AlertSubscription:
       type: object

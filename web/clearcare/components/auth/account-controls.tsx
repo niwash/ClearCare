@@ -41,9 +41,9 @@ function readSession(): Promise<SessionState> {
   return inFlight;
 }
 
-// The placement decides the shape: the header has room for two buttons side by side, and the phone
-// menu keeps the same rows as the links above it, one under the other.
-export function AccountControls({ variant }: { variant: "header" | "menu" | "nav" }) {
+// The session, for each control that needs its own answer. The shared request above means the
+// header's controls cost one call between them however many are rendered.
+function useSession() {
   const [state, setState] = useState<SessionState | { status: "loading" }>({ status: "loading" });
 
   useEffect(() => {
@@ -55,6 +55,14 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
       live = false;
     };
   }, []);
+
+  return state;
+}
+
+// The placement decides the shape: the header has room for two buttons side by side, and the phone
+// menu keeps the same rows as the links above it, one under the other.
+export function AccountControls({ variant }: { variant: "header" | "menu" | "nav" }) {
+  const state = useSession();
 
   const inMenu = variant === "menu";
   // The menu's own links are rows of text, so an action there is a row too.
@@ -125,5 +133,25 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
         )}
       </div>
     </div>
+  );
+}
+
+// "Your alerts" beside Your shortlist (CCARE-271), in the header's top band on every width, and in
+// the shortlist button's outlined shape without a count: there is nothing to count. It sits here
+// rather than with the account controls so it keeps one place on every page; signed out it shows
+// nothing, since an alert belongs to an account, and a home's page carries the sign-in offer.
+export function AlertsButton() {
+  const state = useSession();
+  if (state.status !== "signed-in") return null;
+
+  return (
+    <Link
+      href="/alerts"
+      className="flex h-11 shrink-0 items-center whitespace-nowrap rounded-md border border-line px-3 text-sm font-semibold text-ink-muted no-underline hover:text-ink hover:no-underline"
+    >
+      {/* Shorter on phones, as the shortlist's label is, so both fit beside the display buttons. */}
+      <span className="sm:hidden">Alerts</span>
+      <span className="max-sm:hidden">Your alerts</span>
+    </Link>
   );
 }

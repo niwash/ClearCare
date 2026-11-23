@@ -51,6 +51,8 @@ export const ICON_PATHS = {
     "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM12 13a1 1 0 1 0 0-2 1 1 0 0 0 0 2z",
   // A light bulb
   vision: "M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2.1h5c0-.9.4-1.6 1-2.1A6 6 0 0 0 12 3z",
+  // A bell, for alerts (CCARE-271)
+  bell: "M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6zM10.5 19a1.8 1.8 0 0 0 3 0",
 } as const;
 
 export type IconName = keyof typeof ICON_PATHS;
