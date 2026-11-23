@@ -5,6 +5,7 @@
 // found, how the home responded, the inspection history and what to ask have pages of their own
 // (look-first/, next-steps/, inspections/, questions/), with the tabs in the layout.
 import { Band } from "@/components/centre/centre-band";
+import { AlertStrip } from "@/components/alerts/alert-strip";
 import { RecordPrintButton } from "@/components/centre/record-print";
 import { CentreAmenitiesSection } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
@@ -31,6 +32,10 @@ import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/c
 import { TabPager } from "@/components/centre/tab-pager";
 import { farBelowTypical } from "@/lib/price-context";
 import { returnQuery } from "@/lib/return-to-centre";
+import { alertsConfigured, listAlerts } from "@/lib/alerts-api";
+import { followsCentre } from "@/lib/alerts";
+import { authRuntime } from "@/lib/auth";
+import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { formatEircode } from "@/lib/search";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -51,10 +56,30 @@ export default async function CentrePage({ params }: CentrePageProps) {
   if (record.status !== "found") notFound();
   const { centre, reports, amenities, hiqaCheckedAt, events } = record;
 
+  // Whether this account already follows this home (CCARE-271). Read on the server, and only for a
+  // signed-in visitor: without a session there is nothing to ask the API for, and the strip offers
+  // the sign-in instead. A deployment without alerts shows no strip at all.
+  const sub = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
+  const followed = sub && alertsConfigured() ? await listAlerts(sub) : null;
+  const offerAlerts = authConfigured() && alertsConfigured();
+  const followedId = followed?.ok
+    ? (followed.subscriptions.find((row) => followsCentre(row, centre.centre_id))?.id ?? null)
+    : null;
+
   return (
     <>
       <Band tint="page">
         <div className="flex flex-col gap-6">
+          {/* The offer, first, under the tabs and above the facts: it is about this home, and on a
+              phone the right-hand column it could also sit in falls below the whole record
+              (CCARE-271). */}
+          {offerAlerts && (
+            <AlertStrip
+              target={{ kind: "centre", centreId: centre.centre_id }}
+              followedId={followedId}
+              signedIn={Boolean(sub)}
+            />
+          )}
           {/* Empty from an API without them, and for most homes; the box then isn't there. */}
           <ExtraConditions
             conditions={centre.extra_conditions ?? []}
