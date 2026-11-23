@@ -3,7 +3,8 @@ import { RecordPrintButton } from "@/components/centre/record-print";
 import type { Inspection, PromiseTrail, RegulationHistory } from "@/lib/centres";
 import type { CentreEvent } from "@/lib/events";
 import { JudgementGrid } from "./judgement-grid";
-import { JUDGEMENT_LABELS, JUDGEMENT_MEANINGS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
+import { judgementMeaning } from "@/lib/glossary";
+import { JUDGEMENT_LABELS, JUDGEMENT_ORDER, JudgementIcon } from "./judgement-icon";
 import { Definition } from "@/components/ui/definition";
 import { sectionCardClass, sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 import { Timeline, TimelineNotes } from "./timeline";
@@ -48,23 +49,15 @@ export function InspectionHistory({ inspections, history, trails, events, trails
             corners rounded as the card's are. Its own edge, in the band's line colour, laid over the
             card's (-m-px): the card's light edge disappeared against the band. */}
         <div className="-mx-px -mt-px rounded-t-2xl border border-b-0 border-section-line bg-section px-4 py-3 md:px-7 adult:rounded-t-lg">
-          {/* Each judgement's meaning on hover or tap (CCARE-278). */}
+          {/* Each judgement's meaning on hover or tap (CCARE-278), in the glossary's plain words
+              (CCARE-283), so the key and /resources/glossary say the same thing. */}
           <ul aria-label="Key" className="flex flex-wrap gap-x-5 gap-y-1 text-base text-ink">
             {JUDGEMENT_ORDER.map((judgement) => (
               <li key={judgement} className="flex items-center gap-1.5">
                 <JudgementIcon judgement={judgement} size={12} />
                 <Definition
                   title={JUDGEMENT_LABELS[judgement]}
-                  meaning={
-                    JUDGEMENT_MEANINGS[judgement].from === "hiqa"
-                      ? `“${JUDGEMENT_MEANINGS[judgement].text}”`
-                      : JUDGEMENT_MEANINGS[judgement].text
-                  }
-                  source={
-                    JUDGEMENT_MEANINGS[judgement].from === "hiqa"
-                      ? "HIQA’s definition, from its assessment-judgment framework (2025)"
-                      : "Not one of HIQA’s judgements: ClearCare’s word for a regulation an inspection didn’t judge"
-                  }
+                  meaning={judgementMeaning(judgement)}
                 >
                   {JUDGEMENT_LABELS[judgement]}
                 </Definition>
