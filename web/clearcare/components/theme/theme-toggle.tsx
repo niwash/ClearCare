@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { THEME_STORAGE_KEY, type Theme } from "./theme";
+import { ToggleState } from "./toggle-state";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 const listeners = new Set<() => void>();
@@ -60,8 +61,7 @@ export function ThemeToggle() {
       </svg>
       <span>
         Dark mode
-        {/* Screen readers hear the state from aria-pressed, so they don't need the words too. */}
-        {theme && <span aria-hidden="true">: {dark ? "On" : "Off"}</span>}
+        <ToggleState on={theme === null ? null : dark} />
       </span>
     </button>
   );

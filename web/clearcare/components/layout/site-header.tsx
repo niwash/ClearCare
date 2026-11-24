@@ -76,10 +76,9 @@ export function SiteHeader() {
             <ShortlistButton variant="header" />
             {/* Your alerts beside it, in the same outlined shape without the count (CCARE-271). */}
             <AlertsButton />
-            {/* Together, for the welcome tour's step about them. Both have words now (CCARE-258), so on
-                a small phone in the adult-centred design's larger text they wrap onto two rows
-                rather than running off the screen. */}
-            <div data-tour="display" className="flex flex-wrap items-center justify-end gap-2">
+            {/* Together, for the welcome tour's step about them. A smaller horizontal gap gives
+                the adult-centred design's larger labels more room before the buttons wrap. */}
+            <div data-tour="display" className="flex flex-wrap items-center justify-end gap-2 adult:gap-x-1">
               <DesignToggle />
               <ThemeToggle />
             </div>
