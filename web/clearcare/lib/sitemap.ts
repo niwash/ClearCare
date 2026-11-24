@@ -1,10 +1,11 @@
 // lib/sitemap.ts
-// The pages a search engine is told about (CCARE-289): the site's own, and each home's overview,
-// with its four tabs when a report of it is stored. The tabs are listed too (CCARE-301), not left
-// to be reached by their links: the site is new and has few links from elsewhere, and the tabs
-// hold the text people search for. The tests load this file as it is (tests/sitemap.test.ts), so
-// its imports are named with their extension.
+// The pages a search engine is told about (CCARE-289): the site's own, each county's (CCARE-303),
+// and each home's overview, with its four tabs when a report of it is stored. The tabs are listed
+// too (CCARE-301), not left to be reached by their links: the site is new and has few links from
+// elsewhere, and the tabs hold the text people search for. The tests load this file as it is
+// (tests/sitemap.test.ts), so its imports are named with their extension.
 import type { CentreSection } from "./centre-record.ts";
+import { COUNTIES } from "./counties.ts";
 import { GUIDES } from "./guides.ts";
 
 // The most homes the API gives in one answer (page_size in api/openapi.yaml).
@@ -13,6 +14,10 @@ const PAGE_SIZE = 50;
 // Not /search, which is a question rather than a page, nor /compare and /survey, which are a
 // visitor's own.
 const SITE_PATHS = ["/", "/national", "/resources", "/resources/glossary", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
+
+// The search for a county alone is that county's page, with this as the address it gives as its
+// own (countyAloneHref, lib/page-search.ts): the page people look for as "nursing homes in Cork".
+const COUNTY_PATHS = COUNTIES.map((county) => `/search?county=${county}`);
 
 // A home's tabs after its overview, in the order the record shows them.
 const CENTRE_SECTIONS: CentreSection[] = ["look-first", "next-steps", "inspections", "questions"];
@@ -26,7 +31,7 @@ export function sitemapPaths(centres: ListedCentre[]) {
     // Without a stored report the four tabs say only that there is none, the same on every such home.
     ...(hasReport ? CENTRE_SECTIONS.map((section) => `/centres/${id}/${section}`) : []),
   ]);
-  return [...SITE_PATHS, ...centrePaths];
+  return [...SITE_PATHS, ...COUNTY_PATHS, ...centrePaths];
 }
 
 // Every home in the served register, from GET /centres a page at a time.

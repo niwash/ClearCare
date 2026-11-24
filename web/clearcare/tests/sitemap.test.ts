@@ -1,10 +1,13 @@
 // tests/sitemap.test.ts
-// The list of pages a search engine is given (lib/sitemap.ts): the pages every visitor can open, and
-// for each home the API serves its overview, with its four tabs when a report of it is stored.
+// The list of pages a search engine is given (lib/sitemap.ts): the pages every visitor can open, each
+// county's page, and for each home the API serves its overview, with its four tabs when a report of
+// it is stored.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { COUNTIES } from "../lib/counties.ts";
+import { countyAloneHref, readSearch } from "../lib/page-search.ts";
 import { allCentres, sitemapPaths } from "../lib/sitemap.ts";
 
 type ApiCentre = { centre_id: string; latest_inspection: { date: string | null } | null };
@@ -97,4 +100,16 @@ test("a home with no stored report is listed by its overview alone", () => {
     "/centres/39/questions",
     "/centres/9439",
   ]);
+});
+
+test("lists each county's page, under the address the page gives as its own", () => {
+  const paths = sitemapPaths([]);
+
+  assert.ok(paths.includes("/search?county=Cork"));
+  for (const county of COUNTIES) {
+    const path = `/search?county=${county}`;
+    assert.ok(paths.includes(path), path);
+    assert.equal(countyAloneHref(readSearch({ county })), path);
+  }
+  assert.equal(paths.filter((path) => path.startsWith("/search")).length, 26);
 });
