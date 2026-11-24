@@ -2,6 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { DESIGN_STORAGE_KEY, type Design } from "./theme";
+import { ToggleState } from "./toggle-state";
 
 const listeners = new Set<() => void>();
 
@@ -49,8 +50,7 @@ export function DesignToggle() {
           when it's on. */}
       <span>
         Easier to read
-        {/* Screen readers hear the state from aria-pressed, so they don't need the words too. */}
-        {design && <span aria-hidden="true">: {on ? "On" : "Off"}</span>}
+        <ToggleState on={design === null ? null : on} />
       </span>
     </button>
   );
