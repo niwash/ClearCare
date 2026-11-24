@@ -2,10 +2,9 @@
 // The trail at the top of every page but the home page: where the page sits in the site, from
 // Home down to its parent. The page itself is left out, as its heading is right below; on phones
 // only the parent shows, as "‹ Parent", so the trail never wraps, as does a trail of Home alone. Search engines get the full
-// trail, the page included, as a BreadcrumbList.
+// trail, the page included, as a BreadcrumbList (lib/breadcrumb-list.ts).
 import Link from "next/link";
-
-export type Crumb = { label: string; href: string };
+import { breadcrumbList, type Crumb } from "@/lib/breadcrumb-list";
 
 // Labels for the pages in the site header, written the same as there so a crumb reads like the menu.
 export const SEARCH_CRUMB: Crumb = { label: "Search for Homes", href: "/search" };
@@ -43,17 +42,4 @@ export function Breadcrumb({ trail, current }: { trail: Crumb[]; current: string
       />
     </>
   );
-}
-
-// schema.org BreadcrumbList. The URLs are relative, resolved against the page, as the site has no
-// fixed address yet; the last item is the page itself, which needs no URL.
-function breadcrumbList(crumbs: Crumb[], current: string) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      ...crumbs.map((crumb, i) => ({ "@type": "ListItem", position: i + 1, name: crumb.label, item: crumb.href })),
-      { "@type": "ListItem", position: crumbs.length + 1, name: current },
-    ],
-  };
 }
