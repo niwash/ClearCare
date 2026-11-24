@@ -1,7 +1,10 @@
 // lib/sitemap.ts
 // The pages a search engine is told about (CCARE-289): the site's own, and each home's overview,
-// whose tabs it reaches by their links. The tests load this file as it is (tests/sitemap.test.ts),
-// so its imports are named with their extension.
+// with its four tabs when a report of it is stored. The tabs are listed too (CCARE-301), not left
+// to be reached by their links: the site is new and has few links from elsewhere, and the tabs
+// hold the text people search for. The tests load this file as it is (tests/sitemap.test.ts), so
+// its imports are named with their extension.
+import type { CentreSection } from "./centre-record.ts";
 import { GUIDES } from "./guides.ts";
 
 // The most homes the API gives in one answer (page_size in api/openapi.yaml).
@@ -11,20 +14,32 @@ const PAGE_SIZE = 50;
 // visitor's own.
 const SITE_PATHS = ["/", "/national", "/resources", "/resources/glossary", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
 
-export function sitemapPaths(centreIds: string[]) {
-  return [...SITE_PATHS, ...centreIds.map((id) => `/centres/${id}`)];
+// A home's tabs after its overview, in the order the record shows them.
+const CENTRE_SECTIONS: CentreSection[] = ["look-first", "next-steps", "inspections", "questions"];
+
+// What the list needs to know of a home: its id, and whether a report of it is stored.
+type ListedCentre = { id: string; hasReport: boolean };
+
+export function sitemapPaths(centres: ListedCentre[]) {
+  const centrePaths = centres.flatMap(({ id, hasReport }) => [
+    `/centres/${id}`,
+    // Without a stored report the four tabs say only that there is none, the same on every such home.
+    ...(hasReport ? CENTRE_SECTIONS.map((section) => `/centres/${id}/${section}`) : []),
+  ]);
+  return [...SITE_PATHS, ...centrePaths];
 }
 
-// The id of every home in the served register, from GET /centres a page at a time.
-export async function allCentreIds(apiUrl: string, get: (url: string) => Promise<Response> = fetch) {
-  const ids: string[] = [];
+// Every home in the served register, from GET /centres a page at a time.
+export async function allCentres(apiUrl: string, get: (url: string) => Promise<Response> = fetch) {
+  const all: ListedCentre[] = [];
   for (let page = 1; ; page++) {
     const response = await get(`${apiUrl}/centres?page=${page}&page_size=${PAGE_SIZE}`);
     // No answer is not an empty register: a sitemap without the homes would tell a search engine
     // they are gone.
     if (!response.ok) throw new Error(`GET /centres answered ${response.status}`);
-    const { centres, total }: { centres: { centre_id: string }[]; total: number } = await response.json();
-    ids.push(...centres.map((centre) => centre.centre_id));
-    if (ids.length >= total || centres.length === 0) return ids;
+    const { centres, total }: { centres: { centre_id: string; latest_inspection: object | null }[]; total: number } = await response.json();
+    // latest_inspection is the newest stored report, null when there is none; its date can be null.
+    all.push(...centres.map((centre) => ({ id: centre.centre_id, hasReport: centre.latest_inspection !== null })));
+    if (all.length >= total || centres.length === 0) return all;
   }
 }
