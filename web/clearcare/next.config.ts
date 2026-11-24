@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Crawlers and page audits look in the head for each centre's title and description.
+  // Requests without a User-Agent still get streamed metadata because Next checks for the header first.
+  htmlLimitedBots: /.*/,
   async redirects() {
     return [
       // The start page used to be /home; old links and bookmarks still reach it. Not permanent, so
