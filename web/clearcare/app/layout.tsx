@@ -27,7 +27,8 @@ const plexMono = IBM_Plex_Mono({
 const SHARE_IMAGE = { url: "/logos/og-image.png", width: 1200, height: 630, alt: "ClearCare: Nursing home inspections made clear" };
 
 export const metadata: Metadata = {
-  // The live site, so the social preview image gets the absolute URL it needs.
+  // The live site, so the social preview image and each page's canonical link (app/(site)/layout.tsx)
+  // get the absolute URLs they need.
   metadataBase: new URL(SITE_URL),
   title: "ClearCare",
   icons: {
