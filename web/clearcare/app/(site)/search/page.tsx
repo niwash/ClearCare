@@ -23,7 +23,7 @@ import { countyId, followsCounty } from "@/lib/alerts";
 import { formatDate } from "@/lib/centres";
 import { centresByCounty } from "@/lib/counties";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
-import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
+import { countyAlone, countyAloneHref, filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { pointsConfigured, readPoints } from "@/lib/points-api";
 import { preferencesConfigured, readSavedSearch } from "@/lib/preferences-api";
 import { formatEircode, searchCentres, unavailableMessage, type RegisterSnapshot, type SearchResponse } from "@/lib/search";
@@ -117,7 +117,11 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
   if (!hasSearch(search)) return { title: "Find a nursing home" };
   if (!leavesHomesOut(search)) return { title: fromPointAlone(search) };
   const what = described(search);
-  return { title: what ? `Nursing homes${what}` : "Search results" };
+  const title = what ? `Nursing homes${what}` : "Search results";
+  // A county's page has its own address for a search engine (CCARE-303). Every other search keeps
+  // the layout's, which is /search whatever the query (CCARE-301).
+  const canonical = countyAloneHref(search);
+  return canonical ? { title, alternates: { canonical } } : { title };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
@@ -214,7 +218,8 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <GoogleForSearch apiKey={googleKey}>
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
-      <SearchHero wide={besideMap} />
+      {/* A county's page is headed by the county, in the title's words (generateMetadata). */}
+      <SearchHero heading={countyAlone(search) ? `Nursing homes${described(search)}` : "Find a nursing home"} wide={besideMap} />
 
       {/* The search box and the filters in a bar above the results, which have the page's width
           (CCARE-230). They were a column beside the results (CCARE-189) because a bar can't hold as
@@ -350,15 +355,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
 // The top of the page, flush under the header as on the resources page: the heading and a line of
 // welcome on the soft welcome band (welcome-band, globals.css). The results say what was searched,
-// so the heading stays the task.
+// so the heading stays the task, but for a county alone (CCARE-303): that search is the county's
+// page, the one a search engine lists for "nursing homes in Cork", so its heading says so.
 // wide: the results have the map beside the list, and the page is wider than the site's column.
-function SearchHero({ wide }: { wide: boolean }) {
+function SearchHero({ heading, wide }: { heading: string; wide: boolean }) {
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className={`page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8 ${wide ? widePageColumnClass : ""}`}>
         <Breadcrumb trail={[]} current="Search for Homes" />
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
-          Find a nursing home
+          {heading}
         </h1>
       </div>
     </section>

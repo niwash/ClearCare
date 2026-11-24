@@ -1,11 +1,12 @@
 // tests/page-search.test.ts
 // The search as the page address holds it (lib/page-search.ts): what reaches GET /centres from a
-// place with a point to measure from (CCARE-228), and that links from before it search as they did.
+// place with a point to measure from (CCARE-228), that links from before it search as they did, and
+// which search is a county's own page with its own address for a search engine (CCARE-303).
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref } from "../lib/page-search.ts";
+import { countyAlone, countyAloneHref, filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref } from "../lib/page-search.ts";
 import { NO_FILTERS } from "../lib/search-filters.ts";
 
 const NOTHING = { name: "", place: "", near: "", county: "", selection: NO_FILTERS, sort: "name" as const };
@@ -129,5 +130,64 @@ describe("the view", () => {
   test("goes with the search: an emptied one is the cleared page, not a map of nothing", () => {
     assert.equal(searchHref({ ...NOTHING, view: "map" }), "/search");
     assert.equal(filtersClearedHref({ ...NOTHING, view: "map" }), "/search?filtersCleared=true");
+  });
+});
+
+describe("a search for a county alone", () => {
+  test("is a county and nothing else", () => {
+    assert.equal(countyAlone(readSearch({ county: "Cork" })), true);
+  });
+
+  test("is still one on a later page, on the map, or with the order it has anyway", () => {
+    assert.equal(countyAlone(readSearch({ county: "Cork", page: "2" })), true);
+    assert.equal(countyAlone(readSearch({ county: "Cork", view: "map" })), true);
+    assert.equal(countyAlone(readSearch({ county: "Cork", sort: "name" })), true);
+  });
+
+  test("isn't one with a name, a place, a point, a filter or another order beside the county", () => {
+    for (const beside of [
+      { name: "bush" },
+      { place: "Bantry" },
+      { place: "Bantry, Cork", near: "51.68,-9.45" },
+      { care: "dementia" },
+      { sort: "price" },
+    ]) {
+      assert.equal(countyAlone(readSearch({ county: "Cork", ...beside })), false, JSON.stringify(beside));
+    }
+  });
+
+  test("isn't one without a county, or with one the register doesn't have", () => {
+    assert.equal(countyAlone(readSearch({})), false);
+    assert.equal(countyAlone(readSearch({ name: "bush" })), false);
+    assert.equal(countyAlone(readSearch({ county: "any" })), false);
+    // GET /centres answers 400 to both: it spells a county one way only.
+    assert.equal(countyAlone(readSearch({ county: "cork" })), false);
+    assert.equal(countyAlone(readSearch({ county: "Narnia" })), false);
+  });
+
+  test("isn't one with another number of homes to a page, which the page numbers wouldn't fit", () => {
+    assert.equal(countyAlone(readSearch({ county: "Cork", page_size: "5" })), false);
+  });
+});
+
+describe("the address a search engine holds a county's page under", () => {
+  test("is the county's, with nothing else", () => {
+    assert.equal(countyAloneHref(readSearch({ county: "Cork" })), "/search?county=Cork");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", view: "map", sort: "name" })), "/search?county=Cork");
+  });
+
+  test("keeps the page from the second on", () => {
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "2" })), "/search?county=Cork&page=2");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "1" })), "/search?county=Cork");
+  });
+
+  test("leaves out a page that isn't a number", () => {
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "two" })), "/search?county=Cork");
+  });
+
+  test("is none for any other search, which keeps /search", () => {
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", care: "dementia" })), null);
+    assert.equal(countyAloneHref(readSearch({ name: "bush" })), null);
+    assert.equal(countyAloneHref(readSearch({})), null);
   });
 });

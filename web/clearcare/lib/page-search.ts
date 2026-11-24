@@ -2,7 +2,7 @@
 // The search as the page address holds it, and what it sends to GET /centres. It lives here, apart
 // from lib/search.ts, because that file reads the API (next/server) and the tests load this one as it
 // is (tests/page-search.test.ts), so its imports are named with their extension.
-import { ANY_COUNTY } from "./counties.ts";
+import { ANY_COUNTY, COUNTIES } from "./counties.ts";
 import { asEircode } from "./eircode.ts";
 import { readNear } from "./near.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters.ts";
@@ -111,4 +111,22 @@ export function searchHref(search: LinkedSearch, page = 1) {
 export function filtersClearedHref(search: LinkedSearch) {
   const href = searchHref(search);
   return href === "/search" ? "/search?filtersCleared=true" : href;
+}
+
+// Whether the search is for a county and nothing else: no name, place, point, filter or other
+// order. That search is the county's page (CCARE-303): its heading names the county and a search
+// engine is given its address, where every other search is a question and is held as /search. The
+// county is one the register has, as the API spells it, since any other gets no homes but a 400.
+// A page_size in the address isn't one either: its page numbers are of other pages.
+export function countyAlone(search: PageSearch) {
+  const nothingElse = !search.name && !search.place && !search.near && filterCount(search.selection) === 0 && search.sort === "name";
+  return nothingElse && COUNTIES.includes(search.county) && !search.query.page_size;
+}
+
+// The address a search engine holds a county's page under, or null for any other search: the
+// county, and the page from the second on. The view is left out, as the map shows the same homes.
+export function countyAloneHref(search: PageSearch) {
+  if (!countyAlone(search)) return null;
+  const page = Number(search.query.page);
+  return searchHref({ ...search, view: "list" }, Number.isInteger(page) ? page : 1);
 }
