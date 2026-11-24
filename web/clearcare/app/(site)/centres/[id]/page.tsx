@@ -66,23 +66,25 @@ export default async function CentrePage({ params }: CentrePageProps) {
     ? (followed.subscriptions.find((row) => followsCentre(row, centre.centre_id))?.id ?? null)
     : null;
 
+  // The offer to follow this home (CCARE-271), with the home's other actions under HIQA's link and
+  // above the shortlist (CCARE-297): first under the tabs, it came before the home itself. On a phone
+  // that column follows the record's facts. Keyed by the home, as the county strip is on search: a
+  // move from one home to another keeps the component mounted, and its state would otherwise still
+  // name the last one.
+  const alerts = offerAlerts ? (
+    <AlertStrip
+      key={centre.centre_id}
+      target={{ kind: "centre", centreId: centre.centre_id }}
+      followedId={followedId}
+      signedIn={Boolean(sub)}
+      compact
+    />
+  ) : null;
+
   return (
     <>
       <Band tint="page">
         <div className="flex flex-col gap-6">
-          {/* The offer, first, under the tabs and above the facts: it is about this home, and on a
-              phone the right-hand column it could also sit in falls below the whole record
-              (CCARE-271). */}
-          {offerAlerts && (
-            // Keyed by the home, as the county strip is on search: a move from one home to another
-            // keeps the component mounted, and its state would otherwise still name the last one.
-            <AlertStrip
-              key={centre.centre_id}
-              target={{ kind: "centre", centreId: centre.centre_id }}
-              followedId={followedId}
-              signedIn={Boolean(sub)}
-            />
-          )}
           {/* Empty from an API without them, and for most homes; the box then isn't there. */}
           <ExtraConditions
             conditions={centre.extra_conditions ?? []}
@@ -99,7 +101,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
               timelineHref={centrePath(centre.centre_id, "inspections")}
             />
           )}
-          <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} />
+          <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} alerts={alerts} />
         </div>
       </Band>
 
@@ -153,7 +155,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
 const actionButtonClass = "flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold";
 const outlineButtonClass = `${actionButtonClass} border border-line bg-surface text-ink no-underline hover:border-primary hover:text-ink`;
 
-function CentreActions({ centre, reports }: { centre: CentreDetail; reports: CentreReports | null }) {
+function CentreActions({ centre, reports, alerts }: { centre: CentreDetail; reports: CentreReports | null; alerts: ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5">
       {/* TODO: An "Ask about this home" button, linking to the assistant once that page exists.
@@ -179,6 +181,7 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
       <a href={centre.hiqa_url} className={outlineButtonClass}>
         View on the HIQA website
       </a>
+      {alerts && <div className="mt-1">{alerts}</div>}
       {/* The homes saved so far, so the family can see where this one fits and go on to compare
           them: a button that opens them in a panel from the side, as on the search page, rather than
           a box that made the column taller than the details beside it (CCARE-212). */}
@@ -191,7 +194,17 @@ function CentreActions({ centre, reports }: { centre: CentreDetail; reports: Cen
 
 // The facts in small cards by what a family asks about them, rather than one long box of rows
 // (CCARE-212): how to reach the home beside the photo, then its size, its cost and its inspections.
-function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail; reports: CentreReports | null; hiqaCheckedAt: string | null }) {
+function CentreFacts({
+  centre,
+  reports,
+  hiqaCheckedAt,
+  alerts,
+}: {
+  centre: CentreDetail;
+  reports: CentreReports | null;
+  hiqaCheckedAt: string | null;
+  alerts: ReactNode;
+}) {
   const latest = reports?.inspections.at(-1);
   const first = reports?.inspections[0];
   const typicalPrice = centre.typical_contract_price;
@@ -364,7 +377,7 @@ function CentreFacts({ centre, reports, hiqaCheckedAt }: { centre: CentreDetail;
           className="max-lg:order-last lg:col-start-2 lg:row-start-1 lg:self-start print:hidden"
         />
         <div className="print:hidden lg:col-start-2 lg:row-start-2 lg:self-start">
-          <CentreActions centre={centre} reports={reports} />
+          <CentreActions centre={centre} reports={reports} alerts={alerts} />
         </div>
       </div>
 

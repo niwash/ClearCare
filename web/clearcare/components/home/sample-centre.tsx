@@ -1,5 +1,5 @@
 // components/home/sample-centre.tsx
-// The start page's example home, under the page's "Here's an example of how we sum up reports"
+// The start page's example home, under the page's "See what a home's page looks like"
 // heading, so its own headings are a level down. Rendered on the server inside <Suspense>, so the
 // rest of the page arrives first and this streams in when the home has been picked.
 //
