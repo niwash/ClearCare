@@ -91,7 +91,7 @@ export default async function StartPage() {
           {/* The record card above (site-features.tsx) jumps here; the margin keeps the heading clear of
               the window's top edge. */}
           <h2 id="example-h" className="scroll-mt-6 font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-            Here&apos;s an example of how we sum up reports
+            See what a home&apos;s page looks like
           </h2>
           <span aria-hidden className="reveal-bar h-1 w-12 origin-left rounded-full bg-accent adult:hidden" />
           <p className="text-ink-muted md:text-lg">A home picked at random, and what its latest inspection found.</p>

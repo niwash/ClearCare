@@ -24,7 +24,7 @@ import { Alert } from "@/components/layout/alert";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { ShowHide } from "@/components/ui/chevron";
-import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import {
@@ -225,9 +225,6 @@ function NothingSaved() {
       <div className="flex flex-wrap gap-3">
         <Link href="/search" className={actionLinkClass}>
           Search for Homes <span aria-hidden>→</span>
-        </Link>
-        <Link href="/guides/choosing-a-nursing-home" className={secondaryLinkClass}>
-          What to ask when you visit
         </Link>
       </div>
     </section>
