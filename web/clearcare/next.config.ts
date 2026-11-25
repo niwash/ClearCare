@@ -4,6 +4,23 @@ const nextConfig: NextConfig = {
   // Crawlers and page audits look in the head for each centre's title and description.
   // Requests without a User-Agent still get streamed metadata because Next checks for the header first.
   htmlLimitedBots: /.*/,
+  async headers() {
+    return [
+      {
+        // Every address: ":path*" is zero or more segments, so it matches "/" as well.
+        source: "/:path*",
+        headers: [
+          // Tells a browser to use HTTPS for clearcare.ie for a year from each visit (CCARE-311).
+          // The site redirects HTTP to HTTPS, but without this a browser's first request can still
+          // go out over HTTP. No includeSubDomains: the other hostnames under clearcare.ie are not
+          // all known to serve HTTPS. No preload, which needs includeSubDomains.
+          // Next leaves this header off the redirects below and its own trailing-slash redirect;
+          // the page each one leads to carries it.
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       // The start page used to be /home; old links and bookmarks still reach it. Not permanent, so
