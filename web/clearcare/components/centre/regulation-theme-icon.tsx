@@ -10,16 +10,17 @@
 // is in a small box, at once and in the site's own style, as a browser's title only shows after a
 // pause and doesn't say what it names. The box is put on the page's top layer, like Definition's
 // (components/ui/definition.tsx), as the inspection grid scrolls sideways and would cut it off; so it
-// closes when anything scrolls. The themes are ClearCare's grouping, not HIQA's, and the one lookup
+// closes when anything scrolls. It opens under the icon, or above it when there isn't room under it,
+// such as for an icon at the foot of the window (PR #243 review). The themes are ClearCare's grouping, not HIQA's, and the one lookup
 // (regulationTheme, lib/regulation-guide.ts) keeps every page agreeing with the regulations page.
 // Nothing for a regulation in no theme (1 and 2, which aren't inspected).
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 import { regulationTheme } from "@/lib/regulation-guide";
 
-// The gap between the icon and the box, and how far the box keeps from the window's right edge.
+// The gap between the icon and the box, and how far the box keeps from the window's edges.
 const GAP = 6;
 const EDGE = 12;
 
@@ -34,7 +35,22 @@ export function RegulationThemeIcon({
 }) {
   const theme = regulationTheme(number);
   const icon = useRef<HTMLSpanElement>(null);
+  const box = useRef<HTMLSpanElement>(null);
   const [at, setAt] = useState<DOMRect | null>(null);
+  // Where the box's top goes, worked out once it's drawn and its height is known.
+  const [top, setTop] = useState<number | null>(null);
+
+  // Before it's painted: under the icon if it fits, otherwise above it. Drawn hidden until then, so it
+  // never shows in the wrong place.
+  useLayoutEffect(() => {
+    if (!at || !box.current) {
+      setTop(null);
+      return;
+    }
+    const height = box.current.offsetHeight;
+    const fitsUnder = at.bottom + GAP + height <= window.innerHeight - EDGE;
+    setTop(fitsUnder ? at.bottom + GAP : Math.max(EDGE, at.top - GAP - height));
+  }, [at]);
 
   useEffect(() => {
     if (!at) return;
@@ -55,10 +71,16 @@ export function RegulationThemeIcon({
       <IconCircle path={ICON_PATHS[theme.icon]} size={size} tint={theme.tint} />
       {at &&
         createPortal(
-          // Under the icon, starting at its left edge, kept inside the window.
+          // Starting at the icon's left edge, kept inside the window.
           <span
+            ref={box}
             aria-hidden
-            style={{ top: at.bottom + GAP, left: at.left, maxWidth: `calc(100vw - ${at.left + EDGE}px)` }}
+            style={{
+              top: top ?? at.bottom + GAP,
+              left: at.left,
+              maxWidth: `calc(100vw - ${at.left + EDGE}px)`,
+              visibility: top === null ? "hidden" : undefined,
+            }}
             className="pointer-events-none fixed z-50 rounded-lg border border-line bg-surface px-2.5 py-1.5 text-sm whitespace-nowrap text-ink shadow-lg adult:rounded-md print:hidden"
           >
             <span className="text-ink-muted">Theme:</span> <span className="font-semibold">{theme.title}</span>
