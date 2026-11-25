@@ -7,6 +7,7 @@ import { OfficeFinder } from "@/components/contacts/office-finder";
 import { PhoneLine } from "@/components/contacts/phone-line";
 import { fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
+import { LastChecked } from "@/components/ui/last-checked";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { ICON_PATHS, Icon, type IconName } from "@/components/ui/icons";
 import { getGuide } from "@/lib/guides";
@@ -28,8 +29,8 @@ type Contact = {
 };
 
 // The day the page's contacts were last checked against their sources, shown at the foot of the
-// page. Change it whenever they are checked again.
-const LAST_CHECKED = { iso: "2026-11-13", label: "13 November 2026" };
+// page. The day of a real check: change it only when they are checked again.
+const LAST_CHECKED = "2026-11-13";
 
 // General Fair Deal questions, before and alongside the local office.
 const FAIR_DEAL_CONTACTS: Contact[] = [
@@ -181,17 +182,9 @@ export default function ContactsPage() {
           (CCARE-258). */}
       <EmergencyStrip />
 
-      {/* When the details were last checked, so a reader knows how far to trust them. An "i" in a
-          light amber box, as the notes in the guides (CCARE-233). */}
-      <aside className="flex max-w-3xl items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold px-4 py-3 text-sm">
-        <Icon name="info" className="size-5 shrink-0 text-on-tint-gold" />
-        <p>
-          <span className="font-semibold">
-            Contacts last checked <time dateTime={LAST_CHECKED.iso}>{LAST_CHECKED.label}</time>.
-          </span>{" "}
-          Phone numbers and opening hours can change. If one doesn&apos;t work, check the organisation&apos;s website.
-        </p>
-      </aside>
+      <LastChecked date={LAST_CHECKED} lead="Contacts last checked">
+        Phone numbers and opening hours can change. If one doesn&apos;t work, check the organisation&apos;s website.
+      </LastChecked>
 
       {/* So nobody leaves without knowing what to ask. The bottom margin cancels the page's padding,
           so it meets the footer. */}
