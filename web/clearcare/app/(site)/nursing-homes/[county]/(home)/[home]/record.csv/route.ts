@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/record.csv/route.ts
+// app/(site)/nursing-homes/[county]/(home)/[home]/record.csv/route.ts
 // The home's details, a blank row, then the inspection history table as a CSV:
 // one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";

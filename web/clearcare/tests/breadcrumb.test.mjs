@@ -1,7 +1,8 @@
 // tests/breadcrumb.test.mjs
 // Every page under app/(site) but the home page has one breadcrumb, through the Breadcrumb
 // component or a guide header that renders it, in the page or in a layout of its own folders (a
-// home's record has it in centres/[id]/layout.tsx, for the overview and its subpages, CCARE-212).
+// home's record has it in its [home]/layout.tsx, for the overview and its subpages, CCARE-212), or in
+// another page it renders (a county's page is drawn by the search page, CCARE-297).
 // The pages are read as source, as the server components that fetch from the API can't be rendered
 // here. Run with: npm test
 import { test } from "node:test";
@@ -28,7 +29,11 @@ for (const page of pages) {
 
   test(`/${route} has one breadcrumb`, () => {
     // The page, and the layouts between it and app/(site), whose own layout has none.
+    // And a page it renders: import SearchPage from "../../search/page".
     const files = [page];
+    for (const [, other] of readFileSync(join(SITE, page), "utf8").matchAll(/from "(\.{1,2}\/[^"]*\/page)"/g)) {
+      files.push(join(dirname(page), `${other}.tsx`).replaceAll("\\", "/"));
+    }
     for (let folder = dirname(page); folder !== "."; folder = dirname(folder)) {
       if (existsSync(join(SITE, folder, "layout.tsx"))) files.push(`${folder}/layout.tsx`);
     }

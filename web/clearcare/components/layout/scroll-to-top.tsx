@@ -12,10 +12,11 @@
 // toggles; and the tabs of one home's record, which keep the window where it is (centre-tabs.tsx).
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { homeInPath } from "@/lib/home-address";
 
 // The home a record's path belongs to, so that moving between its tabs is told apart.
 function recordOf(pathname: string) {
-  return pathname.match(/^\/centres\/([^/]+)/)?.[1] ?? null;
+  return homeInPath(pathname)?.id ?? null;
 }
 
 export function ScrollToTop() {

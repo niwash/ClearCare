@@ -7,6 +7,7 @@
 // the guides and the footer are left out (print: classes and @media print in globals.css).
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { homeInPath } from "@/lib/home-address";
 
 // Each tab's printed title, by the end of the path.
 const TITLES: Record<string, string> = {
@@ -14,11 +15,12 @@ const TITLES: Record<string, string> = {
   "issues-found": "Issues found",
   "how-the-home-responded": "How the home responded",
   inspections: "Inspection history",
-  questions: "Questions to ask",
+  "what-to-ask": "Questions to ask",
 };
 
+// The tab a home's path is on, by the end of its address ("" for the overview).
 function section(pathname: string) {
-  return pathname.match(/^\/centres\/[^/]+\/?([^/]*)/)?.[1] ?? "";
+  return homeInPath(pathname)?.tab ?? "";
 }
 
 // What each tab's button prints, said on it.
@@ -27,7 +29,7 @@ const LABELS: Record<string, string> = {
   "issues-found": "Print issues",
   "how-the-home-responded": "Print responses",
   inspections: "Print history",
-  questions: "Print questions",
+  "what-to-ask": "Print questions",
 };
 
 // Beside each tab's heading, under the banner, so it's clear it prints that tab.
