@@ -101,6 +101,19 @@ export const REFERENCES = {
     detail: "S.I. No. 415 of 2013. Dublin: Stationery Office.",
     url: "https://www.irishstatutebook.ie/eli/2013/si/415/made/en/print",
   }),
+  // The 2025 amendment, which changed some of the numbers the 2013 text as made gives, such as the
+  // notice periods in Regulations 31 and 32 (CCARE-306). Made 27 March 2025, in operation from
+  // 31 March 2025. Its title and number were confirmed in a web search of the Statute Book's index;
+  // the page itself refuses automated requests, so check the link by hand.
+  careRegulations2025: ref({
+    id: "ref-care-regulations-2025",
+    cite: "S.I. No. 98 of 2025",
+    author: "Government of Ireland",
+    year: "2025",
+    title: "Health Act 2007 (Care and Welfare of Residents in Designated Centres for Older People) (Amendment) Regulations 2025",
+    detail: "S.I. No. 98 of 2025. Dublin: Stationery Office.",
+    url: "https://www.irishstatutebook.ie/eli/2025/si/98/made/en/print",
+  }),
   hseNhss: ref({
     id: "ref-hse-nhss",
     short: "HSE",
