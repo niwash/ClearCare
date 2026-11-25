@@ -1,4 +1,4 @@
-// app/national/re-assessment.csv/route.ts
+// app/(site)/national-figures/re-assessment.csv/route.ts
 // The re-assessment matrix as a CSV: one row per starting judgment, with what the judgments became
 // at the centre's next report and the re-check rate.
 import { toCsv } from "@/lib/csv";
@@ -16,7 +16,7 @@ export async function GET() {
   const { matrix, re_check_rate, data_date } = lookup.statistics;
 
   const header = [
-    // In the page's words (app/(site)/national/page.tsx).
+    // In the page's words (app/(site)/national-figures/page.tsx).
     "Judgment",
     "Next inspection: Compliant",
     "Next inspection: Substantially compliant",

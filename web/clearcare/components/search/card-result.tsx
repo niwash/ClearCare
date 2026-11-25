@@ -12,6 +12,7 @@ import { matchedLabels, type FilterSelection } from "@/lib/search-filters";
 import { townAndCounty } from "@/lib/town";
 import Link from "next/link";
 import { Fragment } from "react";
+import { homePath } from "@/lib/home-address";
 
 interface CardResultProps {
   centre: CentreSummary;
@@ -19,7 +20,7 @@ interface CardResultProps {
 }
 
 export function CardResult({ centre, selection }: CardResultProps) {
-  const href = `/centres/${centre.centre_id}`;
+  const href = homePath(centre);
   const facts = [
     townAndCounty(centre),
     // The most residents HIQA allows, not free beds; the register calls them residents.

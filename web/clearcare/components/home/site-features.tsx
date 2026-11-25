@@ -211,7 +211,7 @@ function SearchPicture() {
 
 // A home's record: its tabs by their own names, then results with the site's judgement marks.
 function RecordPicture() {
-  const tabs = ["Overview", CENTRE_SECTION_TITLES["look-first"], CENTRE_SECTION_TITLES["next-steps"], CENTRE_SECTION_TITLES.questions];
+  const tabs = ["Overview", CENTRE_SECTION_TITLES["issues-found"], CENTRE_SECTION_TITLES["how-the-home-responded"], CENTRE_SECTION_TITLES["what-to-ask"]];
   return (
     <div className="flex h-full min-w-0 flex-col">
       {/* shrink-0: the rows below are cut off at the picture's foot, not the tabs squeezed. */}

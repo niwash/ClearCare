@@ -1,4 +1,4 @@
-// app/centres/[id]/page.tsx
+// app/(site)/nursing-homes/[county]/[home]/page.tsx
 // A home's record: the overview (CCARE-212). The extra conditions on its registration when it has
 // any and what changed at it in the last six months (CCARE-235), the facts and what the home offers,
 // the things a family needs before anything else, and a pointer to what to ask on a visit. Issues
@@ -28,7 +28,8 @@ import {
   type CentreReports,
   type Judgement,
 } from "@/lib/centres";
-import { centreMetadata, centrePath, centreTabs, getCentreRecord } from "@/lib/centre-record";
+import { centreTabs, getCentreRecord, homeFromParams, homeMetadata, type HomeParams } from "@/lib/centre-record";
+import { homePath } from "@/lib/home-address";
 import { TabPager } from "@/components/centre/tab-pager";
 import { farBelowTypical } from "@/lib/price-context";
 import { returnQuery } from "@/lib/return-to-centre";
@@ -42,15 +43,15 @@ import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
 interface CentrePageProps {
-  params: Promise<{ id: string }>;
+  params: HomeParams;
 }
 
 export async function generateMetadata({ params }: CentrePageProps) {
-  return centreMetadata((await params).id);
+  return homeMetadata(params);
 }
 
 export default async function CentrePage({ params }: CentrePageProps) {
-  const { id } = await params;
+  const id = await homeFromParams(params);
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
@@ -98,7 +99,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
               events={events}
               today={new Date().toISOString().slice(0, 10)}
               currentNote={centre.chief_inspector_note ?? null}
-              timelineHref={centrePath(centre.centre_id, "inspections")}
+              timelineHref={homePath(centre, "inspections")}
             />
           )}
           <CentreFacts centre={centre} reports={reports} hiqaCheckedAt={hiqaCheckedAt} alerts={alerts} />
@@ -115,7 +116,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
         {/* The next page, where the Overview's facts end (CCARE-258), rather than at the foot of the
             page after the pointer to What to ask. */}
         <div className="mt-6">
-          <TabPager tabs={centreTabs(centre.centre_id)} inline />
+          <TabPager tabs={centreTabs(centre)} inline />
         </div>
       </Band>
 
@@ -140,7 +141,7 @@ export default async function CentrePage({ params }: CentrePageProps) {
           {/* The site's main button, filled, lifting and with its arrow moving on hover, like the
               others; it was a plain white pill (CCARE-258). */}
           <Link
-            href={centrePath(centre.centre_id, "questions")}
+            href={homePath(centre, "what-to-ask")}
             className={`${actionLinkClass} shrink-0 self-start sm:self-center`}
           >
             See what to ask <span aria-hidden>→</span>
@@ -168,7 +169,7 @@ function CentreActions({ centre, reports, alerts }: { centre: CentreDetail; repo
       />
       {reports && (
         <a
-          href={`/centres/${centre.centre_id}/record.csv`}
+          href={`${homePath(centre)}/record.csv`}
           download
           className={outlineButtonClass}
         >
@@ -345,7 +346,7 @@ function CentreFacts({
                 )}
                 {/* A button rather than a link in the text, filled like the site's other main buttons
                     (CCARE-258). */}
-                <Link href={centrePath(centre.centre_id, "inspections")} className={`${actionLinkClass} mt-2 print:hidden`}>
+                <Link href={homePath(centre, "inspections")} className={`${actionLinkClass} mt-2 print:hidden`}>
                   See the inspection history <span aria-hidden>→</span>
                 </Link>
               </SummaryRow>

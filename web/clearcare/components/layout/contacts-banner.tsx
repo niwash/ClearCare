@@ -24,7 +24,7 @@ export function ContactsBanner({ className = "" }: { className?: string }) {
             <p className="text-ink-muted">Who to call about nursing home care, Fair Deal, complaints and advocacy.</p>
           </div>
         </div>
-        <Link href="/contacts" className={`${actionLinkClass} shrink-0`}>
+        <Link href="/support-services" className={`${actionLinkClass} shrink-0`}>
           See support services <span aria-hidden>→</span>
         </Link>
       </div>

@@ -29,11 +29,11 @@ test("a fact the home doesn't have is left out", () => {
 
 test("each tab says what it holds for that home", () => {
   assert.equal(
-    centreDescription(glebe, "look-first"),
+    centreDescription(glebe, "issues-found"),
     "What HIQA's inspectors found at Glebe House Nursing Home, Kilternan, Co. Dublin, in the words of the inspection report.",
   );
   assert.equal(
-    centreDescription(glebe, "next-steps"),
+    centreDescription(glebe, "how-the-home-responded"),
     "What Glebe House Nursing Home, Kilternan, Co. Dublin, said it would do about each inspection finding, and how the next inspection judged it.",
   );
   assert.equal(
@@ -41,7 +41,7 @@ test("each tab says what it holds for that home", () => {
     "Every HIQA inspection of Glebe House Nursing Home, Kilternan, Co. Dublin: how each regulation was judged, and what has changed at the home.",
   );
   assert.equal(
-    centreDescription(glebe, "questions"),
+    centreDescription(glebe, "what-to-ask"),
     "Questions to ask on a visit to Glebe House Nursing Home, Kilternan, Co. Dublin, from what its inspection reports say.",
   );
 });

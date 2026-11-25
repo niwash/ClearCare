@@ -143,7 +143,7 @@ const TOUR_STEPS: TourStep[] = [
       </>
     ),
     places: [
-      { selector: '[data-tour="nav"] a[href="/contacts"]' },
+      { selector: '[data-tour="nav"] a[href="/support-services"]' },
       {
         selector: MENU,
         body: (

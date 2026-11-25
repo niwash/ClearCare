@@ -22,6 +22,7 @@ import { alertsConfigured, listAlerts } from "@/lib/alerts-api";
 import { countyId, followsCounty } from "@/lib/alerts";
 import { formatDate } from "@/lib/centres";
 import { centresByCounty } from "@/lib/counties";
+import { countyFromSlug } from "@/lib/home-address";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { countyAlone, countyAloneHref, filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { pointsConfigured, readPoints } from "@/lib/points-api";
@@ -31,7 +32,7 @@ import { editedText, NOBODY_TO_ASK, settleBox } from "@/lib/search-box";
 import { activeFilters, apiFilterParams, filterCount, NO_FILTERS } from "@/lib/search-filters";
 import type { CentrePoint } from "@/lib/search-map";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { notFound, permanentRedirect, redirect } from "next/navigation";
 
 interface SearchPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -114,12 +115,14 @@ async function settleSentText(searchParams: SearchPageProps["searchParams"]) {
 
 export async function generateMetadata({ searchParams }: SearchPageProps) {
   const search = readSearch(await searchParams);
-  if (!hasSearch(search)) return { title: "Find a nursing home" };
-  if (!leavesHomesOut(search)) return { title: fromPointAlone(search) };
+  // After the site's name, as on its other pages (CCARE-297).
+  const named = (title: string) => `${title} · ClearCare`;
+  if (!hasSearch(search)) return { title: named("Find a nursing home") };
+  if (!leavesHomesOut(search)) return { title: named(fromPointAlone(search)) };
   const what = described(search);
-  const title = what ? `Nursing homes${what}` : "Search results";
-  // A county's page has its own address for a search engine (CCARE-303). Every other search keeps
-  // the layout's, which is /search whatever the query (CCARE-301).
+  const title = named(what ? `Nursing homes${what}` : "Search results");
+  // A county's page has its own address for a search engine (CCARE-303, CCARE-297). Every other
+  // search keeps the layout's, which is /search whatever the query (CCARE-301).
   const canonical = countyAloneHref(search);
   return canonical ? { title, alternates: { canonical } } : { title };
 }
@@ -128,6 +131,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const arrivedWith = await settleSentText(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
+  // Reached by a county's own address (the rewrite in next.config.ts), the county's search is shown
+  // there, and an address that names no county is no page. Reached as /search?county=Cork, it is sent
+  // on to that address for good, so a search engine holds each county once (CCARE-297).
+  const atCounty = params.at === "county";
+  if (atCounty && !countyFromSlug(String(params.county ?? ""))) notFound();
+  const countyAddress = countyAloneHref(search);
+  if (!atCounty && countyAddress && search.view === "list") permanentRedirect(countyAddress);
   // Read on each request, after the address made the page dynamic, rather than at build: the Docker
   // image is built once and must not carry it (README).
   const googleKey = process.env.GOOGLE_MAPS_BROWSER_KEY || null;

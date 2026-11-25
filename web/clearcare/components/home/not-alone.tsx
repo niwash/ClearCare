@@ -47,7 +47,7 @@ export function NotAlone() {
           person moving. You don&apos;t have to find the answers on your own: your local Nursing Homes Support Office,
           Citizens Information, HIQA and support groups such as Sage Advocacy and ALONE are there to help.
         </p>
-        <Link href="/contacts" className={actionLinkClass}>
+        <Link href="/support-services" className={actionLinkClass}>
           See who to contact <span aria-hidden>→</span>
         </Link>
       </div>

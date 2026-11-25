@@ -20,10 +20,13 @@ import { authRuntime } from "@/lib/auth";
 import { authConfigured, sessionSubject } from "@/lib/auth-config";
 import { startSignIn } from "@/lib/auth-actions";
 import { getCentre } from "@/lib/centres";
+import { countyPath, homePath } from "@/lib/home-address";
 
 export const metadata: Metadata = {
   title: "Your alerts · ClearCare",
   description: "The nursing homes, counties and reports you get an email about.",
+  // A visitor's own list, as the unsubscribe page is: nothing for a search engine to hold (CCARE-297).
+  robots: { index: false, follow: false },
 };
 
 const PRIMARY_CLASS =
@@ -107,20 +110,22 @@ async function rowsFor(subscriptions: AlertSubscription[]): Promise<AlertRow[]> 
   const named = await Promise.all(
     centreIds.map(async (id) => {
       const found = await getCentre(id);
-      return [id, found.status === "found" ? found.centre.centre_name : null] as const;
+      return [id, found.status === "found" ? found.centre : null] as const;
     }),
   );
-  const names = new Map(named);
+  const centres = new Map(named);
 
   return subscriptions.map((row): AlertRow => {
     if (row.scope === "CENTRE") {
       const id = row.centreId as string;
+      const centre = centres.get(id);
       return {
         id: row.id,
         kind: "centre",
-        label: names.get(id) ?? `Nursing home ${id}`,
+        label: centre?.centre_name ?? `Nursing home ${id}`,
         caption: "New reports for this home",
-        href: `/centres/${id}`,
+        // A home that couldn't be read goes by its old address, which finds it once it can be.
+        href: centre ? homePath(centre) : `/centres/${id}`,
       };
     }
     if (row.scope === "COUNTY") {
@@ -130,7 +135,7 @@ async function rowsFor(subscriptions: AlertSubscription[]): Promise<AlertRow[]> 
         kind: "county",
         label: name ? `Co. ${name}` : "A county",
         caption: "New reports for any home in this county",
-        href: name ? `/search?county=${encodeURIComponent(name)}` : null,
+        href: name ? countyPath(name) : null,
       };
     }
     return { id: row.id, kind: "all", label: "Every report", caption: "Any new report on the site", href: null };

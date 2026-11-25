@@ -6,7 +6,7 @@
 // (/resources/glossary, /compare/...): the guides under Resources, except Fair Deal, which has its
 // own link, and a home's pages under Search for Homes, which they're reached from.
 const SECTIONS: Record<string, (pathname: string) => boolean> = {
-  "/search": (pathname) => pathname.startsWith("/centres/"),
+  "/search": (pathname) => pathname.startsWith("/nursing-homes/"),
   "/resources": (pathname) => pathname.startsWith("/guides/") && !pathname.startsWith("/guides/fair-deal"),
 };
 

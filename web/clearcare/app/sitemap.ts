@@ -15,5 +15,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!api) throw new Error("API_URL isn't set.");
   // The register changes once a day at most, so the list is asked for once a day.
   const centres = await allCentres(api, (url) => fetch(url, { next: { revalidate: 86400 } }));
-  return sitemapPaths(centres).map((path) => ({ url: `${SITE_URL}${path}` }));
+  // The start page as its canonical link gives it, without the slash (CCARE-297), so the two agree.
+  return sitemapPaths(centres).map((path) => ({ url: path === "/" ? SITE_URL : `${SITE_URL}${path}` }));
 }

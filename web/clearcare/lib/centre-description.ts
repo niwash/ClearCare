@@ -14,13 +14,13 @@ export interface DescribedCentre {
   inspected: string | null;
 }
 
-type Section = "look-first" | "inspections" | "next-steps" | "questions";
+type Section = "issues-found" | "inspections" | "how-the-home-responded" | "what-to-ask"; // CentreSection, lib/home-address.ts
 
 const SECTIONS: Record<Section, (home: string) => string> = {
-  "look-first": (home) => `What HIQA's inspectors found at ${home}, in the words of the inspection report.`,
-  "next-steps": (home) => `What ${home}, said it would do about each inspection finding, and how the next inspection judged it.`,
+  "issues-found": (home) => `What HIQA's inspectors found at ${home}, in the words of the inspection report.`,
+  "how-the-home-responded": (home) => `What ${home}, said it would do about each inspection finding, and how the next inspection judged it.`,
   inspections: (home) => `Every HIQA inspection of ${home}: how each regulation was judged, and what has changed at the home.`,
-  questions: (home) => `Questions to ask on a visit to ${home}, from what its inspection reports say.`,
+  "what-to-ask": (home) => `Questions to ask on a visit to ${home}, from what its inspection reports say.`,
 };
 
 export function centreDescription(centre: DescribedCentre, section?: Section) {

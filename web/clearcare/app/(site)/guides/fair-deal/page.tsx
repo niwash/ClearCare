@@ -590,7 +590,7 @@ export default function FairDealGuide() {
               <Source href="https://www.hse.ie/nhss/">hse.ie/nhss</Source> (available in both Irish and English) or
               collect it from your{" "}
               {/* Straight to the Support Services page's county finder (CCARE-258). */}
-              <Link href="/contacts#offices">local Nursing Homes Support Office</Link>.
+              <Link href="/support-services#offices">local Nursing Homes Support Office</Link>.
             </NumberedCard>
             <NumberedCard number={2}>
               <strong>Submit your form</strong> to your local Nursing Homes Support Office. You can do this yourself, or get

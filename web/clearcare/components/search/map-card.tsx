@@ -9,6 +9,7 @@ import type { CentrePoint } from "@/lib/search-map";
 import { townAndCounty } from "@/lib/town";
 import Link from "next/link";
 import { useId, type Ref } from "react";
+import { homePath } from "@/lib/home-address";
 
 export function HomeCard({
   point,
@@ -39,7 +40,7 @@ export function HomeCard({
       </h3>
       <p className="text-sm text-ink-muted">{townAndCounty(point)}</p>
       {distance && <p className="text-sm font-semibold">{distance}</p>}
-      <Link href={`/centres/${point.centre_id}`} className="mt-1 text-sm font-semibold tap-target">
+      <Link href={homePath(point)} className="mt-1 text-sm font-semibold tap-target">
         See this home&apos;s record →
       </Link>
       <button

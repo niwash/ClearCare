@@ -18,9 +18,9 @@ describe("the navigation link that shows where the visitor is", () => {
   test("is the section's link on a page under it", () => {
     assert.equal(currentness("/resources", "/resources/glossary"), "true");
     assert.equal(currentness("/resources", "/guides/reading-inspection-reports"), "true");
-    assert.equal(currentness("/search", "/centres/4447"), "true");
-    assert.equal(currentness("/search", "/centres/4447/inspections"), "true");
-    assert.equal(currentness("/national", "/national/re-assessment"), "true");
+    assert.equal(currentness("/search", "/nursing-homes/cork/conna-care-home-4447"), "true");
+    assert.equal(currentness("/search", "/nursing-homes/cork/conna-care-home-4447/inspections"), "true");
+    assert.equal(currentness("/national-figures", "/national-figures/re-assessment"), "true");
   });
 
   test("leaves Fair Deal to its own link, not Resources", () => {
@@ -33,7 +33,7 @@ describe("the navigation link that shows where the visitor is", () => {
   });
 
   test("marks nothing for a page the navigation doesn't cover", () => {
-    for (const href of ["/", "/search", "/compare", "/guides/fair-deal", "/contacts", "/resources", "/national", "/survey"]) {
+    for (const href of ["/", "/search", "/compare", "/guides/fair-deal", "/support-services", "/resources", "/national-figures", "/survey"]) {
       assert.equal(currentness(href, "/privacy"), undefined, href);
     }
     assert.equal(currentness(null, "/resources"), undefined);

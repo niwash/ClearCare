@@ -160,9 +160,14 @@ describe("a search for a county alone", () => {
     assert.equal(countyAlone(readSearch({})), false);
     assert.equal(countyAlone(readSearch({ name: "bush" })), false);
     assert.equal(countyAlone(readSearch({ county: "any" })), false);
-    // GET /centres answers 400 to both: it spells a county one way only.
-    assert.equal(countyAlone(readSearch({ county: "cork" })), false);
     assert.equal(countyAlone(readSearch({ county: "Narnia" })), false);
+  });
+
+  test("is one in any case, read as the API spells the county (CCARE-297)", () => {
+    const search = readSearch({ county: "cork" });
+    assert.equal(search.county, "Cork");
+    assert.deepEqual(search.query, { county: "Cork" });
+    assert.equal(countyAlone(search), true);
   });
 
   test("isn't one with another number of homes to a page, which the page numbers wouldn't fit", () => {
@@ -172,17 +177,25 @@ describe("a search for a county alone", () => {
 
 describe("the address a search engine holds a county's page under", () => {
   test("is the county's, with nothing else", () => {
-    assert.equal(countyAloneHref(readSearch({ county: "Cork" })), "/search?county=Cork");
-    assert.equal(countyAloneHref(readSearch({ county: "Cork", view: "map", sort: "name" })), "/search?county=Cork");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork" })), "/nursing-homes/cork");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", view: "map", sort: "name" })), "/nursing-homes/cork");
   });
 
   test("keeps the page from the second on", () => {
-    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "2" })), "/search?county=Cork&page=2");
-    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "1" })), "/search?county=Cork");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "2" })), "/nursing-homes/cork?page=2");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "1" })), "/nursing-homes/cork");
   });
 
   test("leaves out a page that isn't a number", () => {
-    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "two" })), "/search?county=Cork");
+    assert.equal(countyAloneHref(readSearch({ county: "Cork", page: "two" })), "/nursing-homes/cork");
+  });
+
+  test("is the address the search's own links give it", () => {
+    assert.equal(searchHref({ ...NOTHING, county: "Cork" }), "/nursing-homes/cork");
+    assert.equal(searchHref({ ...NOTHING, county: "Cork" }, 3), "/nursing-homes/cork?page=3");
+    // The map, and anything beside the county, stay a search.
+    assert.equal(searchHref({ ...NOTHING, county: "Cork", view: "map" }), "/search?county=Cork&view=map");
+    assert.equal(searchHref({ ...NOTHING, county: "Cork", name: "bush" }), "/search?name=bush&county=Cork");
   });
 
   test("is none for any other search, which keeps /search", () => {

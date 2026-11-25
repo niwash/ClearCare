@@ -13,7 +13,7 @@ import { actionLinkClass, fullWidthClass, linkCardClass, secondaryLinkClass, str
 const PLACES = [
   { label: "Fair Deal Explained", href: "/guides/fair-deal", hint: "How the HSE helps pay for nursing home care.", action: "Read the guide" },
   { label: "Resources", href: "/resources", hint: "Our guides, and official information from the HSE and HIQA.", action: "See resources" },
-  { label: "Support Services", href: "/contacts", hint: "Who to call about nursing home care and Fair Deal.", action: "See support services" },
+  { label: "Support Services", href: "/support-services", hint: "Who to call about nursing home care and Fair Deal.", action: "See support services" },
 ];
 
 export function NotFoundContent() {

@@ -4,6 +4,7 @@
 // is (tests/page-search.test.ts), so its imports are named with their extension.
 import { ANY_COUNTY, COUNTIES } from "./counties.ts";
 import { asEircode } from "./eircode.ts";
+import { countyPath } from "./home-address.ts";
 import { readNear } from "./near.ts";
 import { filterCount, readSelection, selectionParams, SORTS, type FilterSelection, type SortValue } from "./search-filters.ts";
 
@@ -53,7 +54,10 @@ export function readSearch(params: PageParams): PageSearch {
   const place = first(params, "place") || first(params, "address") || first(params, "eircode");
   const near = readNear(first(params, "near"));
   const countyValue = first(params, "county");
-  const county = countyValue === ANY_COUNTY ? "" : countyValue;
+  // In any case, as the API spells it: a county's address gives it in lower case (CCARE-297), and
+  // ?county=cork is the same page as ?county=Cork.
+  const county =
+    countyValue === ANY_COUNTY ? "" : (COUNTIES.find((known) => known.toLowerCase() === countyValue.toLowerCase()) ?? countyValue);
   const sortValue = first(params, "sort");
   const known = SORTS.some((option) => option.value === sortValue) && (sortValue !== "distance" || near);
   const sort = (known ? sortValue : "name") as SortValue;
@@ -91,6 +95,10 @@ type LinkedSearch = Pick<PageSearch, "name" | "place" | "near" | "county" | "sel
 // a view of a search's results, so it is written only when there is a search: an emptied search
 // leads to the same address from either view (filtersClearedHref).
 export function searchHref(search: LinkedSearch, page = 1) {
+  // A county and nothing else, in the list, is the county's own page (CCARE-297).
+  const countyOnly =
+    !search.name && !search.place && !search.near && filterCount(search.selection) === 0 && search.sort === "name" && search.view !== "map";
+  if (countyOnly && COUNTIES.includes(search.county)) return countyPath(search.county, page);
   const params = new URLSearchParams();
   if (search.name) params.set("name", search.name);
   if (search.place) params.set("place", search.place);

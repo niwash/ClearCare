@@ -16,6 +16,9 @@ import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { searchCentres } from "@/lib/search";
 import { getReAssessmentStatistics } from "@/lib/statistics";
 
+// What the site is, for the tab and a search result, where "ClearCare" alone said nothing (CCARE-297).
+export const metadata = { title: "ClearCare · Find and compare nursing homes in Ireland" };
+
 export default async function StartPage() {
   // No filters and one result per page: only total and the register's date are needed. The
   // statistics give the figures about reports; the two are read at the same time.

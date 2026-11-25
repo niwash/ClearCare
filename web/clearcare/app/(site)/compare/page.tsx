@@ -59,8 +59,9 @@ import { AMENITY_ICON_PATHS } from "@/lib/amenity-icons";
 import { asEircode } from "@/lib/eircode";
 import { getGuide } from "@/lib/guides";
 import { formatEircode, unavailableMessage } from "@/lib/search";
+import { homePath } from "@/lib/home-address";
 
-export const metadata: Metadata = { title: "Compare Homes" };
+export const metadata: Metadata = { title: "Compare Homes · ClearCare" };
 
 interface ComparePageProps {
   // regulations=all opens the regulations where no home fell short.
@@ -729,7 +730,7 @@ function HomeHeading({ column, inline = false }: { column: Column; inline?: bool
       <div className="flex flex-col items-start gap-1">
         {column.status === "found" ? (
           <>
-            <Link href={`/centres/${column.id}`} className="font-heading text-base font-semibold leading-snug text-ink no-underline hover:underline lg:text-xl adult:text-xl adult:underline">
+            <Link href={homePath(column.centre)} className="font-heading text-base font-semibold leading-snug text-ink no-underline hover:underline lg:text-xl adult:text-xl adult:underline">
               {name}
             </Link>
             <span className="text-sm text-ink-muted">Co. {column.centre.county}</span>
@@ -759,7 +760,7 @@ const nextStepClass =
 function NextStep({ centre }: { centre: CentreDetail }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Link href={`/centres/${centre.centre_id}`} className={`${nextStepClass} bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary`}>
+      <Link href={homePath(centre)} className={`${nextStepClass} bg-primary text-on-primary hover:bg-primary-hover hover:text-on-primary`}>
         {/* Not "record" (CCARE-258): the word threw a participant in user testing (P2_1). */}
         View this home&apos;s page
       </Link>

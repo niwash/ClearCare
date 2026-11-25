@@ -1,13 +1,15 @@
-// app/centres/[id]/record.csv/route.ts
+// app/(site)/nursing-homes/[county]/[home]/record.csv/route.ts
 // The home's details, a blank row, then the inspection history table as a CSV:
 // one row per regulation, one column per inspection.
 import { JUDGEMENT_LABELS } from "@/components/centre/judgement-icon";
 import { centrePhone, formatDate, formatWeeklyPrice, getCentre, getCentreReports, HOME_TYPE_LABELS } from "@/lib/centres";
 import { toCsv } from "@/lib/csv";
+import { homeIdFrom } from "@/lib/home-address";
 import { formatEircode, unavailableMessage } from "@/lib/search";
 
-export async function GET(_request: Request, { params }: RouteContext<"/centres/[id]/record.csv">) {
-  const { id } = await params;
+export async function GET(_request: Request, { params }: RouteContext<"/nursing-homes/[county]/[home]/record.csv">) {
+  const id = homeIdFrom((await params).home);
+  if (!id) return new Response("Nursing home not found", { status: 404 });
   const lookup = await getCentre(id);
   if (lookup.status === "not-found") return new Response("Nursing home not found", { status: 404 });
   if (lookup.status === "unavailable") return new Response(unavailableMessage(lookup.httpStatus), { status: 503 });

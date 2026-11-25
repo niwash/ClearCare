@@ -1,4 +1,4 @@
-// app/centres/[id]/layout.tsx
+// app/(site)/nursing-homes/[county]/[home]/layout.tsx
 // What every page of a home's record shares (CCARE-212): the home's name, the tabs for the overview
 // and its subpages, and the guides and contacts at the end. The record was one long page; its long
 // sections are now pages of their own, so a family scrolls less and can link to the part they mean.
@@ -11,7 +11,8 @@ import { Breadcrumb, SEARCH_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { fullWidthClass } from "@/components/ui/classes";
 import { centrePhone, type CentreDetail } from "@/lib/centres";
-import { centreTabs, getCentreRecord } from "@/lib/centre-record";
+import { centreTabs, getCentreRecord, type HomeParams } from "@/lib/centre-record";
+import { countyPath, homeIdFrom } from "@/lib/home-address";
 import { getGuide } from "@/lib/guides";
 import { returnQuery } from "@/lib/return-to-centre";
 import { unavailableMessage } from "@/lib/search";
@@ -22,8 +23,9 @@ import type { ReactNode } from "react";
 // The guides that help most with a record, in the order a family needs them.
 const RECORD_GUIDES = [getGuide("reading-inspection-reports"), getGuide("choosing-a-nursing-home"), getGuide("fair-deal")];
 
-export default async function CentreLayout({ children, params }: { children: ReactNode; params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export default async function CentreLayout({ children, params }: { children: ReactNode; params: HomeParams }) {
+  const id = homeIdFrom((await params).home);
+  if (!id) notFound();
   const record = await getCentreRecord(id);
   // notFound() here shows app/(site)/not-found.tsx inside the site's layout.
   if (record.status === "not-found") notFound();
@@ -31,7 +33,7 @@ export default async function CentreLayout({ children, params }: { children: Rea
   const { centre } = record;
 
   // The record's pages (centreTabs, below), shared with the Overview's own pager.
-  const tabs = centreTabs(id);
+  const tabs = centreTabs(centre);
 
   return (
     <>
@@ -84,7 +86,7 @@ function CentreHero({ centre, tabs }: { centre: CentreDetail; tabs: CentreTab[] 
           <Breadcrumb
             trail={[
               SEARCH_CRUMB,
-              { label: `Co. ${centre.county}`, href: `/search?${new URLSearchParams({ county: centre.county })}` },
+              { label: `Co. ${centre.county}`, href: countyPath(centre.county) },
             ]}
             current={centre.centre_name}
           />

@@ -413,7 +413,7 @@ export const GLOSSARY: GlossaryGroup[] = [
         id: "nursing-homes-support-office",
         term: "Nursing Homes Support Office",
         meaning: "Your local HSE office for Fair Deal. It handles applications and answers questions about them.",
-        more: { href: "/contacts", label: "Support Services" },
+        more: { href: "/support-services", label: "Support Services" },
       },
     ],
   },

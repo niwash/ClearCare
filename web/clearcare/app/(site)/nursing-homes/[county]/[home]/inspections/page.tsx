@@ -1,4 +1,4 @@
-// app/centres/[id]/inspections/page.tsx
+// app/(site)/nursing-homes/[county]/[home]/inspections/page.tsx
 // The home's inspection history, on a page of its own (CCARE-212): the timeline of what has happened
 // at the home (CCARE-235), then a grid of how each regulation was judged at each inspection.
 import { Band } from "@/components/centre/centre-band";
@@ -7,20 +7,21 @@ import { InspectionHistory } from "@/components/centre/inspection-history";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
 import { Timeline, TimelineNotes } from "@/components/centre/timeline";
 import { formatDate } from "@/lib/centres";
-import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { getCentreRecord, homeFromParams, homeMetadata, type HomeParams } from "@/lib/centre-record";
+import { homePath } from "@/lib/home-address";
 import { missingReportsNote } from "@/lib/events";
 import { notFound } from "next/navigation";
 
 interface InspectionsPageProps {
-  params: Promise<{ id: string }>;
+  params: HomeParams;
 }
 
 export async function generateMetadata({ params }: InspectionsPageProps) {
-  return centreMetadata((await params).id, "inspections");
+  return homeMetadata(params, "inspections");
 }
 
 export default async function InspectionsPage({ params }: InspectionsPageProps) {
-  const { id } = await params;
+  const id = await homeFromParams(params, "inspections");
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
@@ -38,7 +39,7 @@ export default async function InspectionsPage({ params }: InspectionsPageProps) 
           history={reports.history}
           trails={reports.trails}
           events={events}
-          trailsHref={centrePath(id, "next-steps")}
+          trailsHref={homePath(centre, "how-the-home-responded")}
           updated={centre.register_snapshot.fetched_at}
         />
       ) : (
