@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 // The framework every quote is from, the standards a "standard" quote is from, and the statutory
 // instrument that sets the regulations and their numbers down in law (lib/references.ts).
-const REFS = pageReferences(["hiqaFramework", "hiqaStandards", "careRegulations"]);
+const REFS = pageReferences(["hiqaFramework", "hiqaStandards", "careRegulations", "careRegulations2025"]);
 const JUDGEMENTS: Judgement[] = ["compliant", "substantially-compliant", "not-compliant"];
 
 // Each theme's accent, written out in full so Tailwind finds them: the tint of its number badges. The
@@ -258,7 +258,20 @@ function RegulationCard({ regulation, accent }: { regulation: RegulationListing;
         <h3 className="font-heading text-xl font-semibold">{regulation.title}</h3>
       </div>
 
-      {guide && <p className="text-lg leading-relaxed">{guide.plain}</p>}
+      {guide && (
+        <p className="text-lg leading-relaxed">
+          {guide.plain}
+          {/* The amendment the line follows, where it differs from the 2013 text as made (CCARE-306). */}
+          {guide.amendedBy && (
+            <>
+              {" "}
+              <span className="text-base text-ink-muted">
+                (as amended by <Cite reference={REFS[guide.amendedBy]} />)
+              </span>
+            </>
+          )}
+        </p>
+      )}
 
       {guide?.ask && (
         <p className="flex items-start gap-2.5 rounded-xl bg-surface-muted px-4 py-3 adult:rounded-md adult:border adult:border-line-soft">

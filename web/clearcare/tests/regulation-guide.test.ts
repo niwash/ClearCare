@@ -1,12 +1,14 @@
 // tests/regulation-guide.test.ts
 // ClearCare's own words for each regulation on the regulations page (lib/regulation-guide.ts,
 // CCARE-261): every regulation HIQA inspects is in one theme, and has a plain-English line; and the
-// lookup a home's findings use for their theme icons agrees with the page (CCARE-298).
+// lookup a home's findings use for their theme icons agrees with the page (CCARE-298); and a line
+// that follows an amendment cites it (CCARE-306).
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import { REGULATION_GUIDE, REGULATION_THEMES, regulationTheme } from "../lib/regulation-guide.ts";
+import { REFERENCES } from "../lib/references.ts";
 import { allRegulations } from "../lib/regulations.ts";
 
 const inspected = allRegulations()
@@ -45,5 +47,18 @@ describe("the theme a home's finding is shown with (CCARE-298)", () => {
     assert.equal(regulationTheme(1), null);
     assert.equal(regulationTheme(2), null);
     assert.equal(regulationTheme(99), null);
+  });
+});
+
+describe("a plain line that follows an amendment (CCARE-306)", () => {
+  test("cites a source the references have", () => {
+    for (const [number, guide] of Object.entries(REGULATION_GUIDE)) {
+      if (guide.amendedBy) assert.ok(Object.hasOwn(REFERENCES, guide.amendedBy), `Regulation ${number}`);
+    }
+  });
+
+  test("is cited for the notice periods S.I. No. 98 of 2025 changed, in Regulations 31 and 32", () => {
+    assert.equal(REGULATION_GUIDE[31].amendedBy, "careRegulations2025");
+    assert.equal(REGULATION_GUIDE[32].amendedBy, "careRegulations2025");
   });
 });

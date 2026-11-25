@@ -25,6 +25,10 @@ export type RegulationGuide = {
   plain: string;
   // A question a family could ask when they visit, for the regulations they can see for themselves.
   ask?: string;
+  // Where the plain line follows an amendment rather than the 2013 text as made, the amending
+  // instrument, cited after the line (CCARE-306): the reference list's link to S.I. No. 415 of 2013
+  // is the text as made, so a reader who followed it found the old numbers (PR #233 review).
+  amendedBy?: "careRegulations2025";
 };
 
 // In the order a family thinks of a home: what a day there is like first, the paperwork last.
@@ -127,9 +131,12 @@ export const REGULATION_GUIDE: Record<number, RegulationGuide> = {
     ask: "Can family stay with a resident at the end of their life?",
   },
   14: {
-    // HIQA's question applies where the provider isn't the person in charge; the line leaves that out.
+    // "In most homes": the nursing requirement doesn't apply where the provider is a doctor running
+    // the home themselves, or where no resident needs full-time nursing care (S.I. No. 415 of 2013,
+    // read in the PR #233 review; CCARE-306). HIQA's question also applies only where the provider
+    // isn't the person in charge.
     plain:
-      "The person in charge of the home must be a registered nurse with at least three years' experience of nursing older people in the last six years.",
+      "The home must have a person in charge who manages it day to day. In most homes they must be a registered nurse with at least three years' experience of nursing older people in the last six years.",
     ask: "Who is the person in charge, and how long have they been here?",
   },
   15: {
@@ -164,8 +171,12 @@ export const REGULATION_GUIDE: Record<number, RegulationGuide> = {
     ask: "Can I see the contract, including any extra charges, before we decide?",
   },
   25: {
-    // HIQA's quote is about discharge only; the temporary absence part comes from the title: check it.
-    plain: "If a resident leaves the home, or is away for a time, it should be planned and safe.",
+    // HIQA's quote is about discharge only. What the regulation says about a temporary absence, such
+    // as a stay in hospital, is that the resident's information goes with them and comes back with
+    // them, not that the absence is planned (S.I. No. 415 of 2013, read in the PR #233 review;
+    // CCARE-306).
+    plain:
+      "When a resident goes into hospital or is away for a time, the home must send the information needed for their care with them, and get it back when they return. When a resident leaves for good, it should be planned and safe.",
     ask: "What happens to a resident's place if they go into hospital?",
   },
   26: { plain: "The home must have good arrangements to manage risks and protect residents from harm." },
@@ -189,10 +200,15 @@ export const REGULATION_GUIDE: Record<number, RegulationGuide> = {
   },
   31: {
     // HIQA's question says notice in writing; that it goes to HIQA's Chief Inspector is from the
-    // regulation: check it.
+    // regulation: check it. Two working days since S.I. No. 98 of 2025; three in the 2013 text as made.
     plain: "The home must tell HIQA in writing about certain serious incidents within two working days.",
+    amendedBy: "careRegulations2025",
   },
-  32: { plain: "The home must tell HIQA in advance if the person in charge will be away for 42 days or more." },
+  32: {
+    // 42 days since S.I. No. 98 of 2025; 28 in the 2013 text as made.
+    plain: "The home must tell HIQA in advance if the person in charge will be away for 42 days or more.",
+    amendedBy: "careRegulations2025",
+  },
   33: { plain: "When it does, the home must say who will manage it while the person in charge is away." },
   34: {
     plain: "Residents' complaints and concerns should be listened to and dealt with promptly and fairly.",
