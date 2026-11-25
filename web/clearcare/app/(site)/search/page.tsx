@@ -324,8 +324,9 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           {/* Google's loader has this one place whatever else the page shows, since a search box can
               ask for it before any search. The map is drawn inside it; keyed by the search, so a new
               search opens on its own pins. Before a search it has no list to lead back to. Beside the
-              list it stays in view, with the window's height, while the list scrolls. */}
-          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-[calc(var(--header-offset)+1rem)] xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh-2rem)]" : ""}`}>
+              list it stays in view, as tall as the window below the navigation band (--header-offset),
+              while the list scrolls, so its foot and Google's attribution stay on screen. */}
+          <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-[calc(var(--header-offset)+1rem)] xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh_-_var(--header-offset)_-_2rem)]" : ""}`}>
             <MapWhereShown everywhere={mapView || mapOfEveryHome}>
               {pins && mapId && (
                 <ResultsMap key={mapKey} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
