@@ -4,19 +4,21 @@ import { describe, test } from "node:test";
 import { countyFigures, countyFiguresCopy } from "../lib/county-figures.ts";
 
 describe("a county's figures", () => {
-  test("counts every centre, adds registered occupancy and finds the weekly prices", () => {
-    assert.deepEqual(
-      countyFigures([
-        { maximum_occupancy: 56, contract_price: 2600 },
-        { maximum_occupancy: null, contract_price: null },
-        { maximum_occupancy: 44, contract_price: 1242.5 },
-        { maximum_occupancy: 50 },
-      ]),
-      {
-        centres: 4,
-        residents: 150,
-        weeklyPrices: { count: 2, lowest: 1242.5, highest: 2600 },
-      },
+  test("counts every centre and finds the weekly prices, and gives no residents when one home has no registered occupancy", () => {
+    const figures = countyFigures([
+      { maximum_occupancy: 56, contract_price: 2600 },
+      { maximum_occupancy: null, contract_price: null },
+      { maximum_occupancy: 44, contract_price: 1242.5 },
+      { maximum_occupancy: 50 },
+    ]);
+    assert.deepEqual(figures, {
+      centres: 4,
+      residents: null,
+      weeklyPrices: { count: 2, lowest: 1242.5, highest: 2600 },
+    });
+    assert.equal(
+      countyFiguresCopy("Leitrim", figures).paragraph,
+      "Co. Leitrim has 4 nursing homes. 2 of them list a Fair Deal price, from €1,242.50 to €2,600 a week.",
     );
   });
 });
