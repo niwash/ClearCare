@@ -11,6 +11,7 @@ import { SEVERITY } from "./judgements.ts";
 // Still exported from here, where they were before lib/judgements.ts held them, so a file that
 // imports them from "@/lib/centres" keeps working.
 export { SEVERITY, changeFrom, type Change } from "./judgements.ts";
+export { formatWeeklyPrice } from "./centre-format.ts";
 import { apiUrl, type CentreSummary, type RegisterSnapshot } from "./search";
 
 export type ISODate = string;
@@ -160,17 +161,6 @@ export interface CentreDetail extends CentreSummary, CentreResultFields {
   // Google's Places UI Kit (CCARE-209, ADR-0030). null when no listing was matched, so the page
   // shows its placeholder; missing from an API without db/V20, which the page treats the same way.
   place_id?: string | null;
-}
-
-// A weekly price in euro: whole euros when it has no cents, as the HSE's lists mostly are.
-export function formatWeeklyPrice(price: number) {
-  const cents = !Number.isInteger(price);
-  return new Intl.NumberFormat("en-IE", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: cents ? 2 : 0,
-    maximumFractionDigits: 2,
-  }).format(price);
 }
 
 // How to show a centre's phone: a tap-to-call link for one number, anything else as printed, and

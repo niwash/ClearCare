@@ -22,6 +22,7 @@ import { alertsConfigured, listAlerts } from "@/lib/alerts-api";
 import { countyId, followsCounty } from "@/lib/alerts";
 import { formatDate } from "@/lib/centres";
 import { centresByCounty } from "@/lib/counties";
+import { getCountyFiguresCopy } from "@/lib/county-figures-api";
 import { countyFromSlug } from "@/lib/home-address";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { countyAlone, countyAloneHref, filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
@@ -124,7 +125,9 @@ export async function generateMetadata({ searchParams }: SearchPageProps) {
   // A county's page has its own address for a search engine (CCARE-303, CCARE-297). Every other
   // search keeps the layout's, which is /search whatever the query (CCARE-301).
   const canonical = countyAloneHref(search);
-  return canonical ? { title, alternates: { canonical } } : { title };
+  if (!canonical) return { title };
+  const figures = await getCountyFiguresCopy(search.county);
+  return { title, alternates: { canonical }, ...(figures && { description: figures.description }) };
 }
 
 export default async function SearchPage({ searchParams }: SearchPageProps) {
@@ -184,10 +187,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   // removed), and opening the saved search over it would undo what they did. It would also loop when
   // the order is the only thing saved, since that is exactly the address it redirects to.
   if (Object.keys(params).length === 0 && saved && hasSavedChoices(saved)) redirect(savedSearchHref(saved));
+  const isCountyAlone = countyAlone(search);
   // page_size isn't added to the query itself, so it stays out of the page links.
-  const result = searched
-    ? await searchCentres({ ...search.query, page_size: search.query.page_size ?? RESULTS_PER_PAGE }, apiFilterParams(search.selection))
-    : null;
+  const [result, figures] = await Promise.all([
+    searched
+      ? searchCentres({ ...search.query, page_size: search.query.page_size ?? RESULTS_PER_PAGE }, apiFilterParams(search.selection))
+      : null,
+    isCountyAlone ? getCountyFiguresCopy(search.county) : null,
+  ]);
   const data = result?.ok ? result.data : null;
   // Before a search, the filters still offer every option with its count across all homes, so
   // someone can start from the care they need. Only the counts are asked for: one result, not shown.
@@ -229,7 +236,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       {/* Notes these filters for "Search for other homes" on Compare Homes (CCARE-214). */}
       <RememberSearch />
       {/* A county's page is headed by the county, in the title's words (generateMetadata). */}
-      <SearchHero heading={countyAlone(search) ? `Nursing homes${described(search)}` : "Find a nursing home"} wide={besideMap} />
+      <SearchHero
+        heading={isCountyAlone ? `Nursing homes${described(search)}` : "Find a nursing home"}
+        figures={figures?.paragraph}
+        wide={besideMap}
+      />
 
       {/* The search box and the filters in a bar above the results, which have the page's width
           (CCARE-230). They were a column beside the results (CCARE-189) because a bar can't hold as
@@ -364,12 +375,11 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   );
 }
 
-// The top of the page, flush under the header as on the resources page: the heading and a line of
-// welcome on the soft welcome band (welcome-band, globals.css). The results say what was searched,
-// so the heading stays the task, but for a county alone (CCARE-303): that search is the county's
-// page, the one a search engine lists for "nursing homes in Cork", so its heading says so.
+// The top of the page, flush under the header as on the resources page (welcome-band, globals.css).
+// The heading names the county on its own page (CCARE-303), and the figures give the reader an
+// overview before the results.
 // wide: the results have the map beside the list, and the page is wider than the site's column.
-function SearchHero({ heading, wide }: { heading: string; wide: boolean }) {
+function SearchHero({ heading, figures, wide }: { heading: string; figures?: string; wide: boolean }) {
   return (
     <section aria-labelledby="search-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className={`page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8 ${wide ? widePageColumnClass : ""}`}>
@@ -377,6 +387,7 @@ function SearchHero({ heading, wide }: { heading: string; wide: boolean }) {
         <h1 id="search-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
           {heading}
         </h1>
+        {figures && <p className="max-w-2xl text-ink-muted md:text-lg">{figures}</p>}
       </div>
     </section>
   );
