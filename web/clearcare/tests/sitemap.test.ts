@@ -74,6 +74,7 @@ test("lists the site's own pages, then each home's overview and its four tabs", 
   assert.ok(paths.includes("/guides/fair-deal"));
   assert.ok(paths.includes("/national-figures"));
   assert.ok(paths.includes("/support-services"));
+  assert.ok(paths.includes("/about"));
   assert.deepEqual(paths.slice(-10), [
     "/nursing-homes/wicklow/the-glebe-39",
     "/nursing-homes/wicklow/the-glebe-39/issues-found",

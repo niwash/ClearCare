@@ -3,13 +3,13 @@ import type { ReactNode } from "react";
 import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { fullWidthClass } from "@/components/ui/classes";
 import { CONTACT_EMAIL } from "@/lib/contact";
+import { RUN_BY } from "@/lib/site-identity";
 
 export const metadata: Metadata = {
   title: "Privacy notice · ClearCare",
   description: "What personal data ClearCare handles, why, who processes it and your rights.",
 };
 
-const RUN_BY = "master's students at Technological University Dublin";
 // GDPR Arts. 13(1)(a) and 14(1)(a) ask for a way to contact us, and every right below is exercised
 // by email: CONTACT_EMAIL, lib/contact.ts, shared with the footer.
 // The outcome pilot's raw/ answers.
