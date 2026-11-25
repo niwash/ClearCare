@@ -4,10 +4,12 @@
 
 // The pages each link's section takes in, besides its own and whatever sits under its address
 // (/resources/glossary, /compare/...): the guides under Resources, except Fair Deal, which has its
-// own link, and a home's pages under Search for Homes, which they're reached from.
+// own link; National Figures, which Resources lists though its address isn't under it (CCARE-312);
+// and a home's pages under Search for Homes, which they're reached from.
 const SECTIONS: Record<string, (pathname: string) => boolean> = {
   "/search": (pathname) => pathname.startsWith("/nursing-homes/"),
-  "/resources": (pathname) => pathname.startsWith("/guides/") && !pathname.startsWith("/guides/fair-deal"),
+  "/resources": (pathname) =>
+    (pathname.startsWith("/guides/") && !pathname.startsWith("/guides/fair-deal")) || pathname === "/national-figures",
 };
 
 // "page" for the page itself, "true" for a page in its section (the current item of the set, in
