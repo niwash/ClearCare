@@ -171,13 +171,13 @@ function ResourcesHero() {
 function TermsAndFigures() {
   return (
     <section
-      aria-labelledby="terms-h"
+      aria-labelledby="terms-figures-h"
       className={`${fullWidthClass} -mb-6 bg-tint-sage py-8 md:-mb-8 md:py-12 adult:border-b adult:border-line`}
     >
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-6 px-4 md:px-8">
         <div className="reveal flex max-w-3xl flex-col gap-2">
-          <h2 id="terms-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+          <h2 id="terms-figures-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
             Terms and Figures
           </h2>
           <p className="text-ink-muted md:text-lg">
