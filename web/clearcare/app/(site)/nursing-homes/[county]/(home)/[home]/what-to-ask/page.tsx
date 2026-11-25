@@ -2,7 +2,8 @@
 // What to ask (CCARE-212): the questions to take on a visit, in one list a family can print or keep
 // on a phone. First those about this home, from how each story on How the home responded ended
 // (askTheHome): one question for the stories that ended the same way, with their topics under it,
-// each with its latest judgement so it keeps its context; then a few that are good to ask any home, with
+// each with its latest judgement so it keeps its context, and the regulations page's question for it
+// where it has one (CCARE-298); then a few that are good to ask any home, with
 // the guide for more. The record otherwise ends on judgements; this page
 // ends it on what the family can do.
 import { Band } from "@/components/centre/centre-band";
@@ -12,6 +13,7 @@ import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-i
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
 import { getCentreRecord, homeFromParams, homeMetadata, type HomeParams } from "@/lib/centre-record";
 import { type Judgement, type PromiseTrail } from "@/lib/centres";
+import { REGULATION_GUIDE } from "@/lib/regulation-guide";
 import { returnQuery } from "@/lib/return-to-centre";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -101,15 +103,27 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
                     <ul className="grid gap-2 sm:grid-cols-2">
                       {trails.map((trail) => {
                         const judgement = latestJudgement(trail);
+                        // The regulations page's "Ask on your visit" question for this topic, where it
+                        // has one (CCARE-298): a question about the topic itself, beside the one above
+                        // about how the home answered the finding.
+                        const ask = REGULATION_GUIDE[trail.regulation.number]?.ask;
                         return (
                           <li
                             key={trail.regulation.number}
-                            className="flex h-full items-center gap-3 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-ink adult:rounded-md print:rounded-none print:border-0 print:border-b print:px-0"
+                            className="flex h-full items-start gap-3 rounded-xl border border-line bg-surface px-3.5 py-2.5 text-ink adult:rounded-md print:rounded-none print:border-0 print:border-b print:px-0"
                           >
-                            <JudgementIcon judgement={judgement} size={14} />
+                            {/* Level with the title's first line, as a card can run to a question under it. */}
+                            <span className="flex h-6 shrink-0 items-center">
+                              <JudgementIcon judgement={judgement} size={14} />
+                            </span>
                             <span className="flex min-w-0 flex-1 flex-col">
                               <span className="font-semibold">{trail.regulation.title}</span>
                               <span className="text-sm text-ink-muted">{JUDGEMENT_LABELS[judgement]}</span>
+                              {ask && (
+                                <span className="mt-1.5 text-sm text-ink">
+                                  <span className="font-semibold">You could also ask:</span> {ask}
+                                </span>
+                              )}
                             </span>
                           </li>
                         );

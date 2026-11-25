@@ -18,6 +18,7 @@ import { AmenityIcon } from "@/components/centre/amenity-icon";
 import { amenityTagClass } from "@/components/centre/centre-amenities";
 import { CentrePhoto } from "@/components/centre/centre-photo";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
+import { RegulationThemeIcon } from "@/components/centre/regulation-theme-icon";
 import { ShowAnotherHome } from "@/components/home/show-another-home";
 import { actionLinkClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
@@ -160,9 +161,13 @@ export async function SampleCentre({ total, updated }: { total: number | null; u
               <ul className="flex flex-col divide-y divide-line-soft">
                 {shown.map(({ regulation, judgement, change }) => (
                   <li key={regulation.number} className="flex flex-col gap-1.5 py-3 first:pt-0 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                    <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
-                      <span className="font-semibold">{regulation.title}</span>
-                      <span className="text-sm text-ink-muted">Regulation {regulation.number}</span>
+                    {/* Its theme's icon first (CCARE-298), as on the record and the regulations page. */}
+                    <span className="flex min-w-0 items-center gap-2.5">
+                      <RegulationThemeIcon number={regulation.number} />
+                      <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                        <span className="font-semibold">{regulation.title}</span>
+                        <span className="text-sm text-ink-muted">Regulation {regulation.number}</span>
+                      </span>
                     </span>
                     <span className="flex shrink-0 flex-wrap items-center gap-x-2.5 gap-y-1">
                       <JudgementChip judgement={judgement} />
