@@ -119,11 +119,12 @@ export function FairDealCalculator() {
         </button>
       </form>
 
-      {/* Announced as it changes, politely, so a screen reader hears the new estimate after typing. */}
+      {/* Announced as it changes, politely, so a screen reader hears the new estimate after typing. Beside
+          the form on a wide screen, it sticks below the navigation band (--header-offset, CCARE-296). */}
       <section
         aria-labelledby="estimate-h"
         aria-live="polite"
-        className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 lg:sticky lg:top-6 adult:border adult:border-line"
+        className="flex flex-col gap-4 rounded-lg bg-band p-5 md:p-6 lg:sticky lg:top-[calc(var(--header-offset)+1.5rem)] adult:border adult:border-line"
       >
         <h2 id="estimate-h" className="font-heading text-2xl font-semibold tracking-tight">
           Estimated weekly contribution
