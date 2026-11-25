@@ -19,40 +19,6 @@ export const REGULATIONS_SOURCE = {
   url: "https://hiqa.ie/sites/default/files/2025-03/AJF-DCOP-Guidance.pdf",
 };
 
-// The works the regulations page (app/(site)/resources/regulations, CCARE-261) cites, in its
-// reference list. The framework is where every quote here was taken from; the standards are what a
-// "standard" quote is from; the statutory instrument is where the regulations and their numbers are
-// set down in law.
-export const REGULATION_REFERENCES = {
-  framework: {
-    id: "ref-framework",
-    cite: "HIQA, 2025",
-    author: "Health Information and Quality Authority",
-    year: "2025",
-    title: "Assessment-judgment framework for designated centres for older people",
-    detail: "Version 4.1. Dublin: HIQA.",
-    url: REGULATIONS_SOURCE.url,
-  },
-  standards: {
-    id: "ref-standards",
-    cite: "HIQA, 2016",
-    author: "Health Information and Quality Authority",
-    year: "2016",
-    title: "National Standards for Residential Care Settings for Older People in Ireland",
-    detail: "Dublin: HIQA.",
-    url: "https://www.hiqa.ie/reports-and-publications/standard/national-standards-residential-care-settings-older-people-ireland",
-  },
-  regulations: {
-    id: "ref-regulations",
-    cite: "S.I. No. 415 of 2013",
-    author: "Government of Ireland",
-    year: "2013",
-    title: "Health Act 2007 (Care and Welfare of Residents in Designated Centres for Older People) Regulations 2013",
-    detail: "S.I. No. 415 of 2013. Dublin: Stationery Office.",
-    url: "https://www.irishstatutebook.ie/eli/2013/si/415/made/en/print",
-  },
-} as const;
-
 // standard: the National Standard's number, its words quoted. enquiry: one of the framework's lines of
 // enquiry for the regulation, quoted.
 export type RegulationQuote = { kind: "standard"; standard: string; text: string } | { kind: "enquiry"; text: string };

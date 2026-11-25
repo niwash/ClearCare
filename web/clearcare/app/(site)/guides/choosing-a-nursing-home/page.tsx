@@ -8,7 +8,9 @@ import { Placeholder } from "@/components/placeholder/placeholder";
 import { ShowHide } from "@/components/ui/chevron";
 import { Icon } from "@/components/ui/icons";
 import { smallLinkButtonClass } from "@/components/ui/classes";
+import { References } from "@/components/ui/references";
 import { getGuide, type GuideSlug } from "@/lib/guides";
+import { pageReferences } from "@/lib/references";
 
 const guide = getGuide("choosing-a-nursing-home");
 
@@ -223,6 +225,10 @@ const STAGES: Stage[] = [
   },
 ];
 
+// The outside sources the answers link to: the Decision Support Service, on a person's right to be
+// helped to decide, and the CCPC's guide to moving in. Listed in a folded References (CCARE-299).
+const REFS = pageReferences(["dssHome", "ccpcMovingIn"]);
+
 export default function ChoosingANursingHomeGuide() {
   return (
     <>
@@ -295,6 +301,9 @@ export default function ChoosingANursingHomeGuide() {
           );
         })}
       </ol>
+
+      {/* The outside sources the answers link to, in full, folded (CCARE-299). */}
+      <References references={REFS.list} />
 
       <GuideEnding current={guide} />
     </>

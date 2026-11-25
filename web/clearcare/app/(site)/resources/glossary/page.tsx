@@ -3,7 +3,9 @@ import { GlossaryList } from "@/components/glossary/glossary-list";
 import { Breadcrumb, RESOURCES_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { fullWidthClass } from "@/components/ui/classes";
+import { References } from "@/components/ui/references";
 import { GLOSSARY } from "@/lib/glossary";
+import { pageReferences, type SourceKey } from "@/lib/references";
 import { REGULATIONS_SOURCE } from "@/lib/regulations";
 
 export const metadata: Metadata = {
@@ -15,13 +17,31 @@ export const metadata: Metadata = {
 // category to narrow it to (components/glossary/glossary-list.tsx). The terms and why each is here
 // are in lib/glossary.ts. Each term has its own anchor, so a page can link to one:
 // /resources/glossary#substantially-compliant.
+//
+// The sources its meanings follow, in a folded References at its foot (CCARE-299): each term names
+// its own (lib/glossary.ts), so the list is made from them and can't leave one out, with HIQA's
+// framework, which every judgement's quoted definition comes from.
+const SOURCES = [...new Set<SourceKey>(["hiqaFramework", ...GLOSSARY.flatMap((group) => group.terms.flatMap((term) => term.sources ?? []))])];
+const REFS = pageReferences(SOURCES);
+const CITATIONS = Object.fromEntries(SOURCES.map((key) => [key, { id: REFS[key].id, cite: REFS[key].cite }]));
+
 export default function GlossaryPage() {
   return (
     <>
       <GlossaryHero />
 
       {/* HIQA's framework is linked by its address alone, so its regulation quotes stay on the server. */}
-      <GlossaryList groups={GLOSSARY} hiqaSourceUrl={REGULATIONS_SOURCE.url} />
+      <GlossaryList groups={GLOSSARY} hiqaSourceUrl={REGULATIONS_SOURCE.url} citations={CITATIONS} />
+
+      <References
+        references={REFS.list}
+        note={
+          <>
+            HIQA&apos;s definitions are quoted as HIQA published them; the plain words are ClearCare&apos;s. Fair Deal
+            Explained cites the paying terms in more detail. These organisations do not endorse ClearCare.
+          </>
+        }
+      />
 
       <ContactsBanner className="-mb-6 md:-mb-10" />
     </>

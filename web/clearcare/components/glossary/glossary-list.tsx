@@ -30,7 +30,19 @@ function matches(entry: Entry, query: string) {
   return words.includes(query.toLocaleLowerCase("en-IE"));
 }
 
-export function GlossaryList({ groups, hiqaSourceUrl }: { groups: GlossaryGroup[]; hiqaSourceUrl: string }) {
+// A source as a term cites it: its anchor in the page's References and its in-text citation, worked
+// out on the server for the page's own list (pageReferences, lib/references.ts; CCARE-299).
+export type GlossaryCitation = { id: string; cite: string };
+
+export function GlossaryList({
+  groups,
+  hiqaSourceUrl,
+  citations,
+}: {
+  groups: GlossaryGroup[];
+  hiqaSourceUrl: string;
+  citations: Record<string, GlossaryCitation>;
+}) {
   const [query, setQuery] = useState("");
   const [letter, setLetter] = useState(ALL);
   const [category, setCategory] = useState(ALL);
@@ -239,6 +251,7 @@ export function GlossaryList({ groups, hiqaSourceUrl }: { groups: GlossaryGroup[
                 open={Boolean(searched)}
                 showCategory={category === ALL}
                 hiqaSourceUrl={hiqaSourceUrl}
+                citations={citations}
               />
             ))}
           </ul>
@@ -258,12 +271,15 @@ function Term({
   open,
   showCategory,
   hiqaSourceUrl,
+  citations,
 }: {
   entry: Entry;
   open: boolean;
   showCategory: boolean;
   hiqaSourceUrl: string;
+  citations: Record<string, GlossaryCitation>;
 }) {
+  const cited = (entry.sources ?? []).flatMap((key) => (citations[key] ? [citations[key]] : []));
   const hiqa = entry.judgement ? JUDGEMENT_MEANINGS[entry.judgement] : null;
 
   return (
@@ -297,6 +313,22 @@ function Term({
                 </a>
               </p>
             </div>
+          )}
+          {/* Where the meaning comes from, each citation leading to its entry in the References at
+              the foot of the page, which opens to it (CCARE-299). */}
+          {cited.length > 0 && (
+            <p className="text-sm text-ink-muted">
+              Source: (
+              {cited.map((citation, index) => (
+                <span key={citation.id}>
+                  {index > 0 && "; "}
+                  <a href={`#${citation.id}`} className="text-ink-muted">
+                    {citation.cite}
+                  </a>
+                </span>
+              ))}
+              )
+            </p>
           )}
           {entry.more && (
             <p className="mt-1">

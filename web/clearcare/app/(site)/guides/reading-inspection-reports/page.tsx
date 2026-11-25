@@ -8,12 +8,19 @@ import type { Judgement } from "@/lib/centres";
 import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
 import { getGuide } from "@/lib/guides";
 import { ShowHide } from "@/components/ui/chevron";
+import { Cite, References } from "@/components/ui/references";
+import { pageReferences } from "@/lib/references";
 
 const guide = getGuide("reading-inspection-reports");
 
 export const metadata = guideMetadata(guide);
 
 // Text from Research/Guides/HIQA_Guide.md (CCARE-56).
+
+// What the guide says about HIQA's judgements, inspections and compliance plans follows HIQA's
+// framework, which sets them out, and the National Standards it inspects against; cited in place
+// and listed in a folded References (CCARE-299).
+const REFS = pageReferences(["hiqaFramework", "hiqaStandards"]);
 
 const JUDGEMENTS: { judgement: Judgement; label: string; meaning: string }[] = [
   { judgement: "compliant", label: "Compliant", meaning: "The requirement was met." },
@@ -93,7 +100,8 @@ export default function ReadingInspectionReportsGuide() {
         <Step number={2} title="Understand how ClearCare shows the judgements">
           <Prose>
             <p>
-              HIQA uses judgement labels to show how the service met the relevant requirement at the time of inspection.
+              HIQA uses judgement labels to show how the service met the relevant requirement at the time of inspection
+              (<Cite reference={REFS.hiqaFramework} />).
               On each home’s record, ClearCare shows every label with its own symbol, so you can spot them on its{" "}
               <strong>{CENTRE_SECTION_TITLES.inspections}</strong> page at a glance. Common labels include:
             </p>
@@ -112,6 +120,11 @@ export default function ReadingInspectionReportsGuide() {
             <p>
               Always read the exact wording and context in the report. Do not treat one label as a complete summary of
               every aspect of a home’s care.
+            </p>
+            <p className="text-sm text-ink-muted">
+              These are ClearCare&apos;s plain words for HIQA&apos;s labels. HIQA&apos;s own definitions are in its
+              assessment-judgment framework (<Cite reference={REFS.hiqaFramework} />), and inspectors judge homes against
+              its National Standards (<Cite reference={REFS.hiqaStandards} />) as well as the regulations.
             </p>
           </Prose>
         </Step>
@@ -213,6 +226,9 @@ export default function ReadingInspectionReportsGuide() {
           decision.
         </p>
       </section>
+
+      {/* The sources cited above, in full, folded (CCARE-299). */}
+      <References references={REFS.list} />
 
       <GuideEnding current={guide} />
     </>

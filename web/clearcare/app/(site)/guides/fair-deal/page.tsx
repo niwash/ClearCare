@@ -9,6 +9,8 @@ import { getGuide } from "@/lib/guides";
 import { OrganisationIcon, type OrganisationKind } from "@/components/ui/organisation-icon";
 import { Icon } from "@/components/ui/icons";
 import { ShowHide } from "@/components/ui/chevron";
+import { References } from "@/components/ui/references";
+import { pageReferences } from "@/lib/references";
 
 const guide = getGuide("fair-deal");
 
@@ -35,6 +37,27 @@ const CAG_REPORT =
 const HSE_FINANCIAL = "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/financial-assessment/";
 const HSE_APPROVED_HOMES = "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/finding-the-right-nursing-home/";
 const HSE_OFFICES = "https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/contact/";
+
+// Every source the guide cites in place, listed once in its References (CCARE-299). The citations
+// in the text stay links straight to the page or the passage they rest on; the list gives each in
+// full. The organisations under "Who to contact" are where to get help, not sources, so they are
+// left out.
+const REFS = pageReferences([
+  "hseNhss",
+  "hseApplicationForm",
+  "hseFinancialAssessment",
+  "hseThreeYearCap",
+  "hseNursingHomeLoan",
+  "hseCareNeeds",
+  "hseFindingAHome",
+  "cagSpecialReport110",
+  "dailWrittenAnswer2024",
+  "budget2026",
+  "budget2027",
+  "nhiChargesGuide",
+  "ciPublicHealthServices",
+  "dssBecomingRepresentative",
+]);
 
 // Each section's description is what its header says while closed, so the guide can be scanned
 // without opening anything. Keep it to what the section itself says.
@@ -648,6 +671,9 @@ export default function FairDealGuide() {
           </a>{" "}
           before making any decisions.
         </p>
+
+        {/* Every source cited above, in full, folded under the guide's last words (CCARE-299). */}
+        <References references={REFS.list} />
       </div>
 
         <section

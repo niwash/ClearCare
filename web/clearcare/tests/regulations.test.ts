@@ -5,7 +5,8 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { allRegulations, REGULATION_REFERENCES, regulationAnchor, regulationQuote } from "../lib/regulations.ts";
+import { REFERENCES } from "../lib/references.ts";
+import { allRegulations, regulationAnchor, regulationQuote } from "../lib/regulations.ts";
 
 // The regulations page (CCARE-261) lists every regulation from the same entries the hover reads.
 describe("the regulations page's list", () => {
@@ -32,7 +33,7 @@ describe("the regulations page's list", () => {
   test("gives each regulation and each reference its own anchor", () => {
     const ids = [
       ...allRegulations().map((regulation) => regulationAnchor(regulation.number)),
-      ...Object.values(REGULATION_REFERENCES).map((reference) => reference.id),
+      ...Object.values(REFERENCES).map((reference) => reference.id),
     ];
     assert.equal(new Set(ids).size, ids.length);
   });

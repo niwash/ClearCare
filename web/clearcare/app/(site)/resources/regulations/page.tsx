@@ -7,13 +7,13 @@ import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { Icon, ICON_PATHS } from "@/components/ui/icons";
 import { Chevron, ShowHide } from "@/components/ui/chevron";
-import { OpenOnJump } from "@/components/regulations/open-on-jump";
+import { Cite, References } from "@/components/ui/references";
 import type { Judgement } from "@/lib/centres";
 import { judgementMeaning } from "@/lib/glossary";
+import { pageReferences } from "@/lib/references";
 import { REGULATION_GUIDE, REGULATION_THEMES, type RegulationTheme } from "@/lib/regulation-guide";
 import {
   allRegulations,
-  REGULATION_REFERENCES,
   regulationAnchor,
   type RegulationListing,
   type RegulationQuote,
@@ -24,7 +24,9 @@ export const metadata: Metadata = {
   description: "What each regulation a nursing home is inspected against means, in plain English and in HIQA's own words.",
 };
 
-const REFERENCES = [REGULATION_REFERENCES.framework, REGULATION_REFERENCES.standards, REGULATION_REFERENCES.regulations];
+// The framework every quote is from, the standards a "standard" quote is from, and the statutory
+// instrument that sets the regulations and their numbers down in law (lib/references.ts).
+const REFS = pageReferences(["hiqaFramework", "hiqaStandards", "careRegulations"]);
 const JUDGEMENTS: Judgement[] = ["compliant", "substantially-compliant", "not-compliant"];
 
 // Each theme's accent, written out in full so Tailwind finds them: the tint of its number badges. The
@@ -55,7 +57,6 @@ export default function RegulationsPage() {
 
   return (
     <>
-      <OpenOnJump />
       <RegulationsHero />
 
       <WhatAreRegulations />
@@ -92,7 +93,15 @@ export default function RegulationsPage() {
         </nav>
       </div>
 
-      <References />
+      <References
+        references={REFS.list}
+        note={
+          <>
+            HIQA&apos;s words are quoted as HIQA published them; the plain-English lines and questions are
+            ClearCare&apos;s. These organisations do not endorse ClearCare.
+          </>
+        }
+      />
 
       <NextSteps />
 
@@ -279,7 +288,7 @@ function RegulationCard({ regulation, accent }: { regulation: RegulationListing;
         <div className="flex flex-col gap-1.5">
           <p className="text-lg leading-relaxed">{regulation.summary}</p>
           <p className="text-sm text-ink-muted">
-            Our summary of the regulation (<Cite reference={REGULATION_REFERENCES.regulations} />). It isn&apos;t
+            Our summary of the regulation (<Cite reference={REFS.careRegulations} />). It isn&apos;t
             inspected, so HIQA doesn&apos;t describe it.
           </p>
         </div>
@@ -309,69 +318,21 @@ function OtherRegulations({ regulations }: { regulations: RegulationListing[] })
   );
 }
 
-// An in-text citation that leads to its entry in the references below.
-function Cite({ reference }: { reference: (typeof REFERENCES)[number] }) {
-  return (
-    <a href={`#${reference.id}`} className="text-ink-muted">
-      {reference.cite}
-    </a>
-  );
-}
-
 // Where a quote is from: a National Standard, as the framework links it to the regulation, or one of
 // the framework's own lines of enquiry.
 function Attribution({ quote }: { quote: RegulationQuote }) {
   if (quote.kind === "standard") {
     return (
       <>
-        National Standard {quote.standard} (<Cite reference={REGULATION_REFERENCES.standards} />), which HIQA assesses
-        this regulation against (<Cite reference={REGULATION_REFERENCES.framework} />)
+        National Standard {quote.standard} (<Cite reference={REFS.hiqaStandards} />), which HIQA assesses
+        this regulation against (<Cite reference={REFS.hiqaFramework} />)
       </>
     );
   }
   return (
     <>
-      A question HIQA&apos;s inspectors ask about this regulation (<Cite reference={REGULATION_REFERENCES.framework} />)
+      A question HIQA&apos;s inspectors ask about this regulation (<Cite reference={REFS.hiqaFramework} />)
     </>
-  );
-}
-
-// The full references, in the order of their authors and years, each opening in a new tab.
-// Folded like each card's HIQA words, as most readers won't need it: an in-text citation opens it
-// and lands on its entry (OpenOnJump). Each entry starts with the short citation the cards use, so
-// "(HIQA, 2025)" is easy to find in the list.
-function References() {
-  return (
-    <section aria-label="References" className="max-w-3xl">
-      <details id="references" className="group scroll-mt-6 rounded-2xl bg-surface shadow-sm adult:border adult:border-line adult:shadow-none">
-        {/* A grid rather than a wrapper, so the heading sits straight in the summary, as HTML allows. */}
-        <summary className="grid min-h-12 cursor-pointer list-none grid-cols-[1fr_auto] items-center gap-x-3 px-6 py-4 [&::-webkit-details-marker]:hidden">
-          <h2 className="font-heading text-xl font-semibold md:text-2xl">References</h2>
-          <ShowHide />
-          <span className="text-ink-muted">Where HIQA&apos;s words on this page come from.</span>
-        </summary>
-        <div className="flex flex-col gap-3 px-6 pb-6">
-          <ul className="flex flex-col gap-3 text-sm leading-relaxed">
-            {[...REFERENCES]
-              .sort((a, b) => a.author.localeCompare(b.author) || a.year.localeCompare(b.year))
-              .map((reference) => (
-                <li key={reference.id} id={reference.id} className="scroll-mt-6">
-                  <span className="font-semibold">{reference.cite}.</span> {reference.author} ({reference.year}){" "}
-                  <cite>{reference.title}</cite>. {reference.detail} Available at:{" "}
-                  <a href={reference.url} target="_blank" rel="noopener noreferrer" className="break-all">
-                    {reference.url}
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                </li>
-              ))}
-          </ul>
-          <p className="text-sm text-ink-muted">
-            HIQA&apos;s words are quoted as HIQA published them; the plain-English lines and questions are
-            ClearCare&apos;s. These organisations do not endorse ClearCare.
-          </p>
-        </div>
-      </details>
-    </section>
   );
 }
 

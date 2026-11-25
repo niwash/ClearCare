@@ -1,9 +1,10 @@
 "use client";
 
-// components/regulations/open-on-jump.tsx
-// Lands an in-page jump on its target when the target is inside a folded <details> on the
-// regulations page (CCARE-261): "(HIQA, 2025)" opens References and lands on its entry, and
-// Regulation 1 or 2 in "Jump to a regulation" opens "Other regulations" and lands on its card. It
+// components/ui/open-on-jump.tsx
+// Lands an in-page jump on its target when the target is inside a folded <details> (CCARE-261,
+// CCARE-299): "(HIQA, 2025)" opens a page's References and lands on its entry, and on the regulations
+// page, Regulation 1 or 2 in "Jump to a regulation" opens "Other regulations" and lands on its card.
+// References (references.tsx) renders it, so every page with References has it. It
 // opens every closed box around the target as the link is pressed, and for an address that arrives
 // with an anchor (/resources/regulations#ref-framework). Opening is animated (::details-content in
 // globals.css), and the browser's own jump happens while the box still has no height, so it scrolls

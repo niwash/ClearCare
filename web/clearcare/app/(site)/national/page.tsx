@@ -11,9 +11,11 @@ import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
 import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
+import { References } from "@/components/ui/references";
 import { SlideUp } from "@/components/ui/slide-up";
 import { formatDate, type Judgement } from "@/lib/centres";
 import { getGuide } from "@/lib/guides";
+import { pageReferences } from "@/lib/references";
 import {
   formatCount,
   formatPercent,
@@ -68,6 +70,13 @@ export default async function NationalPage() {
         </p>
       )}
 
+      {lookup.status === "found" && (
+        <References
+          references={REFS.list}
+          note="The figures are ClearCare's own count of the judgements in HIQA's inspection reports for the homes on this register. HIQA does not endorse ClearCare."
+        />
+      )}
+
       <SearchPrompt />
 
       {/* So nobody leaves unsure what the judgments mean or how to use them. */}
@@ -83,6 +92,10 @@ export default async function NationalPage() {
     </>
   );
 }
+
+// HIQA's register of the homes whose reports the figures count (CCARE-299). The figures themselves
+// are ClearCare's own count, which the list's note says.
+const REFS = pageReferences(["hiqaRegister"]);
 
 const NATIONAL_GUIDES = [
   getGuide("reading-inspection-reports"),
