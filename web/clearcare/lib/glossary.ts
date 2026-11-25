@@ -108,7 +108,7 @@ export const GLOSSARY: GlossaryGroup[] = [
         sources: ["hiqaFramework"],
         term: "Compliance plan",
         meaning:
-          "The home's written reply to an inspection. It says what the home will do, and by when, about each regulation that wasn't fully met. A later inspection shows whether it was kept.",
+          "The home's written reply to an inspection. It says what the home will do, and by when, about each regulation that wasn't fully met. Inspectors usually look at those regulations again at the next inspection.",
         more: READING_REPORTS,
       },
       {
@@ -196,9 +196,10 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "person-in-charge",
-        sources: ["careRegulations"],
+        sources: ["careRegulations", "careRegulations2025"],
         term: "Person in charge",
-        meaning: "The nurse who manages the home day to day, named to HIQA.",
+        meaning:
+          "The person who manages the home day to day, named to HIQA. In most homes they must be a registered nurse with at least three years' experience of nursing older people.",
       },
       {
         id: "extra-condition",
@@ -273,7 +274,7 @@ export const GLOSSARY: GlossaryGroup[] = [
         id: "end-of-life-care",
         term: "End-of-life care",
         meaning:
-          "Care in the last weeks and days of someone's life, keeping them comfortable and supporting their family.",
+          "Care in the last months or weeks of someone's life, keeping them comfortable and supporting their family.",
       },
       {
         id: "general-nursing-care",
@@ -406,7 +407,7 @@ export const GLOSSARY: GlossaryGroup[] = [
         term: "Nursing home loan",
         aka: ["Ancillary State Support"],
         meaning:
-          "An optional part of Fair Deal. The HSE pays the share of your contribution that comes from your home or other property, and it is repaid later, usually from your estate. You don't repay it while you are in care.",
+          "An optional part of Fair Deal. The HSE pays the share of your contribution that comes from your home or other property, and it is repaid later, usually from your estate. If the property is sold or transferred while you are in care, it must be repaid within 6 months. You can also repay it at any time.",
         more: fairDeal("nursing-home-loan"),
       },
       {

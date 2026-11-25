@@ -265,7 +265,7 @@ export default function FairDealGuide() {
               <ul className="flex flex-col gap-2">
                 <NotCovered>Hairdressing</NotCovered>
                 <NotCovered>
-                  Therapies such as physiotherapy or occupational therapy, unless included in your care plan (
+                  Therapies such as physiotherapy or occupational therapy (
                   <Source href={CAG_REPORT}>Comptroller and Auditor General, Special Report 110</Source>)
                 </NotCovered>
                 <NotCovered>Social activities or outings charged by the home</NotCovered>
@@ -504,8 +504,10 @@ export default function FairDealGuide() {
             The 3-year cap follows the money. If you sell your home while in a nursing home, the sale proceeds also
             qualify for the cap, but the three years still run from when you went into care, not from the date of the sale
             (<Source href="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/3-year-cap/">HSE, 3-year cap</Source>
-            ). Tell your local Nursing Homes Support Office if you sell. If you have the nursing home loan, you must
-            tell them within 10 working days of the sale (see the next section).
+            ). Whether or not you have the nursing home loan, you must tell your local Nursing Homes Support Office
+            within 10 working days of selling your home or any other asset (
+            <Source href={`${HSE_FINANCIAL}#:~:text=within%2010%20working%20days`}>HSE, Financial assessment</Source>
+            ). If you have the loan, it then has to be repaid (see the next section).
           </p>
         </GuideSection>
 

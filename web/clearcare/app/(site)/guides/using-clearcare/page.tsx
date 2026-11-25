@@ -26,8 +26,10 @@ const LAST_UPDATED = { iso: "2026-11-12", label: "12 November 2026" };
 // A new name when the drawing changes, so no cached copy of the old one is shown. v3 says "By name,
 // town, county or Eircode, with a map" at step 4, as the search has since CCARE-230 (CCARE-233):
 // rendered from the same SVG with only that line changed, the drawing and a 24px white margin at
-// 2.5x in the light theme.
-const FLOWCHART = "/guides/using-clearcare-flowchart-v3.png";
+// 2.5x in the light theme. v4 names the last optional box Support Services, the page's name since
+// CCARE-258, where it said Contacts (CCARE-314): rendered the same way, with v3's step 4 line and
+// those two labels changed. The artifact's SVG still has the old wording in all three places.
+const FLOWCHART = "/guides/using-clearcare-flowchart-v4.png";
 
 // One route through the site, in the flowchart's order. An optional step has a question instead of
 // a number: the reader decides whether they need it.
@@ -101,8 +103,8 @@ const STEPS: Step[] = [
     title: "Call the home",
     detail: (
       <>
-        Call the number on the home’s Overview, under Contact. Ask your questions, such as how many beds are free.
-        ClearCare doesn’t show free beds.
+        Call the number on the home’s Overview: it is the Phone row under About this home. Ask your questions, such
+        as how many beds are free. ClearCare doesn’t show free beds.
       </>
     ),
   },
