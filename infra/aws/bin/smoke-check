@@ -2,7 +2,7 @@
 # Checks the site and the API through the load balancer, under their public
 # hostnames, as a reader would reach them. It connects to the load balancer
 # directly, so it checks AWS whatever the DNS records point at. Fails unless
-# the API returns centres and the site's search page lists the first of them.
+# the API returns centres and Dublin's county page lists the first of them.
 #
 # Usage: smoke-check
 #
@@ -31,9 +31,10 @@ centres=$(fetch "$api" "/centres?county=Dublin") || fail "https://$api/centres?c
 id=$(jq -er '.centres[0].centre_id' <<<"$centres") || fail "https://$api/centres?county=Dublin returned no centre"
 echo "smoke-check: the API returns centres, the first is $id"
 
-page=$(fetch "$site" "/search?county=Dublin") || fail "https://$site/search?county=Dublin did not answer 200"
-grep -q "/centres/$id" <<<"$page" || fail "https://$site/search?county=Dublin does not link centre $id"
-echo "smoke-check: the site's search lists centre $id"
+page=$(fetch "$site" "/nursing-homes/dublin") || fail "https://$site/nursing-homes/dublin did not answer 200"
+grep -Eq "/nursing-homes/dublin/([a-z0-9]+-)*${id}[\"'/?]" <<<"$page" ||
+  fail "https://$site/nursing-homes/dublin does not link centre $id"
+echo "smoke-check: the site's Dublin county page lists centre $id"
 
 # The load balancer answers /actuator itself (alb.tf).
 status=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 \
