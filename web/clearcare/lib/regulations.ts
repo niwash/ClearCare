@@ -19,6 +19,40 @@ export const REGULATIONS_SOURCE = {
   url: "https://hiqa.ie/sites/default/files/2025-03/AJF-DCOP-Guidance.pdf",
 };
 
+// The works the regulations page (app/(site)/resources/regulations, CCARE-261) cites, in its
+// reference list. The framework is where every quote here was taken from; the standards are what a
+// "standard" quote is from; the statutory instrument is where the regulations and their numbers are
+// set down in law.
+export const REGULATION_REFERENCES = {
+  framework: {
+    id: "ref-framework",
+    cite: "HIQA, 2025",
+    author: "Health Information and Quality Authority",
+    year: "2025",
+    title: "Assessment-judgment framework for designated centres for older people",
+    detail: "Version 4.1. Dublin: HIQA.",
+    url: REGULATIONS_SOURCE.url,
+  },
+  standards: {
+    id: "ref-standards",
+    cite: "HIQA, 2016",
+    author: "Health Information and Quality Authority",
+    year: "2016",
+    title: "National Standards for Residential Care Settings for Older People in Ireland",
+    detail: "Dublin: HIQA.",
+    url: "https://www.hiqa.ie/reports-and-publications/standard/national-standards-residential-care-settings-older-people-ireland",
+  },
+  regulations: {
+    id: "ref-regulations",
+    cite: "S.I. No. 415 of 2013",
+    author: "Government of Ireland",
+    year: "2013",
+    title: "Health Act 2007 (Care and Welfare of Residents in Designated Centres for Older People) Regulations 2013",
+    detail: "S.I. No. 415 of 2013. Dublin: Stationery Office.",
+    url: "https://www.irishstatutebook.ie/eli/2013/si/415/made/en/print",
+  },
+} as const;
+
 // standard: the National Standard's number, its words quoted. enquiry: one of the framework's lines of
 // enquiry for the regulation, quoted.
 export type RegulationQuote = { kind: "standard"; standard: string; text: string } | { kind: "enquiry"; text: string };
@@ -193,6 +227,37 @@ const REGULATIONS: Record<number, RegulationEntry> = {
 // Titles compared without case, extra spaces, a curly apostrophe or a full stop at the end.
 const normalise = (title: string) =>
   title.toLowerCase().replaceAll("’", "'").replace(/\s+/g, " ").replace(/\.$/, "").trim();
+
+// One regulation as the regulations page lists it: HIQA's words for it, or, for the two the
+// framework doesn't cover, ClearCare's own short summary, which the page labels as ours.
+export type RegulationListing =
+  | { number: number; title: string; quote: RegulationQuote }
+  | { number: number; title: string; summary: string };
+
+// Regulations 1 and 2 name the regulations and define their words, so there is nothing in them to
+// inspect and the framework gives no words for them. They are only on the regulations page, never
+// the hover: no report judges them. Their titles are the statutory instrument's (S.I. No. 415 of
+// 2013); check them against it, as irishstatutebook.ie refuses automated requests.
+const UNINSPECTED: { number: number; title: string; summary: string }[] = [
+  { number: 1, title: "Citation and commencement", summary: "Gives the regulations their name and says when they came into force." },
+  { number: 2, title: "Definitions", summary: "Explains what the words used in the regulations mean." },
+];
+
+// Every regulation, by number, for the regulations page (CCARE-261): each one HIQA inspects under
+// the title the framework gives it, with HIQA's words, and the first two with ClearCare's summary.
+export function allRegulations(): RegulationListing[] {
+  const inspected = Object.entries(REGULATIONS).map(([number, entry]) => ({
+    number: Number(number),
+    title: entry.titles[0],
+    quote: entry.quote,
+  }));
+  return [...UNINSPECTED, ...inspected].sort((a, b) => a.number - b.number);
+}
+
+// The anchor of a regulation on the regulations page: /resources/regulations#regulation-17.
+export function regulationAnchor(number: number): string {
+  return `regulation-${number}`;
+}
 
 // HIQA's words for a regulation, or null when ClearCare has none. Matched by number and title
 // together: the registration regulations have numbers of their own, so a number alone could give

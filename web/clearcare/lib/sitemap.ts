@@ -13,7 +13,7 @@ const PAGE_SIZE = 50;
 
 // Not /search, which is a question rather than a page, nor /compare and /survey, which are a
 // visitor's own.
-const SITE_PATHS = ["/", "/national", "/resources", "/resources/glossary", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
+const SITE_PATHS = ["/", "/national", "/resources", "/resources/glossary", "/resources/regulations", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/contacts", "/privacy"];
 
 // The search for a county alone is that county's page, with this as the address it gives as its
 // own (countyAloneHref, lib/page-search.ts): the page people look for as "nursing homes in Cork".

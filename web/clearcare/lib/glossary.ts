@@ -66,6 +66,7 @@ export const GLOSSARY: GlossaryGroup[] = [
         term: "Regulation",
         meaning:
           "A legal requirement every nursing home must meet, such as Fire precautions or Infection control. Inspectors judge a home against them. An inspection doesn't look at every regulation, so the list can be different from one inspection to the next.",
+        more: { href: "/resources/regulations", label: "Regulations Explained" },
       },
       {
         id: "unannounced-inspection",
