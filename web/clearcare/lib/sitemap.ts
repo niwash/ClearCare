@@ -13,7 +13,7 @@ const PAGE_SIZE = 50;
 
 // Not /search, which is a question rather than a page, nor /compare and /survey, which are a
 // visitor's own.
-const SITE_PATHS = ["/", "/national-figures", "/resources", "/resources/glossary", "/resources/regulations", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/support-services", "/privacy"];
+const SITE_PATHS = ["/", "/national-figures", "/resources", "/resources/glossary", "/resources/regulations", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/support-services", "/about", "/privacy"];
 
 // The search for a county alone is that county's page, at an address of its own (CCARE-297): the
 // page people look for as "nursing homes in Cork".

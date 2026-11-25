@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Suspense } from "react";
 import { FairDealBand } from "@/components/home/fair-deal-band";
 import { FeatureCarousel } from "@/components/home/feature-carousel";
@@ -14,6 +15,7 @@ import { actionLinkClass, fullWidthClass, liftCardClass } from "@/components/ui/
 import { ExternalIcon } from "@/components/ui/external-icon";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { searchCentres } from "@/lib/search";
+import { siteIdentity } from "@/lib/site-identity";
 import { getReAssessmentStatistics } from "@/lib/statistics";
 
 // What the site is, for the tab and a search result, where "ClearCare" alone said nothing (CCARE-297).
@@ -30,6 +32,12 @@ export default async function StartPage() {
   // why it matters, what ClearCare is, an example record, and a last invitation to start.
   return (
     <>
+      <script
+        type="application/ld+json"
+        // "<" is escaped so text can't close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteIdentity()).replaceAll("<", "\\u003c") }}
+      />
+
       {/* The sections slide up as they come into view (CCARE-186). */}
       <SlideUp />
 
@@ -73,6 +81,7 @@ export default async function StartPage() {
               ClearCare is free and independent. It doesn&apos;t rate or recommend homes: it helps you read what HIQA
               has found and understand your options.
             </p>
+            <Link href="/about" className="tap-target">More about ClearCare</Link>
           </div>
           {/* Side by side from tablet width, stacked on phones. */}
           <div className="reveal-stagger grid gap-4 md:grid-cols-2 md:gap-6">

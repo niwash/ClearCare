@@ -35,6 +35,7 @@ describe("the navigation link that shows where the visitor is", () => {
   test("marks nothing for a page the navigation doesn't cover", () => {
     for (const href of ["/", "/search", "/compare", "/guides/fair-deal", "/support-services", "/resources", "/national-figures", "/survey"]) {
       assert.equal(currentness(href, "/privacy"), undefined, href);
+      assert.equal(currentness(href, "/about"), undefined, href);
     }
     assert.equal(currentness(null, "/resources"), undefined);
   });
