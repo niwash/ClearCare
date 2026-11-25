@@ -13,6 +13,7 @@
 // (shortlist-panel, globals.css) rather than appearing at once.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { homeInPath } from "@/lib/home-address";
 import { useEffect, useRef } from "react";
 import { compareHref, MAX_COMPARED } from "@/lib/compare";
 import { onOpenShortlist, openShortlist, useComparedHomes } from "./compare-store";
@@ -65,9 +66,9 @@ export function ShortlistDrawer() {
   return <ShortlistButton />;
 }
 
-// The home a record's pages are about, from /centres/<id> and the tabs under it.
+// The home a record's pages are about, from its address and the tabs under it (CCARE-297).
 function currentCentreId(pathname: string) {
-  return /^\/centres\/([^/]+)/.exec(pathname)?.[1];
+  return homeInPath(pathname)?.id;
 }
 
 // The panel, once on every page, in the header. Opened by any shortlist button through

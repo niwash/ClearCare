@@ -1,4 +1,4 @@
-// app/centres/[id]/next-steps/page.tsx
+// app/(site)/nursing-homes/[county]/[home]/how-the-home-responded/page.tsx
 // How the home responded: for each highlighted regulation, what the inspector found, what the provider
 // said they would do, and when the regulation was next judged (CCARE-207), on a page of its own
 // (CCARE-212). Issues found and the grid of judgments link to a trail by its id, from their own
@@ -9,19 +9,20 @@ import { PromiseTrail } from "@/components/centre/promise-trail";
 import { emptyReason, NothingToFlag } from "@/components/centre/nothing-to-flag";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
 import { SectionAccordion } from "@/components/guides/section-accordion";
-import { centreMetadata, centrePath, getCentreRecord } from "@/lib/centre-record";
+import { getCentreRecord, homeFromParams, homeMetadata, type HomeParams } from "@/lib/centre-record";
+import { homePath } from "@/lib/home-address";
 import { notFound } from "next/navigation";
 
 interface NextStepsPageProps {
-  params: Promise<{ id: string }>;
+  params: HomeParams;
 }
 
 export async function generateMetadata({ params }: NextStepsPageProps) {
-  return centreMetadata((await params).id, "next-steps");
+  return homeMetadata(params, "how-the-home-responded");
 }
 
 export default async function NextStepsPage({ params }: NextStepsPageProps) {
-  const { id } = await params;
+  const id = await homeFromParams(params, "how-the-home-responded");
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
@@ -49,16 +50,16 @@ export default async function NextStepsPage({ params }: NextStepsPageProps) {
           <>
             <SectionAccordion />
             {trails.map((trail) => (
-              <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} highlightsHref={centrePath(id, "look-first")} questionsHref={centrePath(id, "questions")} />
+              <PromiseTrail key={trail.regulation.number} trail={trail} inspections={reports.inspections} highlightsHref={homePath(centre, "issues-found")} questionsHref={homePath(centre, "what-to-ask")} />
             ))}
           </>
         ) : (
           // The tab is always there, so the page says why it's empty (NothingToFlag).
           <NothingToFlag
             reason={emptyReason(Boolean(reports?.inspections.length), findingsRead)}
-            page="next-steps"
-            inspectionsHref={centrePath(id, "inspections")}
-            visitHref={centrePath(id, "questions")}
+            page="how-the-home-responded"
+            inspectionsHref={homePath(centre, "inspections")}
+            visitHref={homePath(centre, "what-to-ask")}
             hiqaUrl={centre.hiqa_url}
           />
         )}

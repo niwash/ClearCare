@@ -167,7 +167,7 @@ export default function ReadingInspectionReportsGuide() {
               for evidence in a subsequent report where available.
             </p>
             <p>
-              On ClearCare, a home’s <strong>{CENTRE_SECTION_TITLES["next-steps"]}</strong> page takes the findings
+              On ClearCare, a home’s <strong>{CENTRE_SECTION_TITLES["how-the-home-responded"]}</strong> page takes the findings
               worth reading first and sets out what the inspector found, what the home said it would do, and how the
               regulation was judged when it was next checked.
             </p>

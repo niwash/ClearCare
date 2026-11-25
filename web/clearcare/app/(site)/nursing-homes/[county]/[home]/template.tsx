@@ -1,6 +1,6 @@
 "use client";
 
-// app/(site)/centres/[id]/template.tsx
+// app/(site)/nursing-homes/[county]/[home]/template.tsx
 // Around each page of a home's record, inside the layout (CCARE-212). A template, unlike the layout,
 // is made afresh on every move between the record's pages, so the page a tab opens can slide in
 // while the name and tabs stay still: from the right when the tab is to the right of the one left,
@@ -9,13 +9,14 @@
 // the record from elsewhere, nothing moves.
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ReactNode } from "react";
+import { homeInPath } from "@/lib/home-address";
 
 // The tabs' order, by the end of the path, as in the layout.
-const ORDER = ["", "look-first", "next-steps", "inspections", "questions"];
+const ORDER = ["", "issues-found", "how-the-home-responded", "inspections", "what-to-ask"];
 
 function place(pathname: string) {
-  const match = pathname.match(/^\/centres\/([^/]+)\/?([^/]*)/);
-  return match ? { home: match[1], index: ORDER.indexOf(match[2]) } : null;
+  const at = homeInPath(pathname);
+  return at ? { home: at.id, index: ORDER.indexOf(at.tab) } : null;
 }
 
 // The record's page shown last, kept between templates: this one replaces the last.

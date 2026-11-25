@@ -37,7 +37,7 @@ function checks(latestInspection: string | undefined, hasCompliancePlan: boolean
 
 type NothingToFlagProps = {
   reason: EmptyReason;
-  page: "look-first" | "next-steps";
+  page: "issues-found" | "how-the-home-responded";
   inspectionsHref: string;
   // What to ask, the questions to take on a visit.
   visitHref?: string;
@@ -72,8 +72,8 @@ export function NothingToFlag({ reason, page, inspectionsHref, visitHref, hiqaUr
     );
   }
   return (
-    <Card icon="results" title={page === "look-first" ? "Nothing stands out" : "Nothing to follow up"}>
-      {page === "look-first" ? (
+    <Card icon="results" title={page === "issues-found" ? "Nothing stands out" : "Nothing to follow up"}>
+      {page === "issues-found" ? (
         <ul className="flex flex-col gap-2">
           {checks(latestInspection, hasCompliancePlan).map((check) => (
             <li key={check} className="flex items-start gap-2.5">

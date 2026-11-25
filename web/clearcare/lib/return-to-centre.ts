@@ -8,8 +8,8 @@
 // The record's tabs, by the end of their path, with how the way back names them.
 const TABS: Record<string, string> = {
   overview: "Overview",
-  "look-first": "Issues found",
-  "next-steps": "How the home responded",
+  "issues-found": "Issues found",
+  "how-the-home-responded": "How the home responded",
   inspections: "Inspection history",
   questions: "What to ask",
 };
@@ -26,6 +26,8 @@ export function returnToCentre(params: URLSearchParams): { href: string; label: 
   const tab = params.get("tab") ?? "overview";
   // A plain own-property check, so "?tab=constructor" doesn't match an inherited key.
   if (!/^\d{1,8}$/.test(centre) || !Object.hasOwn(TABS, tab)) return null;
+  // The query names the home by its centre ID only, so the link is the home's old address, which
+  // sends it on to its page (app/(site)/centres/[...path]/route.ts, CCARE-297).
   return {
     href: tab === "overview" ? `/centres/${centre}` : `/centres/${centre}/${tab}`,
     label: `Back to the home: ${TABS[tab]}`,

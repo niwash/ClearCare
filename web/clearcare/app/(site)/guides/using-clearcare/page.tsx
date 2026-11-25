@@ -80,8 +80,8 @@ const STEPS: Step[] = [
         Search by the home’s name, a town, a county or an Eircode. The results come as a list, and on a map where
         the map is available. Select a result to open the home’s record. Its <strong>Overview</strong> has the
         home’s details and what it offers, and the tabs under the home’s name open{" "}
-        <strong>{CENTRE_SECTION_TITLES["look-first"]}</strong>, <strong>{CENTRE_SECTION_TITLES["next-steps"]}</strong>,{" "}
-        <strong>{CENTRE_SECTION_TITLES.inspections}</strong> and <strong>{CENTRE_SECTION_TITLES.questions}</strong>.
+        <strong>{CENTRE_SECTION_TITLES["issues-found"]}</strong>, <strong>{CENTRE_SECTION_TITLES["how-the-home-responded"]}</strong>,{" "}
+        <strong>{CENTRE_SECTION_TITLES.inspections}</strong> and <strong>{CENTRE_SECTION_TITLES["what-to-ask"]}</strong>.
       </>
     ),
     link: { href: "/search", label: "Search for a home" },
@@ -110,7 +110,7 @@ const STEPS: Step[] = [
     question: "Do you wish to contact someone for help?",
     title: "Find who to contact",
     detail: "HIQA, the Fair Deal offices, dementia services, and support and advocacy groups.",
-    link: { href: "/contacts", label: "See support services" },
+    link: { href: "/support-services", label: "See support services" },
   },
 ];
 

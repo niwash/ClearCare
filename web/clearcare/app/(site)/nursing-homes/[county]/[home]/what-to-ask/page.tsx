@@ -1,4 +1,4 @@
-// app/centres/[id]/questions/page.tsx
+// app/(site)/nursing-homes/[county]/[home]/what-to-ask/page.tsx
 // What to ask (CCARE-212): the questions to take on a visit, in one list a family can print or keep
 // on a phone. First those about this home, from how each story on How the home responded ended
 // (askTheHome): one question for the stories that ended the same way, with their topics under it,
@@ -10,18 +10,18 @@ import { RecordPrintButton } from "@/components/centre/record-print";
 import { askTheHome, inspectionDate, OutcomePill, trailOutcome, type Outcome } from "@/components/centre/finding-bits";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
 import { sectionCardClass, sectionHeadingClass } from "@/components/centre/section-icon";
-import { centreMetadata, getCentreRecord } from "@/lib/centre-record";
+import { getCentreRecord, homeFromParams, homeMetadata, type HomeParams } from "@/lib/centre-record";
 import { type Judgement, type PromiseTrail } from "@/lib/centres";
 import { returnQuery } from "@/lib/return-to-centre";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface QuestionsPageProps {
-  params: Promise<{ id: string }>;
+  params: HomeParams;
 }
 
 export async function generateMetadata({ params }: QuestionsPageProps) {
-  return centreMetadata((await params).id, "questions");
+  return homeMetadata(params, "what-to-ask");
 }
 
 // Worth asking any home, whatever its reports say: staffing, care plans, daily life, visiting, cost
@@ -42,7 +42,7 @@ function latestJudgement({ finding, followUp }: PromiseTrail): Judgement {
 }
 
 export default async function QuestionsPage({ params }: QuestionsPageProps) {
-  const { id } = await params;
+  const id = await homeFromParams(params, "what-to-ask");
   // The layout has already answered a home that isn't found or can't be read.
   const record = await getCentreRecord(id);
   if (record.status !== "found") notFound();
@@ -149,7 +149,7 @@ export default async function QuestionsPage({ params }: QuestionsPageProps) {
               </li>
             ))}
           </ul>
-          <Link href={`/guides/choosing-a-nursing-home?${returnQuery(id, "questions")}`} className="mt-4 self-start text-sm font-semibold tap-target print:hidden">
+          <Link href={`/guides/choosing-a-nursing-home?${returnQuery(id, "what-to-ask")}`} className="mt-4 self-start text-sm font-semibold tap-target print:hidden">
             More questions in our guide <span aria-hidden>→</span>
           </Link>
         </div>

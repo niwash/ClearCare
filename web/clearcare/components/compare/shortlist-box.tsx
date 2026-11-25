@@ -36,6 +36,8 @@ export function ShortlistBox({ currentId }: { currentId?: string }) {
           <li key={home.id} className="flex items-center justify-between gap-1 rounded-md border border-line bg-surface-muted py-0.5 pl-3 pr-0.5">
             {/* "This home" sits outside the link, so it doesn't take the link's underline. */}
             <div className="flex min-w-0 flex-col py-2">
+              {/* The shortlist keeps a home's ID and name but not its county, so the link is the
+                  home's old address, which sends it on to its page (CCARE-297). */}
               <Link
                 href={`/centres/${home.id}`}
                 aria-current={home.id === currentId ? "page" : undefined}

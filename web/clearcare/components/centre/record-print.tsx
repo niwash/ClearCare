@@ -11,8 +11,8 @@ import { useEffect, useState } from "react";
 // Each tab's printed title, by the end of the path.
 const TITLES: Record<string, string> = {
   "": "Overview",
-  "look-first": "Issues found",
-  "next-steps": "How the home responded",
+  "issues-found": "Issues found",
+  "how-the-home-responded": "How the home responded",
   inspections: "Inspection history",
   questions: "Questions to ask",
 };
@@ -24,8 +24,8 @@ function section(pathname: string) {
 // What each tab's button prints, said on it.
 const LABELS: Record<string, string> = {
   "": "Print overview",
-  "look-first": "Print issues",
-  "next-steps": "Print responses",
+  "issues-found": "Print issues",
+  "how-the-home-responded": "Print responses",
   inspections: "Print history",
   questions: "Print questions",
 };

@@ -22,7 +22,8 @@ import { ShowAnotherHome } from "@/components/home/show-another-home";
 import { actionLinkClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
 import { AMENITY_ICON_PATHS } from "@/lib/amenity-icons";
-import { CENTRE_SECTION_TITLES, centrePath } from "@/lib/centre-record";
+import { CENTRE_SECTION_TITLES } from "@/lib/centre-record";
+import { homePath } from "@/lib/home-address";
 import { formatDate, type Change } from "@/lib/centres";
 import { getSampleCentre } from "@/lib/sample-centre";
 
@@ -42,7 +43,7 @@ const CHANGE_WORDS: Record<Change, string> = {
 };
 
 // The record's tabs after the overview, in the order the record has them (centres/[id]/layout.tsx).
-const TABS = ["look-first", "next-steps", "inspections", "questions"] as const;
+const TABS = ["issues-found", "how-the-home-responded", "inspections", "what-to-ask"] as const;
 
 // updated: when ClearCare last downloaded HIQA's register (register_snapshot.fetched_at), if known.
 export async function SampleCentre({ total, updated }: { total: number | null; updated: string | null }) {
@@ -71,7 +72,7 @@ export async function SampleCentre({ total, updated }: { total: number | null; u
           <div className="flex flex-col gap-1">
             <h3 id="sample-h" className="font-heading text-xl font-semibold md:text-2xl">
               {/* Underlined on hover only in the standard design (CCARE-214); always in Easier to read. */}
-              <Link href={centrePath(centre.centre_id)} className="text-ink no-underline tap-target hover:underline adult:underline">
+              <Link href={homePath(centre)} className="text-ink no-underline tap-target hover:underline adult:underline">
                 {centre.centre_name}
               </Link>
             </h3>
@@ -130,7 +131,7 @@ export async function SampleCentre({ total, updated }: { total: number | null; u
               {/* The card's call to action, as a button (CCARE-214). */}
               {/* "This home's page", not "full record": the word record threw a participant in user
                   testing (P2_1, CCARE-258). */}
-              <Link href={centrePath(centre.centre_id)} className={actionLinkClass}>
+              <Link href={homePath(centre)} className={actionLinkClass}>
                 See this home&apos;s page<span className="sr-only">: {centre.centre_name}</span>
                 <span aria-hidden>→</span>
               </Link>
@@ -222,7 +223,7 @@ export async function SampleCentre({ total, updated }: { total: number | null; u
             <ul aria-label={`Pages of this home's record`} className="grid w-fit max-w-full gap-2 sm:grid-cols-2">
               {TABS.map((tab) => (
                 <li key={tab} className="flex">
-                  <Link href={centrePath(centre.centre_id, tab)} className={`${actionLinkClass} w-full justify-between`}>
+                  <Link href={homePath(centre, tab)} className={`${actionLinkClass} w-full justify-between`}>
                     {CENTRE_SECTION_TITLES[tab]}
                     <span className="sr-only"> for {centre.centre_name}</span>
                     <span aria-hidden>→</span>

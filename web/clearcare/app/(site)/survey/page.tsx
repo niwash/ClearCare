@@ -7,6 +7,8 @@ import { fullWidthClass } from "@/components/ui/classes";
 export const metadata: Metadata = {
   title: "Survey · ClearCare",
   description: "Tell us how easy ClearCare was to use. The survey takes about 5–10 minutes and is anonymous.",
+  // For the people testing the site, not for search results (CCARE-297); the sitemap leaves it out too.
+  robots: { index: false, follow: true },
 };
 
 // The ClearCare Usability Survey on Microsoft Forms. The embed URL is the one Forms gives under

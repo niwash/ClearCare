@@ -23,6 +23,7 @@ import { latestJudged, notCompliantAtLatest, parseHomesParam, regulationRows, re
 import { toCsv } from "@/lib/csv";
 import { originFrom } from "@/lib/request-origin";
 import { formatEircode } from "@/lib/search";
+import { homePath } from "@/lib/home-address";
 
 type Home = { centre: CentreDetail; reports: CentreReports | null; amenities: CentreAmenities | null };
 
@@ -112,7 +113,7 @@ export async function GET(request: Request) {
       }),
     ),
     [],
-    row("Full record on ClearCare", (home) => `${origin}/centres/${home.centre.centre_id}`),
+    row("Full record on ClearCare", (home) => `${origin}${homePath(home.centre)}`),
     row("On the HIQA website", (home) => home.centre.hiqa_url),
     [],
     ["ClearCare does not rate or recommend homes."],

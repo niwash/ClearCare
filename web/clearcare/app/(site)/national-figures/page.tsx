@@ -1,4 +1,4 @@
-// app/national/page.tsx
+// app/(site)/national-figures/page.tsx
 // What each judgment became at the home's next inspection report, across every report ClearCare
 // has loaded. The figures come from GET /statistics/re-assessment; the page only draws them.
 import { JudgementIcon } from "@/components/centre/judgement-icon";
@@ -30,7 +30,7 @@ import Link from "next/link";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
 
-export const metadata = { title: "National figures" };
+export const metadata = { title: "National Figures · ClearCare" };
 
 export default async function NationalPage() {
   // Read the figures on each request. Otherwise the build prerenders the page once, and a build
@@ -395,7 +395,7 @@ function AboutTheseFigures({ statistics }: { statistics: ReAssessmentStatistics 
           </p>
           <p>
             These figures include inspections up to {formatDate(dataDate)}.{" "}
-            <a href="/national/re-assessment.csv" className="inline-flex items-center gap-1.5">
+            <a href="/national-figures/re-assessment.csv" className="inline-flex items-center gap-1.5">
               <Icon name="download" />
               Download the figures as a spreadsheet (CSV)
             </a>

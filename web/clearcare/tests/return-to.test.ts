@@ -17,7 +17,7 @@ describe("return paths", () => {
       safeReturnPath("/search?county=Dublin&page=2"),
       "/search?county=Dublin&page=2",
     );
-    assert.equal(safeReturnPath("/national#re-assessment"), "/national#re-assessment");
+    assert.equal(safeReturnPath("/national-figures#re-assessment"), "/national-figures#re-assessment");
   });
 
   test("a missing or empty value falls back home", () => {
