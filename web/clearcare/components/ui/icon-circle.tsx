@@ -14,7 +14,11 @@ const TINT_CLASSES = {
 
 export type Tint = keyof typeof TINT_CLASSES;
 
-// "small" sits beside a name in a list; "large" heads a card.
+const CIRCLE_SIZES = { xsmall: "size-6", small: "size-8", large: "size-12" } as const;
+const ICON_SIZES = { xsmall: "size-3.5", small: "size-4", large: "size-6" } as const;
+
+// "xsmall" sits beside a line of text, such as a regulation's title in a list (CCARE-298); "small"
+// beside a name in a list; "large" heads a card.
 // className adds to the circle, such as reveal-pop (globals.css) on the home page's cards.
 // children, when given, is drawn in place of the path: an icon of its own in the same circle, such
 // as the home page's mission and vision icons, whose parts move (CCARE-258).
@@ -26,7 +30,7 @@ export function IconCircle({
   children,
 }: {
   path?: string;
-  size?: "small" | "large";
+  size?: "xsmall" | "small" | "large";
   tint?: Tint;
   className?: string;
   children?: React.ReactNode;
@@ -35,7 +39,7 @@ export function IconCircle({
     return (
       <span
         aria-hidden
-        className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${size === "large" ? "size-12" : "size-8"} ${className}`}
+        className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${CIRCLE_SIZES[size]} ${className}`}
       >
         {children}
       </span>
@@ -44,7 +48,7 @@ export function IconCircle({
   return (
     <span
       aria-hidden
-      className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${size === "large" ? "size-12" : "size-8"} ${className}`}
+      className={`grid shrink-0 place-items-center rounded-full ${TINT_CLASSES[tint]} ${CIRCLE_SIZES[size]} ${className}`}
     >
       {/* A 24-unit grid, like the site's other icons. */}
       <svg
@@ -54,7 +58,7 @@ export function IconCircle({
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={size === "large" ? "size-6" : "size-4"}
+        className={ICON_SIZES[size]}
       >
         <path d={path} />
       </svg>

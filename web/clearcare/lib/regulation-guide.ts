@@ -71,6 +71,15 @@ export const REGULATION_THEMES: RegulationTheme[] = [
   },
 ];
 
+// The theme a regulation is grouped under, or null for one that isn't inspected (1 and 2). The one
+// lookup every page uses (CCARE-298), so a home's findings carry the same icon and tint as the
+// regulations page. The themes are ClearCare's grouping, not HIQA's.
+const THEME_BY_REGULATION = new Map(REGULATION_THEMES.flatMap((theme) => theme.regulations.map((number) => [number, theme] as const)));
+
+export function regulationTheme(number: number): RegulationTheme | null {
+  return THEME_BY_REGULATION.get(number) ?? null;
+}
+
 export const REGULATION_GUIDE: Record<number, RegulationGuide> = {
   3: {
     plain: "The home must publish an accurate description of the services it provides.",

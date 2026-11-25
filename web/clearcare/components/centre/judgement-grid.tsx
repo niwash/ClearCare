@@ -23,6 +23,7 @@ import type { ReactNode } from "react";
 import { HistoryScroller } from "./history-scroller";
 import { JUDGEMENT_LABELS, JudgementIcon } from "./judgement-icon";
 import { MoreRegulations } from "./more-regulations";
+import { RegulationThemeIcon } from "./regulation-theme-icon";
 import { partHeaderClass, partHeadingClass } from "./section-icon";
 
 // What is behind a cell's mark. How strong the fills are is set once, in globals.css
@@ -118,12 +119,18 @@ const REST_FOLD_AFTER = REST_IN_VIEW + 2;
 // reads as one list once open (className="mt-2" only on the part in view).
 function RestList({ regulations, className = "" }: { regulations: Regulation[]; className?: string }) {
   return (
-    <ul aria-labelledby="rest-h" className={`list-disc gap-x-8 pl-5 font-medium sm:columns-2 ${className}`}>
+    // Each title after its theme's icon (CCARE-298), as in the grid above, in place of a bullet: the
+    // icon marks where each entry starts, so a bullet beside it would be one mark too many.
+    <ul aria-labelledby="rest-h" className={`gap-x-8 font-medium sm:columns-2 ${className}`}>
       {regulations.map((regulation) => (
-        <li key={regulation.number} className="break-inside-avoid py-0.5">
+        <li key={regulation.number} className="flex break-inside-avoid items-start gap-2 py-0.5">
+          {/* Level with the title's first line, should it wrap. */}
+          <span className="flex h-6 shrink-0 items-center">
+            <RegulationThemeIcon number={regulation.number} />
+          </span>
           {/* align-top: the title is a button, and a button sits on its last line, so a title that
-              wraps had its bullet beside its second line rather than its first. */}
-          <RegulationTitle regulation={regulation} className="align-top" />
+              wraps had its first line out of line with the icon. */}
+          <RegulationTitle regulation={regulation} className="align-top leading-6" />
         </li>
       ))}
     </ul>
@@ -185,9 +192,14 @@ export function JudgementGrid({ inspections, history, trails }: JudgementGridPro
                         if one doesn't, its whole title still there for a screen reader and on hover. */}
                     {/* What the regulation is about on hover or tap (CCARE-278), with its whole title,
                         which replaces the title attribute that showed it on hover. */}
-                    <RegulationTitle regulation={regulation} className="line-clamp-2 block max-w-72 min-w-44">
-                      <span className="grid-title rounded-md px-1.5 py-0.5 box-decoration-clone">{regulation.title}</span>
-                    </RegulationTitle>
+                    {/* The regulation's theme first (CCARE-298), as on the regulations page, so a family
+                        sees which areas the findings fall into, such as several about safety. */}
+                    <span className="flex items-center gap-1.5">
+                      <RegulationThemeIcon number={regulation.number} />
+                      <RegulationTitle regulation={regulation} className="line-clamp-2 block max-w-72 min-w-44">
+                        <span className="grid-title rounded-md px-1.5 py-0.5 box-decoration-clone">{regulation.title}</span>
+                      </RegulationTitle>
+                    </span>
                   </th>
                   {cells.map((cell, index) => (
                     <GridCell key={columns[index].id} cell={cell} regulation={regulation} inspection={columns[index]} />

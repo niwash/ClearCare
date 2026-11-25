@@ -1,11 +1,12 @@
 // tests/regulation-guide.test.ts
 // ClearCare's own words for each regulation on the regulations page (lib/regulation-guide.ts,
-// CCARE-261): every regulation HIQA inspects is in one theme, and has a plain-English line.
+// CCARE-261): every regulation HIQA inspects is in one theme, and has a plain-English line; and the
+// lookup a home's findings use for their theme icons agrees with the page (CCARE-298).
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { REGULATION_GUIDE, REGULATION_THEMES } from "../lib/regulation-guide.ts";
+import { REGULATION_GUIDE, REGULATION_THEMES, regulationTheme } from "../lib/regulation-guide.ts";
 import { allRegulations } from "../lib/regulations.ts";
 
 const inspected = allRegulations()
@@ -30,5 +31,19 @@ describe("the regulations page's themes and plain words", () => {
     const ids = REGULATION_THEMES.map((theme) => theme.id);
     assert.equal(new Set(ids).size, ids.length);
     for (const id of ids) assert.doesNotMatch(id, /^regulation-|^other-regulations$/);
+  });
+});
+
+describe("the theme a home's finding is shown with (CCARE-298)", () => {
+  test("is the theme the regulations page lists it under, for every inspected regulation", () => {
+    for (const theme of REGULATION_THEMES) {
+      for (const number of theme.regulations) assert.equal(regulationTheme(number)?.id, theme.id, `Regulation ${number}`);
+    }
+  });
+
+  test("is none for a regulation that isn't inspected, or isn't one", () => {
+    assert.equal(regulationTheme(1), null);
+    assert.equal(regulationTheme(2), null);
+    assert.equal(regulationTheme(99), null);
   });
 });

@@ -15,6 +15,7 @@ import {
 } from "@/lib/centres";
 import Link from "next/link";
 import { RecordPrintButton } from "@/components/centre/record-print";
+import { RegulationThemeIcon } from "./regulation-theme-icon";
 import { inspectionDate, JudgementChip, OutcomePill, Quotes, SourceLink, trailOutcome } from "./finding-bits";
 import { sectionHeadingClass, sectionScrollMargin } from "./section-icon";
 
@@ -87,10 +88,14 @@ export function CentreHighlights({ highlights, trails, inspections, trailsHref, 
               {/* What it is first, as the block's heading, then how it was judged and when, both in
                   full ink so neither is missed. */}
               <div className="flex flex-col gap-2.5">
-                <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-                  <span className="font-heading text-xl font-semibold text-ink md:text-2xl">{highlight.regulation.title}</span>
-                  <span className="text-sm font-medium text-ink-muted">Regulation {highlight.regulation.number}</span>
-                </h3>
+                {/* Its theme's icon before it (CCARE-298), as on the regulations page. */}
+                <div className="flex items-start gap-3">
+                  <RegulationThemeIcon number={highlight.regulation.number} size="small" className="md:mt-0.5" />
+                  <h3 className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
+                    <span className="font-heading text-xl font-semibold text-ink md:text-2xl">{highlight.regulation.title}</span>
+                    <span className="text-sm font-medium text-ink-muted">Regulation {highlight.regulation.number}</span>
+                  </h3>
+                </div>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
                   <JudgementChip judgement={highlight.judgement} />
                   <span className="font-semibold text-ink">{reason(highlight)}</span>
