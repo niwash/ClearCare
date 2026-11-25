@@ -13,6 +13,7 @@
 // Deal guide and its sources. Change one with the other. A term's id is its anchor on the page
 // (/resources/glossary#<id>), so keep ids as they are once published: other pages may link to them.
 import type { Judgement } from "./centres";
+import type { SourceKey } from "./references";
 
 export type GlossaryLink = { href: string; label: string };
 
@@ -28,6 +29,9 @@ export type GlossaryTerm = {
   // A HIQA judgement: the page shows its symbol and HIQA's own definition under the plain words.
   judgement?: Judgement;
   more?: GlossaryLink;
+  // The sources the meaning follows (lib/references.ts), cited under it and listed in the page's
+  // References (CCARE-299). None where the meaning is ClearCare's own, such as "Not assessed".
+  sources?: SourceKey[];
 };
 
 export type GlossaryGroup = {
@@ -56,6 +60,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "inspection-report",
+        sources: ["hiqaFramework"],
         term: "Inspection report",
         meaning:
           "What HIQA's inspectors write after visiting a home. It sets out what they saw on the day, a judgement for each regulation they looked at, and the home's compliance plan.",
@@ -63,6 +68,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "regulation",
+        sources: ["careRegulations", "hiqaFramework"],
         term: "Regulation",
         meaning:
           "A legal requirement every nursing home must meet, such as Fire precautions or Infection control. Inspectors judge a home against them. An inspection doesn't look at every regulation, so the list can be different from one inspection to the next.",
@@ -70,11 +76,13 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "unannounced-inspection",
+        sources: ["hiqaFramework"],
         term: "Unannounced inspection",
         meaning: "An inspection the home isn't told about in advance, so inspectors see it as it usually is.",
       },
       {
         id: "announced-inspection",
+        sources: ["hiqaFramework"],
         term: "Announced inspection",
         // No fixed notice period: ClearCare also shows short-notice announced inspections, told a day
         // or two ahead (PR #232 review).
@@ -83,18 +91,21 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "thematic-inspection",
+        sources: ["hiqaFramework", "hiqaStandards"],
         term: "Thematic inspection",
         meaning:
           "An inspection that looks closely at one topic, rather than across the regulations. It is judged against HIQA's National Standards and gives one overall judgement.",
       },
       {
         id: "national-standards",
+        sources: ["hiqaStandards"],
         term: "National Standards",
         meaning:
           "HIQA's description of what good care in a nursing home looks like, published in 2016. Inspectors use them alongside the regulations.",
       },
       {
         id: "compliance-plan",
+        sources: ["hiqaFramework"],
         term: "Compliance plan",
         meaning:
           "The home's written reply to an inspection. It says what the home will do, and by when, about each regulation that wasn't fully met. A later inspection shows whether it was kept.",
@@ -105,12 +116,14 @@ export const GLOSSARY: GlossaryGroup[] = [
         // other about the home. The meaning follows HIQA's National Standard 2.1, quoted for
         // Regulation 5 in lib/regulations.ts.
         id: "care-plan",
+        sources: ["hiqaStandards"],
         term: "Care plan",
         meaning:
           "A written plan for one resident where it sets out what care and support they need, based on an assessment of their needs and their wishes, and how the home will give it. It is reviewed as their needs change and inspectors check care plans under the regulation Individual assessment and care plan.",
       },
       {
         id: "risk-rating",
+        sources: ["hiqaFramework"],
         term: "Risk rating",
         aka: ["High risk", "Moderate risk", "Low risk"],
         meaning:
@@ -125,12 +138,14 @@ export const GLOSSARY: GlossaryGroup[] = [
     terms: [
       {
         id: "compliant",
+        sources: ["hiqaFramework"],
         term: "Compliant",
         meaning: "The home fully met the regulation standards at the time of the inspection.",
         judgement: "compliant",
       },
       {
         id: "substantially-compliant",
+        sources: ["hiqaFramework"],
         term: "Substantially compliant",
         meaning:
           "The home mostly met the regulation, but something still needed fixing to meet it fully. It is a milder result than not compliant.",
@@ -138,6 +153,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "not-compliant",
+        sources: ["hiqaFramework"],
         term: "Not compliant",
         meaning: "The home didn't meet the regulation, and major changes were needed for it to do so.",
         judgement: "not-compliant",
@@ -180,6 +196,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "person-in-charge",
+        sources: ["careRegulations"],
         term: "Person in charge",
         meaning: "The nurse who manages the home day to day, named to HIQA.",
       },
@@ -191,6 +208,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "designated-centre",
+        sources: ["careRegulations"],
         term: "Designated centre",
         meaning: "The legal name for a place HIQA registers. HIQA's reports call a nursing home a designated centre for older people.",
       },
@@ -317,6 +335,7 @@ export const GLOSSARY: GlossaryGroup[] = [
     terms: [
       {
         id: "fair-deal",
+        sources: ["hseNhss"],
         term: "Fair Deal",
         aka: ["Nursing Homes Support Scheme", "NHSS"],
         meaning:
@@ -331,6 +350,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "full-weekly-cost",
+        sources: ["hseFindingAHome"],
         term: "Full weekly cost",
         aka: ["Contract price", "Maximum contract price"],
         meaning:
@@ -341,6 +361,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "extra-charges",
+        sources: ["nhiChargesGuide", "cagSpecialReport110"],
         term: "Extra charges",
         meaning:
           "What Fair Deal doesn't pay for, such as hairdressing, outings, or personal items.",
@@ -348,12 +369,14 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "care-needs-assessment",
+        sources: ["hseCareNeeds"],
         term: "Care needs assessment",
         meaning: "The check, as part of a Fair Deal application, that you need full-time nursing home care.",
         more: fairDeal("how-to-apply"),
       },
       {
         id: "financial-assessment",
+        sources: ["hseFinancialAssessment"],
         term: "Financial assessment",
         meaning:
           // A couple's rates as well as a single person's, as the Fair Deal guide gives them (PR #232
@@ -363,12 +386,14 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "disregard",
+        sources: ["hseApplicationForm", "hseFinancialAssessment"],
         term: "Disregard",
         meaning: "The part of what you own that the financial assessment doesn't count. This is the first €36,000 for a single person, or €72,000 for a couple.",
         more: fairDeal("how-much-will-you-pay"),
       },
       {
         id: "three-year-cap",
+        sources: ["hseThreeYearCap"],
         term: "3-year cap",
         sortAs: "Three-year cap",
         meaning:
@@ -377,6 +402,7 @@ export const GLOSSARY: GlossaryGroup[] = [
       },
       {
         id: "nursing-home-loan",
+        sources: ["hseNursingHomeLoan"],
         term: "Nursing home loan",
         aka: ["Ancillary State Support"],
         meaning:
