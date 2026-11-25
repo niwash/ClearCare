@@ -52,7 +52,7 @@ export default function AboutPage() {
 
         <Section title="How it is prepared, and its limits">
           <p>
-            We automatically read the reports for inspection dates, HIQA&apos;s judgments on regulations,
+            We automatically read the reports for inspection dates, HIQA&apos;s judgements on regulations,
             inspectors&apos; comments and providers&apos; responses. An AI model reads the report text for types of
             care, rooms, activities and facilities.
           </p>
