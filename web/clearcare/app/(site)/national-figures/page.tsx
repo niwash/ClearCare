@@ -5,7 +5,7 @@ import { JudgementIcon } from "@/components/centre/judgement-icon";
 import { GuidesBand } from "@/components/guides/guide-ending";
 import { ContentsNav, SectionEnd, sectionScrollMargin, StepNumber } from "@/components/guides/step-number";
 import { Alert } from "@/components/layout/alert";
-import { Breadcrumb } from "@/components/layout/breadcrumb";
+import { Breadcrumb, RESOURCES_CRUMB } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { BarList } from "@/components/national/bar-list";
 import { NextResultMatrix } from "@/components/national/next-result-matrix";
@@ -110,7 +110,7 @@ function NationalHero() {
     <section aria-labelledby="national-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
       <div className="page-column flex flex-col gap-6 px-4 py-6 md:px-8 md:py-8">
         <div className="flex flex-col items-start gap-3">
-          <Breadcrumb trail={[]} current="National Figures" />
+          <Breadcrumb trail={[RESOURCES_CRUMB]} current="National Figures" />
           <h1 id="national-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             What happens at the next inspection?
           </h1>

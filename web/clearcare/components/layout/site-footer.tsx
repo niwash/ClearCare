@@ -6,6 +6,7 @@ import { CONTACT_EMAIL } from "@/lib/contact";
 // The header's pages, then the ones only the footer links to. Unfinished pages are left out.
 const FOOTER_LINKS = [
   ...NAV_ITEMS.flatMap((item) => (item.href ? [{ label: item.label, href: item.href, search: item.search }] : [])),
+  { label: "National Figures", href: "/national-figures" },
   { label: "About ClearCare", href: "/about" },
   { label: "Privacy notice", href: "/privacy" },
 ];

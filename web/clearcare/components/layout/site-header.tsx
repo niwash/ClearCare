@@ -24,9 +24,6 @@ export const NAV_ITEMS: NavEntry[] = [
   // contact ClearCare. The page lists other organisations. Its address stays /contacts.
   { label: "Support Services", href: "/support-services" },
   { label: "Resources", href: "/resources" },
-  // After the pages for choosing a home: the figures across every home are background, not a step
-  // in choosing one (CCARE-179).
-  { label: "National Figures", href: "/national-figures" },
   // For the user evaluation (CCARE-147); the home page links to it too.
   { label: "Survey", href: "/survey" },
 ];
