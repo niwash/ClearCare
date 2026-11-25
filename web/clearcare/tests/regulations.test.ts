@@ -5,7 +5,38 @@
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
-import { regulationQuote } from "../lib/regulations.ts";
+import { allRegulations, REGULATION_REFERENCES, regulationAnchor, regulationQuote } from "../lib/regulations.ts";
+
+// The regulations page (CCARE-261) lists every regulation from the same entries the hover reads.
+describe("the regulations page's list", () => {
+  test("has each regulation from 1 to 34 once, in order", () => {
+    assert.deepEqual(
+      allRegulations().map((regulation) => regulation.number),
+      Array.from({ length: 34 }, (_, index) => index + 1),
+    );
+  });
+
+  test("gives each inspected regulation the words its title is hovered for", () => {
+    for (const regulation of allRegulations()) {
+      if (!("quote" in regulation)) continue;
+      assert.deepEqual(regulationQuote(regulation), regulation.quote, `Regulation ${regulation.number}`);
+    }
+  });
+
+  test("summarises only the two regulations that aren't inspected, and gives the hover nothing for them", () => {
+    const summarised = allRegulations().filter((regulation) => "summary" in regulation);
+    assert.deepEqual(summarised.map((regulation) => regulation.number), [1, 2]);
+    for (const regulation of summarised) assert.equal(regulationQuote(regulation), null);
+  });
+
+  test("gives each regulation and each reference its own anchor", () => {
+    const ids = [
+      ...allRegulations().map((regulation) => regulationAnchor(regulation.number)),
+      ...Object.values(REGULATION_REFERENCES).map((reference) => reference.id),
+    ];
+    assert.equal(new Set(ids).size, ids.length);
+  });
+});
 
 describe("HIQA's words for a regulation", () => {
   test("are its National Standard, when the framework links one", () => {

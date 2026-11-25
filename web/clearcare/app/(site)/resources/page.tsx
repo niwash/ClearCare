@@ -83,13 +83,19 @@ type ReferenceLink = {
 };
 
 // ClearCare's own pages to look a word up in (CCARE-283), apart from the guides, which are read
-// through. The page of regulations is to join the glossary here.
+// through.
 const REFERENCE_LINKS: ReferenceLink[] = [
   {
     title: "Glossary",
     summary: "What words like “substantially compliant”, “full weekly cost” and “Fair Deal” mean.",
     href: "/resources/glossary",
     action: "See the glossary",
+  },
+  {
+    title: "Regulations Explained",
+    summary: "What each regulation a home is inspected against is about, such as Premises or Staffing, in HIQA’s words.",
+    href: "/resources/regulations",
+    action: "See the regulations",
   },
 ];
 
