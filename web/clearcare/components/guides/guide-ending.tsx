@@ -1,15 +1,17 @@
 // components/guides/guide-ending.tsx
-// The end of a guide, so nobody finishes one with nowhere to go: the way back to How to navigate
-// ClearCare when the guide was opened from it, the other guides as small photo cards, then the
-// contacts banner, flush with the footer. A guide that isn't written yet has no
-// link and the dashed coming-soon look, as on the resources page. The centre page uses the same
-// band of guide cards.
+// The end of a guide: when its facts were last checked, on a guide that carries the day
+// (CCARE-310), then, so nobody finishes one with nowhere to go, the way back to How to navigate
+// ClearCare when the guide was opened from it, the other guides as small photo cards, and the
+// contacts banner, flush with the footer. A guide that isn't written yet has no link and the
+// dashed coming-soon look, as on the resources page. The centre page uses the same band of guide
+// cards.
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { ReturnLink } from "@/components/guides/return-link";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { comingSoonClass, fullWidthClass, linkCardClass, stretchedActionClass } from "@/components/ui/classes";
+import { LastChecked } from "@/components/ui/last-checked";
 import { GUIDES, type Guide } from "@/lib/guides";
 
 export function GuideEnding({ current }: { current: Guide }) {
@@ -17,6 +19,10 @@ export function GuideEnding({ current }: { current: Guide }) {
 
   return (
     <>
+      {/* The last of the guide's own content, under its References: the list is what the facts
+          were checked against, so the day of the check follows it. */}
+      <LastChecked date={current.lastChecked} lead="This guide's facts were last checked against its sources on" />
+
       <Suspense fallback={null}>
         <ReturnLink />
       </Suspense>

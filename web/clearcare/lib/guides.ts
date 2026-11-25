@@ -15,6 +15,10 @@ export type Guide = {
   // Set when the site header's menu links to the guide, making it one of the site's main pages:
   // its breadcrumb goes straight to Home, though the resources page still lists it.
   inMenu?: true;
+  // The day the guide's facts were last checked against its sources and agreed with them
+  // ("2026-11-25"), shown at its foot (components/ui/last-checked.tsx, CCARE-310). The day of a
+  // real check: change it only when the guide is checked again. A guide without it shows no note.
+  lastChecked?: string;
 };
 
 // In the order a family needs them: the overview, what to ask, the reports, then paying.
@@ -31,6 +35,7 @@ export const GUIDES = [
     slug: "choosing-a-nursing-home",
     title: "Choosing a Nursing Home: Questions to Ask",
     summary: "Questions to ask before and during your search.",
+    lastChecked: "2026-11-25",
     photo: "/home/phone.jpg",
     // The woman is low on the right: keep her face, hand and notes.
     photoFocus: "object-[70%_75%]",
@@ -39,6 +44,7 @@ export const GUIDES = [
     slug: "reading-inspection-reports",
     title: "Making Sense of a HIQA Inspection Report",
     summary: "How to use what HIQA found to compare homes and ask informed questions.",
+    lastChecked: "2026-11-25",
     photo: "/home/report.jpg",
     // Keep her glasses and the documents she is holding.
     photoFocus: "object-[50%_45%]",

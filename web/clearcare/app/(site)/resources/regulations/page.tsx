@@ -6,6 +6,7 @@ import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
 import { IconCircle, type Tint } from "@/components/ui/icon-circle";
 import { Icon, ICON_PATHS } from "@/components/ui/icons";
+import { LastChecked } from "@/components/ui/last-checked";
 import { Chevron, ShowHide } from "@/components/ui/chevron";
 import { Cite, References } from "@/components/ui/references";
 import type { Judgement } from "@/lib/centres";
@@ -28,6 +29,10 @@ export const metadata: Metadata = {
 // instrument that sets the regulations and their numbers down in law (lib/references.ts).
 const REFS = pageReferences(["hiqaFramework", "hiqaStandards", "careRegulations", "careRegulations2025"]);
 const JUDGEMENTS: Judgement[] = ["compliant", "substantially-compliant", "not-compliant"];
+
+// The day the page's facts were last checked against its sources, shown under its References
+// (CCARE-310). The day of a real check: change it only when the page is checked again.
+const LAST_CHECKED = "2026-11-25";
 
 // Each theme's accent, written out in full so Tailwind finds them: the tint of its number badges. The
 // adult-centred design turns every tint to its one band colour (globals.css).
@@ -104,6 +109,8 @@ export default function RegulationsPage() {
           </>
         }
       />
+
+      <LastChecked date={LAST_CHECKED} lead="This page's facts were last checked against its sources on" />
 
       <NextSteps />
 
