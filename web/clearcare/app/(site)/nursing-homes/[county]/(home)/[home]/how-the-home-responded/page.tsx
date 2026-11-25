@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/how-the-home-responded/page.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/how-the-home-responded/page.tsx
 // How the home responded: for each highlighted regulation, what the inspector found, what the provider
 // said they would do, and when the regulation was next judged (CCARE-207), on a page of its own
 // (CCARE-212). Issues found and the grid of judgments link to a trail by its id, from their own

@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/issues-found/page.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/issues-found/page.tsx
 // Issues found: the regulations a family should read about before anything else, each in
 // the inspector's or the provider's own words (CCARE-207), on a page of its own (CCARE-212). Each
 // links to its trail on How the home responded, which links back here.

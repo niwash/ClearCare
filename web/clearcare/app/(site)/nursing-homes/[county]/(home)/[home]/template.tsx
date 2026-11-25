@@ -1,6 +1,6 @@
 "use client";
 
-// app/(site)/nursing-homes/[county]/[home]/template.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/template.tsx
 // Around each page of a home's record, inside the layout (CCARE-212). A template, unlike the layout,
 // is made afresh on every move between the record's pages, so the page a tab opens can slide in
 // while the name and tabs stay still: from the right when the tab is to the right of the one left,

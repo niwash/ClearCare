@@ -131,7 +131,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const arrivedWith = await settleSentText(searchParams);
   const params = await searchParams;
   const search = readSearch(params);
-  // Reached by a county's own address (the rewrite in next.config.ts), the county's search is shown
+  // Reached by a county's own address (app/(site)/nursing-homes/[county]/page.tsx), the county's search is shown
   // there, and an address that names no county is no page. Reached as /search?county=Cork, it is sent
   // on to that address for good, so a search engine holds each county once (CCARE-297).
   const atCounty = params.at === "county";

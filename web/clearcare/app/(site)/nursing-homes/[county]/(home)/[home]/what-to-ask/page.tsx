@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/what-to-ask/page.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/what-to-ask/page.tsx
 // What to ask (CCARE-212): the questions to take on a visit, in one list a family can print or keep
 // on a phone. First those about this home, from how each story on How the home responded ended
 // (askTheHome): one question for the stories that ended the same way, with their topics under it,

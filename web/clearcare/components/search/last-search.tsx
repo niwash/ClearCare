@@ -10,7 +10,7 @@
 // "Forget my preferences" (forgetLastSearch). Arriving at /search with nothing in the address, from
 // a link that doesn't carry the search, leaves it as it was.
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 const LAST_SEARCH_KEY = "last-search";
@@ -29,9 +29,11 @@ function subscribe(listener: () => void) {
   };
 }
 
-function write(query: string | null) {
+// Kept as the search's whole address, /search?county=Kerry or a county's own page,
+// /nursing-homes/kerry (CCARE-297), which has nothing in its query.
+function write(href: string | null) {
   try {
-    if (query) sessionStorage.setItem(LAST_SEARCH_KEY, query);
+    if (href) sessionStorage.setItem(LAST_SEARCH_KEY, href);
     else sessionStorage.removeItem(LAST_SEARCH_KEY);
   } catch {
     // Storage is blocked: the links go to an empty search, as before.
@@ -58,24 +60,31 @@ function worthKeeping(query: string): string {
   return params.toString();
 }
 
-// On the search page: notes the search each time it changes, and forgets it when it is cleared.
+// On the search page: notes the search each time it changes, and forgets it when it is cleared. On a
+// county's own page the county is in the path, not the query, so the path is kept with it, and
+// "Search for Homes" goes back to that county's list (PR #242 review).
 export function RememberSearch() {
+  const pathname = usePathname();
   const params = useSearchParams();
   const query = params.toString();
   useEffect(() => {
-    if (new URLSearchParams(query).has(CLEARED_PARAM)) write(null);
-    else {
-      const kept = worthKeeping(query);
-      if (kept) write(kept);
+    if (new URLSearchParams(query).has(CLEARED_PARAM)) {
+      write(null);
+      return;
     }
-  }, [query]);
+    const kept = worthKeeping(query);
+    if (pathname !== SEARCH_PATH) write(kept ? `${pathname}?${kept}` : pathname);
+    else if (kept) write(`${SEARCH_PATH}?${kept}`);
+  }, [pathname, query]);
   return null;
 }
 
 function readLastSearch(): string {
   try {
-    const query = sessionStorage.getItem(LAST_SEARCH_KEY);
-    return query ? `${SEARCH_PATH}?${query}` : SEARCH_PATH;
+    const saved = sessionStorage.getItem(LAST_SEARCH_KEY);
+    if (!saved) return SEARCH_PATH;
+    // An address, or a query alone as it was kept before CCARE-297, earlier in the same visit.
+    return saved.startsWith("/") ? saved : `${SEARCH_PATH}?${saved}`;
   } catch {
     return SEARCH_PATH;
   }

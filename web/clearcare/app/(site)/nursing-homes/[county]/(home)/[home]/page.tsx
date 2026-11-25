@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/page.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/page.tsx
 // A home's record: the overview (CCARE-212). The extra conditions on its registration when it has
 // any and what changed at it in the last six months (CCARE-235), the facts and what the home offers,
 // the things a family needs before anything else, and a pointer to what to ask on a visit. Issues

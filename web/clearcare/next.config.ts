@@ -25,15 +25,6 @@ const nextConfig: NextConfig = {
       { source: "/contacts", destination: "/support-services", permanent: true },
     ];
   },
-  async rewrites() {
-    return {
-      // A county's page is the search for that county alone (CCARE-303), at an address of its own:
-      // /nursing-homes/cork (CCARE-297). Before the app's routes, so it isn't taken for a home's.
-      // at=county tells the search page it was reached this way, so it doesn't send the visitor on
-      // to the address they're already at (app/(site)/search/page.tsx).
-      beforeFiles: [{ source: "/nursing-homes/:county", destination: "/search?county=:county&at=county" }],
-    };
-  },
   // Only the Docker image needs it (Dockerfile); elsewhere it slows each build and npm start warns.
   output: process.env.NEXT_OUTPUT === "standalone" ? "standalone" : undefined,
 };

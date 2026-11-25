@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/inspections/page.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/inspections/page.tsx
 // The home's inspection history, on a page of its own (CCARE-212): the timeline of what has happened
 // at the home (CCARE-235), then a grid of how each regulation was judged at each inspection.
 import { Band } from "@/components/centre/centre-band";

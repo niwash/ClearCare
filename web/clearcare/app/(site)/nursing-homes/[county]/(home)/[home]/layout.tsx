@@ -1,4 +1,4 @@
-// app/(site)/nursing-homes/[county]/[home]/layout.tsx
+// app/(site)/nursing-homes/[county]/(home)/[home]/layout.tsx
 // What every page of a home's record shares (CCARE-212): the home's name, the tabs for the overview
 // and its subpages, and the guides and contacts at the end. The record was one long page; its long
 // sections are now pages of their own, so a family scrolls less and can link to the part they mean.
