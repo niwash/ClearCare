@@ -28,21 +28,19 @@ export default function FairDealCalculatorPage() {
           <h1 id="calculator-h" className="font-heading text-3xl font-semibold tracking-tight text-ink md:text-4xl">
             Fair Deal Calculator
           </h1>
-          <p className="max-w-3xl text-ink-muted md:text-lg">
-            A rough idea of what someone might pay each week under Fair Deal, from their income, savings and property.
-          </p>
         </div>
       </section>
 
       {/* A light amber box, as the notes in the guides (CCARE-233), with an exclamation mark rather
-          than their "i": the figure below is easy to take for the real one. */}
+          than their "i": the figure below is easy to take for the real one. The one place the page says
+          so before the figures, so the estimate panel doesn't repeat it. */}
       <aside className="flex max-w-4xl items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold px-5 py-4 md:text-lg">
         <Icon name="caution" className="mt-0.5 size-5 shrink-0 text-on-tint-gold md:mt-1" />
         <p>
-          <span className="font-semibold">This is a guide only.</span> We know how the HSE <em>calculates</em> a
-          contribution, because the rates are published. We don&apos;t know how it will <em>assess</em> your figures:
-          which income and deductions it accepts, or what it values property at. Only the HSE&apos;s financial
-          assessment sets the real amount. See <a href="#about-this-estimate">About this estimate</a> below.
+          <span className="font-semibold">This is an estimate, not the HSE&apos;s figure.</span> We know how the HSE{" "}
+          <em>calculates</em> a contribution, but we don&apos;t know how it will <em>assess</em> your figures: which
+          income and deductions it accepts, or what it values property at. See{" "}
+          <a href="#about-this-estimate">About this estimate</a> below.
         </p>
       </aside>
 

@@ -8,7 +8,6 @@
 import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
 import { textInputClass } from "@/components/ui/classes";
-import { Icon } from "@/components/ui/icons";
 import { estimateFairDeal, FAIR_DEAL_RULES, type FairDealPeriod, type FairDealStatus } from "@/lib/fair-deal";
 
 type Fields = {
@@ -151,16 +150,6 @@ export function FairDealCalculator() {
         ) : (
           <p className="text-ink-muted">Enter some figures to see an estimate.</p>
         )}
-
-        {/* The same amber box as the page's note above the calculator. */}
-        <p className="flex items-start gap-3 rounded-lg border border-on-tint-gold/30 bg-tint-gold px-4 py-3 text-sm">
-          <Icon name="caution" className="size-5 shrink-0 text-on-tint-gold" />
-          <span>
-            <span className="font-semibold">An estimate, not the HSE&apos;s figure.</span> It applies the published rates
-            to the figures you entered. The HSE&apos;s financial assessment decides what counts and sets the actual
-            contribution.
-          </span>
-        </p>
       </section>
     </div>
   );
