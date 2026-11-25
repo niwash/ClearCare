@@ -200,7 +200,8 @@ export const REGULATION_GUIDE: Record<number, RegulationGuide> = {
   },
   31: {
     // HIQA's question says notice in writing; that it goes to HIQA's Chief Inspector is from the
-    // regulation: check it. Two working days since S.I. No. 98 of 2025; three in the 2013 text as made.
+    // regulation itself, 31(1) (read in the PR #244 review). Two working days since S.I. No. 98 of
+    // 2025; three in the 2013 text as made.
     plain: "The home must tell HIQA in writing about certain serious incidents within two working days.",
     amendedBy: "careRegulations2025",
   },
