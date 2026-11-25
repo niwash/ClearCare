@@ -13,10 +13,12 @@ type CountyFigures = {
 };
 
 export function countyFigures(centres: readonly CentreFigures[]): CountyFigures {
-  let residents: number | null = null;
+  // Residents only when every home has a registered occupancy: a sum that leaves a home out would
+  // be part of the county, and "in all" would be untrue.
+  let residents: number | null = 0;
   let weeklyPrices: CountyFigures["weeklyPrices"] = null;
   for (const { maximum_occupancy, contract_price } of centres) {
-    if (maximum_occupancy !== null) residents = (residents ?? 0) + maximum_occupancy;
+    residents = residents === null || maximum_occupancy === null ? null : residents + maximum_occupancy;
     if (contract_price != null) {
       weeklyPrices = weeklyPrices
         ? {

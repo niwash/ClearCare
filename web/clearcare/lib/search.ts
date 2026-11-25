@@ -75,13 +75,13 @@ export type SearchResult =
 export const MAX_TEXT_LENGTH = 100;
 
 // filters: the care and amenity filters' parameters (apiFilterParams, lib/search-filters.ts).
-export async function searchCentres(query: SearchQuery, filters?: URLSearchParams, revalidate?: number): Promise<SearchResult> {
+export async function searchCentres(query: SearchQuery, filters?: URLSearchParams): Promise<SearchResult> {
   // Read the API on each request. Otherwise a build without API_URL prerenders the pages that
   // search, such as /, as "API_URL isn't set" until the next build.
   await connection();
   const url = apiUrl();
   if (!url) return { ok: false, status: 0, detail: "API_URL isn't set." };
-  return fetchCentres(url, query, filters, revalidate);
+  return fetchCentres(url, query, filters);
 }
 
 
@@ -92,7 +92,7 @@ export function unavailableMessage(status: number) {
     : "ClearCare can't reach its data at the moment. Please try again later.";
 }
 
-async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSearchParams, revalidate?: number): Promise<SearchResult> {
+async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSearchParams): Promise<SearchResult> {
   const params = new URLSearchParams(filters);
   for (const [key, value] of Object.entries(query)) {
     if (value) params.set(key, value);
@@ -100,7 +100,7 @@ async function fetchCentres(apiUrl: string, query: SearchQuery, filters?: URLSea
 
   let response: Response;
   try {
-    response = await fetch(`${apiUrl}/centres?${params}`, revalidate === undefined ? { cache: "no-store" } : { next: { revalidate } });
+    response = await fetch(`${apiUrl}/centres?${params}`, { cache: "no-store" });
   } catch {
     return { ok: false, status: 0, detail: "The search service couldn't be reached." };
   }
