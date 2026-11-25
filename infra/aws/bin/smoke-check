@@ -29,10 +29,15 @@ fail() {
 
 centres=$(fetch "$api" "/centres?county=Dublin") || fail "https://$api/centres?county=Dublin did not answer 200"
 id=$(jq -er '.centres[0].centre_id' <<<"$centres") || fail "https://$api/centres?county=Dublin returned no centre"
+# jq -e accepts an empty string, and with a blank id the pattern below would
+# match any home's link.
+[[ $id =~ ^[0-9]+$ ]] || fail "https://$api/centres?county=Dublin returned a centre_id that is not a number: '$id'"
 echo "smoke-check: the API returns centres, the first is $id"
 
 page=$(fetch "$site" "/nursing-homes/dublin") || fail "https://$site/nursing-homes/dublin did not answer 200"
-grep -Eq "/nursing-homes/dublin/([a-z0-9]+-)*${id}[\"'/?]" <<<"$page" ||
+# The id ends the address's run of names and numbers, whatever follows it: a
+# quote, a slash, ? or #.
+grep -Eq "/nursing-homes/dublin/([a-z0-9]+-)*${id}[^0-9a-z-]" <<<"$page" ||
   fail "https://$site/nursing-homes/dublin does not link centre $id"
 echo "smoke-check: the site's Dublin county page lists centre $id"
 
