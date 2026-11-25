@@ -82,9 +82,11 @@ export default function RegulationsPage() {
           {others.length > 0 && <OtherRegulations regulations={others} />}
         </div>
 
+        {/* Below the sticky navigation band (--header-offset, CCARE-296), as the guides' panels are, and
+            no taller than the window under it, so its heading isn't covered and its foot stays in view. */}
         <nav
           aria-labelledby="contents-h"
-          className="sticky top-6 hidden max-h-[calc(100vh-3rem)] overflow-y-auto rounded-2xl bg-surface p-5 shadow-sm lg:block adult:border adult:border-line adult:shadow-none"
+          className="sticky top-[calc(var(--header-offset)+1.5rem)] hidden max-h-[calc(100vh_-_var(--header-offset)_-_3rem)] overflow-y-auto rounded-2xl bg-surface p-5 shadow-sm lg:block adult:border adult:border-line adult:shadow-none"
         >
           <h2 id="contents-h" className="mb-3 font-heading text-lg font-semibold">
             Jump to a regulation
