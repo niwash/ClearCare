@@ -4,8 +4,9 @@
 // "Display options": one button in the header that opens Easier to read and Dark mode, each with a line on
 // what it does (CCARE-318). The two were buttons side by side in the header, which had grown
 // crowded; in user testing one participant didn't like how they looked there (P2_6), another
-// asked for them under one accessibility option (P2_3), and another expected Easier to read to
-// make the wording simpler rather than the design (P2_5), which the line under it now answers.
+// felt they didn't belong beside the shortlist and login and asked for an accessibility option
+// (P2_2), another couldn't find Easier to read (P2_3), and another expected it to make the
+// wording simpler rather than the design (P2_5), which the line under it now answers.
 //
 // The panel stays open while the visitor tries each setting, so they see what it does. Escape or a
 // click outside closes it, and Escape returns the focus to the button.
