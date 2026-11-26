@@ -8,6 +8,8 @@ import { MobileMenu } from "@/components/layout/mobile-menu";
 import { NavItem, type NavEntry } from "@/components/layout/nav-item";
 import { StickyNav } from "@/components/layout/sticky-nav";
 import { DisplayMenu } from "@/components/theme/display-menu";
+import { Icon } from "@/components/ui/icons";
+import { CALCULATOR_PATH } from "@/lib/calculator-structured-data";
 
 // What each entry can be (an unfinished page, Compare Homes, Search for Homes) is in nav-item.tsx.
 // The footer lists these too, so a page added here shows in both.
@@ -73,8 +75,18 @@ export function SiteHeader() {
           {/* flex-auto, not flex-1: sized by its buttons, so on narrow screens it wraps under the
               logo instead of overflowing on top of it. */}
           <div className="flex flex-auto flex-wrap items-center justify-end gap-2">
-            {/* The shortlist from any page (CCARE-258), first, before the display buttons: it opens the
-                one panel, ShortlistPanel below. */}
+            {/* The Fair Deal calculator from any page (CCARE-318), first: paying for care is one of the
+                first things a family needs to work out. From tablet width; on phones it is in the menu,
+                as the header has no room. */}
+            <Link
+              href={CALCULATOR_PATH}
+              className="flex h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-md border border-line px-3 text-sm font-semibold text-ink-muted no-underline hover:text-ink hover:no-underline max-sm:hidden"
+            >
+              <Icon name="cost" className="size-[18px]" />
+              Fair Deal calculator
+            </Link>
+            {/* The shortlist from any page (CCARE-258), before the display buttons: it opens the one
+                panel, ShortlistPanel below. */}
             <ShortlistButton variant="header" />
             {/* Your alerts beside it, in the same outlined shape without the count (CCARE-271). */}
             <AlertsButton />
@@ -106,6 +118,12 @@ export function SiteHeader() {
               />
             </li>
           ))}
+          {/* The Fair Deal calculator, which the header shows from tablet width (CCARE-318). */}
+          <li>
+            <Link href={CALCULATOR_PATH} className="flex min-h-11 items-center text-base">
+              Fair Deal calculator
+            </Link>
+          </li>
           <li className="border-t border-line pt-2">
             <AccountControls variant="menu" />
           </li>
