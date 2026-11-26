@@ -1,7 +1,7 @@
 "use client";
 
-// The shortlist button for one home (CCARE-127). "toggle", on its page and its search result: "+ Add
-// to shortlist", then a filled "✓ Added to shortlist" that takes it off again; once five homes are
+// The shortlist button for one home (CCARE-127). "toggle", on its page: "+ Add to shortlist (2/5)",
+// then an outlined "✕ Remove from shortlist (3/5)" that takes it off again; once five homes are
 // saved, a dashed button with a note on how to make room. "remove", on Compare Homes and in
 // Your shortlist: "✕ Remove", or the ✕ alone where space is short. "result", on the search results:
 // "+ Add to shortlist" and "✓ Added to shortlist" as a pill; full, "Shortlist full", which opens the
@@ -139,11 +139,13 @@ export function CompareButton({
   }
 
   // Full, it does nothing, and looks it; the note under it says how to make room.
+  // Not yet saved, it is filled, the main action on a home's page (CCARE-318, where both P2_5 and
+  // P2_6 had to look for it); saved, it is outlined, as the quieter way back.
   const stateClass = full
     ? "cursor-not-allowed border-2 border-dashed border-field bg-surface-muted text-ink-muted"
     : saved
-      ? "border border-primary bg-primary text-on-primary hover:bg-primary-hover"
-      : "border border-primary bg-surface text-primary hover:bg-surface-muted";
+      ? "border-2 border-primary bg-surface text-primary hover:bg-surface-muted"
+      : "border-2 border-primary bg-primary text-on-primary shadow-sm hover:bg-primary-hover";
   const ownNoteId = `compare-full-${home.id}`;
 
   return (
@@ -153,14 +155,29 @@ export function CompareButton({
         onClick={toggle}
         // Disabled until hydration, when the saved list is known.
         disabled={homes === null}
-        aria-pressed={full ? undefined : saved}
+        // No aria-pressed: the words say what a press does, so a pressed state would say it twice.
         aria-disabled={full || undefined}
         aria-describedby={full ? (fullNoteId ?? ownNoteId) : undefined}
         className={`${className} inline-flex items-center justify-center gap-1.5 rounded-md font-semibold ${stateClass}`}
       >
-        {!full && <ButtonIcon name={saved ? "added" : "add"} />}
-        {saved ? "Added to shortlist" : "Add to shortlist"}
+        {!full && <ButtonIcon name={saved ? "remove" : "add"} />}
+        {/* Saved, it says what pressing it does, "Remove from shortlist", rather than "Added to
+            shortlist", which didn't say it would take the home off (CCARE-318). */}
+        {saved ? "Remove from shortlist" : "Add to shortlist"}
         <span className="sr-only"> ({home.name})</span>
+        {/* How many homes are saved out of the most it holds, "(2/5)", as the header's Shortlist
+            button shows, so the page needs no shortlist button of its own (CCARE-318). Read out
+            as "2 of 5 saved". */}
+        {homes !== null && (
+          <>
+            <span aria-hidden className="tabular-nums">
+              ({homes.length}/{MAX_COMPARED})
+            </span>
+            <span className="sr-only">
+              , {homes.length} of {MAX_COMPARED} saved
+            </span>
+          </>
+        )}
       </button>
       {full && homes && !fullNoteId && (
         // Its own line under the button: basis-full in a wrapping row, a line of its own in a column.

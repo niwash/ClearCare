@@ -7,6 +7,9 @@
 // price terms (P2_3), why the regulations differ from one inspection to the next (P2_2), the
 // symbols (P2_4), a condition on a home's registration (P2_2), and the HSE's look at a family's
 // money (Phase 1, General User 5). The rest are words the site and the reports use beside them.
+// "Substantially compliant" stays HIQA's word rather than "partially compliant", which P2_2 and P2_5
+// suggested: the team decided to keep HIQA's terms, so the site matches the reports, and its meaning
+// shows on hover wherever the judgement appears.
 //
 // Each meaning agrees with the page that says more: the judgements are HIQA's own, from
 // JUDGEMENT_MEANINGS (components/centre/judgement-icon.tsx), and the Fair Deal terms follow the Fair

@@ -12,7 +12,6 @@ import { CentrePhoto } from "@/components/centre/centre-photo";
 import { ExtraConditions } from "@/components/centre/extra-conditions";
 import { RecentChanges } from "@/components/centre/recent-changes";
 import { CompareButton } from "@/components/compare/compare-button";
-import { ShortlistDrawer } from "@/components/compare/shortlist-drawer";
 import { sectionHeadingClass } from "@/components/centre/section-icon";
 import { actionLinkClass } from "@/components/ui/classes";
 import { JUDGEMENT_LABELS, JudgementIcon } from "@/components/centre/judgement-icon";
@@ -67,8 +66,8 @@ export default async function CentrePage({ params }: CentrePageProps) {
     ? (followed.subscriptions.find((row) => followsCentre(row, centre.centre_id))?.id ?? null)
     : null;
 
-  // The offer to follow this home (CCARE-271), with the home's other actions under HIQA's link and
-  // above the shortlist (CCARE-297): first under the tabs, it came before the home itself. On a phone
+  // The offer to follow this home (CCARE-271), with the home's other actions under HIQA's link
+  // (CCARE-297): first under the tabs, it came before the home itself. On a phone
   // that column follows the record's facts. Keyed by the home, as the county strip is on search: a
   // move from one home to another keeps the component mounted, and its state would otherwise still
   // name the last one.
@@ -152,10 +151,16 @@ export default async function CentrePage({ params }: CentrePageProps) {
   );
 }
 
-// The same look for each action button, so they line up in one column.
-const actionButtonClass = "flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold";
-const outlineButtonClass = `${actionButtonClass} border border-line bg-surface text-ink no-underline hover:border-primary hover:text-ink`;
+// Add to shortlist, the column's main action (CCARE-318): taller, with larger words.
+const mainActionClass = "flex min-h-12 w-full items-center justify-center gap-2 rounded-md px-4 py-2 text-base font-semibold";
 
+// Outlined, under Add to shortlist, so the filled one stands out.
+const outlineButtonClass =
+  "flex min-h-11 items-center justify-center gap-2 rounded-md border border-line bg-surface px-4 py-2 text-center text-sm font-semibold text-ink no-underline hover:border-primary hover:text-ink";
+
+// Add to shortlist, the download, then the alerts offer. HIQA's page moved to a link in the small
+// print by the centre ID (CCARE-318): four buttons one under the other left none of them standing
+// out, and the shortlist is what a family comes back to.
 function CentreActions({ centre, reports, alerts }: { centre: CentreDetail; reports: CentreReports | null; alerts: ReactNode }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -165,30 +170,19 @@ function CentreActions({ centre, reports, alerts }: { centre: CentreDetail; repo
           may be closed. */}
       <CompareButton
         home={{ id: centre.centre_id, name: centre.centre_name }}
-        className={`${actionButtonClass} w-full`}
+        className={mainActionClass}
       />
       {reports && (
-        <a
-          href={`${homePath(centre)}/record.csv`}
-          download
-          className={outlineButtonClass}
-        >
-          <Icon name="download" className="size-4" />
+        <a href={`${homePath(centre)}/record.csv`} download className={outlineButtonClass}>
+          <Icon name="download" className="size-4 shrink-0" />
           {/* What the spreadsheet holds: the home's details, then its inspection history
               (record.csv). "This record" said neither (CCARE-258). */}
-          Download home details and inspection results
+          Download home details and inspection history spreadsheet
         </a>
       )}
-      <a href={centre.hiqa_url} className={outlineButtonClass}>
-        View on the HIQA website
-      </a>
       {alerts && <div className="mt-1">{alerts}</div>}
-      {/* The homes saved so far, so the family can see where this one fits and go on to compare
-          them: a button that opens them in a panel from the side, as on the search page, rather than
-          a box that made the column taller than the details beside it (CCARE-212). */}
-      <div className="mt-1">
-        <ShortlistDrawer />
-      </div>
+      {/* No shortlist button of its own under the alerts (CCARE-318): Add to shortlist shows the
+          count, and the header's Shortlist button opens the list. */}
     </div>
   );
 }
@@ -356,8 +350,13 @@ function CentreFacts({
             {/* The HIQA centre ID, here in the small print rather than among the facts (CCARE-258): few
                 families look for it, but it is what HIQA knows the home by, so it stays findable, and it
                 is in the spreadsheet. */}
+            {/* With the link to the home's page on hiqa.ie beside it (CCARE-318), where it was a button
+                among the actions: it is where the centre ID leads, and few families need it. */}
             <p>
-              HIQA centre ID: <span className="font-mono">{centre.centre_id}</span>
+              HIQA centre ID: <span className="font-mono">{centre.centre_id}</span> ·{" "}
+              <a href={centre.hiqa_url} className="text-ink-muted">
+                View this home on the HIQA website
+              </a>
             </p>
             <p>
               Source:{" "}

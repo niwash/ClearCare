@@ -38,13 +38,16 @@ export function ShortlistButton({ variant = "page" }: { variant?: "page" | "head
             : "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border-2 border-primary bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-muted adult:rounded-md"
         }
       >
-        {/* Shorter on phones, so that on the search page the List / Map switch still fits beside
-            it, clear of the Menu button (#182), and the header's buttons take less room. */}
-        <span className="sm:hidden">Shortlist</span>
-        <span className="max-sm:hidden">Your shortlist</span>
-        {/* The count in a filled circle, as a basket shows its items; read out as "2 of 3". */}
-        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary tabular-nums">
+        {/* "Shortlist" on every width (CCARE-318): short enough that on the search page the List /
+            Map switch still fits beside it, clear of the Menu button (#182), and the header's
+            buttons take less room. */}
+        <span>Shortlist</span>
+        {/* The count out of the most the shortlist holds, "2/5", in a filled pill as a basket shows
+            its items, so a visitor knows the limit before reaching it (CCARE-318). Read out as
+            "2 of 5". */}
+        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-on-primary tabular-nums">
           {homes === null ? "–" : count}
+          <span aria-hidden>/{MAX_COMPARED}</span>
           <span className="sr-only"> of {MAX_COMPARED}</span>
         </span>
       </button>
@@ -60,8 +63,8 @@ export function ShortlistButton({ variant = "page" }: { variant?: "page" | "head
   );
 }
 
-// The button on the search page and a home's record, as it was called before the panel moved to
-// the header.
+// The button on the search page, as it was called before the panel moved to the header. A home's
+// record had one under its actions too, until CCARE-318 put the count on its Add to shortlist.
 export function ShortlistDrawer() {
   return <ShortlistButton />;
 }

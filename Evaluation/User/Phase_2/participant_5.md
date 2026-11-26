@@ -237,6 +237,7 @@ Participant is requested to imagine choosing a nursing home for their mother, wh
 ## Possible tickets
 
 - Rename "Substantially compliant" to "Partially compliant".
+  - Not doing (team decision): ClearCare keeps HIQA's term, "Substantially compliant", so the site matches HIQA's reports. Its meaning shows when hovering over the judgement, and in the glossary.
 
 ## Standout quotes
 

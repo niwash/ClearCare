@@ -59,8 +59,8 @@ function useSession() {
   return state;
 }
 
-// The placement decides the shape: the header has room for two buttons side by side, and the phone
-// menu keeps the same rows as the links above it, one under the other.
+// The placement decides the shape: the header and the nav band have one button for signing in or
+// up, and the phone menu keeps the same rows as the links above it, one under the other.
 export function AccountControls({ variant }: { variant: "header" | "menu" | "nav" }) {
   const state = useSession();
 
@@ -72,7 +72,6 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
     "inline-flex h-11 items-center rounded-md bg-primary px-3 text-sm font-semibold text-on-primary hover:bg-primary-hover";
   const secondaryClass =
     "inline-flex h-11 items-center rounded-md border border-field bg-surface px-3 text-sm font-semibold text-ink hover:bg-surface-muted";
-  const textLink = "text-sm text-ink-muted underline hover:border-primary hover:text-ink";
 
   const wrapper =
     variant === "header" ? "hidden sm:block" : variant === "menu" ? "" : "flex items-center";
@@ -92,9 +91,12 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
                 ? "flex min-h-11 items-center text-base text-ink-muted"
                 : "text-sm font-semibold text-ink"
             }
-            title="You are signed in"
+            title={`Signed in as ${state.email}`}
           >
-            {state.email}
+            {/* The header and nav band greet by the name before the @: a full address such as a
+                college one crowded out the buttons beside it. Hovering shows it whole, and the
+                phone menu has the width to show it. */}
+            {inMenu ? state.email : `Hello ${state.email.split("@")[0]}`}
           </span>
           {/* A form action, so the browser cannot be sent here by another site, and Auth.js clears
               its own cookies with the options it set them with. */}
@@ -108,29 +110,39 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
     );
   }
 
+  // One button in the header and the nav band, which had grown crowded (P2_6, CCARE-318). It opens
+  // Cognito's sign-in page, which links to its sign-up page, so the one button serves both. The
+  // phone menu has a row to spare for each, and for the privacy notice.
+  if (!inMenu) {
+    return (
+      <div className={wrapper}>
+        <form action={startSignIn}>
+          <button type="submit" className={`${primaryClass} whitespace-nowrap`}>
+            Log in / Sign up
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className={wrapper}>
-      <div className={inMenu ? "flex flex-col" : row}>
+      <div className="flex flex-col">
         <form action={startSignIn}>
-          <button type="submit" className={inMenu ? `${menuRow} text-left` : secondaryClass}>
+          <button type="submit" className={`${menuRow} text-left`}>
             Log in
           </button>
         </form>
         <form action={startSignUp}>
-          <button type="submit" className={inMenu ? `${menuRow} text-left` : primaryClass}>
+          <button type="submit" className={`${menuRow} text-left`}>
             Create account
           </button>
         </form>
         {/* Cognito's sign-up page cannot link to our notice, so the notice is reachable from the
             place where an account is made. The header is too tight to carry it. */}
-        {variant !== "header" && (
-          <Link
-            href="/privacy"
-            className={inMenu ? `${menuRow} text-sm text-ink-muted underline` : textLink}
-          >
-            How we use your details
-          </Link>
-        )}
+        <Link href="/privacy" className={`${menuRow} text-sm text-ink-muted underline`}>
+          How we use your details
+        </Link>
       </div>
     </div>
   );

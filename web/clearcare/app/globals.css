@@ -18,6 +18,11 @@
    background here, and links and buttons 6.8:1 or more. */
 :root {
   color-scheme: light dark;
+}
+
+/* The page's colours, also given to page-colours (below). */
+:root,
+.page-colours {
   --page: light-dark(#f8f5ef, #11171e);
   --surface: light-dark(#fffdf9, #18212b);
   --surface-muted: light-dark(#faf7f2, #1d2731);
@@ -97,7 +102,8 @@
 }
 
 /* Adult-centred colours. */
-:root[data-design="adult-centred"] {
+:root[data-design="adult-centred"],
+:root[data-design="adult-centred"] .page-colours {
   --page: light-dark(#faf7f2, #1a1714);
   --surface: light-dark(#ffffff, #24201c);
   --surface-muted: light-dark(#f3eee6, #2e2924);
@@ -169,6 +175,16 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
+}
+
+/* page-colours: the page's own colours inside a band that recolours its contents, such as the
+   Display panel in the header's brand band (display-menu.tsx, CCARE-318). The two blocks above give
+   it the page's colour tokens. Its light or dark choice comes from the page: color-scheme is set on
+   :root alone, so the panel follows the theme chosen with Dark mode, not only the system's. This
+   keeps the page's text size, which the adult-centred block would otherwise set again here. */
+:root .page-colours,
+:root[data-design="adult-centred"] .page-colours {
+  font-size: inherit;
 }
 
 /* The header's top band and the footer: a block of brand colour, as on nhi.ie, in light and dark
