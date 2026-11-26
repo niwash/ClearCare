@@ -2,7 +2,8 @@
 
 import { useSyncExternalStore } from "react";
 import { DESIGN_STORAGE_KEY, type Design } from "./theme";
-import { ToggleState } from "./toggle-state";
+import { AccessibilityIcon } from "./accessibility-icon";
+import { ToggleState, toggleButtonClass } from "./toggle-state";
 
 const listeners = new Set<() => void>();
 
@@ -41,13 +42,11 @@ export function DesignToggle() {
       onClick={() => chooseDesign(on ? "standard" : "adult-centred")}
       disabled={design === null}
       aria-pressed={on}
-      className={`flex h-11 shrink-0 items-center rounded-md border px-3 text-sm font-semibold ${
-        on ? "border-primary bg-primary text-on-primary hover:bg-primary-hover" : "border-line text-ink-muted hover:text-ink"
-      }`}
+      className={toggleButtonClass}
     >
-      {/* Words only: the switch drawing that was here (CCARE-214) is gone (CCARE-258). The state is
-          still shown other than by colour: in the words, ": On" or ": Off", and by the filled button
-          when it's on. */}
+      {/* The accessibility figure (CCARE-318), then the words. The state shows in the words,
+          ": On" or ": Off". */}
+      <AccessibilityIcon />
       <span>
         Easier to read
         <ToggleState on={design === null ? null : on} />

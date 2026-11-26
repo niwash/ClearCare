@@ -7,8 +7,7 @@ import { ShortlistButton, ShortlistPanel } from "@/components/compare/shortlist-
 import { MobileMenu } from "@/components/layout/mobile-menu";
 import { NavItem, type NavEntry } from "@/components/layout/nav-item";
 import { StickyNav } from "@/components/layout/sticky-nav";
-import { DesignToggle } from "@/components/theme/design-toggle";
-import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { DisplayMenu } from "@/components/theme/display-menu";
 
 // What each entry can be (an unfinished page, Compare Homes, Search for Homes) is in nav-item.tsx.
 // The footer lists these too, so a page added here shows in both.
@@ -79,12 +78,9 @@ export function SiteHeader() {
             <ShortlistButton variant="header" />
             {/* Your alerts beside it, in the same outlined shape without the count (CCARE-271). */}
             <AlertsButton />
-            {/* Together, for the welcome tour's step about them. A smaller horizontal gap gives
-                the adult-centred design's larger labels more room before the buttons wrap. */}
-            <div data-tour="display" className="flex flex-wrap items-center justify-end gap-2 adult:gap-x-1">
-              <DesignToggle />
-              <ThemeToggle />
-            </div>
+            {/* Easier to read and Dark mode under one Display options button, which the welcome tour's step
+                about them points at (CCARE-318). */}
+            <DisplayMenu />
             {/* Read the session in the browser and return the visitor to this page. Left out on
                 phones, where the menu carries them. */}
             <AccountControls variant="header" />
