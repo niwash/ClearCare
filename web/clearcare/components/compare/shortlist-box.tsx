@@ -20,7 +20,7 @@ export function ShortlistBox({ currentId }: { currentId?: string }) {
     <section aria-labelledby="shortlist-h" className="flex flex-col gap-3">
       {/* tabIndex -1: focus comes here when a ✕ takes its home, and itself, away. */}
       <h2 id="shortlist-h" tabIndex={-1} className="font-heading text-lg font-semibold md:text-xl">
-        Your shortlist{" "}
+        Shortlist{" "}
         <span className="font-sans text-base font-normal text-ink-muted">
           · {homes.length} of {MAX_COMPARED}
         </span>
