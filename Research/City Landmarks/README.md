@@ -9,6 +9,7 @@ Central landmarks with their coordinates for each of 93 cities and towns across 
 | [munster.md](munster.md)                               | 23 places in 6 counties                                                                      |
 | [connacht.md](connacht.md)                             | 15 places in 5 counties                                                                      |
 | [ulster-roi.md](ulster-roi.md)                         | 15 places in Cavan, Donegal and Monaghan                                                     |
+| [check_rules.py](check_rules.py)                       | Applies the rules to every town in the CSO's list, and shows how the list differs            |
 
 ## How the list was made
 

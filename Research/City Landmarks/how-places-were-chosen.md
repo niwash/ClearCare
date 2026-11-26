@@ -4,16 +4,21 @@ The landmark list covers **93 places in all 26 counties**: 40 in Leinster, 23 in
 
 1. **Cities.** All six of Ireland's cities: Dublin, Cork, Limerick, Galway and Waterford, which are cities under the Local Government Act 2001, and Kilkenny, which keeps the title by historic charter. They are in because of their city status, not their population.
 2. **County towns.** The seat of each county council, whatever its size: Lifford, Donegal's county town, has 1,613 people. Tipperary has two seats, Clonmel and Nenagh, and both are in. In Dublin, the seats of the three councils other than Dublin City (Dún Laoghaire, Swords and Tallaght) are in for the same reason, and are listed as council seats.
-3. **Large towns.** The largest other towns in each county by Census 2022 population, checked against the CSO's full list of towns (table F1015) for every county. There is no fixed population threshold: a cut-off of 10,000 would drop 36 of the 63 large towns, and 5,000 would drop 18. The rule doesn't say how far down a county's list to go, so where each county stops can't be checked; see [To do](#to-do).
-4. **Coverage.** A smaller town is also included if it is the main town of an area of the county with no bigger listed town nearby, so that area still has a place on the map. For example, Kilrush is in for west Clare, because Ennis and Shannon are both well to the east, and Trim is in for central Meath.
+3. **Large towns.** Every other town with **5,000 people or more** in Census 2022 (the CSO's table F1015).
+4. **Coverage.** A town with **1,500 people or more** that is **more than 20 km**, as the crow flies, from every place already chosen, so that no part of the country is far from a place on the map. The distance is measured to places in any county, not only the town's own. The largest such town is taken first, then the largest left, until no town of 1,500 or more is more than 20 km from a chosen place. For example, Kilrush (2,649) is in, as the nearest chosen place is Listowel, 21.2 km away across the Shannon estuary, while Sixmilebridge (2,832) is out, as it is 7.9 km from Shannon.
 
-So the number of places per county follows the county's size and spread rather than a quota: from 2 (e.g. Carlow, Kilkenny, Longford) to 7 (Donegal).
+So the number of places per county follows the county's size and spread rather than a quota. Anyone can apply the rules and get the same list, though the list below doesn't follow rules 3 and 4 yet: see [To do](#to-do).
+
+### Checking the rules
+
+[check_rules.py](check_rules.py) applies the four rules to all 867 towns in the CSO's list and prints the places they choose, and how that differs from the list below. Run it with `python check_rules.py` (Python 3.9 or later, nothing to install). A town's position is the middle of its area on the CSO's Census 2022 map of towns, and distances are measured between those. Dún Laoghaire and Tallaght have no area of their own, as they are inside Dublin, so their landmarks stand in.
 
 ## Where the population figures come from
 
 - **Census 2022, CSO:** table [F1015, Population and Average Age by Sex and List of Towns](https://data.cso.ie/table/F1015), Census of Population 2022, Profile 1: Population Distribution and Movements. The population is for both sexes, from the table as updated on 29 June 2023, read through the [CSO's open data API](https://ws.cso.ie/public/api.restful/PxStat.Data.Cube_API.ReadDataset/F1015/JSON-stat/2.0/en) on 26 November 2026. CSO data is published under a Creative Commons Attribution 4.0 (CC BY 4.0) licence.
 - **What a figure covers:** each is for a town as the CSO defines it for the census (a Built Up Area), which includes its suburbs and environs. The Dublin, Cork, Limerick, Galway and Waterford figures are for the whole "city and suburbs" area, and the Dublin figure takes in the parts of the area in Co. Meath. The CSO names Greystones as Greystones-Delgany.
 - **Not counted separately:** Dún Laoghaire and Tallaght are inside the Dublin city and suburbs area, so the CSO gives them no figure of their own.
+- **Where each town is:** the CSO's Census 2022 map of towns ([Built Up Areas](https://services-eu1.arcgis.com/BuS9rtTsYEV5C0xh/arcgis/rest/services/CensusHub2022_T1_2_BUA/FeatureServer/0)), the same 867 towns with the same populations as F1015. Used only by `check_rules.py`, to measure rule 4's distances.
 - **City status:** [Local Government Act 2001](https://www.irishstatutebook.ie/eli/2001/act/37/enacted/en/html).
 - **County towns and council seats:** each county council's own website (e.g. donegalcoco.ie, tipperarycoco.ie).
 
@@ -136,22 +141,68 @@ All 91 figures were checked against the CSO table.
 
 ## To do
 
-### Gap: rule 3 has no stopping point
+`check_rules.py` gives the list that rules 3 and 4 now ask for. It has 115 places: the 93 below, less 12, and 34 more. A follow-up change will bring the list in line with it.
 
-Rule 3 takes "the largest other towns" in each county, but doesn't say how many, so whether a town should be in can't be checked from the rules alone.
+### Places the rules add (34)
 
-- **Where a county stops isn't explained:** in Kildare, Newbridge, Celbridge, Maynooth, Leixlip and Athy (11,035) are in, and the next town, Kildare (10,302), isn't. Nothing in the rules says why the list stops at Athy.
-- **The cut-off differs a lot between counties:** Rush (10,875) is left out in Dublin, while Clones (1,885) is in for Monaghan.
+Each needs a landmark, with its coordinates and a source, as the other places have.
 
-### Gap: rule 4 can't be checked
+| County  | City / town                | Population (Census 2022) | Rule |
+| ------- | -------------------------- | ------------------------ | ---- |
+| Cork    | Bandon                     | 8,196                    | 3    |
+| Cork    | Fermoy                     | 6,720                    | 3    |
+| Cork    | Passage West-Monkstown     | 6,051                    | 3    |
+| Cork    | Kinsale                    | 5,991                    | 3    |
+| Cork    | Carrigtwohill              | 5,568                    | 3    |
+| Cork    | Clonakilty                 | 5,112                    | 3    |
+| Cork    | Macroom                    | 4,096                    | 4    |
+| Cork    | Charleville                | 3,970                    | 4    |
+| Cork    | Bantry                     | 2,929                    | 4    |
+| Dublin  | Rush                       | 10,875                   | 3    |
+| Dublin  | Portmarnock                | 10,750                   | 3    |
+| Dublin  | Skerries                   | 10,743                   | 3    |
+| Dublin  | Donabate                   | 9,669                    | 3    |
+| Dublin  | Lusk                       | 8,806                    | 3    |
+| Dublin  | Kinsealy-Drinan            | 7,526                    | 3    |
+| Dublin  | Rathcoole                  | 5,792                    | 3    |
+| Galway  | Oranmore                   | 5,819                    | 3    |
+| Galway  | Gort                       | 2,870                    | 4    |
+| Galway  | Oughterard                 | 1,846                    | 4    |
+| Kerry   | Kenmare                    | 2,566                    | 4    |
+| Kerry   | Dingle (Daingean Uí Chúis) | 1,671                    | 4    |
+| Kildare | Kildare                    | 10,302                   | 3    |
+| Kildare | Kilcock                    | 8,674                    | 3    |
+| Kildare | Clane                      | 8,152                    | 3    |
+| Kildare | Sallins                    | 6,269                    | 3    |
+| Kildare | Monasterevin               | 5,307                    | 3    |
+| Louth   | Ardee                      | 5,478                    | 3    |
+| Mayo    | Claremorris                | 3,857                    | 4    |
+| Meath   | Dunboyne                   | 7,155                    | 3    |
+| Meath   | Dunshaughlin               | 6,644                    | 3    |
+| Meath   | Kells                      | 6,608                    | 3    |
+| Offaly  | Banagher                   | 1,907                    | 4    |
+| Sligo   | Ballymote                  | 1,711                    | 4    |
+| Wicklow | Blessington                | 5,611                    | 3    |
 
-Rule 4 lets in a smaller town that is the main town of an area with no bigger listed town nearby. But nothing defines what counts as an area of a county, or how close a bigger town has to be to count as nearby, so whether a town such as Cootehill or Kilrush belongs can't be checked.
+Kilcock and Blessington cross a county line; each is under the county the CSO names first. The CSO calls Dingle "Dingle-Daingean Uí Chúis".
 
-For example, in Clare:
+### Places the rules take off (12)
 
-- **Kilrush (2,649) is in**, as the main town of west Clare.
-- **Sixmilebridge (2,832) is out**, although it is larger, because it is about 8 km from Shannon, which is taken to be close enough.
+Each has fewer than 5,000 people and is within 20 km of a place chosen before it, so neither rule 3 nor rule 4 picks it.
 
-Nothing in the rules says where west Clare begins, or whether 8 km counts as nearby. Someone else could just as well decide that Sixmilebridge is the main town of south-east Clare and belongs in.
+| County    | City / town    | Population (Census 2022) | Within 20 km of             |
+| --------- | -------------- | ------------------------ | --------------------------- |
+| Cavan     | Bailieborough  | 2,974                    | Carrickmacross, 18.0 km     |
+| Cavan     | Virginia       | 3,211                    | Kells, 18.0 km              |
+| Donegal   | Carndonagh     | 2,768                    | Buncrana, 17.4 km           |
+| Kilkenny  | Callan         | 2,678                    | Kilkenny, 15.4 km           |
+| Leitrim   | Manorhamilton  | 1,667                    | Sligo, 19.96 km             |
+| Longford  | Edgeworthstown | 2,199                    | Longford, 12.6 km           |
+| Monaghan  | Castleblayney  | 3,926                    | Carrickmacross, 15.7 km     |
+| Monaghan  | Clones         | 1,885                    | Monaghan, 18.7 km           |
+| Offaly    | Birr           | 4,726                    | Roscrea, 17.7 km            |
+| Roscommon | Boyle          | 2,915                    | Carrick-on-Shannon, 13.9 km |
+| Roscommon | Castlerea      | 2,348                    | Ballaghaderreen, 16.1 km    |
+| Sligo     | Tubbercurry    | 2,307                    | Ballaghaderreen, 19.5 km    |
 
-Cavan raises the same question. Cootehill (1,856) is in for north-east Cavan, while Kingscourt (2,955) and Ballyjamesduff (2,917), both larger, are out. Nothing in the rules says which area each of them is the main town of, or which bigger listed town is near enough to leave them out.
+Manorhamilton is only just inside the 20 km: a slightly shorter radius would keep it.
