@@ -254,8 +254,6 @@ None recorded.
 
 - Find homes by street name in the search box (e.g., "Finglas Road"): Google is only asked for towns, areas, Eircodes and counties, and text it can't place is searched as a home's name.
 - Make "Add to shortlist" easier to tell apart from "Your shortlist", and reconsider where the shortlist button sits.
-- Make it clearer how to compare homes on the comparison table.
-- Team decision to rename substantially compliant to partially compliant (also raised by P2_3 and P2_5).
 - Reconsider the header layout: the title on the left and the buttons on the right.
 - Point to the home's What to Ask tab from the general "Questions to ask" guide.
 
