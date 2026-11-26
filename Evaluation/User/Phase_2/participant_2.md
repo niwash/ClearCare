@@ -315,6 +315,7 @@ Participant is requested to imagine choosing a nursing home for their mother, wh
 - Stronger emphasis on the number of compliant regulations.
 - Report hyperlink needs to be reworded to "See HIQA inspection report."
 - Team decision to rename substantially compliant to partially compliant.
+  - Not doing (team decision): ClearCare keeps HIQA's term, "Substantially compliant", so the site matches HIQA's reports. Its meaning shows when hovering over the judgement, and in the glossary.
 
 ## Standout quotes
 
