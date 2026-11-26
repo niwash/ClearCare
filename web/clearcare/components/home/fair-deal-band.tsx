@@ -5,11 +5,11 @@
 // above the features, so a family meets the cost as soon as they start. In the words of the choosing guide
 // (guides/choosing-a-nursing-home), so the site says what Fair Deal is one way.
 //
-// The words on the left and the button on the right from desktop width, as in the band at the foot
+// The words on the left and the buttons on the right from desktop width, as in the band at the foot
 // of the page; stacked on smaller screens. The warm gold of the site's notes about money and care.
 // The adult-centred design turns the tint to its band colour.
 import Link from "next/link";
-import { actionLinkClass, fullWidthClass } from "@/components/ui/classes";
+import { actionLinkClass, fullWidthClass, secondaryLinkClass } from "@/components/ui/classes";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { ICON_PATHS } from "@/components/ui/icons";
 
@@ -30,9 +30,16 @@ export function FairDealBand() {
             </p>
           </div>
         </div>
-        <Link href="/guides/fair-deal" className={`${actionLinkClass} shrink-0 self-start lg:self-center`}>
-          How Fair Deal works <span aria-hidden>→</span>
-        </Link>
+        {/* The calculator beside the guide, as the second choice (CCARE-237): side by side when they fit,
+            the calculator under the guide on narrow phones. */}
+        <div className="flex shrink-0 flex-wrap gap-3 self-start lg:self-center">
+          <Link href="/guides/fair-deal" className={actionLinkClass}>
+            How Fair Deal works <span aria-hidden>→</span>
+          </Link>
+          <Link href="/guides/fair-deal/calculator" className={secondaryLinkClass}>
+            Estimate your contribution <span aria-hidden>→</span>
+          </Link>
+        </div>
       </div>
     </section>
   );
