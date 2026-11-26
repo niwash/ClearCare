@@ -38,10 +38,10 @@ export function ShortlistButton({ variant = "page" }: { variant?: "page" | "head
             : "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border-2 border-primary bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-muted adult:rounded-md"
         }
       >
-        {/* Shorter on phones, so that on the search page the List / Map switch still fits beside
-            it, clear of the Menu button (#182), and the header's buttons take less room. */}
-        <span className="sm:hidden">Shortlist</span>
-        <span className="max-sm:hidden">Your shortlist</span>
+        {/* "Shortlist" on every width (CCARE-318): short enough that on the search page the List /
+            Map switch still fits beside it, clear of the Menu button (#182), and the header's
+            buttons take less room. */}
+        <span>Shortlist</span>
         {/* The count out of the most the shortlist holds, "2/5", in a filled pill as a basket shows
             its items, so a visitor knows the limit before reaching it (CCARE-318). Read out as
             "2 of 5". */}
