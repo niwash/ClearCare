@@ -63,8 +63,8 @@ export function ShortlistButton({ variant = "page" }: { variant?: "page" | "head
   );
 }
 
-// The button on the search page and a home's record, as it was called before the panel moved to
-// the header.
+// The button on the search page, as it was called before the panel moved to the header. A home's
+// record had one under its actions too, until CCARE-318 put the count on its Add to shortlist.
 export function ShortlistDrawer() {
   return <ShortlistButton />;
 }
