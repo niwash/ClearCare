@@ -9,6 +9,7 @@
 // getCentre is cached for the request.
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 
 import { AlertsList, type AlertRow } from "@/components/alerts/alerts-list";
@@ -33,6 +34,10 @@ const PRIMARY_CLASS =
   "inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 font-semibold text-on-primary hover:bg-primary-hover adult:rounded-md";
 
 export default async function AlertsPage() {
+  // Rendered on each request (CCARE-321). Otherwise the build prerenders the page once, and the
+  // image is built without the sign-in settings, so it would say "Accounts aren't available yet"
+  // to everyone, signed in or not, until the next build.
+  await connection();
   const sub = authConfigured() ? sessionSubject(await authRuntime().auth()) : null;
   const configured = alertsConfigured();
 

@@ -48,6 +48,13 @@ export default function AboutPage() {
             Once a week we check the{" "}
             <a href="https://www2.hse.ie/services/schemes-allowances/fair-deal-scheme/about/">HSE&apos;s Fair Deal price lists</a>.
           </p>
+          {/* The credit the boundaries' licence asks for (CCARE-319, public/county-boundaries/README.md). */}
+          <p>
+            The county boundaries on the map are from{" "}
+            <a href="https://data-osi.opendata.arcgis.com/datasets/osi::counties-national-statutory-boundaries-2019-generalised-20m">Tailte Éireann&apos;s National Statutory Boundaries</a>
+            , simplified for the map. © Tailte Éireann, used under{" "}
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+          </p>
         </Section>
 
         <Section title="How it is prepared, and its limits">
