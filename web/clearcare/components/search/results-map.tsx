@@ -13,11 +13,13 @@
 // the zoom buttons are the site's, and the map's colours come with its map ID (map-style/, README).
 import { useShownTheme } from "@/components/theme/theme-toggle";
 import { Icon } from "@/components/ui/icons";
+import { countyBox } from "@/lib/county-boxes";
 import { clusterIndex, markOf, marksIn, opensAt, type Cluster } from "@/lib/map-clusters";
 import { firstView, nearPoint, shiftInto, type Box, type CentrePoint, type LatLng, type MapBounds } from "@/lib/search-map";
 import { APILoadingStatus, AdvancedMarker, ColorScheme, ControlPosition, Map, MapControl, useApiLoadingStatus, useMap } from "@vis.gl/react-google-maps";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
+import { CountyOutline } from "./county-outline";
 import { useListBesideMap } from "./list-beside-map";
 import { HomeCard } from "./map-card";
 import { ClusterPin, HomePin, PlacePin } from "./map-pins";
@@ -37,6 +39,7 @@ const BUTTONS = 80;
 const CARD_WIDTH = 18;
 // From Tailwind's md up, the page has the filters beside the results, and the card can stand over
 // its pin. Below it, the card is docked at the map's foot: on a phone it would leave little map.
+// From md up, a county's search also opens on the whole county (below).
 const WIDE = "(min-width: 48rem)";
 
 // Whether the card can stand over its pin: from md up, and only if the map is as wide as the card
@@ -56,12 +59,14 @@ function subscribeResize(listener: () => void) {
 
 export function ResultsMap({
   points,
+  county,
   near,
   place,
   mapId,
   listHref,
 }: {
   points: CentrePoint[];
+  county: string; // the county the search is filtered to, or ""
   near: string; // where the search measures from, or ""
   place: string; // its name, or "" for a location with none
   mapId: string; // advanced markers need one (README)
@@ -134,7 +139,12 @@ export function ResultsMap({
             mapId={mapId}
             // The site's theme, not the system's: the two differ once the theme toggle is used.
             colorScheme={theme === "dark" ? ColorScheme.DARK : ColorScheme.LIGHT}
-            defaultBounds={{ ...firstView(points, nearPoint(near)), padding: EDGE }}
+            // From md up, a county's search opens on the whole county as well as its homes, so all
+            // of its line is in view (CCARE-319). A phone opens on the homes alone: the whole
+            // county is small there and its homes merge into a cluster or two, and the pins matter
+            // more than seeing all of the line. Read once, as the first view is taken once, and
+            // only in the browser, as the map waits for the theme.
+            defaultBounds={{ ...firstView(points, nearPoint(near), matchMedia(WIDE).matches ? countyBox(county) : null), padding: EDGE }}
             // Close enough to tell two homes on one street apart, and no closer.
             maxZoom={18}
             // None of Google's buttons: the map type, Street View and the rest are not for finding a
@@ -149,6 +159,7 @@ export function ResultsMap({
             onTilesLoaded={() => setDrawn(true)}
             className={`relative size-full transition-opacity duration-500 motion-reduce:transition-none adult:transition-none ${drawn ? "opacity-100" : "opacity-0"}`}
           >
+            {county && <CountyOutline county={county} />}
             <Marks
               points={points}
               from={nearPoint(near)}
