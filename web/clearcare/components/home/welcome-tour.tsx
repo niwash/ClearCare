@@ -40,8 +40,8 @@ const TOUR_STEPS: TourStep[] = [
     title: "Make the site easier to read",
     body: (
       <>
-        Select <strong>Easier to read</strong> for larger, stronger text and underlined links. The button beside it
-        switches between light and dark. Your choice is remembered on this device.
+        Select <strong>Display options</strong>, then <strong>Easier to read</strong> for larger, stronger text and underlined
+        links, or <strong>Dark mode</strong>. Your choice is remembered on this device.
       </>
     ),
     places: [{ selector: '[data-tour="display"]' }],

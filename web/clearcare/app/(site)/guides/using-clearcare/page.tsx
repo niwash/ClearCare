@@ -47,9 +47,9 @@ const STEPS: Step[] = [
     title: "Turn on Easier to read",
     detail: (
       <>
-        Select <strong>Easier to read</strong> at the top of any page. It makes the text larger and stronger, underlines
-        the links, and keeps the menu in view. The button beside it switches between light and dark. Your choice is
-        remembered on this device.
+        Select <strong>Display options</strong> at the top of any page, then <strong>Easier to read</strong>. It makes the text
+        larger and stronger, underlines the links, cuts down animation, and keeps the menu in view. <strong>Dark mode</strong> is there too.
+        Your choice is remembered on this device.
       </>
     ),
   },
