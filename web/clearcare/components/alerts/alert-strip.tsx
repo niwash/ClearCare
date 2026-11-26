@@ -29,9 +29,9 @@ export type AlertStripTarget =
   | { kind: "all" };
 
 const OFFER_CLASS =
-  "inline-flex min-h-11 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary px-5 font-semibold text-on-primary hover:bg-primary-hover disabled:opacity-60 adult:rounded-md";
+  "inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full bg-primary font-semibold text-on-primary hover:bg-primary-hover disabled:opacity-60 adult:rounded-md";
 const QUIET_CLASS =
-  "inline-flex min-h-11 w-full shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-line bg-surface px-5 font-semibold text-ink hover:bg-surface-muted disabled:opacity-60 adult:rounded-md";
+  "inline-flex min-h-11 shrink-0 items-center justify-center whitespace-nowrap rounded-full border border-line bg-surface font-semibold text-ink hover:bg-surface-muted disabled:opacity-60 adult:rounded-md";
 
 export function AlertStrip({
   target,
@@ -69,18 +69,25 @@ export function AlertStrip({
       ? `Hear about new inspection reports in Co. ${county}`
       : target.kind === "all"
         ? "Hear about new inspection reports anywhere in Ireland"
-        : "Hear about new inspection reports";
+        : compact
+          ? "Get an email about new reports"
+          : "Hear about new inspection reports";
   const caption = following
     ? "We'll email you each time a new report is added."
     : county
       ? `We'll email you an alert each time a new report is added for a home in Co. ${county} on ClearCare.`
       : target.kind === "all"
         ? "We'll email you an alert each time a new report is added for any home on ClearCare."
-        : "We'll email you an alert each time a new report is added for this home on ClearCare.";
+        : compact
+          ? "When a new inspection report for this home is added."
+          : "We'll email you an alert each time a new report is added for this home on ClearCare.";
 
-  // Beside the words from tablet width, unless compact; the button then sizes to its words.
-  const wide = compact ? "" : "sm:w-auto";
-  const offerClass = `${OFFER_CLASS} ${wide}`;
+  // Full width on phones and beside the words from tablet width. Compact, on a home's page, the
+  // strip is smaller all round, with shorter words, and the button is outlined, sized to its words
+  // and lined up under them, so none of it outweighs Add to shortlist above it (CCARE-318); still
+  // 44px tall, so it's as easy to tap.
+  const wide = compact ? "w-fit self-start px-4 text-sm ml-11" : "w-full px-5 sm:w-auto";
+  const offerClass = `${compact ? QUIET_CLASS : OFFER_CLASS} ${wide}`;
   const quietClass = `${QUIET_CLASS} ${wide}`;
 
   async function follow() {
@@ -148,16 +155,16 @@ export function AlertStrip({
   return (
     <section
       aria-labelledby={headingId}
-      className={`flex flex-col gap-4 rounded-2xl bg-tint-blue p-5 text-on-tint-blue adult:rounded-lg adult:border adult:border-line ${
-        compact ? "" : "sm:flex-row sm:items-center sm:justify-between md:p-6"
+      className={`flex flex-col rounded-2xl bg-tint-blue text-on-tint-blue adult:rounded-lg adult:border adult:border-line ${
+        compact ? "gap-3 p-4" : "gap-4 p-5 sm:flex-row sm:items-center sm:justify-between md:p-6"
       }`}
     >
       <div className="flex items-start gap-3">
-        <span aria-hidden className="grid size-9 shrink-0 place-items-center rounded-full bg-surface text-ink">
+        <span aria-hidden className={`grid shrink-0 place-items-center rounded-full bg-surface text-ink ${compact ? "size-8" : "size-9"}`}>
           <Icon name={following ? "results" : "bell"} className="size-4" />
         </span>
         <div className="flex flex-col gap-1">
-          <h2 id={headingId} className={`font-heading text-lg font-semibold ${compact ? "" : "sm:text-xl"}`}>
+          <h2 id={headingId} className={`font-heading font-semibold ${compact ? "text-base" : "text-lg sm:text-xl"}`}>
             {heading}
           </h2>
           <p className={`text-sm ${compact ? "" : "sm:text-base"}`}>{caption}</p>
@@ -179,7 +186,7 @@ export function AlertStrip({
       </span>
 
       {!signedIn || expired ? (
-        <form action={startSignIn} className="shrink-0">
+        <form action={startSignIn} className="flex shrink-0 flex-col">
           <button type="submit" className={offerClass}>
             Sign in to get alerts
           </button>
