@@ -1,6 +1,7 @@
 // tests/search-map.test.ts
 // What the search page's map shows (lib/search-map.ts): first, the nearest few homes around the place
-// searched from, or every pin, and never closer in than a town; then all of a chosen home's card.
+// searched from, or every pin, with a county's box when the map gives one, and never
+// closer in than a town; then all of a chosen home's card.
 // Run with: npm test
 import assert from "node:assert/strict";
 import { describe, test } from "node:test";
@@ -37,6 +38,30 @@ describe("the map's first view", () => {
       assert.ok(home.longitude <= view.east && home.longitude >= view.west, "longitude in view");
     }
     assert.ok(view.south > cork.latitude, "Cork is out of view");
+  });
+
+  // Laois, whose five homes are in a few kilometres of its north-east corner.
+  const laois = { north: 53.214, south: 52.781, east: -6.931, west: -7.735 };
+
+  test("with a county and no place, widens to hold the county's box, so its whole line is in view", () => {
+    const view = firstView([pin(53.03, -7.3), pin(53.16, -7.19)], null, laois);
+
+    assert.deepEqual(view, laois);
+  });
+
+  test("with a county, a home outside its box is still in view", () => {
+    // A home can be registered in a county and stand outside its line, as one in Portarlington does.
+    // This one is outside the box as well.
+    const view = firstView([pin(53.03, -7.3), pin(53.22, -7.19)], null, laois);
+
+    assert.deepEqual(view, { ...laois, north: 53.22 });
+  });
+
+  test("with a place, the county's box is not used", () => {
+    const portlaoise = { lat: 53.03, lng: -7.3 };
+    const homes = [pin(53.04, -7.29, 1300), pin(53.16, -7.19, 16000)];
+
+    assert.deepEqual(firstView(homes, portlaoise, laois), firstView(homes, portlaoise));
   });
 
   test("is never closer in than a town: one pin, or pins on one street, still show their surroundings", () => {
