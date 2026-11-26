@@ -157,8 +157,9 @@ def pick(all_towns: dict[str, dict]) -> list[dict]:
 def listed_now() -> dict[int | None, list[str]]:
     """The places in how-places-were-chosen.md, by population, as the doc names them."""
     doc = (Path(__file__).parent / "how-places-were-chosen.md").read_text(encoding="utf-8")
-    # Only the list itself: the To do after it has tables of places too.
-    doc = doc[doc.index("## Every place") : doc.index("## To do")]
+    # Only the list itself: a To do after it, when there is one, can have tables of places too.
+    end = doc.find("## To do")
+    doc = doc[doc.index("## Every place") : end if end != -1 else len(doc)]
     rows = re.findall(r"^\| [A-Z][a-z]+ +\| ([^|]+?) +\| [^|]+\| ([0-9,]+|Not counted separately) +\|", doc, re.M)
     by_population: dict[int | None, list[str]] = {}
     for name, population in rows:
