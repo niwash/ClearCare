@@ -91,9 +91,12 @@ export function AccountControls({ variant }: { variant: "header" | "menu" | "nav
                 ? "flex min-h-11 items-center text-base text-ink-muted"
                 : "text-sm font-semibold text-ink"
             }
-            title="You are signed in"
+            title={`Signed in as ${state.email}`}
           >
-            {state.email}
+            {/* The header and nav band greet by the name before the @: a full address such as a
+                college one crowded out the buttons beside it. Hovering shows it whole, and the
+                phone menu has the width to show it. */}
+            {inMenu ? state.email : `Hello ${state.email.split("@")[0]}`}
           </span>
           {/* A form action, so the browser cannot be sent here by another site, and Auth.js clears
               its own cookies with the options it set them with. */}
