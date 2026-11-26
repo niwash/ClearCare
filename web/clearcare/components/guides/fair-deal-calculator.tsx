@@ -7,7 +7,7 @@
 // result repeats its gist, so a reader who only looks at the figure still sees it.
 import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
-import { secondaryLinkClass, textInputClass } from "@/components/ui/classes";
+import { actionLinkClass, textInputClass } from "@/components/ui/classes";
 import { estimateFairDeal, FAIR_DEAL_RULES, type FairDealPeriod, type FairDealStatus } from "@/lib/fair-deal";
 
 type Fields = {
@@ -112,7 +112,7 @@ export function FairDealCalculator() {
         <button
           type="button"
           onClick={() => setFields(EMPTY)}
-          className={`${secondaryLinkClass} w-fit`}
+          className={`${actionLinkClass} w-fit`}
         >
           Clear the figures
         </button>
