@@ -20,7 +20,11 @@ describe("the navigation link that shows where the visitor is", () => {
     assert.equal(currentness("/resources", "/guides/reading-inspection-reports"), "true");
     assert.equal(currentness("/search", "/nursing-homes/cork/conna-care-home-4447"), "true");
     assert.equal(currentness("/search", "/nursing-homes/cork/conna-care-home-4447/inspections"), "true");
-    assert.equal(currentness("/national-figures", "/national-figures/re-assessment"), "true");
+  });
+
+  test("is Resources on National Figures, which Resources lists and the menu doesn't", () => {
+    assert.equal(currentness("/resources", "/national-figures"), "true");
+    assert.equal(currentness("/resources", "/national-figures/re-assessment"), "true");
   });
 
   test("leaves Fair Deal to its own link, not Resources", () => {
@@ -30,10 +34,11 @@ describe("the navigation link that shows where the visitor is", () => {
   test("never marks Home for another page, nor a link whose address only starts the same", () => {
     assert.equal(currentness("/", "/resources"), undefined);
     assert.equal(currentness("/search", "/searching"), undefined);
+    assert.equal(currentness("/resources", "/national-figures-2025"), undefined);
   });
 
   test("marks nothing for a page the navigation doesn't cover", () => {
-    for (const href of ["/", "/search", "/compare", "/guides/fair-deal", "/support-services", "/resources", "/national-figures", "/survey"]) {
+    for (const href of ["/", "/search", "/compare", "/guides/fair-deal", "/support-services", "/resources", "/survey"]) {
       assert.equal(currentness(href, "/privacy"), undefined, href);
       assert.equal(currentness(href, "/about"), undefined, href);
     }

@@ -83,7 +83,8 @@ type ReferenceLink = {
 };
 
 // ClearCare's own pages to look a word up in (CCARE-283), apart from the guides, which are read
-// through.
+// through, and National Figures. It is listed here and in the footer, not in the header's menu: the
+// figures across every home are background, not a step in choosing one (CCARE-179, CCARE-312).
 const REFERENCE_LINKS: ReferenceLink[] = [
   {
     title: "Glossary",
@@ -96,6 +97,12 @@ const REFERENCE_LINKS: ReferenceLink[] = [
     summary: "What each regulation a home is inspected against is about, such as Premises or Staffing, in HIQA’s words.",
     href: "/resources/regulations",
     action: "See the regulations",
+  },
+  {
+    title: "National Figures",
+    summary: "Figures across every home on how results changed at the next inspection.",
+    href: "/national-figures",
+    action: "See the figures",
   },
 ];
 
@@ -126,7 +133,7 @@ export default function ResourcesPage() {
         </ul>
       </section>
 
-      <TermsExplained />
+      <TermsAndFigures />
 
       <OfficialInformation />
 
@@ -155,25 +162,27 @@ function ResourcesHero() {
   );
 }
 
-// The pages to look a word up in (CCARE-283), a section of their own after the guides and before
-// the official sites, whose pages use the same words. Cards without photos, as they are looked
-// things up in rather than read, in the guides' grid so they line up with them; the whole card is
-// the link. On a sage band of its own, which meets the official sites' band below (cancelling the
-// page's gap); the adult-centred design draws every tint as the one band colour, so there a line
-// keeps the two apart.
-function TermsExplained() {
+// The pages to look a word up in (CCARE-283) and National Figures (CCARE-312), a section of their
+// own after the guides and before the official sites, whose pages use the same words. Cards without
+// photos, as they are looked things up in rather than read, in the guides' grid so they line up
+// with them; the whole card is the link. On a sage band of its own, which meets the official sites'
+// band below (cancelling the page's gap); the adult-centred design draws every tint as the one band
+// colour, so there a line keeps the two apart.
+function TermsAndFigures() {
   return (
     <section
-      aria-labelledby="terms-h"
+      aria-labelledby="terms-figures-h"
       className={`${fullWidthClass} -mb-6 bg-tint-sage py-8 md:-mb-8 md:py-12 adult:border-b adult:border-line`}
     >
       {/* The same width and side padding as the page's column, so the cards line up with it. */}
       <div className="page-column flex flex-col gap-6 px-4 md:px-8">
         <div className="reveal flex max-w-3xl flex-col gap-2">
-          <h2 id="terms-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
-            Terms Explained
+          <h2 id="terms-figures-h" className="font-heading text-2xl font-semibold tracking-tight md:text-3xl">
+            Terms and Figures
           </h2>
-          <p className="text-ink-muted md:text-lg">Words you meet on ClearCare and in HIQA&apos;s reports, explained.</p>
+          <p className="text-ink-muted md:text-lg">
+            Words you meet on ClearCare and in HIQA&apos;s reports, explained, and figures across every home.
+          </p>
         </div>
         <ul className="reveal-stagger grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-3">
           {REFERENCE_LINKS.map((link) => (
