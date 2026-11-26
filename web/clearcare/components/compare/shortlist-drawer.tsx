@@ -42,9 +42,12 @@ export function ShortlistButton({ variant = "page" }: { variant?: "page" | "head
             it, clear of the Menu button (#182), and the header's buttons take less room. */}
         <span className="sm:hidden">Shortlist</span>
         <span className="max-sm:hidden">Your shortlist</span>
-        {/* The count in a filled circle, as a basket shows its items; read out as "2 of 3". */}
-        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-on-primary tabular-nums">
+        {/* The count out of the most the shortlist holds, "2/5", in a filled pill as a basket shows
+            its items, so a visitor knows the limit before reaching it (CCARE-318). Read out as
+            "2 of 5". */}
+        <span className="flex h-6 min-w-6 items-center justify-center rounded-full bg-primary px-2 text-xs font-bold text-on-primary tabular-nums">
           {homes === null ? "–" : count}
+          <span aria-hidden>/{MAX_COMPARED}</span>
           <span className="sr-only"> of {MAX_COMPARED}</span>
         </span>
       </button>
