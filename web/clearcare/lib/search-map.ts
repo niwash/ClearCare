@@ -43,15 +43,27 @@ export function nearPoint(near: string): LatLng | null {
 
 // What the map shows first. With a place: centred on it, out to the nearest few homes, since a
 // place only orders the homes and the far ones would shrink the view to the whole country. Without
-// one: every pin.
-export function firstView(points: CentrePoint[], near: LatLng | null): MapBounds {
+// one: every pin, and the county's box when the map gives one, so the whole of the county's line
+// is in view (CCARE-319, county-outline.tsx). A county's homes can sit in one corner of it, as
+// Laois's do, and the pins alone would leave most of the line out. Both, as a home can be
+// registered in a county and stand just outside its line. The map gives the box only on a wide
+// screen (results-map.tsx).
+export function firstView(points: CentrePoint[], near: LatLng | null, countyBox: MapBounds | null = null): MapBounds {
   if (near) {
     const nearest = [...points].sort((a, b) => (a.distance_m ?? Infinity) - (b.distance_m ?? Infinity)).slice(0, NEAREST);
     const lat = Math.max(LEAST.lat, ...nearest.map((point) => Math.abs(point.latitude - near.lat)));
     const lng = Math.max(LEAST.lng, ...nearest.map((point) => Math.abs(point.longitude - near.lng)));
     return { north: near.lat + lat, south: near.lat - lat, east: near.lng + lng, west: near.lng - lng };
   }
-  const { north, south, east, west } = boundsOf(points);
+  const pins = boundsOf(points);
+  const { north, south, east, west } = countyBox
+    ? {
+        north: Math.max(pins.north, countyBox.north),
+        south: Math.min(pins.south, countyBox.south),
+        east: Math.max(pins.east, countyBox.east),
+        west: Math.min(pins.west, countyBox.west),
+      }
+    : pins;
   const middle = { lat: (north + south) / 2, lng: (east + west) / 2 };
   return {
     north: Math.max(north, middle.lat + LEAST.lat),

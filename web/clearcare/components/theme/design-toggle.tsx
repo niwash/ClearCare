@@ -29,11 +29,16 @@ function chooseDesign(design: Design) {
   listeners.forEach((listener) => listener());
 }
 
+// The design the page is shown in. null on the server and until hydration, which cannot know it.
+export function useShownDesign(): Design | null {
+  return useSyncExternalStore(subscribe, shownDesign, () => null);
+}
+
 // Turns the adult-centred design on and off. A labelled button rather than an icon,
 // so its purpose doesn't have to be guessed.
 export function DesignToggle() {
   // The server cannot know the design, so the button renders unpressed and disabled until hydration.
-  const design = useSyncExternalStore(subscribe, shownDesign, () => null);
+  const design = useShownDesign();
   const on = design === "adult-centred";
 
   return (

@@ -350,7 +350,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-[calc(var(--header-offset)+1rem)] xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh_-_var(--header-offset)_-_2rem)]" : ""}`}>
             <MapWhereShown everywhere={mapView || mapOfEveryHome}>
               {pins && mapId && (
-                <ResultsMap key={mapKey} points={pins} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+                <ResultsMap key={mapKey} points={pins} county={search.county} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
               )}
             </MapWhereShown>
           </div>
