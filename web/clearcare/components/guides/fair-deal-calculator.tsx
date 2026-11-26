@@ -3,9 +3,8 @@
 // The Fair Deal calculator (CCARE-237): the figures a family enters, and beside them an estimate of
 // the weekly contribution for the first three years in care and after, worked out as they type by
 // lib/fair-deal.ts. Nothing entered leaves the browser: there is no form to send and nothing is
-// stored. The disclaimer is on the page (app/(site)/guides/fair-deal/calculator/page.tsx), and the
-// result repeats its gist, so a reader who only looks at the figure still sees it.
-import Link from "next/link";
+// stored, so a link out of the result opens in a new tab and leaves the figures here. The
+// disclaimer is on the page, once, above the calculator (app/(site)/guides/fair-deal/calculator/page.tsx).
 import { useId, useState, type ReactNode } from "react";
 import { actionLinkClass, textInputClass } from "@/components/ui/classes";
 import { estimateFairDeal, FAIR_DEAL_RULES, type FairDealPeriod, type FairDealStatus } from "@/lib/fair-deal";
@@ -103,7 +102,7 @@ export function FairDealCalculator() {
         />
         <MoneyField
           label="The nursing home's weekly charge (optional)"
-          hint="From the home's price list, to see how much the HSE would pay. It doesn't change the person's own contribution."
+          hint="From the home's price list, to see how much the HSE would pay. The person never pays more than this."
           suffix="a week"
           value={fields.weeklyCareCost}
           onChange={set("weeklyCareCost")}
@@ -142,8 +141,12 @@ export function FairDealCalculator() {
             )}
             {estimate.firstYears.property > 0 && (
               <p className="text-sm">
-                The part from property can be paid later through the optional{" "}
-                <Link href="/guides/fair-deal#nursing-home-loan">nursing home loan</Link>, repaid from the estate.
+                The part from property within the State can be paid later through the optional{" "}
+                <a href="/guides/fair-deal#nursing-home-loan" target="_blank" rel="noopener">
+                  nursing home loan
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+                , repaid from the estate.
               </p>
             )}
           </>
@@ -262,7 +265,8 @@ function Period({
       {period.cappedAtCost && (
         <p className="text-sm">
           The sum comes to {euroWhole(period.total)}, more than the nursing home&apos;s charge, and no one pays more
-          than the cost of their care.
+          than the cost of their care. When the assessed amount is more than the charge, the HSE says the person may not
+          be eligible for Fair Deal at this time.
         </p>
       )}
     </div>

@@ -1,7 +1,8 @@
 // lib/calculator-structured-data.ts
 // Tells search engines the Fair Deal calculator page is a free tool for estimating a nursing home
 // contribution in Ireland, so it can be found by people searching for a "Fair Deal calculator"
-// (CCARE-237). Shown in the page's head as JSON-LD, beside the breadcrumb's.
+// (CCARE-237). Rendered as JSON-LD in the page's body, as the breadcrumb's is: search engines read it
+// there as they would in the head.
 import { SITE_URL } from "./site-url.ts";
 
 export const CALCULATOR_PATH = "/guides/fair-deal/calculator";
