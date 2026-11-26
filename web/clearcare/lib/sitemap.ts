@@ -4,6 +4,7 @@
 // too (CCARE-301), not left to be reached by their links: the site is new and has few links from
 // elsewhere, and the tabs hold the text people search for. The tests load this file as it is
 // (tests/sitemap.test.ts), so its imports are named with their extension.
+import { CALCULATOR_PATH } from "./calculator-structured-data.ts";
 import { COUNTIES } from "./counties.ts";
 import { GUIDES } from "./guides.ts";
 import { CENTRE_SECTIONS, countyPath, homePath } from "./home-address.ts";
@@ -13,7 +14,7 @@ const PAGE_SIZE = 50;
 
 // Not /search, which is a question rather than a page, nor /compare and /survey, which are a
 // visitor's own. The Fair Deal calculator is listed, as people search for one (CCARE-237).
-const SITE_PATHS = ["/", "/national-figures", "/resources", "/resources/glossary", "/resources/regulations", ...GUIDES.map((guide) => `/guides/${guide.slug}`), "/guides/fair-deal/calculator", "/support-services", "/about", "/privacy"];
+const SITE_PATHS = ["/", "/national-figures", "/resources", "/resources/glossary", "/resources/regulations", ...GUIDES.map((guide) => `/guides/${guide.slug}`), CALCULATOR_PATH, "/support-services", "/about", "/privacy"];
 
 // The search for a county alone is that county's page, at an address of its own (CCARE-297): the
 // page people look for as "nursing homes in Cork".

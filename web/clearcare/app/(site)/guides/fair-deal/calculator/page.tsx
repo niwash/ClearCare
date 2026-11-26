@@ -6,11 +6,15 @@ import { Breadcrumb } from "@/components/layout/breadcrumb";
 import { ContactsBanner } from "@/components/layout/contacts-banner";
 import { fullWidthClass } from "@/components/ui/classes";
 import { Icon } from "@/components/ui/icons";
+import { calculatorStructuredData } from "@/lib/calculator-structured-data";
 
-export const metadata: Metadata = {
-  title: "Fair Deal Calculator · ClearCare",
-  description: "Estimate a weekly Fair Deal contribution from income, savings and property, using the HSE's published rates.",
-};
+// In the words people search with, "Fair Deal calculator" first, with "nursing home" and Ireland, which
+// a search for the scheme often adds (CCARE-237). The description is what a search result shows.
+const TITLE = "Fair Deal Calculator for Nursing Home Costs · ClearCare";
+const DESCRIPTION =
+  "Free Fair Deal calculator: estimate your weekly nursing home contribution in Ireland from income, savings and property, using the HSE's published rates.";
+
+export const metadata: Metadata = { title: TITLE, description: DESCRIPTION };
 
 // CCARE-237. Like the calculators on other Irish sites, it applies the HSE's published arithmetic
 // (lib/fair-deal.ts). We know how the HSE calculates a contribution, not how it assesses the
@@ -22,6 +26,12 @@ const HSE_NHSS = "https://www.hse.ie/nhss/";
 export default function FairDealCalculatorPage() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        // "<" is escaped so text can't close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(calculatorStructuredData(DESCRIPTION)).replaceAll("<", "\\u003c") }}
+      />
+
       <section aria-labelledby="calculator-h" className={`${fullWidthClass} welcome-band -mt-6 md:-mt-10`}>
         <div className="page-column flex flex-col items-start gap-3 px-4 py-6 md:px-8 md:py-8">
           <Breadcrumb trail={[{ label: "Fair Deal", href: "/guides/fair-deal" }]} current="Fair Deal Calculator" />
