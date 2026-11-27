@@ -93,8 +93,8 @@ def towns() -> dict[str, dict]:
         name, _, county = label.partition(", ")
         # A town over a county line is listed under the first county F1015 names ("Counties Carlow &
         # Laois"): the county it is mostly in.
-        county = re.sub(r"^(Co|Counties) ", "", county).split(" & ")[0]
-        rows.append({"name": name, "county": county, "population": int(table["value"][i * sexes])})
+        counties = re.sub(r"^(Co|Counties) ", "", county).split(" & ")
+        rows.append({"name": name, "county": counties[0], "counties": counties, "population": int(table["value"][i * sexes])})
     shared = {row["name"] for row in rows if sum(other["name"] == row["name"] for other in rows) > 1}
     for row in rows:
         if row["name"] in shared:
@@ -154,18 +154,73 @@ def pick(all_towns: dict[str, dict]) -> list[dict]:
         chosen.add(town["name"])
 
 
-def listed_now() -> dict[int | None, list[str]]:
-    """The places in how-places-were-chosen.md, by population, as the doc names them."""
-    doc = (Path(__file__).parent / "how-places-were-chosen.md").read_text(encoding="utf-8")
+HERE = Path(__file__).parent
+
+# Where the list names a place differently from the CSO.
+CSO_NAMES = {
+    "Dublin City": "Dublin city and suburbs",
+    "Cork City": "Cork city and suburbs",
+    "Limerick City": "Limerick city and suburbs",
+    "Galway City": "Galway city and suburbs",
+    "Waterford City": "Waterford city and suburbs",
+    "Kilkenny City": "Kilkenny",
+    "Greystones": "Greystones-Delgany",
+    "Donegal Town": "Donegal",
+    "Tipperary Town": "Tipperary",
+    "Dingle (Daingean Uí Chúis)": "Dingle-Daingean Uí Chúis",
+}
+
+
+def table_rows(text: str) -> list[list[str]]:
+    """The body rows of every table in a piece of Markdown, as lists of cells."""
+    rows = []
+    for line in text.splitlines():
+        if not line.startswith("|"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if all(re.fullmatch(r"-+", cell) for cell in cells) or cells[0] in ("County", "City / town"):
+            continue
+        rows.append(cells)
+    return rows
+
+
+def listed_now() -> list[dict]:
+    """The places in how-places-were-chosen.md: county, name, type and population as the doc gives them."""
+    doc = (HERE / "how-places-were-chosen.md").read_text(encoding="utf-8")
     # Only the list itself: a To do after it, when there is one, can have tables of places too.
     end = doc.find("## To do")
     doc = doc[doc.index("## Every place") : end if end != -1 else len(doc)]
-    rows = re.findall(r"^\| [A-Z][a-z]+ +\| ([^|]+?) +\| [^|]+\| ([0-9,]+|Not counted separately) +\|", doc, re.M)
-    by_population: dict[int | None, list[str]] = {}
-    for name, population in rows:
-        key = int(population.replace(",", "")) if population[0].isdigit() else None
-        by_population.setdefault(key, []).append(name)
-    return by_population
+    places = []
+    for county, name, kind, population, *_ in table_rows(doc):
+        number = int(population.replace(",", "")) if population[0].isdigit() else None
+        places.append({"county": county, "name": name, "type": kind, "population": number})
+    return places
+
+
+def province_files() -> list[dict]:
+    """The places in the four province files: county (from the heading above), name and type."""
+    places = []
+    for path in ("leinster.md", "munster.md", "connacht.md", "ulster-roi.md"):
+        county = None
+        for line in (HERE / path).read_text(encoding="utf-8").splitlines():
+            heading = re.match(r"## Co\. (.+)", line)
+            if heading:
+                county = heading.group(1).strip()
+            elif line.startswith("|"):
+                rows = table_rows(line)
+                if rows:
+                    places.append({"county": county, "name": rows[0][0], "type": rows[0][1], "file": path})
+    return places
+
+
+def cso_town(place: dict, all_towns: dict[str, dict]) -> dict | None:
+    """The CSO town a listed place is, by its name and county, or None for a name the CSO doesn't have."""
+    name = CSO_NAMES.get(place["name"], place["name"])
+    for candidate in (name, f"{name} (Co. {place['county']})"):
+        for town in all_towns.values():
+            if town["name"].casefold() == candidate.casefold() and place["county"] in town["counties"]:
+                return town
+    return None
 
 
 def main() -> None:
@@ -176,33 +231,55 @@ def main() -> None:
         places = [place for place in picked if place["rule"] == rule]
         print(f"  rule {rule}: {len(places)}")
 
-    # Compared with the doc by population: every figure in it is the town's F1015 figure.
-    now = listed_now()
-    doc_names = {name for names in now.values() for name in names}
-    picked_names: set[str] = set()
-    added = []
-    for place in picked:
-        names = now.get(place["population"], []) if place["population"] else [place["name"]]
-        match = next((name for name in names if name in doc_names), None)
-        if match:
-            picked_names.add(match)
-        else:
-            added.append(place)
-    dropped = sorted(doc_names - picked_names)
-    by_population = {town["population"]: town for town in all_towns.values()}
+    # Each listed place matched to its CSO town by name and county, then its population checked on
+    # its own, so a renamed town or a wrong figure shows up rather than passing or stopping the run.
+    listed = listed_now()
+    problems = []
+    listed_ids = set()
+    for place in listed:
+        if place["name"] in SEATS_WITHOUT_A_TOWN:
+            listed_ids.add(place["name"])
+            if place["population"] is not None:
+                problems.append(f"{place['name']}: the CSO has no figure for it, but the list gives {place['population']:,}")
+            continue
+        town = cso_town(place, all_towns)
+        if town is None:
+            problems.append(f"{place['name']} (Co. {place['county']}): no CSO town of that name in that county")
+            continue
+        listed_ids.add(town["name"])
+        if place["population"] != town["population"]:
+            given = f"{place['population']:,}" if place["population"] is not None else "none"
+            problems.append(f"{place['name']}: the list gives {given}, the CSO {town['population']:,}")
+
+    picked_ids = {place["name"] for place in picked}
+    added = [place for place in picked if place["name"] not in listed_ids]
+    dropped = [name for name in listed_ids if name not in picked_ids]
+
+    # The province files against the list: the same places, in the same counties, with the same types.
+    in_list = {(place["county"], place["name"]): place["type"] for place in listed}
+    in_files = {(place["county"], place["name"]): place for place in province_files()}
+    for key in sorted(in_list.keys() - in_files.keys()):
+        problems.append(f"{key[1]} (Co. {key[0]}): in the list, but in no province file")
+    for key in sorted(in_files.keys() - in_list.keys()):
+        problems.append(f"{key[1]} (Co. {key[0]}): in {in_files[key]['file']}, but not in the list")
+    for key in sorted(in_list.keys() & in_files.keys()):
+        if in_list[key] != in_files[key]["type"]:
+            problems.append(f"{key[1]}: typed \"{in_list[key]}\" in the list, \"{in_files[key]['type']}\" in {in_files[key]['file']}")
 
     print(f"\nPicked by the rules, not on the list ({len(added)}):")
     for place in sorted(added, key=lambda place: (place["county"], -place["population"])):
         print(f"  {place['county']}: {place['name']} ({place['population']:,}), rule {place['rule']}")
     print(f"\nOn the list, not picked by the rules ({len(dropped)}):")
-    for name in dropped:
-        population = next(key for key, names in now.items() if name in names)
-        town = by_population[population]
+    for name in sorted(dropped):
+        town = all_towns[name]
         # The place that left it out: the nearest of those picked before it came up, which is every
         # place from rules 1 to 3 and the larger towns from rule 4.
-        before = [place for place in picked if place["rule"] < 4 or place["population"] > population]
+        before = [place for place in picked if place["rule"] < 4 or place["population"] > town["population"]]
         nearest = min(before, key=lambda place: km(town["at"], place["at"]))
-        print(f"  {town['county']}: {name} ({population:,}), {km(town['at'], nearest['at']):.2f} km from {nearest['name']}")
+        print(f"  {town['county']}: {name} ({town['population']:,}), {km(town['at'], nearest['at']):.2f} km from {nearest['name']}")
+    print(f"\nNames, figures and files that don't agree ({len(problems)}):")
+    for problem in problems:
+        print(f"  {problem}")
 
 
 if __name__ == "__main__":
