@@ -16,6 +16,7 @@
 import { APIProvider, useMapsLibrary } from "@vis.gl/react-google-maps";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 
+import { landmarkNamed } from "@/lib/landmarks";
 import { nearFrom } from "@/lib/near";
 import { readSuggestion, type PlaceSuggestion } from "@/lib/search-box";
 
@@ -158,7 +159,12 @@ function placeFinder(places: google.maps.PlacesLibrary): PlaceFinder {
               session = new places.AutocompleteSessionToken();
               // The location only: it is all the search needs.
               await place.fetchFields({ fields: ["location"] });
-              return place.location ? nearFrom(place.location.lat(), place.location.lng()) : "";
+              if (!place.location) return "";
+              const at = { latitude: place.location.lat(), longitude: place.location.lng() };
+              // A town with a landmark is measured from it, whichever of Google's suggestions for
+              // the town this is: Google has them at different points (CCARE-322).
+              const from = landmarkNamed(read.main, at.latitude, at.longitude) ?? at;
+              return nearFrom(from.latitude, from.longitude);
             },
           },
         ];

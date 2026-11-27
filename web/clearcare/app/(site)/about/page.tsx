@@ -55,6 +55,16 @@ export default function AboutPage() {
             , simplified for the map. © Tailte Éireann, used under{" "}
             <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
           </p>
+          {/* The credit the landmarks' two sources ask for (CCARE-322, lib/landmarks.ts). Each row of
+              Research/City Landmarks cites the one its coordinates are from. */}
+          <p>
+            A search from a town measures distances from a landmark in the town. The landmarks&apos; coordinates
+            are from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © OpenStreetMap
+            contributors, used under the Open Database Licence, and from the{" "}
+            <a href="https://data.gov.ie/dataset/national-inventory-of-architectural-heritage-niah-national-dataset">National Inventory of Architectural Heritage</a>
+            , © Government of Ireland, used under{" "}
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+          </p>
         </Section>
 
         <Section title="How it is prepared, and its limits">
