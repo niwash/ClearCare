@@ -1,7 +1,7 @@
 // lib/county-boxes.ts
 // The box each county's boundary fits in (CCARE-319). On a wide screen the map's first view holds
 // it (components/search/results-map.tsx). The map takes that view when it is made, before the county's
-// boundary file is fetched (components/search/county-outline.tsx), so the box must be known without
+// boundary file is fetched (components/search/boundary-line.tsx), so the box must be known without
 // the file. Made from the files in public/county-boundaries/, whose README has the command;
 // tests/county-boxes.test.ts fails when a file changes and this table doesn't.
 import type { MapBounds } from "./search-map.ts";
