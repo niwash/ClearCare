@@ -65,6 +65,14 @@ export default function AboutPage() {
             , © Government of Ireland, used under{" "}
             <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
           </p>
+          {/* The credit the towns' boundaries ask for, in the layer's own words (CCARE-323,
+              public/town-boundaries/README.md). */}
+          <p>
+            The towns&apos; boundaries on the map are the{" "}
+            <a href="https://censushub-ie-cso.hub.arcgis.com/datasets/IE-CSO::census-2022-table-1-2-population-by-sex-and-marital-status-by-built-up-urban-areas">Census 2022 Built Up Areas</a>
+            , simplified for the map. © CSO/Tailte Éireann, used under{" "}
+            <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
+          </p>
         </Section>
 
         <Section title="How it is prepared, and its limits">
