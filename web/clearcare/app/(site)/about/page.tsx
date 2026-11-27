@@ -58,8 +58,8 @@ export default function AboutPage() {
           {/* The credit the landmarks' two sources ask for (CCARE-322, lib/landmarks.ts). Each row of
               Research/City Landmarks cites the one its coordinates are from. */}
           <p>
-            A search from a town measures distances from a landmark in the town. The landmarks&apos; coordinates
-            are from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © OpenStreetMap
+            For 115 cities and towns, a search from the town measures distances from a landmark in it. The
+            landmarks&apos; coordinates are from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, © OpenStreetMap
             contributors, used under the Open Database Licence, and from the{" "}
             <a href="https://data.gov.ie/dataset/national-inventory-of-architectural-heritage-niah-national-dataset">National Inventory of Architectural Heritage</a>
             , © Government of Ireland, used under{" "}
