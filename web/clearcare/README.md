@@ -12,6 +12,8 @@ Without `API_URL`, search and centre pages say the data isn't available.
 
 The search page has a map only when `GOOGLE_MAPS_BROWSER_KEY`, `GOOGLE_MAPS_MAP_ID` and `SITE_TOKEN` are all set. Before anything is searched, it shows every home on the map under its prompt, so opening the page is enough to load Google's map. After a search, a screen 1280px wide or more shows the list with the map beside it, and the map loads there without anything being pressed. A narrower screen shows the list, with a switch to see the results on the map. Without any one of the three settings there is no map: the prompt alone before a search, and the list alone after one.
 
+A search from a town measures from the town's landmark, whichever of Google's suggestions for the town was picked (CCARE-322): Google has them at different points. `lib/landmarks.ts` has the 115 towns of [`Research/City Landmarks`](../../Research/City%20Landmarks/README.md) with their landmarks, and the rule for which suggestion is one of them. The map's mark for the place stands on the landmark and names it, and the page says the distances are measured from it. Any other place is measured from Google's point for it.
+
 When a search is filtered to a county, the map draws that county's boundary as a line (CCARE-319). The boundaries are files in `public/county-boundaries/`, one for each county, and `lib/county-boxes.ts` has the box each fits in, which a wide screen's first view holds. `public/county-boundaries/README.md` says where they come from and how to make both again.
 
 For local work, run the API with `docker compose up -d` from the repository root (see `CONTRIBUTING.md`) and set `API_URL=http://127.0.0.1:8080`.

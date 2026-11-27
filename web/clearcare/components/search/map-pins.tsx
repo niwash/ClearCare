@@ -20,7 +20,7 @@ const MIDDLE = { anchorLeft: "-50%", anchorTop: "-50%" };
 // The disc of a pin and of a cluster. Its edge in the surface colour keeps two that touch apart.
 const DISC = "flex items-center justify-center rounded-full border-2 border-surface bg-primary text-on-primary shadow-md";
 // A name under a mark.
-const NAME = "absolute top-full max-w-60 truncate rounded-md border border-line bg-surface px-2 py-0.5 text-xs font-semibold text-ink shadow-sm";
+const NAME = "absolute top-full max-w-60 rounded-md border border-line bg-surface px-2 py-0.5 text-xs font-semibold text-ink shadow-sm";
 // The keyboard's focus is on Google's element round a mark, which the site's outline would box in a
 // square; the disc inside takes the outline instead.
 const FOCUS =
@@ -54,7 +54,7 @@ export function HomePin({ point, chosen, marked, onChoose }: { point: CentrePoin
       <span className={`${DISC} ${FOCUS} ${MOVES} ${large ? "size-10" : `size-7 ${LIFT}`}`}>
         <Icon name="home" className={large ? "size-5" : "size-3.5"} />
       </span>
-      {large && <span className={NAME}>{point.centre_name}</span>}
+      {large && <span className={`${NAME} truncate`}>{point.centre_name}</span>}
     </AdvancedMarker>
   );
 }
@@ -82,14 +82,16 @@ export function ClusterPin({ cluster, marked, onChoose }: { cluster: Cluster; ma
 }
 
 // Where the search measures from: smaller than a home, in the surface colour with the crosshairs of
-// "Use my location", always named, behind the pins and not a button.
-export function PlacePin({ position, name }: { position: LatLng; name: string }) {
+// "Use my location", always named, behind the pins and not a button. A landmark's name is shown
+// whole, on the lines it takes (CCARE-322): it says which point of the town the distances are from,
+// and most are longer than the one line a place's label is cut to.
+export function PlacePin({ position, name, wholeName = false }: { position: LatLng; name: string; wholeName?: boolean }) {
   return (
     <AdvancedMarker position={position} title={name} {...MIDDLE} zIndex={-1} className="relative flex size-6 flex-col items-center justify-center">
       <span className="flex size-6 items-center justify-center rounded-full border border-ink bg-surface text-ink shadow-sm">
         <Icon name="location" className="size-4" />
       </span>
-      <span className={`${NAME} mt-1`}>{name}</span>
+      <span className={`${NAME} mt-1 ${wholeName ? "w-max text-center" : "truncate"}`}>{name}</span>
     </AdvancedMarker>
   );
 }
