@@ -15,7 +15,7 @@ function research() {
   for (const province of ["leinster", "munster", "connacht", "ulster-roi"]) {
     const file = new URL(`../../../Research/City Landmarks/${province}.md`, import.meta.url);
     let county = "";
-    for (const line of readFileSync(file, "utf8").split("\n")) {
+    for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
       county = line.match(/^## Co\. (.+)$/)?.[1] ?? county;
       const cells = line.split("|").map((cell) => cell.trim());
       // A table's row for a town has a number where its heading and the line under it have none.
