@@ -11,6 +11,8 @@ Central landmarks with their coordinates for each of 115 cities and towns across
 | [ulster-roi.md](ulster-roi.md)                         | 10 places in Cavan, Donegal and Monaghan                                                     |
 | [check_rules.py](check_rules.py)                       | Applies the rules to every town in the CSO's list, and shows how the list differs            |
 
+The site's search measures from these landmarks. It reads the list from [`web/clearcare/lib/landmarks.ts`](../../web/clearcare/lib/landmarks.ts), and a test (`web/clearcare/tests/landmarks.test.ts`) fails when that file and the four province files differ.
+
 ## How the list was made
 
 - **Who filled it in:** the team split the counties between five members, and each filled in a landmark, its coordinates and a source for their places. A reviewer then checked every point against its cited source (the OpenStreetMap feature, or the grid reference in the National Inventory of Architectural Heritage, buildingsofireland.ie) and against council plans and local sources for whether it is the town's centre.
