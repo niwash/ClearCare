@@ -17,8 +17,8 @@ export interface Landmark {
 
 // The rows of the research's four province files, in their order. tests/landmarks.test.ts fails when
 // the two differ. The other names are not the research's: they are the names Google gave for these
-// towns on 27 November 2026. Laytown, Mornington, Donacarney, Monkstown and Kinsealy are not among
-// them: Google has each as a place of its own, away from the landmark.
+// towns on 27 November 2026. Laytown, Mornington, Donacarney, Monkstown, Kinsealy and Stranorlar are
+// not among them: Google has each as a place of its own, away from the landmark.
 export const LANDMARKS: Landmark[] = [
   // Leinster (leinster.md)
   { place: "Carlow", county: "Carlow", landmark: "The Liberty Tree (Potato Market)", latitude: 52.8352403, longitude: -6.9295052 },
@@ -134,7 +134,7 @@ export const LANDMARKS: Landmark[] = [
   { place: "Lifford", county: "Donegal", landmark: "County House (Donegal County Council)", latitude: 54.8335875, longitude: -7.4792529 },
   { place: "Letterkenny", county: "Donegal", landmark: "Market Square", latitude: 54.9496221, longitude: -7.7379175 },
   { place: "Buncrana", county: "Donegal", landmark: "Christ Church (Upper Main Street)", latitude: 55.1347241, longitude: -7.4538726 },
-  { place: "Ballybofey-Stranorlar", county: "Donegal", landmark: "Balor Arts Centre (Main Street, Ballybofey)", latitude: 54.8003483, longitude: -7.7789526, otherNames: ["Ballybofey and Stranorlar", "Ballybofey", "Stranorlar"] },
+  { place: "Ballybofey-Stranorlar", county: "Donegal", landmark: "Balor Arts Centre (Main Street, Ballybofey)", latitude: 54.8003483, longitude: -7.7789526, otherNames: ["Ballybofey and Stranorlar", "Ballybofey"] },
   { place: "Donegal Town", county: "Donegal", landmark: "Four Masters Memorial (The Diamond)", latitude: 54.6538085, longitude: -8.1104018 },
   { place: "Bundoran", county: "Donegal", landmark: "Main Street (by the Diamond)", latitude: 54.4794661, longitude: -8.2771556 },
   { place: "Monaghan", county: "Monaghan", landmark: "The Diamond", latitude: 54.248537, longitude: -6.968756 },
