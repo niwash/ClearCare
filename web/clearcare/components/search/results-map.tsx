@@ -14,6 +14,7 @@
 import { useShownTheme } from "@/components/theme/theme-toggle";
 import { Icon } from "@/components/ui/icons";
 import { countyBox } from "@/lib/county-boxes";
+import type { Landmark } from "@/lib/landmarks";
 import { clusterIndex, markOf, marksIn, opensAt, type Cluster } from "@/lib/map-clusters";
 import { firstView, nearPoint, shiftInto, type Box, type CentrePoint, type LatLng, type MapBounds } from "@/lib/search-map";
 import { APILoadingStatus, AdvancedMarker, ColorScheme, ControlPosition, Map, MapControl, useApiLoadingStatus, useMap } from "@vis.gl/react-google-maps";
@@ -62,6 +63,7 @@ export function ResultsMap({
   county,
   near,
   place,
+  landmark,
   mapId,
   listHref,
 }: {
@@ -69,6 +71,7 @@ export function ResultsMap({
   county: string; // the county the search is filtered to, or ""
   near: string; // where the search measures from, or ""
   place: string; // its name, or "" for a location with none
+  landmark: Landmark | null; // the landmark it measures from, when it is from a town that has one
   mapId: string; // advanced markers need one (README)
   listHref?: string; // the same homes as a list; none before a search, which has no list
 }) {
@@ -164,6 +167,7 @@ export function ResultsMap({
               points={points}
               from={nearPoint(near)}
               place={place}
+              landmark={landmark}
               chosenId={chosenId}
               pointedId={pointedId}
               chosenPin={opener}
@@ -185,6 +189,7 @@ function Marks({
   points,
   from,
   place,
+  landmark,
   chosenId,
   pointedId,
   chosenPin,
@@ -194,6 +199,7 @@ function Marks({
   points: CentrePoint[];
   from: LatLng | null;
   place: string;
+  landmark: Landmark | null;
   chosenId: string | null;
   pointedId: string | null;
   chosenPin: RefObject<HTMLElement | null>;
@@ -276,7 +282,13 @@ function Marks({
       {marks?.pins.map((point) => (
         <HomePin key={point.centre_id} point={point} chosen={point === chosen} marked={point === pointed} onChoose={(pin) => onChoose(point, pin)} />
       ))}
-      {from && <PlacePin position={from} name={place || "Chosen location"} />}
+      {/* A town's mark stands on its landmark and names it (CCARE-322). from is the same point
+          rounded to about 1 km (lib/near.ts), which can be a few streets away. */}
+      {landmark ? (
+        <PlacePin position={{ lat: landmark.latitude, lng: landmark.longitude }} name={landmark.landmark} wholeName />
+      ) : (
+        from && <PlacePin position={from} name={place || "Chosen location"} />
+      )}
 
       {chosen &&
         (wide ? (

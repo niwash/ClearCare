@@ -24,6 +24,7 @@ import { formatDate } from "@/lib/centres";
 import { centresByCounty } from "@/lib/counties";
 import { getCountyFiguresCopy } from "@/lib/county-figures-api";
 import { countyFromSlug } from "@/lib/home-address";
+import { searchLandmark } from "@/lib/landmarks";
 import { hasSavedChoices, savedSearchHref, type SavedSearch } from "@/lib/preferences";
 import { countyAlone, countyAloneHref, filtersClearedHref, hasSearch, leavesHomesOut, readSearch, searchHref, type PageSearch } from "@/lib/page-search";
 import { pointsConfigured, readPoints } from "@/lib/points-api";
@@ -350,7 +351,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <div className={`empty:hidden ${besideMap ? "xl:sticky xl:top-[calc(var(--header-offset)+1rem)] xl:col-start-2 xl:row-span-3 xl:row-start-1 xl:h-[calc(100dvh_-_var(--header-offset)_-_2rem)]" : ""}`}>
             <MapWhereShown everywhere={mapView || mapOfEveryHome}>
               {pins && mapId && (
-                <ResultsMap key={mapKey} points={pins} county={search.county} near={search.near} place={search.place} mapId={mapId} listHref={searched ? listHref : undefined} />
+                <ResultsMap key={mapKey} points={pins} county={search.county} near={search.near} place={search.place} landmark={searchLandmark(search)} mapId={mapId} listHref={searched ? listHref : undefined} />
               )}
             </MapWhereShown>
           </div>
@@ -472,6 +473,7 @@ function WaysToStart({ search, total, points, empty }: { search: PageSearch; tot
 // What was found and the filters in use, over the list and over the map alike.
 function ResultsHeading({ search, total }: { search: PageSearch; total: number }) {
   const filters = activeFilters(search.selection);
+  const landmark = searchLandmark(search);
 
   return (
     <>
@@ -486,6 +488,9 @@ function ResultsHeading({ search, total }: { search: PageSearch; total: number }
           fromPointAlone(search)
         )}
       </h2>
+      {/* A town is a wide place to measure from, so the page says which point of it the distances
+          are from (CCARE-322). The cards say that each is a straight line. */}
+      {landmark && <p className="text-sm text-ink-muted">Distances are measured from this landmark: {landmark.landmark}.</p>}
 
       {/* The filters in use, each removable, as links so they work without scripts. On phones they
           scroll sideways in one row. */}
