@@ -65,7 +65,11 @@ export function BoundaryLine({ file, shownWhile }: { file: string; shownWhile?: 
     async function draw() {
       const response = await fetch(file, { signal: left.signal });
       if (!response.ok) return;
-      line.addGeoJson(await response.json());
+      const boundary = await response.json();
+      // The search or the theme can change while the file is read, and this line is then left
+      // behind (below): it must not be put back on the map.
+      if (left.signal.aborted) return;
+      line.addGeoJson(boundary);
       if (!shownWhile) return;
       line.forEach((feature) => feature.getGeometry()?.forEachLatLng((point) => box.extend(point)));
       showOrHide();
