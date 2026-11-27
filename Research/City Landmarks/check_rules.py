@@ -257,7 +257,13 @@ def main() -> None:
 
     # The province files against the list: the same places, in the same counties, with the same types.
     in_list = {(place["county"], place["name"]): place["type"] for place in listed}
-    in_files = {(place["county"], place["name"]): place for place in province_files()}
+    files = province_files()
+    in_files = {(place["county"], place["name"]): place for place in files}
+    # A place listed twice would be counted once above, so repeats are reported on their own.
+    for where, keys in (("the list", [(place["county"], place["name"]) for place in listed]),
+                        ("the province files", [(place["county"], place["name"]) for place in files])):
+        for key in sorted({key for key in keys if keys.count(key) > 1}):
+            problems.append(f"{key[1]} (Co. {key[0]}): {keys.count(key)} times in {where}")
     for key in sorted(in_list.keys() - in_files.keys()):
         problems.append(f"{key[1]} (Co. {key[0]}): in the list, but in no province file")
     for key in sorted(in_files.keys() - in_list.keys()):
@@ -267,8 +273,10 @@ def main() -> None:
             problems.append(f"{key[1]}: typed \"{in_list[key]}\" in the list, \"{in_files[key]['type']}\" in {in_files[key]['file']}")
 
     print(f"\nPicked by the rules, not on the list ({len(added)}):")
-    for place in sorted(added, key=lambda place: (place["county"], -place["population"])):
-        print(f"  {place['county']}: {place['name']} ({place['population']:,}), rule {place['rule']}")
+    # Dún Laoghaire and Tallaght have no population, as the CSO counts them inside Dublin.
+    for place in sorted(added, key=lambda place: (place["county"], -(place["population"] or 0))):
+        population = f"{place['population']:,}" if place["population"] is not None else "no CSO figure"
+        print(f"  {place['county']}: {place['name']} ({population}), rule {place['rule']}")
     print(f"\nOn the list, not picked by the rules ({len(dropped)}):")
     for name in sorted(dropped):
         town = all_towns[name]
