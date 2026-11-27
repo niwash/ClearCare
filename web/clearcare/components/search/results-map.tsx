@@ -14,13 +14,15 @@
 import { useShownTheme } from "@/components/theme/theme-toggle";
 import { Icon } from "@/components/ui/icons";
 import { countyBox } from "@/lib/county-boxes";
+import { countySlug } from "@/lib/home-address";
 import type { Landmark } from "@/lib/landmarks";
 import { clusterIndex, markOf, marksIn, opensAt, type Cluster } from "@/lib/map-clusters";
 import { firstView, nearPoint, shiftInto, type Box, type CentrePoint, type LatLng, type MapBounds } from "@/lib/search-map";
+import { townBoundaryFile, townLineReads } from "@/lib/town-boundaries";
 import { APILoadingStatus, AdvancedMarker, ColorScheme, ControlPosition, Map, MapControl, useApiLoadingStatus, useMap } from "@vis.gl/react-google-maps";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 
-import { CountyOutline } from "./county-outline";
+import { BoundaryLine } from "./boundary-line";
 import { useListBesideMap } from "./list-beside-map";
 import { HomeCard } from "./map-card";
 import { ClusterPin, HomePin, PlacePin } from "./map-pins";
@@ -85,6 +87,7 @@ export function ResultsMap({
   useEffect(() => () => choose(null), [choose]);
   // The pin the card was opened from, which gets the keyboard's focus back when the card is closed.
   const opener = useRef<HTMLElement | null>(null);
+  const townBoundary = landmark && townBoundaryFile(landmark.place);
 
   // Maps JavaScript didn't load, as when a browser blocks it, or Google refused the key, as it does
   // on an address the key isn't limited to. Google reports a refusal by calling this global, and
@@ -162,7 +165,14 @@ export function ResultsMap({
             onTilesLoaded={() => setDrawn(true)}
             className={`relative size-full transition-opacity duration-500 motion-reduce:transition-none adult:transition-none ${drawn ? "opacity-100" : "opacity-0"}`}
           >
-            {county && <CountyOutline county={county} />}
+            {/* A county's line is drawn whatever the view: a phone opens on the county's homes, with
+                the view inside the line, on purpose (above). */}
+            {county && <BoundaryLine file={`/county-boundaries/${countySlug(county)}.json`} />}
+            {/* The town a search measures from, when it has a boundary file (CCARE-323). The first
+                view is not widened to hold its line, as it is for a county's: it stays centred on
+                the place, out to the nearest homes (lib/search-map.ts). So the line is drawn only
+                while it reads as the town's shape there, and comes and goes as the map is zoomed. */}
+            {townBoundary && <BoundaryLine file={townBoundary} shownWhile={townLineReads} />}
             <Marks
               points={points}
               from={nearPoint(near)}

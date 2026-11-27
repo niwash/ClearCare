@@ -44,7 +44,7 @@ export function nearPoint(near: string): LatLng | null {
 // What the map shows first. With a place: centred on it, out to the nearest few homes, since a
 // place only orders the homes and the far ones would shrink the view to the whole country. Without
 // one: every pin, and the county's box when the map gives one, so the whole of the county's line
-// is in view (CCARE-319, county-outline.tsx). A county's homes can sit in one corner of it, as
+// is in view (CCARE-319, boundary-line.tsx). A county's homes can sit in one corner of it, as
 // Laois's do, and the pins alone would leave most of the line out. Both, as a home can be
 // registered in a county and stand just outside its line. The map gives the box only on a wide
 // screen (results-map.tsx).

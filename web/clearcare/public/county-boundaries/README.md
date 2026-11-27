@@ -1,6 +1,6 @@
 # County boundaries
 
-One GeoJSON file for each county in `lib/counties.ts`, named as `countySlug` names the county (`lib/home-address.ts`). The search page's map draws the one for the county a search is filtered to (`components/search/county-outline.tsx`).
+One GeoJSON file for each county in `lib/counties.ts`, named as `countySlug` names the county (`lib/home-address.ts`). The search page's map draws the one for the county a search is filtered to (`components/search/boundary-line.tsx`).
 
 ## Source
 
